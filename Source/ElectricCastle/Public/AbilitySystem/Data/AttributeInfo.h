@@ -1,0 +1,40 @@
+// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
+#include "Engine/DataAsset.h"
+#include "AttributeInfo.generated.h"
+
+USTRUCT(BlueprintType)
+struct FAttributeInfoRow
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FGameplayTag Tag = FGameplayTag();
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FText AttributeName = FText();
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FText AttributeDescription = FText();
+	UPROPERTY(BlueprintReadOnly)
+	float AttributeValue = 0.f;
+};
+
+
+/**
+ * 
+ */
+UCLASS()
+class ELECTRICCASTLE_API UAttributeInfo : public UDataAsset
+{
+	GENERATED_BODY()
+
+public:
+	FAttributeInfoRow FindAttributeInfoForTag(const FGameplayTag& AttributeTag, bool bLogNotFound = false) const;
+
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TArray<FAttributeInfoRow> AttributeInformation;
+};
