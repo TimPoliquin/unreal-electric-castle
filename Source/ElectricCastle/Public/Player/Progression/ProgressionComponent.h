@@ -96,7 +96,7 @@ private:
 	UFUNCTION()
 	void OnRep_AttributePoints(int32 InAttributePoints) const;
 	UFUNCTION()
-	FORCEINLINE void OnRep_SpellPoints(int32 InSpellPoints) const;
+	void OnRep_SpellPoints(int32 InSpellPoints) const;
 
 	TArray<uint8> SerializeActorComponent();
 	bool DeserializeActorComponent(const TArray<uint8>& Data);

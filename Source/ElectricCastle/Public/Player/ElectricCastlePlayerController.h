@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InputActionValue.h"
 #include "GameFramework/PlayerController.h"
 #include "Interaction/HighlightInterface.h"
 #include "ElectricCastlePlayerController.generated.h"
@@ -155,6 +156,8 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputConfiguration> InputConfig;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> FormChangeAction;
 
 	UPROPERTY()
 	TObjectPtr<UElectricCastleAbilitySystemComponent> AbilitySystemComponent;
@@ -163,6 +166,9 @@ private:
 	void AbilityInputTagPressed(FGameplayTag InputTag);
 	void AbilityInputTagReleased(FGameplayTag InputTag);
 	void AbilityInputTagHeld(FGameplayTag InputTag);
+	UFUNCTION()
+	void HandleFormChangeInputAction(const FInputActionValue& InputActionValue);
+
 
 	// UI
 	UPROPERTY(EditDefaultsOnly, Category = "UI")

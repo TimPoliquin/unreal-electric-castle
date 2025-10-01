@@ -6,6 +6,7 @@
 #include "GameplayTagContainer.h"
 #include "AbilitySystem/AttributeChangeDelegates.h"
 #include "Item/ItemTypes.h"
+#include "Player/Form/PlayerFormChangeComponent.h"
 #include "UI/WidgetController/ElectricCastleWidgetController.h"
 #include "OverlayWidgetController.generated.h"
 
@@ -31,6 +32,14 @@ struct FUIWidgetRow : public FTableRowBase
 	UTexture2D* Image = nullptr;
 };
 
+USTRUCT(BlueprintType)
+struct ELECTRICCASTLE_API FOverlayPortraitChangedPayload
+{
+	GENERATED_BODY()
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<UTexture2D> Portrait;
+};
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
 	FMessageWidgetRowSignature,
 	FUIWidgetRow,
@@ -43,6 +52,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOverlayClearSlotSignature, const FG
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOverlayVisibilityChangedSignature, const bool, bVisible);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOverlayPortraitChangedSignature, const FOverlayPortraitChangedPayload&, Payload);
 
 /**
  * 
@@ -85,6 +95,9 @@ public:
 	UPROPERTY(BlueprintAssignable, Category="HUD")
 	FOverlayVisibilityChangedSignature OnHUDVisibilityChangedDelegate;
 
+	UPROPERTY(BlueprintAssignable, Category="HUD")
+	FOverlayPortraitChangedSignature OnOverlayPortraitChangedDelegate;
+
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static bool IsBroadcastPayload(const FAuraIntAttributeChangedPayload& Payload);
 
@@ -110,6 +123,8 @@ private:
 	void OnPlayerInventoryChanged(const FOnInventoryItemCountChangedPayload& Payload);
 	UFUNCTION()
 	void OnPlayerInventoryFull(const FGameplayTag& ItemType);
+	UFUNCTION()
+	void OnFormChange(const FPlayerFormChangeEventPayload& Payload);
 };
 
 template <typename T>

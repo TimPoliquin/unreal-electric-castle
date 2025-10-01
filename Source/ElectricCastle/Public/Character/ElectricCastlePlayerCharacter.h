@@ -9,8 +9,11 @@
 #include "Interaction/PlayerInterface.h"
 #include "Player/ElectricCastlePlayerState.h"
 #include "Player/Equipment/EquipmentEvents.h"
+#include "Player/Form/FormChangeActorInterface.h"
+#include "Player/Form/PlayerFormChangeComponent.h"
 #include "ElectricCastlePlayerCharacter.generated.h"
 
+class UPlayerFormChangeComponent;
 class UBoxComponent;
 class UPlayerEquipmentComponent;
 class UFishingComponentInterface;
@@ -32,7 +35,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(
 );
 
 UCLASS(Abstract, Blueprintable)
-class ELECTRICCASTLE_API AElectricCastlePlayerCharacter : public AElectricCastleCharacter, public IPlayerInterface, public IFishingActorInterface
+class ELECTRICCASTLE_API AElectricCastlePlayerCharacter : public AElectricCastleCharacter, public IPlayerInterface, public IFishingActorInterface, public IFormChangeActorInterface
 {
 	GENERATED_BODY()
 
@@ -96,6 +99,10 @@ public:
 	virtual void ShowFishingStatusEffect_Implementation(UNiagaraSystem* EffectSystem) override;
 	/** FishingActorInterface End */
 
+	/** FormChangeActorInterface Start */
+	virtual UPlayerFormChangeComponent* GetFormChangeComponent_Implementation() const override;
+	/** FormChangeActorInterface End */
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void BeginDestroy() override;
@@ -103,6 +110,8 @@ protected:
 	void PlayFishingRodCastMontage();
 	UFUNCTION(BlueprintNativeEvent)
 	void OnEquipmentAnimationRequest(const FEquipmentDelegatePayload& Payload);
+	UFUNCTION(BlueprintNativeEvent)
+	void OnFormChange(const FPlayerFormChangeEventPayload& Payload);
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UBoxComponent> FadeDetectionComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
@@ -119,6 +128,8 @@ protected:
 	TObjectPtr<UNiagaraComponent> FishingStatusEffectNiagaraComponent;
 	UPROPERTY(EditDefaultsOnly, Category="Components")
 	TObjectPtr<UMotionWarpingComponent> MotionWarpingComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
+	TObjectPtr<UPlayerFormChangeComponent> FormChangeComponent;
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<USoundBase> LevelUpSound;
 	UPROPERTY(EditDefaultsOnly)

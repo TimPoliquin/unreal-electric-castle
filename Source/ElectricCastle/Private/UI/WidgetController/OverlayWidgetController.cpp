@@ -11,6 +11,8 @@
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "Player/ElectricCastlePlayerState.h"
 #include "Player/InventoryComponent.h"
+#include "Player/Form/FormChangeActorInterface.h"
+#include "Player/Form/PlayerFormChangeComponent.h"
 #include "Player/Progression/ProgressionComponent.h"
 #include "Tags/ElectricCastleGameplayTags.h"
 
@@ -54,6 +56,10 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 			&UOverlayWidgetController::OnPlayerLevelInitialized
 		);
 		ProgressionComponent->OnLevelChangeDelegate.AddDynamic(this, &UOverlayWidgetController::OnPlayerLevelChange);
+	}
+	if (UPlayerFormChangeComponent* FormChangeComponent = IFormChangeActorInterface::GetFormChangeComponent(GetAuraPlayerController()->GetPawn()))
+	{
+		FormChangeComponent->OnPlayerFormChange.AddDynamic(this, &UOverlayWidgetController::OnFormChange);
 	}
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(GetAttributeSet()->GetHealthAttribute())
 	                      .AddLambda(
@@ -190,4 +196,9 @@ void UOverlayWidgetController::OnPlayerInventoryChanged(const FOnInventoryItemCo
 
 void UOverlayWidgetController::OnPlayerInventoryFull(const FGameplayTag& ItemType)
 {
+}
+
+void UOverlayWidgetController::OnFormChange(const FPlayerFormChangeEventPayload& Payload)
+{
+	OnOverlayPortraitChangedDelegate.Broadcast(FOverlayPortraitChangedPayload(Payload.PortraitImage));
 }

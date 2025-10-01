@@ -28,6 +28,9 @@
 #include "MotionWarpingComponent.h"
 #include "Components/BoxComponent.h"
 #include "Interaction/FadeInterface.h"
+#include "Player/Form/PlayerFormChangeComponent.h"
+
+class UPlayerFormConfig;
 
 AElectricCastlePlayerCharacter::AElectricCastlePlayerCharacter()
 {
@@ -63,6 +66,8 @@ AElectricCastlePlayerCharacter::AElectricCastlePlayerCharacter()
 	FishingStatusEffectNiagaraComponent->SetupAttachment(EffectAttachComponent);
 	FishingStatusEffectNiagaraComponent->SetAutoActivate(false);
 	MotionWarpingComponent = CreateDefaultSubobject<UMotionWarpingComponent>(TEXT("Motion Warping"));
+	FormChangeComponent = CreateDefaultSubobject<UPlayerFormChangeComponent>(TEXT("Form Change Component"));
+	FormChangeComponent->OnPlayerFormChange.AddDynamic(this, &AElectricCastlePlayerCharacter::OnFormChange);
 	GetMesh()->SetCollisionResponseToChannel(ECC_Target, ECR_Ignore);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Target, ECR_Ignore);
 }
@@ -86,6 +91,12 @@ void AElectricCastlePlayerCharacter::BeginDestroy()
 	{
 		AIDirectorSubsystem->UnregisterActivePlayer(this);
 	}
+}
+
+void AElectricCastlePlayerCharacter::OnFormChange_Implementation(const FPlayerFormChangeEventPayload& Payload)
+{
+	FormChangeComponent->FormChange_PlayEffect(Payload);
+	FormChangeComponent->FormChange_UpdateCharacterMesh(Payload);
 }
 
 void AElectricCastlePlayerCharacter::OnEquipmentAnimationRequest_Implementation(const FEquipmentDelegatePayload& Payload)
@@ -463,4 +474,9 @@ void AElectricCastlePlayerCharacter::ShowFishingStatusEffect_Implementation(UNia
 		FishingStatusEffectNiagaraComponent->SetAsset(nullptr);
 		FishingStatusEffectNiagaraComponent->DeactivateImmediate();
 	}
+}
+
+UPlayerFormChangeComponent* AElectricCastlePlayerCharacter::GetFormChangeComponent_Implementation() const
+{
+	return FormChangeComponent;
 }

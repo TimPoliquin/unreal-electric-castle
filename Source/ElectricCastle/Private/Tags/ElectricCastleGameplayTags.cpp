@@ -354,6 +354,10 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FName("Abilities.Passive.ManaSiphon"),
 		FString("Passive 3 ability tag")
 	);
+	Instance.Abilities_Other_ChangeForm = TagManager.AddNativeGameplayTag(
+		FName("Abilities.Other.ChangeForm"),
+		FString("Change the form of the player")
+	);
 	Instance.Abilities_Other_Interact = TagManager.AddNativeGameplayTag(
 		FName("Abilities.Other.Interact"),
 		FString("Interact with objects in the world")
@@ -412,6 +416,10 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FString("Event fired during electrocute montage")
 	);
 	/** Cooldown Tags **/
+	Instance.Cooldown_Other_ChangeForm = TagManager.AddNativeGameplayTag(
+		FName("Cooldown.Other.ChangeForm"),
+		FString("Change Form ability cooldown tag")
+	);
 	Instance.Cooldown_Fire_FireBolt = TagManager.AddNativeGameplayTag(
 		FName("Cooldown.Fire.FireBolt"),
 		FString("FireBolt ability cooldown tag")
@@ -473,6 +481,10 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FName("Player.Block.Interaction"),
 		FString("Blocks player's ability to interact with the environment")
 	);
+	Instance.Player_Block_ChangeForm = TagManager.AddNativeGameplayTag(
+		FName("Player.Block.ChangeForm"),
+		FString("Blocks player's ability to change form")
+	);
 	Instance.Player_Block_Ability_Offensive = TagManager.AddNativeGameplayTag(
 		FName("Player.Block.Ability.Offensive"),
 		FString("Blocks player offensive abilities")
@@ -493,6 +505,15 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FName("Player.Equipped.Weapon"),
 		FString("Player has a weapon equipped")
 	);
+	Instance.Player_Form = TagManager.AddNativeGameplayTag(FName("Player.Form"), FString("Player form root tag"));
+	Instance.Player_Form_Barbarian = TagManager.AddNativeGameplayTag(FName("Player.Form.Barbarian"), FString("Barbarian form tag"));
+	Instance.Player_Form_Egyptian = TagManager.AddNativeGameplayTag(FName("Player.Form.Egyptian"), FString("Egyptian form tag"));
+	Instance.Player_Form_Futureman = TagManager.AddNativeGameplayTag(FName("Player.Form.Futureman"), FString("Futureman form tag"));
+	Instance.Player_Form_Highlander = TagManager.AddNativeGameplayTag(FName("Player.Form.Highlander"), FString("Highlander form tag"));
+	Instance.Player_Form_Hippie = TagManager.AddNativeGameplayTag(FName("Player.Form.Hippie"), FString("Hippie form tag"));
+	Instance.Player_Form_Knight = TagManager.AddNativeGameplayTag(FName("Player.Form.Knight"), FString("Knight form tag"));
+	Instance.Player_Form_Native = TagManager.AddNativeGameplayTag(FName("Player.Form.Native"), FString("Native form tag"));
+	Instance.Player_Form_Roman = TagManager.AddNativeGameplayTag(FName("Player.Form.Roman"), FString("Roman form tag"));
 	Instance.Player_POI_Fishing = TagManager.AddNativeGameplayTag(
 		FName("Player.POI.Fishing"),
 		FString("Player is at a fishing POI")

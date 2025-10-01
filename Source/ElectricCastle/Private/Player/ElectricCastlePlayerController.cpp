@@ -10,10 +10,11 @@
 #include "Actor/MagicCircle.h"
 #include "ElectricCastle/ElectricCastle.h"
 #include "CommonInputSubsystem.h"
-#include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Camera/CameraComponent.h"
 #include "Character/EnemyInterface.h"
+#include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "Input/ElectricCastleInputComponent.h"
+#include "Player/Form/PlayerFormConfig.h"
 #include "Tags/ElectricCastleGameplayTags.h"
 #include "UI/Widget/DamageTextComponent.h"
 
@@ -102,6 +103,7 @@ void AElectricCastlePlayerController::SetupInputComponent()
 		this,
 		&AElectricCastlePlayerController::Move
 	);
+	AuraInputComponent->BindAction(FormChangeAction, ETriggerEvent::Triggered, this, &AElectricCastlePlayerController::HandleFormChangeInputAction);
 }
 
 void AElectricCastlePlayerController::Move(const FInputActionValue& Value)
@@ -181,6 +183,31 @@ void AElectricCastlePlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
 	if (UElectricCastleAbilitySystemComponent* LocalAbilitySystem = GetAbilitySystemComponent())
 	{
 		LocalAbilitySystem->AbilityInputTagHeld(InputTag);
+	}
+}
+
+void AElectricCastlePlayerController::HandleFormChangeInputAction(const FInputActionValue& InputActionValue)
+{
+	const int32 FormId = FMath::RoundToInt32(InputActionValue.Get<float>());
+	if (const UElectricCastleGameDataSubsystem* GameData = UElectricCastleGameDataSubsystem::Get(this))
+	{
+		if (const UPlayerFormConfig* FormConfig = GameData->GetPlayerFormConfig())
+		{
+			const FPlayerFormConfigRow& FormRow = FormConfig->GetPlayerFormConfigRowByFormId(FormId);
+			if (!FormRow.IsValid())
+			{
+				return;
+			}
+			if (UElectricCastleAbilitySystemComponent* LocalAbilitySystem = GetAbilitySystemComponent())
+			{
+				const FGameplayTag& ChangeFormTag = FElectricCastleGameplayTags::Get().Abilities_Other_ChangeForm;
+				const FGameplayAbilitySpec* Spec = LocalAbilitySystem->GetSpecFromAbilityTag(ChangeFormTag);
+				FGameplayEventData EventData;
+				EventData.Instigator = this;
+				EventData.Target = GetPawn();
+				LocalAbilitySystem->TriggerAbilityFromGameplayEvent(Spec->Handle, LocalAbilitySystem->AbilityActorInfo.Get(), FormRow.FormTag, &EventData, *LocalAbilitySystem);
+			}
+		}
 	}
 }
 
