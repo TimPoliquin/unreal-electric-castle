@@ -17,6 +17,10 @@ UPlayerFormChangeComponent::UPlayerFormChangeComponent()
 
 void UPlayerFormChangeComponent::ChangeForm_Async(const FGameplayTag& FormTag)
 {
+	if (FormTag.MatchesTagExact(CurrentForm))
+	{
+		return;
+	}
 	const FPlayerFormConfigRow& Row = GetPlayerFormConfigRow(FormTag);
 	if (!Row.IsValid())
 	{

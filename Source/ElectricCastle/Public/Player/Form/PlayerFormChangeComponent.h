@@ -51,6 +51,8 @@ public:
 	void FormChange_PlayEffect(const FPlayerFormChangeEventPayload& Payload);
 	UFUNCTION(BlueprintCallable)
 	void FormChange_UpdateCharacterMesh(const FPlayerFormChangeEventPayload& Payload);
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FGameplayTag GetCurrentFormTag() const { return CurrentForm; }
 
 	UPROPERTY(BlueprintAssignable)
 	FPlayerFormChangeEventSignature OnPlayerFormChange;
