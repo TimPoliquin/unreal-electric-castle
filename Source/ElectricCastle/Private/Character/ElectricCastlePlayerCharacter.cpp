@@ -368,16 +368,8 @@ void AElectricCastlePlayerCharacter::ApplyLevelUpRewards_Implementation(
 {
 	UProgressionComponent* ProgressionComponent = UProgressionComponent::Get(this);
 	checkf(ProgressionComponent, TEXT("[%s] No access to progression component while trying to ApplyLevelUpRewards"), *GetName());
-	ProgressionComponent->AddAttributePoints(InLevelUpRewards.AttributePoints);
 	ProgressionComponent->AddSpellPoints(InLevelUpRewards.SpellPoints);
 	ProgressionComponent->AddToLevel(LevelIncrement);
-}
-
-int32 AElectricCastlePlayerCharacter::GetAttributePoints_Implementation() const
-{
-	const UProgressionComponent* ProgressionComponent = UProgressionComponent::Get(this);
-	checkf(ProgressionComponent, TEXT("[%s] No access to progression component while trying to GetAttributePoints"), *GetName());
-	return ProgressionComponent->GetAttributePoints();
 }
 
 int32 AElectricCastlePlayerCharacter::GetSpellPoints_Implementation() const
@@ -385,13 +377,6 @@ int32 AElectricCastlePlayerCharacter::GetSpellPoints_Implementation() const
 	const UProgressionComponent* ProgressionComponent = UProgressionComponent::Get(this);
 	checkf(ProgressionComponent, TEXT("[%s] No access to progression component while trying to GetSpellPoints"), *GetName());
 	return ProgressionComponent->GetSpellPoints();
-}
-
-void AElectricCastlePlayerCharacter::SpendAttributePoints_Implementation(int32 SpentPoints)
-{
-	UProgressionComponent* ProgressionComponent = UProgressionComponent::Get(this);
-	checkf(ProgressionComponent, TEXT("[%s] No access to progression component while trying to AddAttributePoints"), *GetName());
-	return ProgressionComponent->AddAttributePoints(-1 * SpentPoints);
 }
 
 void AElectricCastlePlayerCharacter::SpendSpellPoints_Implementation(const int32 SpentPoints)

@@ -73,11 +73,11 @@ void AElectricCastleEnemyCharacter::InitializeAttributeDelegates()
 	                        AddLambda(
 		                        [&](const FOnAttributeChangeData& Data)
 		                        {
-			                        OnMaxHealthChanged.Broadcast(FAuraFloatAttributeChangedPayload(GameplayTags.Attributes_Secondary_MaxHealth, Data.OldValue, Data.NewValue));
+			                        OnMaxHealthChanged.Broadcast(FAuraFloatAttributeChangedPayload(GameplayTags.Attributes_Primary_MaxHealth, Data.OldValue, Data.NewValue));
 		                        }
 	                        );
 	OnHealthChanged.Broadcast(FAuraFloatAttributeChangedPayload::CreateBroadcastPayload(GameplayTags.Attributes_Vital_Health, AttributeSet->GetHealth()));
-	OnMaxHealthChanged.Broadcast(FAuraFloatAttributeChangedPayload::CreateBroadcastPayload(GameplayTags.Attributes_Secondary_MaxHealth, AttributeSet->GetMaxHealth()));
+	OnMaxHealthChanged.Broadcast(FAuraFloatAttributeChangedPayload::CreateBroadcastPayload(GameplayTags.Attributes_Primary_MaxHealth, AttributeSet->GetMaxHealth()));
 }
 
 void AElectricCastleEnemyCharacter::BeginPlay()

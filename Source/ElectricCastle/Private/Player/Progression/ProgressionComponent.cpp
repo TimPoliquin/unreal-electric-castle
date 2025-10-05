@@ -22,7 +22,6 @@ UProgressionComponent* UProgressionComponent::Get(const UObject* WorldContextObj
 UProgressionComponent::UProgressionComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-	AttributePoints = 0;
 	SpellPoints = 0;
 	SaveID = USaveGameBlueprintFunctionLibrary::GenerateSaveID(this);
 	SetIsReplicatedByDefault(true);
@@ -33,7 +32,6 @@ void UProgressionComponent::GetLifetimeReplicatedProps(TArray<class FLifetimePro
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(UProgressionComponent, Level);
 	DOREPLIFETIME(UProgressionComponent, XP);
-	DOREPLIFETIME(UProgressionComponent, AttributePoints);
 	DOREPLIFETIME(UProgressionComponent, SpellPoints);
 }
 
@@ -85,16 +83,6 @@ void UProgressionComponent::AddToXP(const int32 InXP)
 	SetXP(InXP + XP);
 }
 
-int32 UProgressionComponent::GetAttributePoints() const
-{
-	return AttributePoints;
-}
-
-void UProgressionComponent::AddAttributePoints(const int32 InAttributePoints)
-{
-	SetAttributePoints(AttributePoints + InAttributePoints);
-}
-
 int32 UProgressionComponent::GetSpellPoints() const
 {
 	return SpellPoints;
@@ -130,13 +118,6 @@ void UProgressionComponent::SetSpellPoints(const int32 InSpellPoints)
 	OnSpellPointsChangeDelegate.Broadcast(FAuraIntAttributeChangedPayload(FElectricCastleGameplayTags::Get().Attributes_Progression_SpellPoints, PreviousSpellPoints, InSpellPoints));
 }
 
-void UProgressionComponent::SetAttributePoints(const int32 InAttributePoints)
-{
-	const int32 PreviousAttributePoints = AttributePoints;
-	AttributePoints = InAttributePoints;
-	OnAttributePointsChangeDelegate.Broadcast(FAuraIntAttributeChangedPayload(FElectricCastleGameplayTags::Get().Attributes_Progression_AttributePoints, PreviousAttributePoints, InAttributePoints));
-}
-
 void UProgressionComponent::SetXP(const int32 InXP)
 {
 	const int32 PreviousXP = XP;
@@ -154,11 +135,6 @@ void UProgressionComponent::OnRep_XP(int32 OldXP) const
 	OnXPChangeDelegate.Broadcast(FAuraIntAttributeChangedPayload(FElectricCastleGameplayTags::Get().Attributes_Progression_XP, OldXP, XP));
 }
 
-void UProgressionComponent::OnRep_AttributePoints(int32 InAttributePoints) const
-{
-	OnAttributePointsChangeDelegate.Broadcast(FAuraIntAttributeChangedPayload(FElectricCastleGameplayTags::Get().Attributes_Progression_AttributePoints, InAttributePoints, AttributePoints));
-}
-
 void UProgressionComponent::OnRep_SpellPoints(int32 InSpellPoints) const
 {
 	OnSpellPointsChangeDelegate.Broadcast(FAuraIntAttributeChangedPayload(FElectricCastleGameplayTags::Get().Attributes_Progression_SpellPoints, InSpellPoints, SpellPoints));
@@ -173,13 +149,11 @@ TArray<uint8> UProgressionComponent::SerializeActorComponent()
 	FAuraProgressionComponentSaveData SaveData;
 	SaveData.Level = Level;
 	SaveData.XP = XP;
-	SaveData.AttributePoints = AttributePoints;
 	SaveData.SpellPoints = SpellPoints;
 
 	// Serialize the struct
 	Writer << SaveData.Level;
 	Writer << SaveData.XP;
-	Writer << SaveData.AttributePoints;
 	Writer << SaveData.SpellPoints;
 
 	return Data;
@@ -198,7 +172,6 @@ bool UProgressionComponent::DeserializeActorComponent(const TArray<uint8>& Data)
 	{
 		Reader << Level;
 		Reader << XP;
-		Reader << AttributePoints;
 		Reader << SpellPoints;
 
 		return true;

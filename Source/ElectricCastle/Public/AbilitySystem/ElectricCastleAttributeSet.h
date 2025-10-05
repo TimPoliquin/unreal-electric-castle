@@ -41,6 +41,26 @@ public:
 	/**
 	 * Primary Attributes
 	 */
+	// Max Health
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_MaxHealth, Category = "Primary Attributes")
+	FGameplayAttributeData MaxHealth;
+	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, MaxHealth);
+	UFUNCTION()
+	FORCEINLINE void OnRep_MaxHealth(const FGameplayAttributeData& OldValue) const
+	{
+		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, MaxHealth, OldValue);
+	}
+
+	// Max Mana
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_MaxMana, Category = "Primary Attributes")
+	FGameplayAttributeData MaxMana;
+	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, MaxMana);
+	UFUNCTION()
+	FORCEINLINE void OnRep_MaxMana(const FGameplayAttributeData& OldValue) const
+	{
+		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, MaxMana, OldValue);
+	}
+
 	// Strength
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Strength, Category = "Primary Attributes")
 	FGameplayAttributeData Strength;
@@ -49,6 +69,26 @@ public:
 	FORCEINLINE void OnRep_Strength(const FGameplayAttributeData& OldStrength) const
 	{
 		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, Strength, OldStrength);
+	}
+
+	// Agility
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Agility, Category = "Primary Attributes")
+	FGameplayAttributeData Agility;
+	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, Agility);
+	UFUNCTION()
+	FORCEINLINE void OnRep_Agility(const FGameplayAttributeData& OldValue) const
+	{
+		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, Agility, OldValue);
+	}
+
+	// Constitution
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Constitution, Category = "Primary Attributes")
+	FGameplayAttributeData Constitution;
+	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, Constitution);
+	UFUNCTION()
+	FORCEINLINE void OnRep_Constitution(const FGameplayAttributeData& OldConstitution) const
+	{
+		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, Constitution, OldConstitution);
 	}
 
 	// Intelligence
@@ -61,129 +101,88 @@ public:
 		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, Intelligence, OldIntelligence);
 	}
 
-	// Resilience
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Resilience, Category = "Primary Attributes")
-	FGameplayAttributeData Resilience;
-	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, Resilience);
+	// Wisdom
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Wisdom, Category = "Primary Attributes")
+	FGameplayAttributeData Wisdom;
+	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, Wisdom);
 	UFUNCTION()
-	FORCEINLINE void OnRep_Resilience(const FGameplayAttributeData& OldResilience) const
+	FORCEINLINE void OnRep_Wisdom(const FGameplayAttributeData& OldValue) const
 	{
-		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, Resilience, OldResilience);
-	}
-
-	// Vigor
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Vigor, Category = "Primary Attributes")
-	FGameplayAttributeData Vigor;
-	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, Vigor);
-	UFUNCTION()
-	FORCEINLINE void OnRep_Vigor(const FGameplayAttributeData& OldVigor) const
-	{
-		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, Vigor, OldVigor);
+		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, Wisdom, OldValue);
 	}
 
 	/**
 	 * Secondary Attributes
 	 */
-	// Armor
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Armor, Category = "Secondary Attributes")
-	FGameplayAttributeData Armor;
-	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, Armor);
+	// Attack Power - Strength + Weapon Attack Power
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_AttackPower, Category="Secondary Attributes")
+	FGameplayAttributeData AttackPower;
+	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, AttackPower);
 	UFUNCTION()
-	FORCEINLINE void OnRep_Armor(const FGameplayAttributeData& OldArmor) const
+	FORCEINLINE void OnRep_AttackPower(const FGameplayAttributeData& OldValue) const
 	{
-		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, Armor, OldArmor);
+		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, AttackPower, OldValue);
 	}
 
-	// Armor Penetration
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_ArmorPenetration, Category = "Secondary Attributes")
-	FGameplayAttributeData ArmorPenetration;
-	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, ArmorPenetration);
+	// Magic Power - Strength + Weapon Magic Power
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_MagicPower, Category="Secondary Attributes")
+	FGameplayAttributeData MagicPower;
+	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, MagicPower);
 	UFUNCTION()
-	FORCEINLINE void OnRep_ArmorPenetration(const FGameplayAttributeData& OldArmorPenetration) const
+	FORCEINLINE void OnRep_MagicPower(const FGameplayAttributeData& OldValue) const
 	{
-		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, ArmorPenetration, OldArmorPenetration);
+		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, MagicPower, OldValue);
 	}
 
-	// BlockChance
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_BlockChance, Category = "Secondary Attributes")
-	FGameplayAttributeData BlockChance;
-	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, BlockChance);
+	// Defense - Constitution + Armor
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Defense, Category = "Secondary Attributes")
+	FGameplayAttributeData Defense;
+	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, Defense);
 	UFUNCTION()
-	FORCEINLINE void OnRep_BlockChance(const FGameplayAttributeData& OldBlockChance) const
+	FORCEINLINE void OnRep_Defense(const FGameplayAttributeData& OldValue) const
 	{
-		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, BlockChance, OldBlockChance);
+		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, Defense, OldValue);
 	}
 
-	// CriticalHitChance
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_CriticalHitChance, Category = "Secondary Attributes")
+	// Magic Defense - Wisdom + Armor
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_MagicDefense, Category="Secondary Attributes")
+	FGameplayAttributeData MagicDefense;
+	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, MagicDefense);
+	UFUNCTION()
+	FORCEINLINE void OnRep_MagicDefense(const FGameplayAttributeData& OldValue) const
+	{
+		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, MagicDefense, OldValue);
+	}
+
+	// Hit Chance - 75 + 1/4 Agility
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_HitChance, Category="Secondary Attributes")
+	FGameplayAttributeData HitChance;
+	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, HitChance);
+	UFUNCTION()
+	FORCEINLINE void OnRep_HitChance(const FGameplayAttributeData& OldValue) const
+	{
+		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, HitChance, OldValue);
+	}
+
+	// Evade Chance - Armor + 1/4 Agility
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_EvadeChance, Category="Secondary Attributes")
+	FGameplayAttributeData EvadeChance;
+	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, EvadeChance);
+	UFUNCTION()
+	FORCEINLINE void OnRep_EvadeChance(const FGameplayAttributeData& OldValue) const
+	{
+		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, EvadeChance, OldValue);
+	}
+
+	// Critical Hit Chance - 5 + 1/5 Agility
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_EvadeChance, Category="Secondary Attributes")
 	FGameplayAttributeData CriticalHitChance;
 	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, CriticalHitChance);
 	UFUNCTION()
-	FORCEINLINE void OnRep_CriticalHitChance(const FGameplayAttributeData& OldCriticalHitChance) const
+	FORCEINLINE void OnRep_CriticalHitChance(const FGameplayAttributeData& OldValue) const
 	{
-		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, CriticalHitChance, OldCriticalHitChance);
+		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, CriticalHitChance, OldValue);
 	}
-
-	// CriticalHitDamage
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_CriticalHitDamage, Category = "Secondary Attributes")
-	FGameplayAttributeData CriticalHitDamage;
-	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, CriticalHitDamage);
-	UFUNCTION()
-	FORCEINLINE void OnRep_CriticalHitDamage(const FGameplayAttributeData& OldCriticalHitDamage) const
-	{
-		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, CriticalHitDamage, OldCriticalHitDamage);
-	}
-
-	// CriticalHitResistance
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_CriticalHitResistance, Category = "Secondary Attributes")
-	FGameplayAttributeData CriticalHitResistance;
-	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, CriticalHitResistance);
-	UFUNCTION()
-	FORCEINLINE void OnRep_CriticalHitResistance(const FGameplayAttributeData& OldCriticalHitResistance) const
-	{
-		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, CriticalHitResistance, OldCriticalHitResistance);
-	}
-
-	// HealthRegeneration
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_HealthRegeneration, Category = "Secondary Attributes")
-	FGameplayAttributeData HealthRegeneration;
-	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, HealthRegeneration);
-	UFUNCTION()
-	FORCEINLINE void OnRep_HealthRegeneration(const FGameplayAttributeData& OldHealthRegeneration) const
-	{
-		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, HealthRegeneration, OldHealthRegeneration);
-	}
-
-	// ManaRegeneration
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_ManaRegeneration, Category = "Secondary Attributes")
-	FGameplayAttributeData ManaRegeneration;
-	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, ManaRegeneration);
-	UFUNCTION()
-	FORCEINLINE void OnRep_ManaRegeneration(const FGameplayAttributeData& OldManaRegeneration) const
-	{
-		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, ManaRegeneration, OldManaRegeneration);
-	}
-
-	// Max Health
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_MaxHealth, Category = "Secondary Attributes")
-	FGameplayAttributeData MaxHealth;
-	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, MaxHealth);
-	UFUNCTION()
-	FORCEINLINE void OnRep_MaxHealth(const FGameplayAttributeData& OldMaxHealth) const
-	{
-		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, MaxHealth, OldMaxHealth);
-	}
-
-	// Max Mana
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_MaxMana, Category = "Secondary Attributes")
-	FGameplayAttributeData MaxMana;
-	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, MaxMana);
-	UFUNCTION()
-	FORCEINLINE void OnRep_MaxMana(const FGameplayAttributeData& OldMaxMana) const
-	{
-		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, MaxMana, OldMaxMana);
-	}
-
 
 	/**
 	 * Vital Attributes
@@ -206,61 +205,6 @@ public:
 	FORCEINLINE void OnRep_Mana(const FGameplayAttributeData& OldMana) const
 	{
 		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, Mana, OldMana);
-	}
-
-	/** Resistances **/
-
-	// Resistance - Arcane
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_ResistanceArcane, Category = "Resistance Attributes")
-	FGameplayAttributeData Resistance_Arcane;
-	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, Resistance_Arcane);
-	UFUNCTION()
-	FORCEINLINE void OnRep_ResistanceArcane(const FGameplayAttributeData& OldValue) const
-	{
-		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, Resistance_Arcane, OldValue);
-	}
-
-	// Resistance - Fire
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_ResistanceFire, Category = "Resistance Attributes")
-	FGameplayAttributeData Resistance_Fire;
-	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, Resistance_Fire);
-	UFUNCTION()
-	FORCEINLINE void OnRep_ResistanceFire(const FGameplayAttributeData& OldValue) const
-	{
-		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, Resistance_Fire, OldValue);
-	}
-
-	// Resistance - Lightning
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_ResistanceLightning, Category = "Resistance Attributes")
-	FGameplayAttributeData Resistance_Lightning;
-	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, Resistance_Lightning);
-	UFUNCTION()
-	FORCEINLINE void OnRep_ResistanceLightning(const FGameplayAttributeData& OldValue) const
-	{
-		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, Resistance_Lightning, OldValue);
-	}
-
-	// Resistance - Physical
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_ResistancePhysical, Category = "Resistance Attributes")
-	FGameplayAttributeData Resistance_Physical;
-	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, Resistance_Physical);
-	UFUNCTION()
-	FORCEINLINE void OnRep_ResistancePhysical(const FGameplayAttributeData& OldValue) const
-	{
-		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, Resistance_Physical, OldValue);
-	}
-
-	/**	 Passive Attributes  */
-	/**
-	 * Protection afforded by passive abilities.
-	 */
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_PassiveProtection, Category="Passive Attributes")
-	FGameplayAttributeData Passive_Protection;
-	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, Passive_Protection);
-	UFUNCTION()
-	FORCEINLINE void OnRep_PassiveProtection(const FGameplayAttributeData& OldValue) const
-	{
-		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, Passive_Protection, OldValue);
 	}
 
 	/**

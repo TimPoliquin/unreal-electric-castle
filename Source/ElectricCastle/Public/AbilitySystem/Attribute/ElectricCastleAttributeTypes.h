@@ -62,27 +62,36 @@ struct ELECTRICCASTLE_API FAttributeSetSaveData
 {
 	GENERATED_BODY()
 	UPROPERTY(BlueprintReadWrite, Category="Save Data")
-	int32 Strength = 0;
+	int32 MaxHealth = 0;
 	UPROPERTY(BlueprintReadWrite, Category="Save Data")
-	int32 Intelligence = 0;
-	UPROPERTY(BlueprintReadWrite, Category="Save Data")
-	int32 Resilience = 0;
-	UPROPERTY(BlueprintReadWrite, Category="Save Data")
-	int32 Vigor = 0;
+	int32 MaxMana = 0;
 	UPROPERTY(BlueprintReadWrite, Category="Save Data")
 	float Health = 0;
 	UPROPERTY(BlueprintReadWrite, Category="Save Data")
 	float Mana = 0;
+	UPROPERTY(BlueprintReadWrite, Category="Save Data")
+	int32 Strength = 0;
+	UPROPERTY(BlueprintReadWrite, Category="Save Data")
+	int32 Agility = 0;
+	UPROPERTY(BlueprintReadWrite, Category="Save Data")
+	int32 Constitution = 0;
+	UPROPERTY(BlueprintReadWrite, Category="Save Data")
+	int32 Intelligence = 0;
+	UPROPERTY(BlueprintReadWrite, Category="Save Data")
+	int32 Wisdom = 0;
 
 	// Serialization function
 	friend FArchive& operator<<(FArchive& Ar, FAttributeSetSaveData& Struct)
 	{
-		Ar << Struct.Strength;
-		Ar << Struct.Intelligence;
-		Ar << Struct.Resilience;
-		Ar << Struct.Vigor;
+		Ar << Struct.MaxHealth;
+		Ar << Struct.MaxMana;
 		Ar << Struct.Health;
 		Ar << Struct.Mana;
+		Ar << Struct.Strength;
+		Ar << Struct.Agility;
+		Ar << Struct.Constitution;
+		Ar << Struct.Intelligence;
+		Ar << Struct.Wisdom;
 		return Ar;
 	}
 };

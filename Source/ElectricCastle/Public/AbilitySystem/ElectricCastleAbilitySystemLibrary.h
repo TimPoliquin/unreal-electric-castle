@@ -159,7 +159,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")
 	static void SetDebuff(
 		FGameplayEffectContextHandle& EffectContextHandle,
-		FGameplayTag& DebuffTypeTag,
+		const FGameplayTag& DebuffTypeTag,
 		float DebuffDamage,
 		float DebuffDuration,
 		float DebuffFrequency

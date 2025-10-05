@@ -70,9 +70,6 @@ public:
 	}
 
 	void ForEachAbility(const FForEachAbility& ForEachAbilityDelegate);
-	void UpgradeAttribute(const FGameplayTag& AttributeTag);
-	UFUNCTION(Server, Reliable)
-	void ServerUpgradeAttribute(const FGameplayTag& AttributeTag);
 	void ServerUpdateAbilityStatuses(const int32 Level);
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastActivatePassiveEffect(const FGameplayTag& AbilityTag, bool bActivate);

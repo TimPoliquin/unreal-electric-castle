@@ -40,11 +40,7 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void ApplyLevelUpRewards(const int32 LevelIncrement, const FLevelUpRewards& InLevelUpRewards);
 	UFUNCTION(BlueprintNativeEvent)
-	void SpendAttributePoints(int32 SpentPoints);
-	UFUNCTION(BlueprintNativeEvent)
 	void SpendSpellPoints(const int32 SpentPoints);
-	UFUNCTION(BlueprintNativeEvent)
-	int32 GetAttributePoints() const;
 	UFUNCTION(BlueprintNativeEvent)
 	int32 GetSpellPoints() const;
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
@@ -78,9 +74,7 @@ public:
 
 	static void AddToXP(AActor* Actor, int32 InXP);
 	static bool ImplementsPlayerInterface(const UObject* Object);
-	static int32 GetAttributePoints(const UObject* Object);
 	static int32 GetSpellPoints(const UObject* Object);
-	static void SpendAttributePoints(UObject* Object, int32 SpentPoints);
 	static void SpendSpellPoints(UObject* Object, const int32 SpentPoints);
 	static void SaveProgress(UObject* Object, const FName& CheckpointTag);
 };

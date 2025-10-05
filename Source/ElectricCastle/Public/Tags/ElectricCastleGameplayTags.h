@@ -26,21 +26,21 @@ struct FElectricCastleGameplayTags
 	bool bInitialized = false;
 
 	/** Primary attributes **/
+	FGameplayTag Attributes_Primary_MaxHealth;
+	FGameplayTag Attributes_Primary_MaxMana;
 	FGameplayTag Attributes_Primary_Strength;
+	FGameplayTag Attributes_Primary_Agility;
 	FGameplayTag Attributes_Primary_Intelligence;
-	FGameplayTag Attributes_Primary_Resilience;
-	FGameplayTag Attributes_Primary_Vigor;
+	FGameplayTag Attributes_Primary_Constitution;
+	FGameplayTag Attributes_Primary_Wisdom;
 	/** Secondary Attributes **/
-	FGameplayTag Attributes_Secondary_Armor;
-	FGameplayTag Attributes_Secondary_ArmorPenetration;
-	FGameplayTag Attributes_Secondary_BlockChance;
+	FGameplayTag Attributes_Secondary_AttackPower;
+	FGameplayTag Attributes_Secondary_MagicPower;
+	FGameplayTag Attributes_Secondary_Defense;
+	FGameplayTag Attributes_Secondary_MagicDefense;
+	FGameplayTag Attributes_Secondary_HitChance;
+	FGameplayTag Attributes_Secondary_EvadeChance;
 	FGameplayTag Attributes_Secondary_CriticalHitChance;
-	FGameplayTag Attributes_Secondary_CriticalHitDamage;
-	FGameplayTag Attributes_Secondary_CriticalHitResistance;
-	FGameplayTag Attributes_Secondary_HealthRegeneration;
-	FGameplayTag Attributes_Secondary_ManaRegeneration;
-	FGameplayTag Attributes_Secondary_MaxHealth;
-	FGameplayTag Attributes_Secondary_MaxMana;
 	/** Vital Attributes **/
 	FGameplayTag Attributes_Vital_Health;
 	FGameplayTag Attributes_Vital_Mana;
@@ -48,13 +48,10 @@ struct FElectricCastleGameplayTags
 	FGameplayTag Attributes_Meta_IncomingDamage;
 	FGameplayTag Attributes_Meta_IncomingXP;
 	FGameplayTag Attributes_Meta_IncomingRefresh;
-	/** Passive Attributes **/
-	FGameplayTag Attributes_Passive_Protection;
 	/** Progression Attributes **/
 	FGameplayTag Attributes_Progression_Level;
 	FGameplayTag Attributes_Progression_XP;
 	FGameplayTag Attributes_Progression_SpellPoints;
-	FGameplayTag Attributes_Progression_AttributePoints;
 
 	/** Input Tags **/
 	FGameplayTag InputTag;
@@ -72,41 +69,47 @@ struct FElectricCastleGameplayTags
 	FGameplayTag InputTag_Cancel;
 
 	/** Effect Tags **/
+	FGameplayTag Effect_Damage;
+	FGameplayTag Effect_Damage_Magic;
+	FGameplayTag Effect_Damage_Magic_Arcane;
+	FGameplayTag Effect_Damage_Magic_Dark;
+	FGameplayTag Effect_Damage_Magic_Fire;
+	FGameplayTag Effect_Damage_Magic_Lightning;
+	FGameplayTag Effect_Damage_Magic_Psych;
+	FGameplayTag Effect_Damage_Magic_Spirit;
+	FGameplayTag Effect_Damage_Magic_Sun;
+	FGameplayTag Effect_Damage_Magic_Tech;
+	FGameplayTag Effect_Damage_Physical;
+
 	FGameplayTag Effect_HitReact;
 	FGameplayTag Effect_HitReact_Default;
 	FGameplayTag Effect_HitReact_Shock;
 	FGameplayTag Effect_Magnitude;
 
-	/** Damage Tags **/
-	FGameplayTag Damage;
-	FGameplayTag Damage_Arcane;
-	FGameplayTag Damage_Fire;
-	FGameplayTag Damage_Lightning;
-	FGameplayTag Damage_Physical;
-
-	/** Resistance Tags **/
-	FGameplayTag Attributes_Resistance_Arcane;
-	FGameplayTag Attributes_Resistance_Fire;
-	FGameplayTag Attributes_Resistance_Lightning;
-	FGameplayTag Attributes_Resistance_Physical;
+	FGameplayTag Effect_Resist;
+	FGameplayTag Effect_Resist_Magic;
+	FGameplayTag Effect_Resist_Magic_Arcane;
+	FGameplayTag Effect_Resist_Magic_Dark;
+	FGameplayTag Effect_Resist_Magic_Fire;
+	FGameplayTag Effect_Resist_Magic_Lightning;
+	FGameplayTag Effect_Resist_Magic_Psych;
+	FGameplayTag Effect_Resist_Magic_Spirit;
+	FGameplayTag Effect_Resist_Magic_Sun;
+	FGameplayTag Effect_Resist_Magic_Tech;
+	FGameplayTag Effect_Resist_Physical;
 
 	/** Debuff Tags **/
-	FGameplayTag Debuff;
-	FGameplayTag Debuff_Type;
-	FGameplayTag Debuff_Type_Burn;
-	FGameplayTag Debuff_Type_Shock;
-	FGameplayTag Debuff_Type_Curse;
-	FGameplayTag Debuff_Type_Bleed;
-	FGameplayTag Debuff_Stat;
-	FGameplayTag Debuff_Stat_Chance;
-	FGameplayTag Debuff_Stat_Damage;
-	FGameplayTag Debuff_Stat_Frequency;
-	FGameplayTag Debuff_Stat_Duration;
-	FGameplayTag Debuff_Block_Regen_Health;
-	FGameplayTag Debuff_Block_Regen_Mana;
-
-	FGameplayTag Effect_Passive_HaloOfProtection;
-
+	FGameplayTag Effect_Debuff;
+	FGameplayTag Effect_Debuff_Type;
+	FGameplayTag Effect_Debuff_Type_Burn;
+	FGameplayTag Effect_Debuff_Type_Shock;
+	FGameplayTag Effect_Debuff_Type_Curse;
+	FGameplayTag Effect_Debuff_Type_Bleed;
+	FGameplayTag Effect_Debuff_Stat;
+	FGameplayTag Effect_Debuff_Stat_Chance;
+	FGameplayTag Effect_Debuff_Stat_Damage;
+	FGameplayTag Effect_Debuff_Stat_Frequency;
+	FGameplayTag Effect_Debuff_Stat_Duration;
 
 	/** Abilities **/
 	FGameplayTag Abilities;
@@ -221,30 +224,14 @@ struct FElectricCastleGameplayTags
 	uint8 MontageAttackNum = 4;
 	TArray<FGameplayTag> Montage_Attack_Tags;
 
-	FORCEINLINE const TArray<FGameplayTag>& GetDamageTypes() const
-	{
-		return DamageTypes;
-	}
-
-	FORCEINLINE FGameplayTag GetDamageTypeResistanceTag(const FGameplayTag& DamageType) const
-	{
-		return DamageTypesToResistances[DamageType];
-	}
-
-	FORCEINLINE FGameplayTag GetDamageTypeDebuffTag(const FGameplayTag& DamageType) const
-	{
-		return DamageTypesToDebuffs[DamageType];
-	}
-
-	FORCEINLINE FGameplayTag GetDebuffTypeDamageTypeTag(const FGameplayTag& DebuffType) const
-	{
-		return DebuffTypeToDamageType[DebuffType];
-	}
+	TArray<FGameplayTag> GetDamageTypes() const;
+	TArray<FGameplayTag> GetDebuffTypes() const;
+	FGameplayTag GetDamageTypeResistanceTag(const FGameplayTag& DamageTypeTag) const;
 
 private:
 	static FElectricCastleGameplayTags Instance;
+
 	TArray<FGameplayTag> DamageTypes;
-	TMap<FGameplayTag, FGameplayTag> DamageTypesToResistances;
-	TMap<FGameplayTag, FGameplayTag> DamageTypesToDebuffs;
-	TMap<FGameplayTag, FGameplayTag> DebuffTypeToDamageType;
+	TArray<FGameplayTag> DebuffTypes;
+	TMap<FGameplayTag, FGameplayTag> DamageTypeToResistanceType;
 };

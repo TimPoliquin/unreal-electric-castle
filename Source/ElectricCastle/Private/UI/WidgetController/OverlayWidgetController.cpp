@@ -25,9 +25,9 @@ void UOverlayWidgetController::BroadcastInitialValues()
 	}
 	const FElectricCastleGameplayTags& AuraGameplayTags = FElectricCastleGameplayTags::Get();
 	OnHealthChanged.Broadcast(FAuraFloatAttributeChangedPayload::CreateBroadcastPayload(AuraGameplayTags.Attributes_Vital_Health, GetAttributeSet()->GetHealth()));
-	OnMaxMaxHealthChanged.Broadcast(FAuraFloatAttributeChangedPayload::CreateBroadcastPayload(AuraGameplayTags.Attributes_Secondary_MaxHealth, GetAttributeSet()->GetMaxHealth()));
+	OnMaxMaxHealthChanged.Broadcast(FAuraFloatAttributeChangedPayload::CreateBroadcastPayload(AuraGameplayTags.Attributes_Primary_MaxHealth, GetAttributeSet()->GetMaxHealth()));
 	OnManaChanged.Broadcast(FAuraFloatAttributeChangedPayload::CreateBroadcastPayload(AuraGameplayTags.Attributes_Vital_Mana, GetAttributeSet()->GetMana()));
-	OnMaxManaChanged.Broadcast(FAuraFloatAttributeChangedPayload::CreateBroadcastPayload(AuraGameplayTags.Attributes_Secondary_MaxMana, GetAttributeSet()->GetMaxMana()));
+	OnMaxManaChanged.Broadcast(FAuraFloatAttributeChangedPayload::CreateBroadcastPayload(AuraGameplayTags.Attributes_Primary_MaxMana, GetAttributeSet()->GetMaxMana()));
 	if (const UProgressionComponent* ProgressionComponent = UProgressionComponent::Get(GetPlayerState()))
 	{
 		const float NewPercentage = UElectricCastleGameDataSubsystem::Get(GetPlayerState())->GetXPToNextLevelPercentage(ProgressionComponent->GetXP());
@@ -72,7 +72,7 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 	                      .AddLambda(
 		                      [&](const FOnAttributeChangeData& Data)
 		                      {
-			                      OnMaxMaxHealthChanged.Broadcast(FAuraFloatAttributeChangedPayload(GameplayTags.Attributes_Secondary_MaxHealth, Data.OldValue, Data.NewValue));
+			                      OnMaxMaxHealthChanged.Broadcast(FAuraFloatAttributeChangedPayload(GameplayTags.Attributes_Primary_MaxHealth, Data.OldValue, Data.NewValue));
 		                      }
 	                      );
 
@@ -87,7 +87,7 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 	                      .AddLambda(
 		                      [&](const FOnAttributeChangeData& Data)
 		                      {
-			                      OnMaxManaChanged.Broadcast(FAuraFloatAttributeChangedPayload(GameplayTags.Attributes_Secondary_MaxMana, Data.OldValue, Data.NewValue));
+			                      OnMaxManaChanged.Broadcast(FAuraFloatAttributeChangedPayload(GameplayTags.Attributes_Primary_MaxMana, Data.OldValue, Data.NewValue));
 		                      }
 	                      );
 	GetAbilitySystemComponent()->OnEffectAssetTagsDelegate.AddLambda(

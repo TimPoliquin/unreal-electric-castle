@@ -18,8 +18,6 @@ struct ELECTRICCASTLE_API FAuraProgressionComponentSaveData
 	UPROPERTY(BlueprintReadWrite, Category="Save Data")
 	int32 XP = 0;
 	UPROPERTY(BlueprintReadWrite, Category="Save Data")
-	int32 AttributePoints = 0;
-	UPROPERTY(BlueprintReadWrite, Category="Save Data")
 	int32 SpellPoints = 0;
 };
 
@@ -43,10 +41,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AddToXP(const int32 InXP);
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	int32 GetAttributePoints() const;
-	UFUNCTION(BlueprintCallable)
-	void AddAttributePoints(const int32 InAttributePoints);
-	UFUNCTION(BlueprintCallable, BlueprintPure)
 	int32 GetSpellPoints() const;
 	UFUNCTION(BlueprintCallable)
 	void AddSpellPoints(const int32 InSpellPoints);
@@ -58,7 +52,6 @@ public:
 	FOnPlayerStatChangedSignature OnXPChangeDelegate;
 	FOnPlayerStatChangedSignature OnLevelChangeDelegate;
 	FOnPlayerStatChangedSignature OnLevelInitializedDelegate;
-	FOnPlayerStatChangedSignature OnAttributePointsChangeDelegate;
 	FOnPlayerStatChangedSignature OnSpellPointsChangeDelegate;
 
 	/** Start ISaveableInterface **/
@@ -76,8 +69,6 @@ protected:
 	int32 Level = 1;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_XP)
 	int32 XP = 0;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_AttributePoints)
-	int32 AttributePoints;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_SpellPoints)
 	int32 SpellPoints;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Debug")
@@ -87,14 +78,11 @@ private:
 	void InitializeLevel(const int32 InLevel);
 	void SetLevel(const int32 NewLevel);
 	void SetXP(const int32 InXP);
-	void SetAttributePoints(const int32 InAttributePoints);
 	void SetSpellPoints(const int32 InSpellPoints);
 	UFUNCTION()
 	void OnRep_Level(int32 OldLevel) const;
 	UFUNCTION()
 	void OnRep_XP(int32 OldXP) const;
-	UFUNCTION()
-	void OnRep_AttributePoints(int32 InAttributePoints) const;
 	UFUNCTION()
 	void OnRep_SpellPoints(int32 InSpellPoints) const;
 

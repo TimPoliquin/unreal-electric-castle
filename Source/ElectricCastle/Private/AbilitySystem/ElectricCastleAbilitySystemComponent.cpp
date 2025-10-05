@@ -28,23 +28,6 @@ void UElectricCastleAbilitySystemComponent::ForEachAbility(const FForEachAbility
 	}
 }
 
-void UElectricCastleAbilitySystemComponent::UpgradeAttribute(const FGameplayTag& AttributeTag)
-{
-	if (IPlayerInterface::GetAttributePoints(GetAvatarActor()) > 0)
-	{
-		ServerUpgradeAttribute(AttributeTag);
-	}
-}
-
-void UElectricCastleAbilitySystemComponent::ServerUpgradeAttribute_Implementation(const FGameplayTag& AttributeTag)
-{
-	FGameplayEventData Payload;
-	Payload.EventTag = AttributeTag;
-	Payload.EventMagnitude = 1.f;
-	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(GetAvatarActor(), AttributeTag, Payload);
-	IPlayerInterface::SpendAttributePoints(GetAvatarActor(), 1);
-}
-
 void UElectricCastleAbilitySystemComponent::ServerUpdateAbilityStatuses(const int32 Level)
 {
 	const FGameplayTag& EligibleStatusTag = FElectricCastleGameplayTags::Get().Abilities_Status_Eligible;

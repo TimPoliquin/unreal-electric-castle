@@ -410,22 +410,22 @@ FGameplayEffectContextHandle UElectricCastleAbilitySystemLibrary::ApplyDamageEff
 	);
 	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(
 		SpecHandle,
-		GameplayTags.Debuff_Stat_Chance,
+		GameplayTags.Effect_Debuff_Stat_Chance,
 		DamageEffectParams.DebuffChance
 	);
 	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(
 		SpecHandle,
-		GameplayTags.Debuff_Stat_Damage,
+		GameplayTags.Effect_Debuff_Stat_Damage,
 		DamageEffectParams.DebuffDamage
 	);
 	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(
 		SpecHandle,
-		GameplayTags.Debuff_Stat_Duration,
+		GameplayTags.Effect_Debuff_Stat_Duration,
 		DamageEffectParams.DebuffDuration
 	);
 	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(
 		SpecHandle,
-		GameplayTags.Debuff_Stat_Frequency,
+		GameplayTags.Effect_Debuff_Stat_Frequency,
 		DamageEffectParams.DebuffFrequency
 	);
 	DamageEffectParams.TargetAbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data);
@@ -1015,10 +1015,10 @@ void UElectricCastleAbilitySystemLibrary::SetIsCriticalHit(
 
 void UElectricCastleAbilitySystemLibrary::SetDebuff(
 	FGameplayEffectContextHandle& EffectContextHandle,
-	FGameplayTag& DebuffTypeTag,
-	float DebuffDamage,
-	float DebuffDuration,
-	float DebuffFrequency
+	const FGameplayTag& DebuffTypeTag,
+	const float DebuffDamage,
+	const float DebuffDuration,
+	const float DebuffFrequency
 )
 {
 	if (FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<FElectricCastleGameplayEffectContext*>(
