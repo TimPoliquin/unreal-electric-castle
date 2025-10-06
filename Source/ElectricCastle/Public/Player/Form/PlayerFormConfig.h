@@ -9,6 +9,8 @@
 #include "Engine/DataAsset.h"
 #include "PlayerFormConfig.generated.h"
 
+class UFormConfigLoadRequest;
+
 USTRUCT(BlueprintType)
 struct ELECTRICCASTLE_API FPlayerFormConfigRow
 {
@@ -17,6 +19,8 @@ struct ELECTRICCASTLE_API FPlayerFormConfigRow
 	EPlayerForm FormId;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(Categories="Player.Form"))
 	FGameplayTag FormTag = FGameplayTag::EmptyTag;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(Categories="Abilities.Form"))
+	FGameplayTag FormAbilityTag = FGameplayTag::EmptyTag;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSoftObjectPtr<USkeletalMesh> CharacterMesh;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -40,20 +44,8 @@ struct ELECTRICCASTLE_API FPlayerFormConfigRow
 		FormId = InForm;
 	}
 
-	bool IsLoaded() const
-	{
-		return
-			(CharacterMesh.IsNull() || CharacterMesh.IsValid()) &&
-			(AnimationBlueprint.IsNull() || AnimationBlueprint.IsValid()) &&
-			(PortraitImage.IsNull() || PortraitImage.IsValid());
-	}
-
-	bool IsValid() const
-	{
-		return
-			FormTag.IsValid() &&
-			FormId != EPlayerForm::None && FormId != EPlayerForm::Invalid_Max;
-	}
+	bool IsLoaded() const;
+	bool IsValid() const;
 
 	bool operator==(const FPlayerFormConfigRow& Other) const
 	{
@@ -82,7 +74,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FPlayerFormConfigRow GetPlayerFormConfigRowByTag(const FGameplayTag& FormTag) const;
 	UFUNCTION(BlueprintCallable)
+	UFormConfigLoadRequest* GetOrCreateLoadRequest(const FGameplayTag& FormTag);
 	FPlayerFormConfigRow GetPlayerFormConfigRowByFormId(const int32 FormId) const;
+	void LoadAsync(UFormConfigLoadRequest* LoadRequest);
 
 	UFUNCTION(BlueprintCallable)
 	TSubclassOf<UGameplayEffect> GetHealthChangeEffect() const { return HealthChangeEffect; }
@@ -117,4 +111,6 @@ private:
 	TMap<FGameplayTag, FPlayerFormConfigRow> PlayerFormConfigByTag;
 	UPROPERTY()
 	TMap<EPlayerForm, FPlayerFormConfigRow> PlayerFormConfigByEnum;
+	UPROPERTY()
+	TMap<FGameplayTag, UFormConfigLoadRequest*> FormLoadRequests;
 };

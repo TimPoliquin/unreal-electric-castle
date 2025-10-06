@@ -200,12 +200,7 @@ void AElectricCastlePlayerController::HandleFormChangeInputAction(const FInputAc
 			}
 			if (UElectricCastleAbilitySystemComponent* LocalAbilitySystem = GetAbilitySystemComponent())
 			{
-				const FGameplayTag& ChangeFormTag = FElectricCastleGameplayTags::Get().Abilities_Other_ChangeForm;
-				const FGameplayAbilitySpec* Spec = LocalAbilitySystem->GetSpecFromAbilityTag(ChangeFormTag);
-				FGameplayEventData EventData;
-				EventData.Instigator = this;
-				EventData.Target = GetPawn();
-				LocalAbilitySystem->TriggerAbilityFromGameplayEvent(Spec->Handle, LocalAbilitySystem->AbilityActorInfo.Get(), FormRow.FormTag, &EventData, *LocalAbilitySystem);
+				LocalAbilitySystem->TryActivateAbilitiesByTag(FormRow.FormAbilityTag.GetSingleTagContainer());
 			}
 		}
 	}

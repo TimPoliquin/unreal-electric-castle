@@ -4,7 +4,23 @@
 #include "Player/Form/PlayerFormConfig.h"
 
 #include "ElectricCastle/ElectricCastleLogChannels.h"
+#include "Player/Form/FormConfigLoadRequest.h"
 #include "Tags/ElectricCastleGameplayTags.h"
+
+bool FPlayerFormConfigRow::IsLoaded() const
+{
+	return
+		(CharacterMesh.IsNull() || CharacterMesh.IsValid()) &&
+		(AnimationBlueprint.IsNull() || AnimationBlueprint.IsValid()) &&
+		(PortraitImage.IsNull() || PortraitImage.IsValid());
+}
+
+bool FPlayerFormConfigRow::IsValid() const
+{
+	return
+		FormTag.IsValid() &&
+		FormId != EPlayerForm::None && FormId != EPlayerForm::Invalid_Max;
+}
 
 UPlayerFormConfig::UPlayerFormConfig()
 {
@@ -42,12 +58,27 @@ void UPlayerFormConfig::Initialize()
 
 FPlayerFormConfigRow UPlayerFormConfig::GetPlayerFormConfigRowByTag(const FGameplayTag& FormTag) const
 {
-	if (PlayerFormConfigByTag.Contains(FormTag))
+	if (FormTag.IsValid() && PlayerFormConfigByTag.Contains(FormTag))
 	{
 		return PlayerFormConfigByTag[FormTag];
 	}
 	UE_LOG(LogElectricCastle, Warning, TEXT("[%s] Unable to find player form with provided tag: %s"), *GetName(), *FormTag.ToString())
 	return FPlayerFormConfigRow(EPlayerForm::None);
+}
+
+UFormConfigLoadRequest* UPlayerFormConfig::GetOrCreateLoadRequest(const FGameplayTag& FormTag)
+{
+	if (!FormTag.IsValid())
+	{
+		return nullptr;
+	}
+	if (FormLoadRequests.Contains(FormTag))
+	{
+		return FormLoadRequests[FormTag];
+	}
+	UFormConfigLoadRequest* LoadRequest = UFormConfigLoadRequest::Create(FormTag, this);
+	FormLoadRequests.Add(FormTag, LoadRequest);
+	return LoadRequest;
 }
 
 FPlayerFormConfigRow UPlayerFormConfig::GetPlayerFormConfigRowByFormId(const int32 FormId) const
@@ -63,4 +94,40 @@ FPlayerFormConfigRow UPlayerFormConfig::GetPlayerFormConfigRowByFormId(const int
 		return PlayerFormConfigByEnum[Form];
 	}
 	return FPlayerFormConfigRow(EPlayerForm::None);
+}
+
+void UPlayerFormConfig::LoadAsync(UFormConfigLoadRequest* LoadRequest)
+{
+	const FPlayerFormConfigRow& Row = GetPlayerFormConfigRowByTag(LoadRequest->FormTag);
+	if (!Row.IsValid() || Row.IsLoaded())
+	{
+		LoadRequest->Notify();
+		return;
+	}
+	const FGameplayTag& FormTag = LoadRequest->FormTag;
+	FLoadSoftObjectPathAsyncDelegate LoadDelegate;
+	LoadDelegate.BindLambda([this, FormTag](FSoftObjectPath ObjectPath, UObject* Loaded)
+		{
+			if (FormLoadRequests.Contains(FormTag))
+			{
+				if (UFormConfigLoadRequest* CurrentLoadRequest = FormLoadRequests[FormTag]; CurrentLoadRequest->ShouldNotify())
+				{
+					CurrentLoadRequest->Notify();
+					FormLoadRequests.Remove(FormTag);
+				}
+			}
+		}
+	);
+	if (!Row.CharacterMesh.IsNull())
+	{
+		Row.CharacterMesh.LoadAsync(LoadDelegate);
+	}
+	if (!Row.AnimationBlueprint.IsNull())
+	{
+		Row.AnimationBlueprint.LoadAsync(LoadDelegate);
+	}
+	if (!Row.PortraitImage.IsNull())
+	{
+		Row.PortraitImage.LoadAsync(LoadDelegate);
+	}
 }

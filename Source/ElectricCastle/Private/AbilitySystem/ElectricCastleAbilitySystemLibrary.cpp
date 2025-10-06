@@ -19,20 +19,13 @@
 #include "Player/ElectricCastlePlayerState.h"
 #include "Tags/ElectricCastleGameplayTags.h"
 #include "UI/HUD/ElectricCastleHUD.h"
-#include "UI/WidgetController/ElectricCastleWidgetController.h"
 #include "Utils/TagUtils.h"
 
 UOverlayWidgetController* UElectricCastleAbilitySystemLibrary::GetOverlayWidgetController(const UObject* WorldContextObject)
 {
-	if (FWidgetControllerParams WidgetControllerParams; GetWidgetControllerParams(
-		WorldContextObject,
-		WidgetControllerParams
-	))
+	if (const AElectricCastleHUD* HUD = GetElectricCastleHUD(WorldContextObject))
 	{
-		if (AElectricCastleHUD* HUD = GetElectricCastleHUD(WorldContextObject))
-		{
-			return HUD->GetOverlayWidgetController(WidgetControllerParams);
-		}
+		return HUD->GetOverlayWidgetController();
 	}
 	return nullptr;
 }
@@ -41,15 +34,9 @@ UAttributeMenuWidgetController* UElectricCastleAbilitySystemLibrary::GetAttribut
 	const UObject* WorldContextObject
 )
 {
-	if (FWidgetControllerParams WidgetControllerParams; GetWidgetControllerParams(
-		WorldContextObject,
-		WidgetControllerParams
-	))
+	if (const AElectricCastleHUD* HUD = GetElectricCastleHUD(WorldContextObject))
 	{
-		if (AElectricCastleHUD* HUD = GetElectricCastleHUD(WorldContextObject))
-		{
-			return HUD->GetAttributeMenuWidgetController(WidgetControllerParams);
-		}
+		return HUD->GetAttributeMenuWidgetController();
 	}
 	return nullptr;
 }
@@ -58,15 +45,9 @@ USpellMenuWidgetController* UElectricCastleAbilitySystemLibrary::GetSpellMenuWid
 	const UObject* WorldContextObject
 )
 {
-	if (FWidgetControllerParams WidgetControllerParams; GetWidgetControllerParams(
-		WorldContextObject,
-		WidgetControllerParams
-	))
+	if (const AElectricCastleHUD* HUD = GetElectricCastleHUD(WorldContextObject))
 	{
-		if (AElectricCastleHUD* HUD = GetElectricCastleHUD(WorldContextObject))
-		{
-			return HUD->GetSpellMenuWidgetController(WidgetControllerParams);
-		}
+		return HUD->GetSpellMenuWidgetController();
 	}
 	return nullptr;
 }
@@ -540,23 +521,6 @@ bool UElectricCastleAbilitySystemLibrary::IsAbilityEquipped(
 	return GetStatusTagByAbilityTag(AbilitySystemComponent, AbilityTag).MatchesTagExact(
 		FElectricCastleGameplayTags::Get().Abilities_Status_Equipped
 	);
-}
-
-bool UElectricCastleAbilitySystemLibrary::GetWidgetControllerParams(
-	const UObject* WorldContextObject,
-	FWidgetControllerParams& FWidgetControllerParams
-)
-{
-	if (APlayerController* PlayerController = UGameplayStatics::GetPlayerController(WorldContextObject, 0))
-	{
-		AElectricCastlePlayerState* PlayerState = PlayerController->GetPlayerState<AElectricCastlePlayerState>();
-		FWidgetControllerParams.PlayerController = PlayerController;
-		FWidgetControllerParams.PlayerState = PlayerState;
-		FWidgetControllerParams.AbilitySystemComponent = PlayerState->GetElectricCastleAbilitySystemComponent();
-		FWidgetControllerParams.AttributeSet = PlayerState->GetAttributeSet();
-		return true;
-	}
-	return false;
 }
 
 AElectricCastleHUD* UElectricCastleAbilitySystemLibrary::GetElectricCastleHUD(const UObject* WorldContextObject)

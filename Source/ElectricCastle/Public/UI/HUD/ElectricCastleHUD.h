@@ -31,7 +31,6 @@ class ELECTRICCASTLE_API AElectricCastleHUD : public AHUD
 	GENERATED_BODY()
 
 public:
-	UOverlayWidgetController* GetOverlayWidgetController(const FWidgetControllerParams& WidgetControllerParams);
 	void InitializeWidgets(
 		AActor* InPlayer,
 		APlayerController* InPlayerController,
@@ -40,12 +39,11 @@ public:
 		UElectricCastleAttributeSet* InAttributeSet
 	);
 
+	UOverlayWidgetController* GetOverlayWidgetController() const;
 	UAttributeMenuWidgetController* GetAttributeMenuWidgetController(
-		const FWidgetControllerParams& WidgetControllerParams
-	);
+	) const;
 	USpellMenuWidgetController* GetSpellMenuWidgetController(
-		const FWidgetControllerParams& WidgetControllerParams
-	);
+	) const;
 	UFUNCTION(BlueprintCallable)
 	UMVVM_Inventory* GetInventoryViewModel();
 
@@ -111,6 +109,10 @@ private:
 	void InitializeInventoryViewModel();
 
 	bool bInitialized = false;
+
+	void InitializeOverlayWidgetController(const FWidgetControllerParams& Params);
+	void InitializeAttributeWidgetController(const FWidgetControllerParams& Params);
+	void InitializeSpellMenuWidgetController(const FWidgetControllerParams& Params);
 };
 
 template <typename T>

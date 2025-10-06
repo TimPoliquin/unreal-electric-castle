@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameplayEffect.h"
 #include "GameplayTagContainer.h"
+#include "PlayerFormConfig.h"
 #include "Components/ActorComponent.h"
 #include "PlayerFormChangeComponent.generated.h"
 
@@ -21,12 +22,6 @@ struct ELECTRICCASTLE_API FPlayerFormChangeEventPayload
 	FGameplayTag OldFormTag = FGameplayTag::EmptyTag;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FGameplayTag NewFormTag = FGameplayTag::EmptyTag;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TObjectPtr<USkeletalMesh> CharacterMesh;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<UAnimInstance> AnimationBlueprintClass;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TObjectPtr<UTexture2D> PortraitImage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<UGameplayEffect> FormAttributes;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -51,9 +46,9 @@ class ELECTRICCASTLE_API UPlayerFormChangeComponent : public UActorComponent
 
 public:
 	UPlayerFormChangeComponent();
-
-	UFUNCTION(BlueprintCallable)
-	void ChangeForm_Async(const FGameplayTag& FormTag);
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	UFUNCTION(BlueprintCallable, Server, Reliable)
+	void ChangeForm(const FGameplayTag& NewFormTag);
 
 	UFUNCTION(BlueprintCallable)
 	void FormChange_PlayEffect(const FPlayerFormChangeEventPayload& Payload);
@@ -76,15 +71,20 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Effect")
 	TObjectPtr<USoundBase> FormChangeSound;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Form", meta=(Categories="Player.Form"))
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Form", Replicated, ReplicatedUsing=OnRep_CurrentFormTag, meta=(Categories="Player.Form"))
 	FGameplayTag CurrentFormTag = FGameplayTag::EmptyTag;
+	UFUNCTION()
+	void OnRep_CurrentFormTag(const FGameplayTag& OldValue) const;
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Form")
 	FActiveGameplayEffectHandle CurrentFormEffectHandle;
 
 private:
+	UFUNCTION()
+	void OnFormDataLoaded(const FPlayerFormConfigRow& FormConfigRow);
 	UPlayerFormConfig* GetPlayerFormConfig() const;
 	FPlayerFormConfigRow GetPlayerFormConfigRow(const FGameplayTag& FormTag) const;
 	USkeletalMeshComponent* GetMesh() const;
+	bool IsFormLoaded(const FGameplayTag& FormTag) const;
 
 	UPROPERTY()
 	TWeakObjectPtr<USkeletalMeshComponent> CharacterMeshComponent;

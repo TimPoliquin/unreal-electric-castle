@@ -70,6 +70,8 @@ AElectricCastlePlayerCharacter::AElectricCastlePlayerCharacter()
 	FormChangeComponent->OnPlayerFormChange.AddDynamic(this, &AElectricCastlePlayerCharacter::OnFormChange);
 	GetMesh()->SetCollisionResponseToChannel(ECC_Target, ECR_Ignore);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Target, ECR_Ignore);
+	GetMesh()->SetIsReplicated(true);
+	bReplicates = true;
 }
 
 void AElectricCastlePlayerCharacter::BeginPlay()
@@ -114,6 +116,11 @@ void AElectricCastlePlayerCharacter::Tick(float DeltaTime)
 void AElectricCastlePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+}
+
+void AElectricCastlePlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 }
 
 UElectricCastleAttributeSet* AElectricCastlePlayerCharacter::GetAttributeSet() const

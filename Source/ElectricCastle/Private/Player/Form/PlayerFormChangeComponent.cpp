@@ -13,61 +13,30 @@
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
+#include "Player/Form/FormConfigLoadRequest.h"
 #include "Player/Form/PlayerFormConfig.h"
 #include "Tags/ElectricCastleGameplayTags.h"
 
 UPlayerFormChangeComponent::UPlayerFormChangeComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
+	SetIsReplicatedByDefault(true);
 }
 
-void UPlayerFormChangeComponent::ChangeForm_Async(const FGameplayTag& FormTag)
+void UPlayerFormChangeComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
-	if (FormTag.MatchesTagExact(CurrentFormTag))
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(UPlayerFormChangeComponent, CurrentFormTag);
+}
+
+void UPlayerFormChangeComponent::ChangeForm_Implementation(const FGameplayTag& NewFormTag)
+{
+	if (GetOwner()->HasAuthority() && !CurrentFormTag.MatchesTagExact(NewFormTag))
 	{
-		return;
-	}
-	const FPlayerFormConfigRow& Row = GetPlayerFormConfigRow(FormTag);
-	if (!Row.IsValid())
-	{
-		UE_LOG(LogElectricCastle, Warning, TEXT("[%s:%s] Failed to change form -- invalid game data or form config! %s"), *GetOwner()->GetName(), *GetName(), *FormTag.ToString());
-		return;
-	}
-	const FGameplayTag OldFormTag = CurrentFormTag;
-	FLoadSoftObjectPathAsyncDelegate FormLoad;
-	FormLoad.BindLambda([this, FormTag, OldFormTag](FSoftObjectPath ObjectPath, UObject* Loaded)
-	{
-		const UPlayerFormConfig* FormConfig = GetPlayerFormConfig();
-		const FPlayerFormConfigRow& Row = GetPlayerFormConfigRow(FormTag);
-		if (Row.IsLoaded())
-		{
-			FPlayerFormChangeEventPayload EventPayload;
-			EventPayload.OldFormTag = OldFormTag;
-			EventPayload.NewFormTag = FormTag;
-			EventPayload.CharacterMesh = Row.CharacterMesh.Get();
-			EventPayload.AnimationBlueprintClass = Row.AnimationBlueprint.Get();
-			EventPayload.PortraitImage = Row.PortraitImage.Get();
-			EventPayload.FormAttributes = Row.FormAttributes;
-			if (FormConfig)
-			{
-				EventPayload.HealthChangeEffect = FormConfig->GetHealthChangeEffect();
-				EventPayload.ManaChangeEffect = FormConfig->GetManaChangeEffect();
-			}
-			CurrentFormTag = FormTag;
-			OnPlayerFormChange.Broadcast(EventPayload);
-		}
-	});
-	if (!Row.CharacterMesh.IsNull())
-	{
-		Row.CharacterMesh.LoadAsync(FormLoad);
-	}
-	if (!Row.AnimationBlueprint.IsNull())
-	{
-		Row.AnimationBlueprint.LoadAsync(FormLoad);
-	}
-	if (!Row.PortraitImage.IsNull())
-	{
-		Row.PortraitImage.LoadAsync(FormLoad);
+		const FGameplayTag& OldValue = CurrentFormTag;
+		CurrentFormTag = NewFormTag;
+		OnRep_CurrentFormTag(OldValue);
 	}
 }
 
@@ -99,8 +68,36 @@ void UPlayerFormChangeComponent::FormChange_PlayEffect(const FPlayerFormChangeEv
 
 void UPlayerFormChangeComponent::FormChange_UpdateCharacterMesh(const FPlayerFormChangeEventPayload& Payload)
 {
-	GetMesh()->SetSkeletalMesh(Payload.CharacterMesh);
-	GetMesh()->SetAnimInstanceClass(Payload.AnimationBlueprintClass);
+	if (UPlayerFormConfig* FormConfig = GetPlayerFormConfig())
+	{
+		UFormConfigLoadRequest* LoadRequest = FormConfig->GetOrCreateLoadRequest(Payload.NewFormTag);
+		LoadRequest->Callback.AddUniqueDynamic(this, &UPlayerFormChangeComponent::OnFormDataLoaded);
+		FormConfig->LoadAsync(LoadRequest);
+	}
+}
+
+void UPlayerFormChangeComponent::OnRep_CurrentFormTag(const FGameplayTag& OldValue) const
+{
+	if (!CurrentFormTag.IsValid())
+	{
+		return;
+	}
+	const FPlayerFormConfigRow& Row = GetPlayerFormConfigRow(CurrentFormTag);
+	if (!Row.IsValid())
+	{
+		UE_LOG(LogElectricCastle, Warning, TEXT("[%s:%s] Failed to change form -- invalid game data or form config! %s"), *GetOwner()->GetName(), *GetName(), *CurrentFormTag.ToString());
+		return;
+	}
+	FPlayerFormChangeEventPayload EventPayload;
+	EventPayload.OldFormTag = OldValue;
+	EventPayload.NewFormTag = CurrentFormTag;
+	EventPayload.FormAttributes = Row.FormAttributes;
+	if (const UPlayerFormConfig* FormConfig = GetPlayerFormConfig())
+	{
+		EventPayload.HealthChangeEffect = FormConfig->GetHealthChangeEffect();
+		EventPayload.ManaChangeEffect = FormConfig->GetManaChangeEffect();
+	}
+	OnPlayerFormChange.Broadcast(EventPayload);
 }
 
 void UPlayerFormChangeComponent::FormChange_UpdateAbilities(const FPlayerFormChangeEventPayload& Payload)
@@ -112,7 +109,7 @@ void UPlayerFormChangeComponent::FormChange_UpdateAttributes(const FPlayerFormCh
 	if (UElectricCastleAbilitySystemComponent* AbilitySystemComponent = Cast<UElectricCastleAbilitySystemComponent>(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetOwner())))
 	{
 		bool AttributeFound;
-		int32 CharacterLevel = IElectricCastleAbilitySystemInterface::GetCharacterLevel(GetOwner());
+		const int32 CharacterLevel = IElectricCastleAbilitySystemInterface::GetCharacterLevel(GetOwner());
 		const float OldMaxHealth = AbilitySystemComponent->GetGameplayAttributeValue(UElectricCastleAttributeSet::GetMaxHealthAttribute(), AttributeFound);
 		const float OldMaxMana = AbilitySystemComponent->GetGameplayAttributeValue(UElectricCastleAttributeSet::GetMaxManaAttribute(), AttributeFound);
 		if (CurrentFormEffectHandle.IsValid())
@@ -159,6 +156,15 @@ USkeletalMeshComponent* UPlayerFormChangeComponent::GetMesh() const
 	return nullptr;
 }
 
+bool UPlayerFormChangeComponent::IsFormLoaded(const FGameplayTag& FormTag) const
+{
+	if (const FPlayerFormConfigRow& FormConfig = GetPlayerFormConfigRow(FormTag); FormConfig.IsValid())
+	{
+		return FormConfig.CharacterMesh.IsValid() && FormConfig.AnimationBlueprint.IsValid();
+	}
+	return false;
+}
+
 UPlayerFormConfig* UPlayerFormChangeComponent::GetPlayerFormConfig() const
 {
 	if (const UElectricCastleGameDataSubsystem* GameData = UElectricCastleGameDataSubsystem::Get(this))
@@ -175,4 +181,11 @@ FPlayerFormConfigRow UPlayerFormChangeComponent::GetPlayerFormConfigRow(const FG
 		return FormConfig->GetPlayerFormConfigRowByTag(FormTag);
 	}
 	return FPlayerFormConfigRow(EPlayerForm::None);
+}
+
+
+void UPlayerFormChangeComponent::OnFormDataLoaded(const FPlayerFormConfigRow& FormConfigRow)
+{
+	GetMesh()->SetSkeletalMesh(FormConfigRow.CharacterMesh.Get());
+	GetMesh()->SetAnimInstanceClass(FormConfigRow.AnimationBlueprint.Get());
 }

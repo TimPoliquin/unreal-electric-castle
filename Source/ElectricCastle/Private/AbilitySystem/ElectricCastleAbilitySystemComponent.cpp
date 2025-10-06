@@ -427,16 +427,16 @@ void UElectricCastleAbilitySystemComponent::AddCharacterAbilities(
 	for (const TSubclassOf AbilityClass : StartupAbilities)
 	{
 		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass, 1);
-		FGameplayTag EquippedTag = FElectricCastleGameplayTags::Get().Abilities_Status_Equipped;
 		if (const UElectricCastleGameplayAbility* AuraAbility = Cast<UElectricCastleGameplayAbility>(AbilitySpec.Ability))
 		{
 			for (FGameplayTag StartupTag : AuraAbility->GetStartupInputTag())
 			{
 				AbilitySpec.GetDynamicSpecSourceTags().AddTag(StartupTag);
 			}
-			AbilitySpec.GetDynamicSpecSourceTags().AddTag(EquippedTag);
-			GiveAbility(AbilitySpec);
 		}
+		FGameplayTag EquippedTag = FElectricCastleGameplayTags::Get().Abilities_Status_Equipped;
+		AbilitySpec.GetDynamicSpecSourceTags().AddTag(EquippedTag);
+		GiveAbility(AbilitySpec);
 	}
 	for (const TSubclassOf PassiveAbilityClass : StartupPassiveAbilities)
 	{

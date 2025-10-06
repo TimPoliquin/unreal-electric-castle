@@ -117,6 +117,15 @@ struct FElectricCastleGameplayTags
 	FGameplayTag Abilities_Attack;
 	FGameplayTag Abilities_HitReact;
 	FGameplayTag Abilities_Summon;
+	FGameplayTag Abilities_Form;
+	FGameplayTag Abilities_Form_Barbarian;
+	FGameplayTag Abilities_Form_Egyptian;
+	FGameplayTag Abilities_Form_Futureman;
+	FGameplayTag Abilities_Form_Highlander;
+	FGameplayTag Abilities_Form_Hippie;
+	FGameplayTag Abilities_Form_Knight;
+	FGameplayTag Abilities_Form_Native;
+	FGameplayTag Abilities_Form_Roman;
 
 	FGameplayTag Abilities_Offensive;
 	FGameplayTag Abilities_Offensive_Fire_FireBolt;
@@ -128,7 +137,6 @@ struct FElectricCastleGameplayTags
 	FGameplayTag Abilities_Passive_HaloOfProtection;
 	FGameplayTag Abilities_Passive_LifeSiphon;
 	FGameplayTag Abilities_Passive_ManaSiphon;
-	FGameplayTag Abilities_Other_ChangeForm;
 	FGameplayTag Abilities_Other_Interact;
 	FGameplayTag Abilities_Other_Cancel;
 	FGameplayTag Abilities_Fishing;
@@ -147,7 +155,7 @@ struct FElectricCastleGameplayTags
 	FGameplayTag Event_Montage_Electrocute;
 
 	/** Cooldown **/
-	FGameplayTag Cooldown_Other_ChangeForm;
+	FGameplayTag Cooldown_Form;
 	FGameplayTag Cooldown_Fire_FireBolt;
 	FGameplayTag Cooldown_Fire_FireBlast;
 	FGameplayTag Cooldown_Lightning_Electrocute;

@@ -43,6 +43,7 @@ public:
 	AElectricCastlePlayerCharacter();
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual UElectricCastleAttributeSet* GetAttributeSet() const override;
 
 	virtual void PossessedBy(AController* NewController) override;

@@ -14,6 +14,10 @@
 
 void USpellMenuWidgetController::BroadcastInitialValues()
 {
+	if (!GetAbilitySystemComponent())
+	{
+		return;
+	}
 	if (GetAbilitySystemComponent()->HasFiredOnAbilitiesGivenDelegate())
 	{
 		BroadcastAbilityInfo();

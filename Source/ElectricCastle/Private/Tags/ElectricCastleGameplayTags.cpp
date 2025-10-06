@@ -325,6 +325,15 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FName("Abilities.Summon"),
 		FString("Summon Abilities parent tag")
 	);
+	Instance.Abilities_Form = TagManager.AddNativeGameplayTag(FName("Abilities.Form"));
+	Instance.Abilities_Form_Barbarian = TagManager.AddNativeGameplayTag(FName("Abilities.Form.Barbarian"));
+	Instance.Abilities_Form_Egyptian = TagManager.AddNativeGameplayTag(FName("Abilities.Form.Egyptian"));
+	Instance.Abilities_Form_Futureman = TagManager.AddNativeGameplayTag(FName("Abilities.Form.Futureman"));
+	Instance.Abilities_Form_Highlander = TagManager.AddNativeGameplayTag(FName("Abilities.Form.Highlander"));
+	Instance.Abilities_Form_Hippie = TagManager.AddNativeGameplayTag(FName("Abilities.Form.Hippie"));
+	Instance.Abilities_Form_Knight = TagManager.AddNativeGameplayTag(FName("Abilities.Form.Knight"));
+	Instance.Abilities_Form_Native = TagManager.AddNativeGameplayTag(FName("Abilities.Form.Native"));
+	Instance.Abilities_Form_Roman = TagManager.AddNativeGameplayTag(FName("Abilities.Form.Roman"));
 	Instance.Abilities_Offensive = TagManager.AddNativeGameplayTag(
 		FName("Abilities.Offensive"),
 		FString("Root tag for offensive abilities")
@@ -364,10 +373,6 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 	Instance.Abilities_Passive_ManaSiphon = TagManager.AddNativeGameplayTag(
 		FName("Abilities.Passive.ManaSiphon"),
 		FString("Passive 3 ability tag")
-	);
-	Instance.Abilities_Other_ChangeForm = TagManager.AddNativeGameplayTag(
-		FName("Abilities.Other.ChangeForm"),
-		FString("Change the form of the player")
 	);
 	Instance.Abilities_Other_Interact = TagManager.AddNativeGameplayTag(
 		FName("Abilities.Other.Interact"),
@@ -427,8 +432,8 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FString("Event fired during electrocute montage")
 	);
 	/** Cooldown Tags **/
-	Instance.Cooldown_Other_ChangeForm = TagManager.AddNativeGameplayTag(
-		FName("Cooldown.Other.ChangeForm"),
+	Instance.Cooldown_Form = TagManager.AddNativeGameplayTag(
+		FName("Cooldown.Form"),
 		FString("Change Form ability cooldown tag")
 	);
 	Instance.Cooldown_Fire_FireBolt = TagManager.AddNativeGameplayTag(
