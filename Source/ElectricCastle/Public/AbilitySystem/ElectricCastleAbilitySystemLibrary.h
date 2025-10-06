@@ -132,6 +132,8 @@ public:
 	UFUNCTION(BlueprintPure, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")
 	static float GetDebuffDamage(const FGameplayEffectContextHandle& EffectContextHandle);
 	UFUNCTION(BlueprintPure, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")
+	static int32 GetDebuffLevel(const FGameplayEffectContextHandle& EffectContextHandle);
+	UFUNCTION(BlueprintPure, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")
 	static float GetDebuffDuration(const FGameplayEffectContextHandle& EffectContextHandle);
 	UFUNCTION(BlueprintPure, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")
 	static float GetDebuffFrequency(const FGameplayEffectContextHandle& EffectContextHandle);
@@ -159,10 +161,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")
 	static void SetDebuff(
 		FGameplayEffectContextHandle& EffectContextHandle,
-		FGameplayTag& DebuffTypeTag,
+		const FGameplayTag& DebuffTypeTag,
+		int32 Level,
 		float DebuffDamage,
-		float DebuffDuration,
-		float DebuffFrequency
+		float DebuffDuration, float DebuffFrequency
 	);
 	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")
 	static void SetIsSuccessfulDebuff(

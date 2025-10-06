@@ -28,13 +28,7 @@ private:
 		const FAggregatorEvaluateParameters& EvaluateParameters
 	);
 
-	static float GetDamageTypeDamage(
-		const FGameplayEffectCustomExecutionParameters& ExecutionParams,
-		const FAggregatorEvaluateParameters& EvaluateParameters,
-		const FGameplayTag& DamageTypeTag
-	);
-
-	static bool IsAttackBlockedByTarget(
+	static bool IsAttackEvadedByTarget(
 		const FGameplayEffectCustomExecutionParameters& ExecutionParams,
 		const FAggregatorEvaluateParameters& EvaluateParameters
 	);
@@ -45,11 +39,6 @@ private:
 	);
 
 	static bool IsCriticalHitOnTarget(
-		const FGameplayEffectCustomExecutionParameters& ExecutionParams,
-		const FAggregatorEvaluateParameters& EvaluateParameters
-	);
-
-	static float GetEffectiveCriticalHitDamage(
 		const FGameplayEffectCustomExecutionParameters& ExecutionParams,
 		const FAggregatorEvaluateParameters& EvaluateParameters
 	);
@@ -73,4 +62,7 @@ private:
 		const FGameplayEffectCustomExecutionParameters& ExecutionParams,
 		float& OutRadialDamage
 	);
+
+	static bool IsPhysicalAttack(const FGameplayEffectCustomExecutionParameters& ExecutionParams);
+	static bool IsMagicalAttack(const FGameplayEffectCustomExecutionParameters& ExecutionParams);
 };

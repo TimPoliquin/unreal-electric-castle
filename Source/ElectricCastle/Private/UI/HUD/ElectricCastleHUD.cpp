@@ -16,17 +16,14 @@
 void AElectricCastleHUD::BeginPlay()
 {
 	Super::BeginPlay();
+	OverlayWidgetController = NewObject<UOverlayWidgetController>(this, OverlayWidgetControllerClass);
+	AttributeMenuWidgetController = NewObject<UAttributeMenuWidgetController>(this, AttributeMenuWidgetControllerClass);
+	SpellMenuWidgetController = NewObject<USpellMenuWidgetController>(this, SpellMenuWidgetControllerClass);
 }
 
 
-UOverlayWidgetController* AElectricCastleHUD::GetOverlayWidgetController(const FWidgetControllerParams& WidgetControllerParams)
+UOverlayWidgetController* AElectricCastleHUD::GetOverlayWidgetController() const
 {
-	if (OverlayWidgetController == nullptr)
-	{
-		OverlayWidgetController = NewObject<UOverlayWidgetController>(this, OverlayWidgetControllerClass);
-		OverlayWidgetController->SetWidgetControllerParams(WidgetControllerParams);
-		OverlayWidgetController->BindCallbacksToDependencies();
-	}
 	return OverlayWidgetController;
 }
 
@@ -60,52 +57,34 @@ void AElectricCastleHUD::InitializeWidgets(
 	MenuWidget->OnAuraMenuClosed.AddDynamic(this, &AElectricCastleHUD::OnMenuClosed);
 	MenuWidget->SetVisibility(ESlateVisibility::Hidden);
 	MenuWidget->AddToViewport();
-	if (UElectricCastleAbilitySystemComponent* AbilitySystemComponent = Cast<UElectricCastleAbilitySystemComponent>(InAbilitySystemComponent))
+	auto OnAbilitySystemReadyCallback = [&]()
 	{
 		const FWidgetControllerParams Params = FWidgetControllerParams(InPlayer, InPlayerController, InPlayerState, InAbilitySystemComponent, InAttributeSet);
+		InitializeOverlayWidgetController(Params);
+		InitializeAttributeWidgetController(Params);
+		InitializeSpellMenuWidgetController(Params);
+	};
+	if (UElectricCastleAbilitySystemComponent* AbilitySystemComponent = Cast<UElectricCastleAbilitySystemComponent>(InAbilitySystemComponent))
+	{
 		if (AbilitySystemComponent->HasFiredOnAbilitiesGivenDelegate())
 		{
-			GetOverlayWidgetController(Params)->BroadcastInitialValues();
-			GetAttributeMenuWidgetController(Params)->BroadcastInitialValues();
-			GetSpellMenuWidgetController(Params)->BroadcastInitialValues();
+			OnAbilitySystemReadyCallback();
 		}
 		else
 		{
-			AbilitySystemComponent->OnAbilitiesGivenDelegate.AddLambda([this, Params]()
-			{
-				GetOverlayWidgetController(Params)->BroadcastInitialValues();
-				GetAttributeMenuWidgetController(Params)->BroadcastInitialValues();
-			});
+			AbilitySystemComponent->OnAbilitiesGivenDelegate.AddLambda(OnAbilitySystemReadyCallback);
 		}
 	}
 	bInitialized = true;
 }
 
-UAttributeMenuWidgetController* AElectricCastleHUD::GetAttributeMenuWidgetController(
-	const FWidgetControllerParams& WidgetControllerParams
-)
+UAttributeMenuWidgetController* AElectricCastleHUD::GetAttributeMenuWidgetController() const
 {
-	if (AttributeMenuWidgetController == nullptr)
-	{
-		AttributeMenuWidgetController = InitializeWidgetController<UAttributeMenuWidgetController>(
-			AttributeMenuWidgetControllerClass,
-			WidgetControllerParams
-		);
-	}
 	return AttributeMenuWidgetController;
 }
 
-USpellMenuWidgetController* AElectricCastleHUD::GetSpellMenuWidgetController(
-	const FWidgetControllerParams& WidgetControllerParams
-)
+USpellMenuWidgetController* AElectricCastleHUD::GetSpellMenuWidgetController() const
 {
-	if (SpellMenuWidgetController == nullptr)
-	{
-		SpellMenuWidgetController = InitializeWidgetController<USpellMenuWidgetController>(
-			SpellMenuWidgetControllerClass,
-			WidgetControllerParams
-		);
-	}
 	return SpellMenuWidgetController;
 }
 
@@ -144,15 +123,7 @@ UAuraOverlayWidget* AElectricCastleHUD::CreateAuraWidget(
 	);
 
 	UAuraOverlayWidget* Widget = CreateWidget<UAuraOverlayWidget>(GetWorld(), WidgetClass);
-
-	const FWidgetControllerParams WidgetControllerParams(
-		InOwner,
-		InPlayerController,
-		InPlayerState,
-		InAbilitySystemComponent,
-		InAttributeSet
-	);
-	UOverlayWidgetController* WidgetController = GetOverlayWidgetController(WidgetControllerParams);
+	UOverlayWidgetController* WidgetController = GetOverlayWidgetController();
 	Widget->SetWidgetController(WidgetController);
 	Widget->AddToViewport();
 	return Widget;
@@ -163,4 +134,25 @@ void AElectricCastleHUD::InitializeInventoryViewModel()
 	InventoryViewModel = NewObject<UMVVM_Inventory>(this, InventoryViewModelClass);
 	InventoryViewModel->InitializeInventoryItems();
 	InventoryViewModel->InitializeDependencies();
+}
+
+void AElectricCastleHUD::InitializeOverlayWidgetController(const FWidgetControllerParams& Params)
+{
+	OverlayWidgetController->SetWidgetControllerParams(Params);
+	OverlayWidgetController->BindCallbacksToDependencies();
+	OverlayWidgetController->BroadcastInitialValues();
+}
+
+void AElectricCastleHUD::InitializeAttributeWidgetController(const FWidgetControllerParams& Params)
+{
+	AttributeMenuWidgetController->SetWidgetControllerParams(Params);
+	AttributeMenuWidgetController->BindCallbacksToDependencies();
+	AttributeMenuWidgetController->BroadcastInitialValues();
+}
+
+void AElectricCastleHUD::InitializeSpellMenuWidgetController(const FWidgetControllerParams& Params)
+{
+	SpellMenuWidgetController->SetWidgetControllerParams(Params);
+	SpellMenuWidgetController->BindCallbacksToDependencies();
+	SpellMenuWidgetController->BroadcastInitialValues();
 }

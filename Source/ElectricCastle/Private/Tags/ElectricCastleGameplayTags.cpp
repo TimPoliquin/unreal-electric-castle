@@ -3,6 +3,7 @@
 
 #include "Tags/ElectricCastleGameplayTags.h"
 #include "GameplayTagsManager.h"
+#include "ElectricCastle/ElectricCastleLogChannels.h"
 
 FElectricCastleGameplayTags FElectricCastleGameplayTags::Instance;
 
@@ -13,63 +14,63 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		return;
 	}
 	UGameplayTagsManager& TagManager = UGameplayTagsManager::Get();
+	Instance.Attributes_Primary_MaxHealth = TagManager.AddNativeGameplayTag(
+		FName("Attributes.Primary.MaxHealth"),
+		FString("Maximum health")
+	);
+	Instance.Attributes_Primary_MaxMana = TagManager.AddNativeGameplayTag(
+		FName("Attributes.Primary.MaxMana"),
+		FString("Maximum mana")
+	);
 	Instance.Attributes_Primary_Strength = TagManager.AddNativeGameplayTag(
 		FName("Attributes.Primary.Strength"),
 		FString("Increases physical damage")
+	);
+	Instance.Attributes_Primary_Agility = TagManager.AddNativeGameplayTag(
+		FName("Attributes.Primary.Agility"),
+		FString("Manages speed and coordination of the character")
 	);
 	Instance.Attributes_Primary_Intelligence = TagManager.AddNativeGameplayTag(
 		FName("Attributes.Primary.Intelligence"),
 		FString("Increases magical damage")
 	);
-	Instance.Attributes_Primary_Resilience = TagManager.AddNativeGameplayTag(
-		FName("Attributes.Primary.Resilience"),
-		FString("Increases armor and armor penetration")
+	Instance.Attributes_Primary_Constitution = TagManager.AddNativeGameplayTag(
+		FName("Attributes.Primary.Constitution"),
+		FString("Increases defense capabilities")
 	);
-	Instance.Attributes_Primary_Vigor = TagManager.AddNativeGameplayTag(
-		FName("Attributes.Primary.Vigor"),
-		FString("Increases max health and health regen")
+	Instance.Attributes_Primary_Wisdom = TagManager.AddNativeGameplayTag(
+		FName("Attributes.Primary.Wisdom"),
+		FString("Increases magical defense and defensive magic capabilities")
 	);
 
 	// Secondary Attributes
-	Instance.Attributes_Secondary_Armor = TagManager.AddNativeGameplayTag(
-		FName("Attributes.Secondary.Armor"),
-		FString("Reduces damage taken; improves block chance")
+	Instance.Attributes_Secondary_AttackPower = TagManager.AddNativeGameplayTag(
+		FName("Attributes.Secondary.AttackPower"),
+		FString("Increases outgoing physical attack damage. Strength + Weapon")
 	);
-	Instance.Attributes_Secondary_ArmorPenetration = TagManager.AddNativeGameplayTag(
-		FName("Attributes.Secondary.ArmorPenetration"),
-		FString("")
+	Instance.Attributes_Secondary_MagicPower = TagManager.AddNativeGameplayTag(
+		FName("Attributes.Secondary.MagicPower"),
+		FString("Increases outgoing magic attack damage. Intelligence + Weapon")
 	);
-	Instance.Attributes_Secondary_BlockChance = TagManager.AddNativeGameplayTag(
-		FName("Attributes.Secondary.BlockChance"),
-		FString("Reduces damage taken, improves Block Chance")
+	Instance.Attributes_Secondary_Defense = TagManager.AddNativeGameplayTag(
+		FName("Attributes.Secondary.Defense"),
+		FString("Reduces incoming physical attack damage. Constitution + Armor")
+	);
+	Instance.Attributes_Secondary_MagicDefense = TagManager.AddNativeGameplayTag(
+		FName("Attributes.Secondary.MagicDefense"),
+		FString("Reduces incoming magic attack damage. Wisdom + Armor")
+	);
+	Instance.Attributes_Secondary_HitChance = TagManager.AddNativeGameplayTag(
+		FName("Attributes.Secondary.HitChance"),
+		FString("Increases likelihood to deal physical damage. 75% + 1/4 Agility")
+	);
+	Instance.Attributes_Secondary_EvadeChance = TagManager.AddNativeGameplayTag(
+		FName("Attributes.Secondary.EvadeChance"),
+		FString("Increases likelihood to evade incoming physical damage. Armor + 1/4 Agility")
 	);
 	Instance.Attributes_Secondary_CriticalHitChance = TagManager.AddNativeGameplayTag(
 		FName("Attributes.Secondary.CriticalHitChance"),
-		FString("")
-	);
-	Instance.Attributes_Secondary_CriticalHitDamage = TagManager.AddNativeGameplayTag(
-		FName("Attributes.Secondary.CriticalHitDamage"),
-		FString("")
-	);
-	Instance.Attributes_Secondary_CriticalHitResistance = TagManager.AddNativeGameplayTag(
-		FName("Attributes.Secondary.CriticalHitResistance"),
-		FString("")
-	);
-	Instance.Attributes_Secondary_HealthRegeneration = TagManager.AddNativeGameplayTag(
-		FName("Attributes.Secondary.HealthRegeneration"),
-		FString("")
-	);
-	Instance.Attributes_Secondary_ManaRegeneration = TagManager.AddNativeGameplayTag(
-		FName("Attributes.Secondary.ManaRegeneration"),
-		FString("")
-	);
-	Instance.Attributes_Secondary_MaxHealth = TagManager.AddNativeGameplayTag(
-		FName("Attributes.Secondary.MaxHealth"),
-		FString("Maximum health")
-	);
-	Instance.Attributes_Secondary_MaxMana = TagManager.AddNativeGameplayTag(
-		FName("Attributes.Secondary.MaxMana"),
-		FString("Maximum mana")
+		FString("Increases likelihood to deal a critical hit. 5% + 1/5 Agility")
 	);
 	Instance.Attributes_Vital_Health = TagManager.AddNativeGameplayTag(
 		FName("Attributes.Vital.Health"),
@@ -92,11 +93,6 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FName("Attributes.Meta.IncomingRefresh"),
 		FString("Incoming Refresh after a Level Up")
 	);
-	// Passive Attributes
-	Instance.Attributes_Passive_Protection = TagManager.AddNativeGameplayTag(
-		FName("Attributes.Passive.Protection"),
-		FString("Protection afforded by passive abilities")
-	);
 	// Progression attributes
 	Instance.Attributes_Progression_Level = TagManager.AddNativeGameplayTag(
 		FName("Attributes.Progression.Level"),
@@ -109,10 +105,6 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 	Instance.Attributes_Progression_SpellPoints = TagManager.AddNativeGameplayTag(
 		FName("Attributes.Progression.SpellPoints"),
 		FString("The tag representation the character's spell points")
-	);
-	Instance.Attributes_Progression_AttributePoints = TagManager.AddNativeGameplayTag(
-		FName("Attributes.Progression.AttributePoints"),
-		FString("The tag representation the character's attribute points")
 	);
 
 	// Input Tags
@@ -170,6 +162,50 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 	);
 
 	// Effect Tags
+	Instance.Effect_Damage = TagManager.AddNativeGameplayTag(
+		FName("Effect.Damage"),
+		FString("Damage gameplay effect")
+	);
+	Instance.Effect_Damage_Magic = TagManager.AddNativeGameplayTag(
+		FName("Effect.Damage.Magic"),
+		FString("Magical damage gameplay effect")
+	);
+	Instance.Effect_Damage_Magic_Arcane = TagManager.AddNativeGameplayTag(
+		FName("Effect.Damage.Magic.Arcane"),
+		FString("Arcane damage effect")
+	);
+	Instance.Effect_Damage_Magic_Dark = TagManager.AddNativeGameplayTag(
+		FName("Effect.Damage.Magic.Dark"),
+		FString("Dark damage gameplay effect")
+	);
+	Instance.Effect_Damage_Magic_Fire = TagManager.AddNativeGameplayTag(
+		FName("Effect.Damage.Magic.Fire"),
+		FString("Fire damage gameplay effect")
+	);
+	Instance.Effect_Damage_Magic_Lightning = TagManager.AddNativeGameplayTag(
+		FName("Effect.Damage.Magic.Lightning"),
+		FString("Lightning damage gameplay effect")
+	);
+	Instance.Effect_Damage_Physical = TagManager.AddNativeGameplayTag(
+		FName("Effect.Damage.Physical"),
+		FString("Physical damage gameplay effect")
+	);
+	Instance.Effect_Damage_Magic_Psych = TagManager.AddNativeGameplayTag(
+		FName("Effect.Damage.Magic.Psych"),
+		FString("Psych damage gameplay effect")
+	);
+	Instance.Effect_Damage_Magic_Spirit = TagManager.AddNativeGameplayTag(
+		FName("Effect.Damage.Magic.Spirit"),
+		FString("Spirit damage gameplay effect")
+	);
+	Instance.Effect_Damage_Magic_Sun = TagManager.AddNativeGameplayTag(
+		FName("Effect.Damage.Magic.Sun"),
+		FString("Sun damage gameplay effect")
+	);
+	Instance.Effect_Damage_Magic_Tech = TagManager.AddNativeGameplayTag(
+		FName("Effect.Damage.Magic.Tech"),
+		FString("Tech damage gameplay effect")
+	);
 	Instance.Effect_HitReact = TagManager.AddNativeGameplayTag(
 		FName("Effect.HitReact"),
 		FString("Tag applied when character is reacting to a hit")
@@ -186,119 +222,94 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FName("Effect.Magnitude"),
 		FString("Generic tag for specifying magnitude of effect across multiple effects")
 	);
-
-	// Damage Tags
-	Instance.Damage = TagManager.AddNativeGameplayTag(
-		FName("Damage"),
-		FString("Damage")
+	Instance.Effect_Resist = TagManager.AddNativeGameplayTag(
+		FName("Effect.Resist"),
+		FString("Root tag for all resistance effects")
 	);
-	Instance.Damage_Arcane = TagManager.AddNativeGameplayTag(
-		FName("Damage.Arcane"),
-		FString("Arcane Damage")
+	Instance.Effect_Resist_Magic = TagManager.AddNativeGameplayTag(
+		FName("Effect.Resist.Magic"),
+		FString("Root tag for all magical resistance effects")
 	);
-	Instance.Damage_Fire = TagManager.AddNativeGameplayTag(
-		FName("Damage.Fire"),
-		FString("Fire Damage")
+	Instance.Effect_Resist_Magic_Arcane = TagManager.AddNativeGameplayTag(
+		FName("Effect.Resist.Magic.Arcane"),
+		FString("Arcane damage resistance")
 	);
-	Instance.Damage_Lightning = TagManager.AddNativeGameplayTag(
-		FName("Damage.Lightning"),
-		FString("Lightning Damage")
+	Instance.Effect_Resist_Magic_Dark = TagManager.AddNativeGameplayTag(
+		FName("Effect.Resist.Magic.Dark"),
+		FString("Dark damage resistance")
 	);
-	Instance.Damage_Physical = TagManager.AddNativeGameplayTag(
-		FName("Damage.Physical"),
-		FString("Physical Damage")
+	Instance.Effect_Resist_Magic_Fire = TagManager.AddNativeGameplayTag(
+		FName("Effect.Resist.Magic.Fire"),
+		FString("Fire damage resistance")
 	);
-	Instance.DamageTypes.Add(Instance.Damage_Arcane);
-	Instance.DamageTypes.Add(Instance.Damage_Fire);
-	Instance.DamageTypes.Add(Instance.Damage_Lightning);
-	Instance.DamageTypes.Add(Instance.Damage_Physical);
-
-	// Resistances
-	Instance.Attributes_Resistance_Arcane = TagManager.AddNativeGameplayTag(
-		FName("Attributes.Resistance.Arcane"),
-		FString("Arcane Damage Resistance")
+	Instance.Effect_Resist_Magic_Lightning = TagManager.AddNativeGameplayTag(
+		FName("Effect.Resist.Magic.Lightning"),
+		FString("Lightning damage resistance")
 	);
-	Instance.Attributes_Resistance_Fire = TagManager.AddNativeGameplayTag(
-		FName("Attributes.Resistance.Fire"),
-		FString("Fire Damage Resistance")
+	Instance.Effect_Resist_Magic_Psych = TagManager.AddNativeGameplayTag(
+		FName("Effect.Resist.Magic.Psych"),
+		FString("Psych damage resistance")
 	);
-	Instance.Attributes_Resistance_Lightning = TagManager.AddNativeGameplayTag(
-		FName("Attributes.Resistance.Lightning"),
-		FString("Lightning Damage Resistance")
+	Instance.Effect_Resist_Magic_Spirit = TagManager.AddNativeGameplayTag(
+		FName("Effect.Resist.Magic.Spirit"),
+		FString("Spirit damage resistance")
 	);
-	Instance.Attributes_Resistance_Physical = TagManager.AddNativeGameplayTag(
-		FName("Attributes.Resistance.Physical"),
-		FString("Physical Damage Resistance")
+	Instance.Effect_Resist_Magic_Sun = TagManager.AddNativeGameplayTag(
+		FName("Effect.Resist.Magic.Sun"),
+		FString("Sun damage resistance")
 	);
-	// Map damage type to resistance attribute
-	Instance.DamageTypesToResistances.Add(Instance.Damage_Arcane, Instance.Attributes_Resistance_Arcane);
-	Instance.DamageTypesToResistances.Add(Instance.Damage_Fire, Instance.Attributes_Resistance_Fire);
-	Instance.DamageTypesToResistances.Add(Instance.Damage_Lightning, Instance.Attributes_Resistance_Lightning);
-	Instance.DamageTypesToResistances.Add(Instance.Damage_Physical, Instance.Attributes_Resistance_Physical);
-
-	Instance.DamageTypesToResistances.GenerateKeyArray(Instance.DamageTypes);
-
-	Instance.Debuff = TagManager.AddNativeGameplayTag(
-		FName("Debuff"),
+	Instance.Effect_Resist_Magic_Tech = TagManager.AddNativeGameplayTag(
+		FName("Effect.Resist.Magic.Tech"),
+		FString("Tech damage resistance")
+	);
+	Instance.Effect_Resist_Physical = TagManager.AddNativeGameplayTag(
+		FName("Effect.Resist.Physical"),
+		FString("Physical damage resistance")
+	);
+	Instance.Effect_Debuff = TagManager.AddNativeGameplayTag(
+		FName("Effect.Debuff"),
 		FString("Root tag for all debuff related tags")
 	);
-	Instance.Debuff_Type = TagManager.AddNativeGameplayTag(
-		FName("Debuff.Type"),
+	Instance.Effect_Debuff_Type = TagManager.AddNativeGameplayTag(
+		FName("Effect.Debuff.Type"),
 		FString("Root tag for all types of debuffs")
 	);
-	Instance.Debuff_Type_Burn = TagManager.AddNativeGameplayTag(
-		FName("Debuff.Type.Burn"),
+	Instance.Effect_Debuff_Type_Burn = TagManager.AddNativeGameplayTag(
+		FName("Effect.Debuff.Type.Burn"),
 		FString("Burns target for damage for a duration")
 	);
-	Instance.Debuff_Type_Shock = TagManager.AddNativeGameplayTag(
-		FName("Debuff.Type.Shock"),
+	Instance.Effect_Debuff_Type_Shock = TagManager.AddNativeGameplayTag(
+		FName("Effect.Debuff.Type.Shock"),
 		FString("Shocks target for damage for a duration")
 	);
-	Instance.Debuff_Type_Curse = TagManager.AddNativeGameplayTag(
-		FName("Debuff.Type.Curse"),
+	Instance.Effect_Debuff_Type_Curse = TagManager.AddNativeGameplayTag(
+		FName("Effect.Debuff.Type.Curse"),
 		FString("Curse target for damage for a duration")
 	);
-	Instance.Debuff_Type_Bleed = TagManager.AddNativeGameplayTag(
-		FName("Debuff.Type.Bleed"),
+	Instance.Effect_Debuff_Type_Bleed = TagManager.AddNativeGameplayTag(
+		FName("Effect.Debuff.Type.Bleed"),
 		FString("Bleed target for damage for a duration")
 	);
-	Instance.DamageTypesToDebuffs.Add(Instance.Damage_Arcane, Instance.Debuff_Type_Curse);
-	Instance.DamageTypesToDebuffs.Add(Instance.Damage_Fire, Instance.Debuff_Type_Burn);
-	Instance.DamageTypesToDebuffs.Add(Instance.Damage_Lightning, Instance.Debuff_Type_Shock);
-	Instance.DamageTypesToDebuffs.Add(Instance.Damage_Physical, Instance.Debuff_Type_Bleed);
 
-	Instance.DebuffTypeToDamageType.Add(Instance.Debuff_Type_Bleed, Instance.Damage_Physical);
-	Instance.DebuffTypeToDamageType.Add(Instance.Debuff_Type_Burn, Instance.Damage_Fire);
-	Instance.DebuffTypeToDamageType.Add(Instance.Debuff_Type_Curse, Instance.Damage_Arcane);
-	Instance.DebuffTypeToDamageType.Add(Instance.Debuff_Type_Shock, Instance.Damage_Lightning);
-
-	Instance.Debuff_Stat = TagManager.AddNativeGameplayTag(
-		FName("Debuff.Stat"),
+	Instance.Effect_Debuff_Stat = TagManager.AddNativeGameplayTag(
+		FName("Effect.Debuff.Stat"),
 		FString("Root tag for debuff stat tags")
 	);
-	Instance.Debuff_Stat_Chance = TagManager.AddNativeGameplayTag(
-		FName("Debuff.Stat.Chance"),
-		FString("Debuff chance")
+	Instance.Effect_Debuff_Stat_Chance = TagManager.AddNativeGameplayTag(
+		FName("Effect.Debuff.Stat.Chance"),
+		FString("Effect.Debuff chance")
 	);
-	Instance.Debuff_Stat_Damage = TagManager.AddNativeGameplayTag(
-		FName("Debuff.Stat.Damage"),
-		FString("Debuff Damage")
+	Instance.Effect_Debuff_Stat_Damage = TagManager.AddNativeGameplayTag(
+		FName("Effect.Debuff.Stat.Damage"),
+		FString("Effect.Debuff Damage")
 	);
-	Instance.Debuff_Stat_Frequency = TagManager.AddNativeGameplayTag(
-		FName("Debuff.Stat.Frequency"),
-		FString("Debuff Frequency")
+	Instance.Effect_Debuff_Stat_Frequency = TagManager.AddNativeGameplayTag(
+		FName("Effect.Debuff.Stat.Frequency"),
+		FString("Effect.Debuff Frequency")
 	);
-	Instance.Debuff_Stat_Duration = TagManager.AddNativeGameplayTag(
-		FName("Debuff.Stat.Duration"),
-		FString("Debuff Duration")
-	);
-	Instance.Debuff_Block_Regen_Health = TagManager.AddNativeGameplayTag(
-		FName("Debuff.Block.Regen.Health"),
-		FString("Block health regen")
-	);
-	Instance.Debuff_Block_Regen_Mana = TagManager.AddNativeGameplayTag(
-		FName("Debuff.Block.Regen.Mana"),
-		FString("Block mana regen")
+	Instance.Effect_Debuff_Stat_Duration = TagManager.AddNativeGameplayTag(
+		FName("Effect.Debuff.Stat.Duration"),
+		FString("Effect.Debuff Duration")
 	);
 	/** Ability Tags */
 	Instance.Abilities = TagManager.AddNativeGameplayTag(FName("Abilities"), FString("Abilities root tag"));
@@ -314,6 +325,15 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FName("Abilities.Summon"),
 		FString("Summon Abilities parent tag")
 	);
+	Instance.Abilities_Form = TagManager.AddNativeGameplayTag(FName("Abilities.Form"));
+	Instance.Abilities_Form_Barbarian = TagManager.AddNativeGameplayTag(FName("Abilities.Form.Barbarian"));
+	Instance.Abilities_Form_Egyptian = TagManager.AddNativeGameplayTag(FName("Abilities.Form.Egyptian"));
+	Instance.Abilities_Form_Futureman = TagManager.AddNativeGameplayTag(FName("Abilities.Form.Futureman"));
+	Instance.Abilities_Form_Highlander = TagManager.AddNativeGameplayTag(FName("Abilities.Form.Highlander"));
+	Instance.Abilities_Form_Hippie = TagManager.AddNativeGameplayTag(FName("Abilities.Form.Hippie"));
+	Instance.Abilities_Form_Knight = TagManager.AddNativeGameplayTag(FName("Abilities.Form.Knight"));
+	Instance.Abilities_Form_Native = TagManager.AddNativeGameplayTag(FName("Abilities.Form.Native"));
+	Instance.Abilities_Form_Roman = TagManager.AddNativeGameplayTag(FName("Abilities.Form.Roman"));
 	Instance.Abilities_Offensive = TagManager.AddNativeGameplayTag(
 		FName("Abilities.Offensive"),
 		FString("Root tag for offensive abilities")
@@ -412,6 +432,10 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FString("Event fired during electrocute montage")
 	);
 	/** Cooldown Tags **/
+	Instance.Cooldown_Form = TagManager.AddNativeGameplayTag(
+		FName("Cooldown.Form"),
+		FString("Change Form ability cooldown tag")
+	);
 	Instance.Cooldown_Fire_FireBolt = TagManager.AddNativeGameplayTag(
 		FName("Cooldown.Fire.FireBolt"),
 		FString("FireBolt ability cooldown tag")
@@ -473,6 +497,10 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FName("Player.Block.Interaction"),
 		FString("Blocks player's ability to interact with the environment")
 	);
+	Instance.Player_Block_ChangeForm = TagManager.AddNativeGameplayTag(
+		FName("Player.Block.ChangeForm"),
+		FString("Blocks player's ability to change form")
+	);
 	Instance.Player_Block_Ability_Offensive = TagManager.AddNativeGameplayTag(
 		FName("Player.Block.Ability.Offensive"),
 		FString("Blocks player offensive abilities")
@@ -493,6 +521,15 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FName("Player.Equipped.Weapon"),
 		FString("Player has a weapon equipped")
 	);
+	Instance.Player_Form = TagManager.AddNativeGameplayTag(FName("Player.Form"), FString("Player form root tag"));
+	Instance.Player_Form_Barbarian = TagManager.AddNativeGameplayTag(FName("Player.Form.Barbarian"), FString("Barbarian form tag"));
+	Instance.Player_Form_Egyptian = TagManager.AddNativeGameplayTag(FName("Player.Form.Egyptian"), FString("Egyptian form tag"));
+	Instance.Player_Form_Futureman = TagManager.AddNativeGameplayTag(FName("Player.Form.Futureman"), FString("Futureman form tag"));
+	Instance.Player_Form_Highlander = TagManager.AddNativeGameplayTag(FName("Player.Form.Highlander"), FString("Highlander form tag"));
+	Instance.Player_Form_Hippie = TagManager.AddNativeGameplayTag(FName("Player.Form.Hippie"), FString("Hippie form tag"));
+	Instance.Player_Form_Knight = TagManager.AddNativeGameplayTag(FName("Player.Form.Knight"), FString("Knight form tag"));
+	Instance.Player_Form_Native = TagManager.AddNativeGameplayTag(FName("Player.Form.Native"), FString("Native form tag"));
+	Instance.Player_Form_Roman = TagManager.AddNativeGameplayTag(FName("Player.Form.Roman"), FString("Roman form tag"));
 	Instance.Player_POI_Fishing = TagManager.AddNativeGameplayTag(
 		FName("Player.POI.Fishing"),
 		FString("Player is at a fishing POI")
@@ -580,9 +617,52 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 	/** Message Tags **/
 	Instance.Message_Default_Item_Pickup = TagManager.AddNativeGameplayTag(FName("Message.Default.Item.Pickup"), FString("Pickup item message tag"));
 	Instance.Message_Default_Item_Use = TagManager.AddNativeGameplayTag(FName("Message.Default.Item.Use"), FString("Use item message tag"));
+
+	Instance.DamageTypes.Add(Instance.Effect_Damage_Magic_Arcane);
+	Instance.DamageTypes.Add(Instance.Effect_Damage_Magic_Dark);
+	Instance.DamageTypes.Add(Instance.Effect_Damage_Magic_Fire);
+	Instance.DamageTypes.Add(Instance.Effect_Damage_Magic_Lightning);
+	Instance.DamageTypes.Add(Instance.Effect_Damage_Physical);
+	Instance.DamageTypes.Add(Instance.Effect_Damage_Magic_Psych);
+	Instance.DamageTypes.Add(Instance.Effect_Damage_Magic_Spirit);
+	Instance.DamageTypes.Add(Instance.Effect_Damage_Magic_Sun);
+	Instance.DamageTypes.Add(Instance.Effect_Damage_Magic_Tech);
+	Instance.DamageTypeToResistanceType.Add(Instance.Effect_Damage_Physical, Instance.Effect_Resist_Physical);
+	Instance.DamageTypeToResistanceType.Add(Instance.Effect_Damage_Magic_Arcane, Instance.Effect_Resist_Magic_Arcane);
+	Instance.DamageTypeToResistanceType.Add(Instance.Effect_Damage_Magic_Dark, Instance.Effect_Resist_Magic_Dark);
+	Instance.DamageTypeToResistanceType.Add(Instance.Effect_Damage_Magic_Fire, Instance.Effect_Resist_Magic_Fire);
+	Instance.DamageTypeToResistanceType.Add(Instance.Effect_Damage_Magic_Lightning, Instance.Effect_Resist_Magic_Lightning);
+	Instance.DamageTypeToResistanceType.Add(Instance.Effect_Damage_Magic_Psych, Instance.Effect_Resist_Magic_Psych);
+	Instance.DamageTypeToResistanceType.Add(Instance.Effect_Damage_Magic_Spirit, Instance.Effect_Resist_Magic_Spirit);
+	Instance.DamageTypeToResistanceType.Add(Instance.Effect_Damage_Magic_Sun, Instance.Effect_Resist_Magic_Sun);
+	Instance.DamageTypeToResistanceType.Add(Instance.Effect_Damage_Magic_Tech, Instance.Effect_Resist_Magic_Tech);
+	Instance.DebuffTypes.Add(Instance.Effect_Debuff_Type_Bleed);
+	Instance.DebuffTypes.Add(Instance.Effect_Debuff_Type_Burn);
+	Instance.DebuffTypes.Add(Instance.Effect_Debuff_Type_Curse);
+	Instance.DebuffTypes.Add(Instance.Effect_Debuff_Type_Shock);
 }
 
 bool FElectricCastleGameplayTags::IsLeftMouseButton(const FGameplayTag& InputTag)
 {
 	return InputTag.MatchesTagExact(Instance.InputTag_LeftMouseButton);
+}
+
+TArray<FGameplayTag> FElectricCastleGameplayTags::GetDamageTypes() const
+{
+	return DamageTypes;
+}
+
+TArray<FGameplayTag> FElectricCastleGameplayTags::GetDebuffTypes() const
+{
+	return DebuffTypes;
+}
+
+FGameplayTag FElectricCastleGameplayTags::GetDamageTypeResistanceTag(const FGameplayTag& DamageTypeTag) const
+{
+	if (DamageTypeToResistanceType.Contains(DamageTypeTag))
+	{
+		return DamageTypeToResistanceType[DamageTypeTag];
+	}
+	UE_LOG(LogElectricCastle, Warning, TEXT("[FElectricCastleGameplayTags] No resistance tag for damage type: %s"), *DamageTypeTag.ToString());
+	return FGameplayTag::EmptyTag;
 }

@@ -6,11 +6,16 @@
 #include "AbilitySystem/Data/LevelUpInfo.h"
 #include "Item/Data/ItemDefinitions.h"
 #include "Kismet/GameplayStatics.h"
+#include "Player/Form/PlayerFormConfig.h"
 
 void UElectricCastleGameDataSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 	InitializeItemDefinitions();
+	if (PlayerFormConfig)
+	{
+		PlayerFormConfig->Initialize();
+	}
 }
 
 UElectricCastleGameDataSubsystem* UElectricCastleGameDataSubsystem::Get(const UObject* WorldContextObject)

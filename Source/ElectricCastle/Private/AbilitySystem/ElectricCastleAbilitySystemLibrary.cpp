@@ -19,20 +19,13 @@
 #include "Player/ElectricCastlePlayerState.h"
 #include "Tags/ElectricCastleGameplayTags.h"
 #include "UI/HUD/ElectricCastleHUD.h"
-#include "UI/WidgetController/ElectricCastleWidgetController.h"
 #include "Utils/TagUtils.h"
 
 UOverlayWidgetController* UElectricCastleAbilitySystemLibrary::GetOverlayWidgetController(const UObject* WorldContextObject)
 {
-	if (FWidgetControllerParams WidgetControllerParams; GetWidgetControllerParams(
-		WorldContextObject,
-		WidgetControllerParams
-	))
+	if (const AElectricCastleHUD* HUD = GetElectricCastleHUD(WorldContextObject))
 	{
-		if (AElectricCastleHUD* HUD = GetElectricCastleHUD(WorldContextObject))
-		{
-			return HUD->GetOverlayWidgetController(WidgetControllerParams);
-		}
+		return HUD->GetOverlayWidgetController();
 	}
 	return nullptr;
 }
@@ -41,15 +34,9 @@ UAttributeMenuWidgetController* UElectricCastleAbilitySystemLibrary::GetAttribut
 	const UObject* WorldContextObject
 )
 {
-	if (FWidgetControllerParams WidgetControllerParams; GetWidgetControllerParams(
-		WorldContextObject,
-		WidgetControllerParams
-	))
+	if (const AElectricCastleHUD* HUD = GetElectricCastleHUD(WorldContextObject))
 	{
-		if (AElectricCastleHUD* HUD = GetElectricCastleHUD(WorldContextObject))
-		{
-			return HUD->GetAttributeMenuWidgetController(WidgetControllerParams);
-		}
+		return HUD->GetAttributeMenuWidgetController();
 	}
 	return nullptr;
 }
@@ -58,15 +45,9 @@ USpellMenuWidgetController* UElectricCastleAbilitySystemLibrary::GetSpellMenuWid
 	const UObject* WorldContextObject
 )
 {
-	if (FWidgetControllerParams WidgetControllerParams; GetWidgetControllerParams(
-		WorldContextObject,
-		WidgetControllerParams
-	))
+	if (const AElectricCastleHUD* HUD = GetElectricCastleHUD(WorldContextObject))
 	{
-		if (AElectricCastleHUD* HUD = GetElectricCastleHUD(WorldContextObject))
-		{
-			return HUD->GetSpellMenuWidgetController(WidgetControllerParams);
-		}
+		return HUD->GetSpellMenuWidgetController();
 	}
 	return nullptr;
 }
@@ -410,22 +391,22 @@ FGameplayEffectContextHandle UElectricCastleAbilitySystemLibrary::ApplyDamageEff
 	);
 	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(
 		SpecHandle,
-		GameplayTags.Debuff_Stat_Chance,
+		GameplayTags.Effect_Debuff_Stat_Chance,
 		DamageEffectParams.DebuffChance
 	);
 	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(
 		SpecHandle,
-		GameplayTags.Debuff_Stat_Damage,
+		GameplayTags.Effect_Debuff_Stat_Damage,
 		DamageEffectParams.DebuffDamage
 	);
 	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(
 		SpecHandle,
-		GameplayTags.Debuff_Stat_Duration,
+		GameplayTags.Effect_Debuff_Stat_Duration,
 		DamageEffectParams.DebuffDuration
 	);
 	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(
 		SpecHandle,
-		GameplayTags.Debuff_Stat_Frequency,
+		GameplayTags.Effect_Debuff_Stat_Frequency,
 		DamageEffectParams.DebuffFrequency
 	);
 	DamageEffectParams.TargetAbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data);
@@ -540,23 +521,6 @@ bool UElectricCastleAbilitySystemLibrary::IsAbilityEquipped(
 	return GetStatusTagByAbilityTag(AbilitySystemComponent, AbilityTag).MatchesTagExact(
 		FElectricCastleGameplayTags::Get().Abilities_Status_Equipped
 	);
-}
-
-bool UElectricCastleAbilitySystemLibrary::GetWidgetControllerParams(
-	const UObject* WorldContextObject,
-	FWidgetControllerParams& FWidgetControllerParams
-)
-{
-	if (APlayerController* PlayerController = UGameplayStatics::GetPlayerController(WorldContextObject, 0))
-	{
-		AElectricCastlePlayerState* PlayerState = PlayerController->GetPlayerState<AElectricCastlePlayerState>();
-		FWidgetControllerParams.PlayerController = PlayerController;
-		FWidgetControllerParams.PlayerState = PlayerState;
-		FWidgetControllerParams.AbilitySystemComponent = PlayerState->GetElectricCastleAbilitySystemComponent();
-		FWidgetControllerParams.AttributeSet = PlayerState->GetAttributeSet();
-		return true;
-	}
-	return false;
 }
 
 AElectricCastleHUD* UElectricCastleAbilitySystemLibrary::GetElectricCastleHUD(const UObject* WorldContextObject)
@@ -929,6 +893,16 @@ float UElectricCastleAbilitySystemLibrary::GetDebuffDamage(const FGameplayEffect
 	return 0.f;
 }
 
+int32 UElectricCastleAbilitySystemLibrary::GetDebuffLevel(const FGameplayEffectContextHandle& EffectContextHandle)
+{
+	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const FElectricCastleGameplayEffectContext*>(
+		EffectContextHandle.Get()))
+	{
+		return AuraEffectContext->GetDebuffLevel();
+	}
+	return 0;
+}
+
 float UElectricCastleAbilitySystemLibrary::GetDebuffDuration(const FGameplayEffectContextHandle& EffectContextHandle)
 {
 	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const FElectricCastleGameplayEffectContext*>(
@@ -1015,16 +989,18 @@ void UElectricCastleAbilitySystemLibrary::SetIsCriticalHit(
 
 void UElectricCastleAbilitySystemLibrary::SetDebuff(
 	FGameplayEffectContextHandle& EffectContextHandle,
-	FGameplayTag& DebuffTypeTag,
-	float DebuffDamage,
-	float DebuffDuration,
-	float DebuffFrequency
+	const FGameplayTag& DebuffTypeTag,
+	const int32 Level,
+	const float DebuffDamage,
+	const float DebuffDuration,
+	const float DebuffFrequency
 )
 {
 	if (FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<FElectricCastleGameplayEffectContext*>(
 		EffectContextHandle.Get()))
 	{
 		AuraEffectContext->SetIsSuccessfulDebuff(true);
+		AuraEffectContext->SetDebuffLevel(Level);
 		AuraEffectContext->SetDebuffDamage(DebuffDamage);
 		AuraEffectContext->SetDebuffDuration(DebuffDuration);
 		AuraEffectContext->SetDebuffFrequency(DebuffFrequency);

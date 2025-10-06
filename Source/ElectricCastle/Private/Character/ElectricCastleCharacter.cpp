@@ -32,10 +32,10 @@ AElectricCastleCharacter::AElectricCastleCharacter()
 	EffectAttachComponent->SetAbsolute(false, true, false);
 	BurnDebuffComponent = CreateDefaultSubobject<UDebuffNiagaraComponent>(TEXT("Burn Debuff Niagara Component"));
 	BurnDebuffComponent->SetupAttachment(EffectAttachComponent);
-	BurnDebuffComponent->DebuffTag = FElectricCastleGameplayTags::Get().Debuff_Type_Burn;
+	BurnDebuffComponent->DebuffTag = FElectricCastleGameplayTags::Get().Effect_Debuff_Type_Burn;
 	ShockDebuffComponent = CreateDefaultSubobject<UDebuffNiagaraComponent>(TEXT("Shock Debuff Niagara Component"));
 	ShockDebuffComponent->SetupAttachment(EffectAttachComponent);
-	ShockDebuffComponent->DebuffTag = FElectricCastleGameplayTags::Get().Debuff_Type_Shock;
+	ShockDebuffComponent->DebuffTag = FElectricCastleGameplayTags::Get().Effect_Debuff_Type_Shock;
 	HaloOfProtectionNiagaraComponent = CreateDefaultSubobject<UPassiveNiagaraComponent>(
 		TEXT("Halo of Protection Niagara Component")
 	);
@@ -171,12 +171,12 @@ bool AElectricCastleCharacter::IsHitReacting_Implementation() const
 
 bool AElectricCastleCharacter::IsShocked() const
 {
-	return StatusEffectTags.Contains(FElectricCastleGameplayTags::Get().Debuff_Type_Shock);
+	return StatusEffectTags.Contains(FElectricCastleGameplayTags::Get().Effect_Debuff_Type_Shock);
 }
 
 bool AElectricCastleCharacter::IsBurned() const
 {
-	return StatusEffectTags.Contains(FElectricCastleGameplayTags::Get().Debuff_Type_Burn);
+	return StatusEffectTags.Contains(FElectricCastleGameplayTags::Get().Effect_Debuff_Type_Burn);
 }
 
 void AElectricCastleCharacter::Dissolve_Implementation() const
@@ -345,11 +345,11 @@ void AElectricCastleCharacter::OnDebuffTypeShockChanged(FGameplayTag StunTag, in
 void AElectricCastleCharacter::RegisterStatusEffectTags(UAbilitySystemComponent* InAbilitySystemComponent)
 {
 	InAbilitySystemComponent->RegisterGameplayTagEvent(
-		FElectricCastleGameplayTags::Get().Debuff_Type_Shock,
+		FElectricCastleGameplayTags::Get().Effect_Debuff_Type_Shock,
 		EGameplayTagEventType::NewOrRemoved
 	).AddUObject(this, &AElectricCastleCharacter::OnDebuffTypeShockChanged);
 	InAbilitySystemComponent->RegisterGameplayTagEvent(
-		FElectricCastleGameplayTags::Get().Debuff_Type_Burn,
+		FElectricCastleGameplayTags::Get().Effect_Debuff_Type_Burn,
 		EGameplayTagEventType::NewOrRemoved
 	).AddUObject(this, &AElectricCastleCharacter::OnDebuffTypeBurnChanged);
 }

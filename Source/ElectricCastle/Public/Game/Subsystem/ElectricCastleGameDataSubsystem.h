@@ -3,12 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayEffect.h"
 #include "GameplayTagContainer.h"
 #include "AbilitySystem/Data/LevelUpInfo.h"
 #include "Item/ItemTypes.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "ElectricCastleGameDataSubsystem.generated.h"
 
+class UDebuffConfig;
+class UPlayerFormConfig;
 class ULevelUpInfo;
 class UFishInfo;
 class UTreasureConfig;
@@ -27,6 +30,12 @@ class ELECTRICCASTLE_API UElectricCastleGameDataSubsystem : public UGameInstance
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	static UElectricCastleGameDataSubsystem* Get(const UObject* WorldContextObject);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	UPlayerFormConfig* GetPlayerFormConfig() const { return PlayerFormConfig; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	UDebuffConfig* GetDebuffConfig() const { return DebuffConfig; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	UAbilityInfo* GetAbilityInfo() const { return AbilityInfo; }
@@ -59,6 +68,10 @@ public:
 	FLevelUpRewards GetLevelUpRewards(int32 int32) const;
 
 protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Form Configuration")
+	TObjectPtr<UPlayerFormConfig> PlayerFormConfig;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Gameplay Effects")
+	TObjectPtr<UDebuffConfig> DebuffConfig;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Character Class Defaults")
 	TObjectPtr<UCharacterClassInfo> CharacterClassInfo;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Class Defaults")

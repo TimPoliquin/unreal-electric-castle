@@ -39,4 +39,5 @@
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=E25C8B70_002DCE21_002DEF2A_002D976D_002DDAF1A9D0B2B5_002Fd_003APrivate_002Fd_003AFactories_002Ff_003ASlateWidgetStyleAssetFactory_002Ecpp/@EntryIndexedValue">ForceIncluded</s:String>
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=E3768445_002D02E9_002DE498_002DEDFF_002DC070CA342686_002Fd_003APublic_002Fd_003ARecast_002Ff_003ARecast_002Eh/@EntryIndexedValue">ForceIncluded</s:String>
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=F363F493_002DF175_002DDCB2_002D7706_002D1FD35316ECB3_002Fd_003APrivate_002Fd_003AUObject_002Ff_003APropertyDelegate_002Ecpp/@EntryIndexedValue">ForceIncluded</s:String>
-	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=F70285F6_002D1050_002D3270_002D9CEC_002DEDDE3426166E_002Fd_003APrivate_002Fd_003AChaos_002Ff_003AAABB_002Ecpp/@EntryIndexedValue">ForceIncluded</s:String></wpf:ResourceDictionary>
+	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=F70285F6_002D1050_002D3270_002D9CEC_002DEDDE3426166E_002Fd_003APrivate_002Fd_003AChaos_002Ff_003AAABB_002Ecpp/@EntryIndexedValue">ForceIncluded</s:String>
+	<s:String x:Key="/Default/CodeInspection/Highlighting/AnalysisEnabled/@EntryValue">SOLUTION</s:String></wpf:ResourceDictionary>

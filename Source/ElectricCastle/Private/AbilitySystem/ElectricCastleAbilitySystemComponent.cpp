@@ -28,23 +28,6 @@ void UElectricCastleAbilitySystemComponent::ForEachAbility(const FForEachAbility
 	}
 }
 
-void UElectricCastleAbilitySystemComponent::UpgradeAttribute(const FGameplayTag& AttributeTag)
-{
-	if (IPlayerInterface::GetAttributePoints(GetAvatarActor()) > 0)
-	{
-		ServerUpgradeAttribute(AttributeTag);
-	}
-}
-
-void UElectricCastleAbilitySystemComponent::ServerUpgradeAttribute_Implementation(const FGameplayTag& AttributeTag)
-{
-	FGameplayEventData Payload;
-	Payload.EventTag = AttributeTag;
-	Payload.EventMagnitude = 1.f;
-	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(GetAvatarActor(), AttributeTag, Payload);
-	IPlayerInterface::SpendAttributePoints(GetAvatarActor(), 1);
-}
-
 void UElectricCastleAbilitySystemComponent::ServerUpdateAbilityStatuses(const int32 Level)
 {
 	const FGameplayTag& EligibleStatusTag = FElectricCastleGameplayTags::Get().Abilities_Status_Eligible;
@@ -444,16 +427,16 @@ void UElectricCastleAbilitySystemComponent::AddCharacterAbilities(
 	for (const TSubclassOf AbilityClass : StartupAbilities)
 	{
 		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass, 1);
-		FGameplayTag EquippedTag = FElectricCastleGameplayTags::Get().Abilities_Status_Equipped;
 		if (const UElectricCastleGameplayAbility* AuraAbility = Cast<UElectricCastleGameplayAbility>(AbilitySpec.Ability))
 		{
 			for (FGameplayTag StartupTag : AuraAbility->GetStartupInputTag())
 			{
 				AbilitySpec.GetDynamicSpecSourceTags().AddTag(StartupTag);
 			}
-			AbilitySpec.GetDynamicSpecSourceTags().AddTag(EquippedTag);
-			GiveAbility(AbilitySpec);
 		}
+		FGameplayTag EquippedTag = FElectricCastleGameplayTags::Get().Abilities_Status_Equipped;
+		AbilitySpec.GetDynamicSpecSourceTags().AddTag(EquippedTag);
+		GiveAbility(AbilitySpec);
 	}
 	for (const TSubclassOf PassiveAbilityClass : StartupPassiveAbilities)
 	{

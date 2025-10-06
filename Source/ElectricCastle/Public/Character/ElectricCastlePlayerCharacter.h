@@ -9,8 +9,11 @@
 #include "Interaction/PlayerInterface.h"
 #include "Player/ElectricCastlePlayerState.h"
 #include "Player/Equipment/EquipmentEvents.h"
+#include "Player/Form/FormChangeActorInterface.h"
+#include "Player/Form/PlayerFormChangeComponent.h"
 #include "ElectricCastlePlayerCharacter.generated.h"
 
+class UPlayerFormChangeComponent;
 class UBoxComponent;
 class UPlayerEquipmentComponent;
 class UFishingComponentInterface;
@@ -32,7 +35,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(
 );
 
 UCLASS(Abstract, Blueprintable)
-class ELECTRICCASTLE_API AElectricCastlePlayerCharacter : public AElectricCastleCharacter, public IPlayerInterface, public IFishingActorInterface
+class ELECTRICCASTLE_API AElectricCastlePlayerCharacter : public AElectricCastleCharacter, public IPlayerInterface, public IFishingActorInterface, public IFormChangeActorInterface
 {
 	GENERATED_BODY()
 
@@ -40,6 +43,7 @@ public:
 	AElectricCastlePlayerCharacter();
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual UElectricCastleAttributeSet* GetAttributeSet() const override;
 
 	virtual void PossessedBy(AController* NewController) override;
@@ -70,9 +74,7 @@ public:
 		const int32 LevelIncrement,
 		const FLevelUpRewards& InLevelUpRewards
 	) override;
-	virtual int32 GetAttributePoints_Implementation() const override;
 	virtual int32 GetSpellPoints_Implementation() const override;
-	virtual void SpendAttributePoints_Implementation(int32 SpentPoints) override;
 	virtual void SpendSpellPoints_Implementation(int32 SpentPoints) override;
 	virtual void ShowMagicCircle_Implementation(UMaterialInterface* DecalMaterial = nullptr) override;
 	virtual void HideMagicCircle_Implementation() override;
@@ -96,6 +98,10 @@ public:
 	virtual void ShowFishingStatusEffect_Implementation(UNiagaraSystem* EffectSystem) override;
 	/** FishingActorInterface End */
 
+	/** FormChangeActorInterface Start */
+	virtual UPlayerFormChangeComponent* GetFormChangeComponent_Implementation() const override;
+	/** FormChangeActorInterface End */
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void BeginDestroy() override;
@@ -103,6 +109,8 @@ protected:
 	void PlayFishingRodCastMontage();
 	UFUNCTION(BlueprintNativeEvent)
 	void OnEquipmentAnimationRequest(const FEquipmentDelegatePayload& Payload);
+	UFUNCTION(BlueprintNativeEvent)
+	void OnFormChange(const FPlayerFormChangeEventPayload& Payload);
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UBoxComponent> FadeDetectionComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
@@ -119,6 +127,8 @@ protected:
 	TObjectPtr<UNiagaraComponent> FishingStatusEffectNiagaraComponent;
 	UPROPERTY(EditDefaultsOnly, Category="Components")
 	TObjectPtr<UMotionWarpingComponent> MotionWarpingComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
+	TObjectPtr<UPlayerFormChangeComponent> FormChangeComponent;
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<USoundBase> LevelUpSound;
 	UPROPERTY(EditDefaultsOnly)

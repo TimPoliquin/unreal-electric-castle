@@ -3,59 +3,43 @@
 
 #include "AbilitySystem/Calculations/ExecCalc_Damage.h"
 #include "AbilitySystemComponent.h"
-#include "AbilitySystem/ElectricCastleAbilitySystemInterface.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
-#include "AbilitySystem/ElectricCastleAbilitySystemTypes.h"
 #include "AbilitySystem/ElectricCastleAttributeSet.h"
-#include "AbilitySystem/Data/CharacterClassInfo.h"
 #include "Interaction/CombatInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "Tags/ElectricCastleGameplayTags.h"
 
 struct AuraDamageStatics
 {
-	DECLARE_ATTRIBUTE_CAPTUREDEF(Armor);
-	DECLARE_ATTRIBUTE_CAPTUREDEF(ArmorPenetration);
-	DECLARE_ATTRIBUTE_CAPTUREDEF(BlockChance);
+	DECLARE_ATTRIBUTE_CAPTUREDEF(AttackPower);
+	DECLARE_ATTRIBUTE_CAPTUREDEF(MagicPower);
+	DECLARE_ATTRIBUTE_CAPTUREDEF(HitChance);
 	DECLARE_ATTRIBUTE_CAPTUREDEF(CriticalHitChance);
-	DECLARE_ATTRIBUTE_CAPTUREDEF(CriticalHitDamage);
-	DECLARE_ATTRIBUTE_CAPTUREDEF(CriticalHitResistance);
-	DECLARE_ATTRIBUTE_CAPTUREDEF(Resistance_Arcane);
-	DECLARE_ATTRIBUTE_CAPTUREDEF(Resistance_Fire);
-	DECLARE_ATTRIBUTE_CAPTUREDEF(Resistance_Lightning);
-	DECLARE_ATTRIBUTE_CAPTUREDEF(Resistance_Physical);
-	DECLARE_ATTRIBUTE_CAPTUREDEF(Passive_Protection);
+	DECLARE_ATTRIBUTE_CAPTUREDEF(Defense);
+	DECLARE_ATTRIBUTE_CAPTUREDEF(MagicDefense);
+	DECLARE_ATTRIBUTE_CAPTUREDEF(EvadeChance);
 
 	TMap<FGameplayTag, FGameplayEffectAttributeCaptureDefinition> TagsToCaptureDefs;
 
 	AuraDamageStatics()
 	{
-		DEFINE_ATTRIBUTE_CAPTUREDEF(UElectricCastleAttributeSet, Armor, Target, false);
-		DEFINE_ATTRIBUTE_CAPTUREDEF(UElectricCastleAttributeSet, ArmorPenetration, Source, false);
-		DEFINE_ATTRIBUTE_CAPTUREDEF(UElectricCastleAttributeSet, BlockChance, Target, false);
+		DEFINE_ATTRIBUTE_CAPTUREDEF(UElectricCastleAttributeSet, AttackPower, Source, false);
+		DEFINE_ATTRIBUTE_CAPTUREDEF(UElectricCastleAttributeSet, MagicPower, Source, false);
+		DEFINE_ATTRIBUTE_CAPTUREDEF(UElectricCastleAttributeSet, HitChance, Source, false);
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UElectricCastleAttributeSet, CriticalHitChance, Source, false);
-		DEFINE_ATTRIBUTE_CAPTUREDEF(UElectricCastleAttributeSet, CriticalHitDamage, Source, false);
-		DEFINE_ATTRIBUTE_CAPTUREDEF(UElectricCastleAttributeSet, CriticalHitResistance, Target, false);
-		DEFINE_ATTRIBUTE_CAPTUREDEF(UElectricCastleAttributeSet, Resistance_Arcane, Target, false);
-		DEFINE_ATTRIBUTE_CAPTUREDEF(UElectricCastleAttributeSet, Resistance_Fire, Target, false);
-		DEFINE_ATTRIBUTE_CAPTUREDEF(UElectricCastleAttributeSet, Resistance_Lightning, Target, false);
-		DEFINE_ATTRIBUTE_CAPTUREDEF(UElectricCastleAttributeSet, Resistance_Physical, Target, false);
-		DEFINE_ATTRIBUTE_CAPTUREDEF(UElectricCastleAttributeSet, Passive_Protection, Target, false);
+		DEFINE_ATTRIBUTE_CAPTUREDEF(UElectricCastleAttributeSet, Defense, Target, false);
+		DEFINE_ATTRIBUTE_CAPTUREDEF(UElectricCastleAttributeSet, MagicDefense, Target, false);
+		DEFINE_ATTRIBUTE_CAPTUREDEF(UElectricCastleAttributeSet, EvadeChance, Target, false);
 
 		const FElectricCastleGameplayTags& Tags = FElectricCastleGameplayTags::Get();
 
-		TagsToCaptureDefs.Add(Tags.Attributes_Secondary_Armor, ArmorDef);
-		TagsToCaptureDefs.Add(Tags.Attributes_Secondary_BlockChance, BlockChanceDef);
-		TagsToCaptureDefs.Add(Tags.Attributes_Secondary_ArmorPenetration, ArmorPenetrationDef);
+		TagsToCaptureDefs.Add(Tags.Attributes_Secondary_AttackPower, AttackPowerDef);
+		TagsToCaptureDefs.Add(Tags.Attributes_Secondary_MagicPower, MagicPowerDef);
+		TagsToCaptureDefs.Add(Tags.Attributes_Secondary_Defense, DefenseDef);
+		TagsToCaptureDefs.Add(Tags.Attributes_Secondary_MagicDefense, MagicDefenseDef);
+		TagsToCaptureDefs.Add(Tags.Attributes_Secondary_HitChance, HitChanceDef);
+		TagsToCaptureDefs.Add(Tags.Attributes_Secondary_EvadeChance, EvadeChanceDef);
 		TagsToCaptureDefs.Add(Tags.Attributes_Secondary_CriticalHitChance, CriticalHitChanceDef);
-		TagsToCaptureDefs.Add(Tags.Attributes_Secondary_CriticalHitResistance, CriticalHitResistanceDef);
-		TagsToCaptureDefs.Add(Tags.Attributes_Secondary_CriticalHitDamage, CriticalHitDamageDef);
-
-		TagsToCaptureDefs.Add(Tags.Attributes_Resistance_Arcane, Resistance_ArcaneDef);
-		TagsToCaptureDefs.Add(Tags.Attributes_Resistance_Fire, Resistance_FireDef);
-		TagsToCaptureDefs.Add(Tags.Attributes_Resistance_Lightning, Resistance_LightningDef);
-		TagsToCaptureDefs.Add(Tags.Attributes_Resistance_Physical, Resistance_PhysicalDef);
-		TagsToCaptureDefs.Add(Tags.Attributes_Passive_Protection, Passive_ProtectionDef);
 	}
 };
 
@@ -68,17 +52,13 @@ static const AuraDamageStatics& DamageStatics()
 
 UExecCalc_Damage::UExecCalc_Damage()
 {
-	RelevantAttributesToCapture.Add(DamageStatics().ArmorDef);
-	RelevantAttributesToCapture.Add(DamageStatics().ArmorPenetrationDef);
-	RelevantAttributesToCapture.Add(DamageStatics().BlockChanceDef);
+	RelevantAttributesToCapture.Add(DamageStatics().AttackPowerDef);
+	RelevantAttributesToCapture.Add(DamageStatics().MagicPowerDef);
+	RelevantAttributesToCapture.Add(DamageStatics().DefenseDef);
+	RelevantAttributesToCapture.Add(DamageStatics().MagicDefenseDef);
+	RelevantAttributesToCapture.Add(DamageStatics().HitChanceDef);
+	RelevantAttributesToCapture.Add(DamageStatics().EvadeChanceDef);
 	RelevantAttributesToCapture.Add(DamageStatics().CriticalHitChanceDef);
-	RelevantAttributesToCapture.Add(DamageStatics().CriticalHitDamageDef);
-	RelevantAttributesToCapture.Add(DamageStatics().CriticalHitResistanceDef);
-	RelevantAttributesToCapture.Add(DamageStatics().Resistance_ArcaneDef);
-	RelevantAttributesToCapture.Add(DamageStatics().Resistance_FireDef);
-	RelevantAttributesToCapture.Add(DamageStatics().Resistance_LightningDef);
-	RelevantAttributesToCapture.Add(DamageStatics().Resistance_PhysicalDef);
-	RelevantAttributesToCapture.Add(DamageStatics().Passive_ProtectionDef);
 }
 
 float UExecCalc_Damage::CalculateBaseDamage(
@@ -87,17 +67,27 @@ float UExecCalc_Damage::CalculateBaseDamage(
 )
 {
 	FGameplayEffectContextHandle EffectContextHandle;
-	float Damage = 0.f;
-	for (const auto& DamageType : FElectricCastleGameplayTags::Get().GetDamageTypes())
+	float PhysicalDamage = 0.f;
+	float MagicalDamage = 0.f;
+	FGameplayTagContainer AbilityTags;
+	ExecutionParams.GetOwningSpec().GetAllAssetTags(AbilityTags);
+	if (IsPhysicalAttack(ExecutionParams))
 	{
-		const float DamageTypeDamage = GetDamageTypeDamage(ExecutionParams, EvaluateParameters, DamageType);
-		if (DamageTypeDamage > 0.f)
-		{
-			Damage += DamageTypeDamage;
-			UElectricCastleAbilitySystemLibrary::SetDamageTypeTag(EffectContextHandle, DamageType);
-			break;
-		}
+		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(
+			DamageStatics().AttackPowerDef,
+			EvaluateParameters,
+			PhysicalDamage
+		);
 	}
+	if (IsMagicalAttack(ExecutionParams))
+	{
+		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(
+			DamageStatics().AttackPowerDef,
+			EvaluateParameters,
+			MagicalDamage
+		);
+	}
+	const float Damage = PhysicalDamage > MagicalDamage ? PhysicalDamage : MagicalDamage;
 	return Damage;
 }
 
@@ -112,31 +102,31 @@ void UExecCalc_Damage::Execute_Implementation(
 	EvaluateParameters.SourceTags = Spec.CapturedSourceTags.GetAggregatedTags();
 	EvaluateParameters.TargetTags = Spec.CapturedTargetTags.GetAggregatedTags();
 
-	// Debuff
-	DetermineDebuff(ExecutionParams, EvaluateParameters);
-
 	// Get Damage Set by Caller Magnitude
 	float Damage = CalculateBaseDamage(ExecutionParams, EvaluateParameters);
-	if (IsRadialDamage(ExecutionParams))
-	{
-		ApplyRadialDamage(ExecutionParams, Damage);
-	}
+
 	// If the attack was blocked (based on BlockChance), cut the damage in half.
-	if (IsAttackBlockedByTarget(ExecutionParams, EvaluateParameters))
+	if (IsAttackEvadedByTarget(ExecutionParams, EvaluateParameters))
 	{
-		Damage *= .5f;
+		Damage = 0.f;
 		UElectricCastleAbilitySystemLibrary::SetIsBlockedHit(EffectContextHandle, true);
 	}
-	// Reduce damage by a percentage based on target's effective armor and level of protection
-	Damage *= (100 - GetTargetEffectiveArmor(ExecutionParams, EvaluateParameters)) / 100.f;
-	// if the attack is a critical hit, increase the damage by the critical hit damage
-	if (IsCriticalHitOnTarget(ExecutionParams, EvaluateParameters))
+	else
 	{
-		Damage = Damage * 2.f + GetEffectiveCriticalHitDamage(
-			ExecutionParams,
-			EvaluateParameters
-		);
-		UElectricCastleAbilitySystemLibrary::SetIsCriticalHit(EffectContextHandle, true);
+		// Debuff
+		DetermineDebuff(ExecutionParams, EvaluateParameters);
+		if (IsRadialDamage(ExecutionParams))
+		{
+			ApplyRadialDamage(ExecutionParams, Damage);
+		}
+		// Reduce damage by a percentage based on target's effective armor and level of protection
+		Damage = FMath::Clamp(Damage - GetTargetEffectiveArmor(ExecutionParams, EvaluateParameters), 0.f, Damage);
+		// if the attack is a critical hit, increase the damage by the critical hit damage
+		if (IsCriticalHitOnTarget(ExecutionParams, EvaluateParameters))
+		{
+			Damage *= 2.f;
+			UElectricCastleAbilitySystemLibrary::SetIsCriticalHit(EffectContextHandle, true);
+		}
 	}
 
 	const FGameplayModifierEvaluatedData EvaluatedData(
@@ -147,46 +137,25 @@ void UExecCalc_Damage::Execute_Implementation(
 	OutExecutionOutput.AddOutputModifier(EvaluatedData);
 }
 
-float UExecCalc_Damage::GetDamageTypeDamage(
-	const FGameplayEffectCustomExecutionParameters& ExecutionParams,
-	const FAggregatorEvaluateParameters& EvaluateParameters,
-	const FGameplayTag& DamageTypeTag
-)
-{
-	const FGameplayEffectSpec& Spec = ExecutionParams.GetOwningSpec();
-	const FGameplayTag ResistanceTag = FElectricCastleGameplayTags::Get().GetDamageTypeResistanceTag(DamageTypeTag);
-	const FGameplayEffectAttributeCaptureDefinition* ResistanceDef = DamageStatics().TagsToCaptureDefs.Find(
-		ResistanceTag
-	);
-	checkf(
-		ResistanceDef,
-		TEXT("TagsToCaptureDefs doesn't contain Tag: [%s]"),
-		*ResistanceTag.ToString()
-	);
-	const float Damage = Spec.GetSetByCallerMagnitude(DamageTypeTag, false);
-	float Resistance = 0.f;
-	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(
-		*ResistanceDef,
-		EvaluateParameters,
-		Resistance
-	);
-	Resistance = FMath::Clamp(Resistance, 0.f, 100.f);
-	return Damage * (100.f - Resistance) / 100.f;
-}
-
-bool UExecCalc_Damage::IsAttackBlockedByTarget(
+bool UExecCalc_Damage::IsAttackEvadedByTarget(
 	const FGameplayEffectCustomExecutionParameters& ExecutionParams,
 	const FAggregatorEvaluateParameters& EvaluateParameters
 )
 {
-	float BlockChance = 0.f;
+	float EvadeChance = 0.f;
+	float HitChance = 0.f;
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(
-		DamageStatics().BlockChanceDef,
+		DamageStatics().EvadeChanceDef,
 		EvaluateParameters,
-		BlockChance
+		EvadeChance
 	);
-	const float BlockCalc = FMath::RandRange(1, 100);
-	return BlockCalc <= BlockChance;
+	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(
+		DamageStatics().HitChanceDef,
+		EvaluateParameters,
+		HitChance
+	);
+	const float EvadeCalc = FMath::RandRange(1, 100);
+	return EvadeCalc >= (HitChance - EvadeChance);
 }
 
 float UExecCalc_Damage::GetTargetEffectiveArmor(
@@ -194,47 +163,25 @@ float UExecCalc_Damage::GetTargetEffectiveArmor(
 	const FAggregatorEvaluateParameters& EvaluateParameters
 )
 {
-	const UCharacterClassInfo* CharacterClassInfo = UElectricCastleAbilitySystemLibrary::GetCharacterClassInfo(
-		ExecutionParams.GetSourceAbilitySystemComponent()->GetAvatarActor()
-	);
-	// target protection
-	float TargetArmor = 0.f;
-	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(
-		DamageStatics().ArmorDef,
-		EvaluateParameters,
-		TargetArmor
-	);
-	TargetArmor = FMath::Max<float>(TargetArmor, 0.f);
-	float PassiveProtectionPercentage = 0.f;
-	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(
-		DamageStatics().Passive_ProtectionDef,
-		EvaluateParameters,
-		PassiveProtectionPercentage
-	);
-	PassiveProtectionPercentage = FMath::Max(PassiveProtectionPercentage, 1.f, PassiveProtectionPercentage);
-	TargetArmor *= PassiveProtectionPercentage;
-	const float EffectiveArmorCoefficient =
-		CharacterClassInfo->GetEffectiveArmorCoefficient(
-			IElectricCastleAbilitySystemInterface::GetCharacterLevel(ExecutionParams.GetTargetAbilitySystemComponent())
+	float Defense = 0.f;
+	float MagicDefense = 0.f;
+	if (IsPhysicalAttack(ExecutionParams))
+	{
+		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(
+			DamageStatics().DefenseDef,
+			EvaluateParameters,
+			Defense
 		);
-	// source armor penetration
-	float SourceArmorPenetration = 0.f;
-	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(
-		DamageStatics().ArmorPenetrationDef,
-		EvaluateParameters,
-		SourceArmorPenetration
-	);
-
-	const float ArmorPenetrationCoefficient =
-		CharacterClassInfo->GetArmorPenetrationCoefficient(
-			IElectricCastleAbilitySystemInterface::GetCharacterLevel(ExecutionParams.GetSourceAbilitySystemComponent())
+	}
+	if (IsMagicalAttack(ExecutionParams))
+	{
+		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(
+			DamageStatics().MagicDefenseDef,
+			EvaluateParameters,
+			MagicDefense
 		);
-
-	const float EffectiveArmor = EffectiveArmorCoefficient * FMath::Max<float>(
-		TargetArmor * (100 - SourceArmorPenetration * ArmorPenetrationCoefficient) / 100.f,
-		0.f
-	);
-	return EffectiveArmor;
+	}
+	return Defense > MagicDefense ? Defense : MagicDefense;
 }
 
 bool UExecCalc_Damage::IsCriticalHitOnTarget(
@@ -249,34 +196,8 @@ bool UExecCalc_Damage::IsCriticalHitOnTarget(
 		SourceCriticalHitChance
 	);
 	SourceCriticalHitChance = FMath::Max<float>(SourceCriticalHitChance, 0.f);
-	float TargetCriticalHitResistance = 0.f;
-	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(
-		DamageStatics().CriticalHitResistanceDef,
-		EvaluateParameters,
-		TargetCriticalHitResistance
-	);
-	const UCharacterClassInfo* CharacterClassInfo = UElectricCastleAbilitySystemLibrary::GetCharacterClassInfo(
-		ExecutionParams.GetSourceAbilitySystemComponent()
-	);
-	TargetCriticalHitResistance *= CharacterClassInfo->GetCriticalHitResistanceCoefficient(
-		IElectricCastleAbilitySystemInterface::GetCharacterLevel(ExecutionParams.GetTargetAbilitySystemComponent())
-	);
-	const float CriticalHitCalculation = FMath::RandRange(1, 100) - TargetCriticalHitResistance;
+	const float CriticalHitCalculation = FMath::RandRange(1, 100);
 	return CriticalHitCalculation <= SourceCriticalHitChance;
-}
-
-float UExecCalc_Damage::GetEffectiveCriticalHitDamage(
-	const FGameplayEffectCustomExecutionParameters& ExecutionParams,
-	const FAggregatorEvaluateParameters& EvaluateParameters
-)
-{
-	float SourceCriticalHitDamage = 0.f;
-	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(
-		DamageStatics().CriticalHitDamageDef,
-		EvaluateParameters,
-		SourceCriticalHitDamage
-	);
-	return SourceCriticalHitDamage;
 }
 
 bool UExecCalc_Damage::IsDebuffApplied(
@@ -289,17 +210,9 @@ bool UExecCalc_Damage::IsDebuffApplied(
 	const FGameplayEffectSpec Spec = ExecutionParams.GetOwningSpec();
 	if (Spec.GetSetByCallerMagnitude(DamageTypeTag, false, -1.f) > 0.f)
 	{
-		const FGameplayTag& ResistanceTag = GameplayTags.GetDamageTypeResistanceTag(DamageTypeTag);
-		const float SourceDebuffChance = Spec.GetSetByCallerMagnitude(GameplayTags.Debuff_Stat_Chance, false, -1.f);
-		float TargetDebuffResistance = 0.f;
-		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(
-			DamageStatics().TagsToCaptureDefs[ResistanceTag],
-			EvaluateParameters,
-			TargetDebuffResistance
-		);
-		TargetDebuffResistance = FMath::Max<float>(TargetDebuffResistance, 0.f);
-		// DEVNOTE - this was a shorthand hack by the course instructor to make each point of resistance reduce debuff chance by 1%.
-		// In a real project, this would probably be done via game config (curve table, etc)
+		const float SourceDebuffChance = Spec.GetSetByCallerMagnitude(GameplayTags.Effect_Debuff_Stat_Chance, false, -1.f);
+		// Create a random chance to resist a debuff
+		const float TargetDebuffResistance = FMath::FRandRange(50.f, 100.f);
 		const float EffectiveDebuffChance = SourceDebuffChance * (100 - TargetDebuffResistance) / 100.f;
 		return FMath::RandRange(1, 100) < EffectiveDebuffChance;
 	}
@@ -314,18 +227,17 @@ void UExecCalc_Damage::DetermineDebuff(
 	const FElectricCastleGameplayTags& GameplayTags = FElectricCastleGameplayTags::Get();
 	const FGameplayEffectSpec Spec = ExecutionParams.GetOwningSpec();
 
-	for (const FGameplayTag& DamageTypeTag : GameplayTags.GetDamageTypes())
+	for (const FGameplayTag& DebuffTag : FElectricCastleGameplayTags::Get().GetDebuffTypes())
 	{
-		if (IsDebuffApplied(DamageTypeTag, ExecutionParams, EvaluateParams))
+		if (IsDebuffApplied(DebuffTag, ExecutionParams, EvaluateParams))
 		{
 			FGameplayEffectContextHandle EffectContext = Spec.GetContext();
-			FGameplayTag DebuffTypeTag = GameplayTags.GetDamageTypeDebuffTag(DamageTypeTag);
 			UElectricCastleAbilitySystemLibrary::SetDebuff(
 				EffectContext,
-				DebuffTypeTag,
-				Spec.GetSetByCallerMagnitude(GameplayTags.Debuff_Stat_Damage, false, -1.f),
-				Spec.GetSetByCallerMagnitude(GameplayTags.Debuff_Stat_Duration, false, -1.f),
-				Spec.GetSetByCallerMagnitude(GameplayTags.Debuff_Stat_Frequency, false, -1.f)
+				DebuffTag,
+				Spec.GetLevel(),
+				Spec.GetSetByCallerMagnitude(GameplayTags.Effect_Debuff_Stat_Damage, false, -1.f),
+				Spec.GetSetByCallerMagnitude(GameplayTags.Effect_Debuff_Stat_Duration, false, -1.f), Spec.GetSetByCallerMagnitude(GameplayTags.Effect_Debuff_Stat_Frequency, false, -1.f)
 			);
 			break;
 		}
@@ -376,4 +288,26 @@ void UExecCalc_Damage::ApplyRadialDamage(
 			nullptr
 		);
 	}
+}
+
+bool UExecCalc_Damage::IsPhysicalAttack(const FGameplayEffectCustomExecutionParameters& ExecutionParams)
+{
+	FGameplayTagContainer AbilityTags;
+	ExecutionParams.GetOwningSpec().GetAllAssetTags(AbilityTags);
+	if (AbilityTags.HasTagExact(FElectricCastleGameplayTags::Get().Effect_Damage_Physical))
+	{
+		return true;
+	}
+	return false;
+}
+
+bool UExecCalc_Damage::IsMagicalAttack(const FGameplayEffectCustomExecutionParameters& ExecutionParams)
+{
+	FGameplayTagContainer AbilityTags;
+	ExecutionParams.GetOwningSpec().GetAllAssetTags(AbilityTags);
+	if (AbilityTags.HasTag(FElectricCastleGameplayTags::Get().Effect_Damage_Magic))
+	{
+		return true;
+	}
+	return false;
 }

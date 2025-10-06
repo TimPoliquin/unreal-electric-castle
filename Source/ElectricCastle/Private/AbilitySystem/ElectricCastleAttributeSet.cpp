@@ -8,73 +8,60 @@
 #include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemInterface.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
+#include "AbilitySystem/Debuff/DebuffConfig.h"
+#include "ElectricCastle/ElectricCastleLogChannels.h"
+#include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "GameFramework/Character.h"
 #include "Interaction/CombatInterface.h"
 #include "Interaction/PlayerInterface.h"
 #include "Net/UnrealNetwork.h"
 #include "Player/ElectricCastlePlayerController.h"
 #include "Tags/ElectricCastleGameplayTags.h"
-#include "GameplayEffectComponents/TargetTagsGameplayEffectComponent.h"
-#include "Player/Progression/ProgressionComponent.h"
 
 
 UElectricCastleAttributeSet::UElectricCastleAttributeSet()
 {
 	const FElectricCastleGameplayTags& GameplayTags = FElectricCastleGameplayTags::Get();
 	// Add primary attributes to attribute map
+	TagsToAttributes.Add(GameplayTags.Attributes_Primary_MaxHealth, GetMaxHealthAttribute);
+	TagsToAttributes.Add(GameplayTags.Attributes_Primary_MaxMana, GetMaxManaAttribute);
 	TagsToAttributes.Add(GameplayTags.Attributes_Primary_Strength, GetStrengthAttribute);
+	TagsToAttributes.Add(GameplayTags.Attributes_Primary_Agility, GetAgilityAttribute);
 	TagsToAttributes.Add(GameplayTags.Attributes_Primary_Intelligence, GetIntelligenceAttribute);
-	TagsToAttributes.Add(GameplayTags.Attributes_Primary_Resilience, GetResilienceAttribute);
-	TagsToAttributes.Add(GameplayTags.Attributes_Primary_Vigor, GetVigorAttribute);
+	TagsToAttributes.Add(GameplayTags.Attributes_Primary_Constitution, GetConstitutionAttribute);
+	TagsToAttributes.Add(GameplayTags.Attributes_Primary_Wisdom, GetWisdomAttribute);
 	// Add secondary attributes to attribute map
-	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_Armor, GetArmorAttribute);
-	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_ArmorPenetration, GetArmorPenetrationAttribute);
-	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_BlockChance, GetBlockChanceAttribute);
+	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_AttackPower, GetAttackPowerAttribute);
+	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_MagicPower, GetMagicPowerAttribute);
+	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_Defense, GetDefenseAttribute);
+	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_MagicDefense, GetMagicDefenseAttribute);
+	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_HitChance, GetHitChanceAttribute);
+	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_EvadeChance, GetEvadeChanceAttribute);
 	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_CriticalHitChance, GetCriticalHitChanceAttribute);
-	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_CriticalHitResistance, GetCriticalHitResistanceAttribute);
-	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_CriticalHitDamage, GetCriticalHitDamageAttribute);
-	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_HealthRegeneration, GetHealthRegenerationAttribute);
-	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_ManaRegeneration, GetManaRegenerationAttribute);
-	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_MaxHealth, GetMaxHealthAttribute);
-	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_MaxMana, GetMaxManaAttribute);
-	// add resistances to attribute map
-	TagsToAttributes.Add(GameplayTags.Attributes_Resistance_Arcane, GetResistance_ArcaneAttribute);
-	TagsToAttributes.Add(GameplayTags.Attributes_Resistance_Fire, GetResistance_FireAttribute);
-	TagsToAttributes.Add(GameplayTags.Attributes_Resistance_Lightning, GetResistance_LightningAttribute);
-	TagsToAttributes.Add(GameplayTags.Attributes_Resistance_Physical, GetResistance_PhysicalAttribute);
-	// add passives to attribute map
-	TagsToAttributes.Add(GameplayTags.Attributes_Passive_Protection, GetPassive_ProtectionAttribute);
 }
 
 void UElectricCastleAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	// primary attributes
-	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, Strength, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, Intelligence, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, Resilience, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, Vigor, COND_None, REPNOTIFY_Always);
-	// secondary attributes
-	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, Armor, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, ArmorPenetration, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, BlockChance, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, CriticalHitChance, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, CriticalHitDamage, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, CriticalHitResistance, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, HealthRegeneration, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, ManaRegeneration, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, MaxHealth, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, MaxMana, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, Strength, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, Agility, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, Constitution, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, Intelligence, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, Wisdom, COND_None, REPNOTIFY_Always);
+	// secondary attributes
+	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, AttackPower, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, MagicPower, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, Defense, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, MagicDefense, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, HitChance, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, EvadeChance, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, CriticalHitChance, COND_None, REPNOTIFY_Always);
 	// vital attributes
 	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, Health, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, Mana, COND_None, REPNOTIFY_Always);
-	// resistance attributes
-	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, Resistance_Arcane, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, Resistance_Fire, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, Resistance_Lightning, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, Resistance_Physical, COND_None, REPNOTIFY_Always);
-	// passive attributes
-	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, Passive_Protection, COND_None, REPNOTIFY_Always);
 }
 
 void UElectricCastleAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
@@ -151,22 +138,28 @@ void UElectricCastleAttributeSet::InitializeDefaultAttributes(const int32 Level)
 
 void UElectricCastleAttributeSet::ToSaveData(FAttributeSetSaveData& SaveData) const
 {
-	SaveData.Strength = GetStrength();
-	SaveData.Intelligence = GetIntelligence();
-	SaveData.Resilience = GetResilience();
-	SaveData.Vigor = GetVigor();
+	SaveData.MaxHealth = GetMaxHealth();
+	SaveData.MaxMana = GetMaxMana();
 	SaveData.Health = GetHealth();
 	SaveData.Mana = GetMana();
+	SaveData.Strength = GetStrength();
+	SaveData.Agility = GetAgility();
+	SaveData.Constitution = GetConstitution();
+	SaveData.Intelligence = GetIntelligence();
+	SaveData.Wisdom = GetWisdom();
 }
 
 void UElectricCastleAttributeSet::FromSaveData(const FAttributeSetSaveData& SaveData)
 {
-	SetStrength(SaveData.Strength);
-	SetIntelligence(SaveData.Intelligence);
-	SetResilience(SaveData.Resilience);
-	SetVigor(SaveData.Vigor);
+	SetMaxHealth(SaveData.MaxHealth);
+	SetMaxMana(SaveData.MaxMana);
 	SetHealth(SaveData.Health);
 	SetMana(SaveData.Mana);
+	SetStrength(SaveData.Strength);
+	SetAgility(SaveData.Agility);
+	SetConstitution(SaveData.Constitution);
+	SetIntelligence(SaveData.Intelligence);
+	SetWisdom(SaveData.Wisdom);
 }
 
 void UElectricCastleAttributeSet::SetEffectProperties(const FGameplayEffectModCallbackData& Data, FEffectProperties& Props) const
@@ -298,56 +291,24 @@ void UElectricCastleAttributeSet::HandleIncomingRefresh(const FEffectProperties&
 
 void UElectricCastleAttributeSet::HandleDebuff(const FEffectProperties& Props)
 {
-	const FElectricCastleGameplayTags& GameplayTags = FElectricCastleGameplayTags::Get();
 	FGameplayEffectContextHandle EffectContext = Props.Source.AbilitySystemComponent->MakeEffectContext();
 	EffectContext.AddSourceObject(Props.Source.AvatarActor);
 
 	const FGameplayTag DebuffTypeTag = UElectricCastleAbilitySystemLibrary::GetDebuffTypeTag(Props.EffectContextHandle);
-	const FGameplayTag DamageTypeTag = GameplayTags.GetDebuffTypeDamageTypeTag(DebuffTypeTag);
-	const float DebuffDamage = UElectricCastleAbilitySystemLibrary::GetDebuffDamage(Props.EffectContextHandle);
-	const float DebuffDuration = UElectricCastleAbilitySystemLibrary::GetDebuffDuration(Props.EffectContextHandle);
-	const float DebuffFrequency = UElectricCastleAbilitySystemLibrary::GetDebuffFrequency(Props.EffectContextHandle);
-
-	const FString DebuffName = FString::Printf(TEXT("DynamicDebuff_%s"), *DebuffTypeTag.ToString());
-	UGameplayEffect* Effect = NewObject<UGameplayEffect>(GetTransientPackage(), FName(DebuffName));
-
-	Effect->DurationPolicy = EGameplayEffectDurationType::HasDuration;
-	Effect->Period = DebuffFrequency;
-	Effect->DurationMagnitude = FScalableFloat(DebuffDuration);
-
-	Effect->StackingType = EGameplayEffectStackingType::AggregateBySource;
-	Effect->StackLimitCount = 1;
-
-	const int32 Index = Effect->Modifiers.Num();
-	Effect->Modifiers.Add(FGameplayModifierInfo());
-	FGameplayModifierInfo& ModifierInfo = Effect->Modifiers[Index];
-
-	ModifierInfo.ModifierMagnitude = FScalableFloat(DebuffDamage);
-	ModifierInfo.ModifierOp = EGameplayModOp::Additive;
-	ModifierInfo.Attribute = GetMeta_IncomingDamageAttribute();
-
-	UTargetTagsGameplayEffectComponent& TagsComponent = Effect->FindOrAddComponent<
-		UTargetTagsGameplayEffectComponent>();
-	FInheritedTagContainer InheritedTagContainer = FInheritedTagContainer();
-	InheritedTagContainer.Added.AddTag(DebuffTypeTag);
-	InheritedTagContainer.Added.AddTag(GameplayTags.Debuff_Block_Regen_Health);
-	if (DebuffTypeTag.MatchesTagExact(GameplayTags.Debuff_Type_Shock))
+	if (const UDebuffConfig* DebuffConfig = UElectricCastleGameDataSubsystem::Get(Props.Target.AvatarActor)->GetDebuffConfig())
 	{
-		InheritedTagContainer.Added.AddTag(FElectricCastleGameplayTags::Get().Player_Block_CursorTrace);
-		InheritedTagContainer.Added.AddTag(FElectricCastleGameplayTags::Get().Player_Block_Interaction);
-		InheritedTagContainer.Added.AddTag(FElectricCastleGameplayTags::Get().Player_Block_Movement);
-		InheritedTagContainer.Added.AddTag(FElectricCastleGameplayTags::Get().Player_Block_Ability_Offensive);
-	}
-	TagsComponent.SetAndApplyTargetTagChanges(InheritedTagContainer);
-
-	if (const FGameplayEffectSpec* MutableSpec = new FGameplayEffectSpec(Effect, EffectContext, 1.f))
-	{
-		FElectricCastleGameplayEffectContext* AuraContext = static_cast<FElectricCastleGameplayEffectContext*>(MutableSpec->GetContext().
-		                                                                                                                    Get());
-		const TSharedPtr<FGameplayTag> DebuffDamageType = MakeShareable(new FGameplayTag(DamageTypeTag));
-		AuraContext->SetDamageTypeTag(DebuffDamageType);
-
-		Props.Target.AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*MutableSpec);
+		if (const FDebuffConfigRow& DebuffConfigRow = DebuffConfig->GetDebuffConfigByDebuffTag(DebuffTypeTag); DebuffConfigRow.IsValid())
+		{
+			UElectricCastleAbilitySystemLibrary::ApplyBasicGameplayEffect(
+				Props.Target.AvatarActor,
+				DebuffConfigRow.DebuffEffect,
+				UElectricCastleAbilitySystemLibrary::GetDebuffLevel(Props.EffectContextHandle)
+			);
+		}
+		else
+		{
+			UE_LOG(LogElectricCastle, Warning, TEXT("[%s] No debuff config for tag: %s"), *GetName(), *DebuffTypeTag.ToString())
+		}
 	}
 }
 

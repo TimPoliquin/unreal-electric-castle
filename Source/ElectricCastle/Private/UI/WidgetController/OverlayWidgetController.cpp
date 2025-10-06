@@ -11,6 +11,10 @@
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "Player/ElectricCastlePlayerState.h"
 #include "Player/InventoryComponent.h"
+#include "Player/Form/FormChangeActorInterface.h"
+#include "Player/Form/FormConfigLoadRequest.h"
+#include "Player/Form/PlayerFormChangeComponent.h"
+#include "Player/Form/PlayerFormConfig.h"
 #include "Player/Progression/ProgressionComponent.h"
 #include "Tags/ElectricCastleGameplayTags.h"
 
@@ -23,9 +27,9 @@ void UOverlayWidgetController::BroadcastInitialValues()
 	}
 	const FElectricCastleGameplayTags& AuraGameplayTags = FElectricCastleGameplayTags::Get();
 	OnHealthChanged.Broadcast(FAuraFloatAttributeChangedPayload::CreateBroadcastPayload(AuraGameplayTags.Attributes_Vital_Health, GetAttributeSet()->GetHealth()));
-	OnMaxMaxHealthChanged.Broadcast(FAuraFloatAttributeChangedPayload::CreateBroadcastPayload(AuraGameplayTags.Attributes_Secondary_MaxHealth, GetAttributeSet()->GetMaxHealth()));
+	OnMaxMaxHealthChanged.Broadcast(FAuraFloatAttributeChangedPayload::CreateBroadcastPayload(AuraGameplayTags.Attributes_Primary_MaxHealth, GetAttributeSet()->GetMaxHealth()));
 	OnManaChanged.Broadcast(FAuraFloatAttributeChangedPayload::CreateBroadcastPayload(AuraGameplayTags.Attributes_Vital_Mana, GetAttributeSet()->GetMana()));
-	OnMaxManaChanged.Broadcast(FAuraFloatAttributeChangedPayload::CreateBroadcastPayload(AuraGameplayTags.Attributes_Secondary_MaxMana, GetAttributeSet()->GetMaxMana()));
+	OnMaxManaChanged.Broadcast(FAuraFloatAttributeChangedPayload::CreateBroadcastPayload(AuraGameplayTags.Attributes_Primary_MaxMana, GetAttributeSet()->GetMaxMana()));
 	if (const UProgressionComponent* ProgressionComponent = UProgressionComponent::Get(GetPlayerState()))
 	{
 		const float NewPercentage = UElectricCastleGameDataSubsystem::Get(GetPlayerState())->GetXPToNextLevelPercentage(ProgressionComponent->GetXP());
@@ -55,6 +59,10 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 		);
 		ProgressionComponent->OnLevelChangeDelegate.AddDynamic(this, &UOverlayWidgetController::OnPlayerLevelChange);
 	}
+	if (UPlayerFormChangeComponent* FormChangeComponent = IFormChangeActorInterface::GetFormChangeComponent(GetAuraPlayerController()->GetPawn()))
+	{
+		FormChangeComponent->OnPlayerFormChange.AddDynamic(this, &UOverlayWidgetController::OnFormChange);
+	}
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(GetAttributeSet()->GetHealthAttribute())
 	                      .AddLambda(
 		                      [&](const FOnAttributeChangeData& Data)
@@ -66,7 +74,7 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 	                      .AddLambda(
 		                      [&](const FOnAttributeChangeData& Data)
 		                      {
-			                      OnMaxMaxHealthChanged.Broadcast(FAuraFloatAttributeChangedPayload(GameplayTags.Attributes_Secondary_MaxHealth, Data.OldValue, Data.NewValue));
+			                      OnMaxMaxHealthChanged.Broadcast(FAuraFloatAttributeChangedPayload(GameplayTags.Attributes_Primary_MaxHealth, Data.OldValue, Data.NewValue));
 		                      }
 	                      );
 
@@ -81,7 +89,7 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 	                      .AddLambda(
 		                      [&](const FOnAttributeChangeData& Data)
 		                      {
-			                      OnMaxManaChanged.Broadcast(FAuraFloatAttributeChangedPayload(GameplayTags.Attributes_Secondary_MaxMana, Data.OldValue, Data.NewValue));
+			                      OnMaxManaChanged.Broadcast(FAuraFloatAttributeChangedPayload(GameplayTags.Attributes_Primary_MaxMana, Data.OldValue, Data.NewValue));
 		                      }
 	                      );
 	GetAbilitySystemComponent()->OnEffectAssetTagsDelegate.AddLambda(
@@ -190,4 +198,22 @@ void UOverlayWidgetController::OnPlayerInventoryChanged(const FOnInventoryItemCo
 
 void UOverlayWidgetController::OnPlayerInventoryFull(const FGameplayTag& ItemType)
 {
+}
+
+void UOverlayWidgetController::OnPortraitLoaded(const FPlayerFormConfigRow& Row)
+{
+	OnOverlayPortraitChangedDelegate.Broadcast(FOverlayPortraitChangedPayload(Row.PortraitImage.Get()));
+}
+
+void UOverlayWidgetController::OnFormChange(const FPlayerFormChangeEventPayload& Payload)
+{
+	if (const UElectricCastleGameDataSubsystem* GameData = UElectricCastleGameDataSubsystem::Get(GetPlayerState()))
+	{
+		if (UPlayerFormConfig* FormConfig = GameData->GetPlayerFormConfig())
+		{
+			UFormConfigLoadRequest* LoadRequest = FormConfig->GetOrCreateLoadRequest(Payload.NewFormTag);
+			LoadRequest->Callback.AddUniqueDynamic(this, &UOverlayWidgetController::OnPortraitLoaded);
+			FormConfig->LoadAsync(LoadRequest);
+		}
+	}
 }

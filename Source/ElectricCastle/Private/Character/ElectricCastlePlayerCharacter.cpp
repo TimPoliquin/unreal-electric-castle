@@ -28,6 +28,9 @@
 #include "MotionWarpingComponent.h"
 #include "Components/BoxComponent.h"
 #include "Interaction/FadeInterface.h"
+#include "Player/Form/PlayerFormChangeComponent.h"
+
+class UPlayerFormConfig;
 
 AElectricCastlePlayerCharacter::AElectricCastlePlayerCharacter()
 {
@@ -63,8 +66,12 @@ AElectricCastlePlayerCharacter::AElectricCastlePlayerCharacter()
 	FishingStatusEffectNiagaraComponent->SetupAttachment(EffectAttachComponent);
 	FishingStatusEffectNiagaraComponent->SetAutoActivate(false);
 	MotionWarpingComponent = CreateDefaultSubobject<UMotionWarpingComponent>(TEXT("Motion Warping"));
+	FormChangeComponent = CreateDefaultSubobject<UPlayerFormChangeComponent>(TEXT("Form Change Component"));
+	FormChangeComponent->OnPlayerFormChange.AddDynamic(this, &AElectricCastlePlayerCharacter::OnFormChange);
 	GetMesh()->SetCollisionResponseToChannel(ECC_Target, ECR_Ignore);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Target, ECR_Ignore);
+	GetMesh()->SetIsReplicated(true);
+	bReplicates = true;
 }
 
 void AElectricCastlePlayerCharacter::BeginPlay()
@@ -88,6 +95,14 @@ void AElectricCastlePlayerCharacter::BeginDestroy()
 	}
 }
 
+void AElectricCastlePlayerCharacter::OnFormChange_Implementation(const FPlayerFormChangeEventPayload& Payload)
+{
+	FormChangeComponent->FormChange_PlayEffect(Payload);
+	FormChangeComponent->FormChange_UpdateCharacterMesh(Payload);
+	FormChangeComponent->FormChange_UpdateAttributes(Payload);
+	FormChangeComponent->FormChange_UpdateAbilities(Payload);
+}
+
 void AElectricCastlePlayerCharacter::OnEquipmentAnimationRequest_Implementation(const FEquipmentDelegatePayload& Payload)
 {
 	EquipmentComponent->UseEquipment(Payload.EquipmentSlot);
@@ -101,6 +116,11 @@ void AElectricCastlePlayerCharacter::Tick(float DeltaTime)
 void AElectricCastlePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+}
+
+void AElectricCastlePlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 }
 
 UElectricCastleAttributeSet* AElectricCastlePlayerCharacter::GetAttributeSet() const
@@ -357,16 +377,8 @@ void AElectricCastlePlayerCharacter::ApplyLevelUpRewards_Implementation(
 {
 	UProgressionComponent* ProgressionComponent = UProgressionComponent::Get(this);
 	checkf(ProgressionComponent, TEXT("[%s] No access to progression component while trying to ApplyLevelUpRewards"), *GetName());
-	ProgressionComponent->AddAttributePoints(InLevelUpRewards.AttributePoints);
 	ProgressionComponent->AddSpellPoints(InLevelUpRewards.SpellPoints);
 	ProgressionComponent->AddToLevel(LevelIncrement);
-}
-
-int32 AElectricCastlePlayerCharacter::GetAttributePoints_Implementation() const
-{
-	const UProgressionComponent* ProgressionComponent = UProgressionComponent::Get(this);
-	checkf(ProgressionComponent, TEXT("[%s] No access to progression component while trying to GetAttributePoints"), *GetName());
-	return ProgressionComponent->GetAttributePoints();
 }
 
 int32 AElectricCastlePlayerCharacter::GetSpellPoints_Implementation() const
@@ -374,13 +386,6 @@ int32 AElectricCastlePlayerCharacter::GetSpellPoints_Implementation() const
 	const UProgressionComponent* ProgressionComponent = UProgressionComponent::Get(this);
 	checkf(ProgressionComponent, TEXT("[%s] No access to progression component while trying to GetSpellPoints"), *GetName());
 	return ProgressionComponent->GetSpellPoints();
-}
-
-void AElectricCastlePlayerCharacter::SpendAttributePoints_Implementation(int32 SpentPoints)
-{
-	UProgressionComponent* ProgressionComponent = UProgressionComponent::Get(this);
-	checkf(ProgressionComponent, TEXT("[%s] No access to progression component while trying to AddAttributePoints"), *GetName());
-	return ProgressionComponent->AddAttributePoints(-1 * SpentPoints);
 }
 
 void AElectricCastlePlayerCharacter::SpendSpellPoints_Implementation(const int32 SpentPoints)
@@ -463,4 +468,9 @@ void AElectricCastlePlayerCharacter::ShowFishingStatusEffect_Implementation(UNia
 		FishingStatusEffectNiagaraComponent->SetAsset(nullptr);
 		FishingStatusEffectNiagaraComponent->DeactivateImmediate();
 	}
+}
+
+UPlayerFormChangeComponent* AElectricCastlePlayerCharacter::GetFormChangeComponent_Implementation() const
+{
+	return FormChangeComponent;
 }
