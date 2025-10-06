@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayEffect.h"
 #include "GameplayTagContainer.h"
 #include "Components/ActorComponent.h"
 #include "PlayerFormChangeComponent.generated.h"
@@ -25,6 +26,8 @@ struct ELECTRICCASTLE_API FPlayerFormChangeEventPayload
 	TSubclassOf<UAnimInstance> AnimationBlueprintClass;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<UTexture2D> PortraitImage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<UGameplayEffect> FormAttributes;
 	UPROPERTY(BlueprintAssignable)
 	FPlayerFormDataLoadedSignature OnPlayerFormDataLoaded;
 
@@ -51,8 +54,12 @@ public:
 	void FormChange_PlayEffect(const FPlayerFormChangeEventPayload& Payload);
 	UFUNCTION(BlueprintCallable)
 	void FormChange_UpdateCharacterMesh(const FPlayerFormChangeEventPayload& Payload);
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FGameplayTag GetCurrentFormTag() const { return CurrentForm; }
+	UFUNCTION(BlueprintCallable)
+	void FormChange_UpdateAbilities(const FPlayerFormChangeEventPayload& Payload);
+	UFUNCTION(BlueprintCallable)
+	void FormChange_UpdateAttributes(const FPlayerFormChangeEventPayload& Payload);
+	UFUNCTION(BlueprintCallable)
+	FGameplayTag GetCurrentFormTag() const { return CurrentFormTag; }
 
 	UPROPERTY(BlueprintAssignable)
 	FPlayerFormChangeEventSignature OnPlayerFormChange;
@@ -65,7 +72,9 @@ protected:
 	TObjectPtr<USoundBase> FormChangeSound;
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Form", meta=(Categories="Player.Form"))
-	FGameplayTag CurrentForm = FGameplayTag::EmptyTag;
+	FGameplayTag CurrentFormTag = FGameplayTag::EmptyTag;
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Form")
+	FActiveGameplayEffectHandle CurrentFormEffectHandle;
 
 private:
 	FPlayerFormConfigRow GetPlayerFormConfigRow(const FGameplayTag& FormTag) const;

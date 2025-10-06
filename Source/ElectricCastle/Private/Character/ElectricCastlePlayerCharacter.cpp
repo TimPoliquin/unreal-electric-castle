@@ -97,6 +97,8 @@ void AElectricCastlePlayerCharacter::OnFormChange_Implementation(const FPlayerFo
 {
 	FormChangeComponent->FormChange_PlayEffect(Payload);
 	FormChangeComponent->FormChange_UpdateCharacterMesh(Payload);
+	FormChangeComponent->FormChange_UpdateAttributes(Payload);
+	FormChangeComponent->FormChange_UpdateAbilities(Payload);
 }
 
 void AElectricCastlePlayerCharacter::OnEquipmentAnimationRequest_Implementation(const FEquipmentDelegatePayload& Payload)

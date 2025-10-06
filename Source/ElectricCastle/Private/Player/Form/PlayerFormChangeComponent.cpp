@@ -3,7 +3,11 @@
 
 #include "Player/Form/PlayerFormChangeComponent.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
 #include "NiagaraFunctionLibrary.h"
+#include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
+#include "AbilitySystem/ElectricCastleAbilitySystemInterface.h"
+#include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "GameFramework/Character.h"
@@ -17,7 +21,7 @@ UPlayerFormChangeComponent::UPlayerFormChangeComponent()
 
 void UPlayerFormChangeComponent::ChangeForm_Async(const FGameplayTag& FormTag)
 {
-	if (FormTag.MatchesTagExact(CurrentForm))
+	if (FormTag.MatchesTagExact(CurrentFormTag))
 	{
 		return;
 	}
@@ -27,7 +31,7 @@ void UPlayerFormChangeComponent::ChangeForm_Async(const FGameplayTag& FormTag)
 		UE_LOG(LogElectricCastle, Warning, TEXT("[%s:%s] Failed to change form -- invalid game data or form config! %s"), *GetOwner()->GetName(), *GetName(), *FormTag.ToString());
 		return;
 	}
-	const FGameplayTag OldFormTag = CurrentForm;
+	const FGameplayTag OldFormTag = CurrentFormTag;
 	FLoadSoftObjectPathAsyncDelegate FormLoad;
 	FormLoad.BindLambda([this, FormTag, OldFormTag](FSoftObjectPath ObjectPath, UObject* Loaded)
 	{
@@ -40,7 +44,8 @@ void UPlayerFormChangeComponent::ChangeForm_Async(const FGameplayTag& FormTag)
 			EventPayload.CharacterMesh = Row.CharacterMesh.Get();
 			EventPayload.AnimationBlueprintClass = Row.AnimationBlueprint.Get();
 			EventPayload.PortraitImage = Row.PortraitImage.Get();
-			CurrentForm = FormTag;
+			EventPayload.FormAttributes = Row.FormAttributes;
+			CurrentFormTag = FormTag;
 			OnPlayerFormChange.Broadcast(EventPayload);
 		}
 	});
@@ -88,6 +93,26 @@ void UPlayerFormChangeComponent::FormChange_UpdateCharacterMesh(const FPlayerFor
 {
 	GetMesh()->SetSkeletalMesh(Payload.CharacterMesh);
 	GetMesh()->SetAnimInstanceClass(Payload.AnimationBlueprintClass);
+}
+
+void UPlayerFormChangeComponent::FormChange_UpdateAbilities(const FPlayerFormChangeEventPayload& Payload)
+{
+}
+
+void UPlayerFormChangeComponent::FormChange_UpdateAttributes(const FPlayerFormChangeEventPayload& Payload)
+{
+	if (UElectricCastleAbilitySystemComponent* AbilitySystemComponent = Cast<UElectricCastleAbilitySystemComponent>(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetOwner())))
+	{
+		if (CurrentFormEffectHandle.IsValid())
+		{
+			UElectricCastleAbilitySystemLibrary::RemoveGameplayEffect(GetOwner(), CurrentFormEffectHandle);
+		}
+		CurrentFormEffectHandle = UElectricCastleAbilitySystemLibrary::ApplyBasicGameplayEffect(
+			GetOwner(),
+			Payload.FormAttributes,
+			IElectricCastleAbilitySystemInterface::GetCharacterLevel(GetOwner())
+		);
+	}
 }
 
 

@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "FormConfigTypes.h"
 #include "GameplayTagContainer.h"
-#include "PlayerFormAttributeModifiers.h"
 #include "Abilities/GameplayAbility.h"
 #include "Engine/DataAsset.h"
 #include "PlayerFormConfig.generated.h"
@@ -29,7 +28,7 @@ struct ELECTRICCASTLE_API FPlayerFormConfigRow
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<TObjectPtr<UGameplayAbility>> PassiveAbilities;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TObjectPtr<UPlayerFormAttributeModifiers> AttributeModifiers;
+	TSubclassOf<UGameplayEffect> FormAttributes;
 
 	FPlayerFormConfigRow()
 	{
