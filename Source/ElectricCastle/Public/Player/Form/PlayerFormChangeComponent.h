@@ -8,6 +8,7 @@
 #include "Components/ActorComponent.h"
 #include "PlayerFormChangeComponent.generated.h"
 
+class UPlayerFormConfig;
 class UNiagaraSystem;
 struct FPlayerFormConfigRow;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FPlayerFormDataLoadedSignature);
@@ -28,6 +29,10 @@ struct ELECTRICCASTLE_API FPlayerFormChangeEventPayload
 	TObjectPtr<UTexture2D> PortraitImage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<UGameplayEffect> FormAttributes;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<UGameplayEffect> HealthChangeEffect;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<UGameplayEffect> ManaChangeEffect;
 	UPROPERTY(BlueprintAssignable)
 	FPlayerFormDataLoadedSignature OnPlayerFormDataLoaded;
 
@@ -77,6 +82,7 @@ protected:
 	FActiveGameplayEffectHandle CurrentFormEffectHandle;
 
 private:
+	UPlayerFormConfig* GetPlayerFormConfig() const;
 	FPlayerFormConfigRow GetPlayerFormConfigRow(const FGameplayTag& FormTag) const;
 	USkeletalMeshComponent* GetMesh() const;
 

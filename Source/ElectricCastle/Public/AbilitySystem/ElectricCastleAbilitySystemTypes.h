@@ -43,6 +43,11 @@ struct FElectricCastleGameplayEffectContext : public FGameplayEffectContext
 		return bIsSuccessfulDebuff;
 	}
 
+	int32 GetDebuffLevel() const
+	{
+		return DebuffLevel;
+	}
+
 	float GetDebuffDamage() const
 	{
 		return DebuffDamage;
@@ -77,6 +82,11 @@ struct FElectricCastleGameplayEffectContext : public FGameplayEffectContext
 	void SetIsSuccessfulDebuff(const bool InIsSuccessfulDebuff)
 	{
 		bIsSuccessfulDebuff = InIsSuccessfulDebuff;
+	}
+
+	void SetDebuffLevel(const int32 InDebuffLevel)
+	{
+		DebuffLevel = InDebuffLevel;
 	}
 
 	void SetDebuffDamage(const float InDebuffDamage)
@@ -184,6 +194,8 @@ protected:
 	bool bIsCriticalHit = false;
 	UPROPERTY()
 	bool bIsSuccessfulDebuff = false;
+	UPROPERTY()
+	int32 DebuffLevel = 0;
 	UPROPERTY()
 	float DebuffDamage = 0.f;
 	UPROPERTY()

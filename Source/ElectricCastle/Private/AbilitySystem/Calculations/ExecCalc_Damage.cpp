@@ -235,9 +235,9 @@ void UExecCalc_Damage::DetermineDebuff(
 			UElectricCastleAbilitySystemLibrary::SetDebuff(
 				EffectContext,
 				DebuffTag,
+				Spec.GetLevel(),
 				Spec.GetSetByCallerMagnitude(GameplayTags.Effect_Debuff_Stat_Damage, false, -1.f),
-				Spec.GetSetByCallerMagnitude(GameplayTags.Effect_Debuff_Stat_Duration, false, -1.f),
-				Spec.GetSetByCallerMagnitude(GameplayTags.Effect_Debuff_Stat_Frequency, false, -1.f)
+				Spec.GetSetByCallerMagnitude(GameplayTags.Effect_Debuff_Stat_Duration, false, -1.f), Spec.GetSetByCallerMagnitude(GameplayTags.Effect_Debuff_Stat_Frequency, false, -1.f)
 			);
 			break;
 		}

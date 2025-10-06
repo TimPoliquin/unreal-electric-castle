@@ -929,6 +929,16 @@ float UElectricCastleAbilitySystemLibrary::GetDebuffDamage(const FGameplayEffect
 	return 0.f;
 }
 
+int32 UElectricCastleAbilitySystemLibrary::GetDebuffLevel(const FGameplayEffectContextHandle& EffectContextHandle)
+{
+	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const FElectricCastleGameplayEffectContext*>(
+		EffectContextHandle.Get()))
+	{
+		return AuraEffectContext->GetDebuffLevel();
+	}
+	return 0;
+}
+
 float UElectricCastleAbilitySystemLibrary::GetDebuffDuration(const FGameplayEffectContextHandle& EffectContextHandle)
 {
 	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const FElectricCastleGameplayEffectContext*>(
@@ -1016,6 +1026,7 @@ void UElectricCastleAbilitySystemLibrary::SetIsCriticalHit(
 void UElectricCastleAbilitySystemLibrary::SetDebuff(
 	FGameplayEffectContextHandle& EffectContextHandle,
 	const FGameplayTag& DebuffTypeTag,
+	const int32 Level,
 	const float DebuffDamage,
 	const float DebuffDuration,
 	const float DebuffFrequency
@@ -1025,6 +1036,7 @@ void UElectricCastleAbilitySystemLibrary::SetDebuff(
 		EffectContextHandle.Get()))
 	{
 		AuraEffectContext->SetIsSuccessfulDebuff(true);
+		AuraEffectContext->SetDebuffLevel(Level);
 		AuraEffectContext->SetDebuffDamage(DebuffDamage);
 		AuraEffectContext->SetDebuffDuration(DebuffDuration);
 		AuraEffectContext->SetDebuffFrequency(DebuffFrequency);

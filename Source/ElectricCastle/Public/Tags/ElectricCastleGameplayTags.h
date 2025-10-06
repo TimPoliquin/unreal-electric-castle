@@ -106,6 +106,7 @@ struct FElectricCastleGameplayTags
 	FGameplayTag Effect_Debuff_Type_Curse;
 	FGameplayTag Effect_Debuff_Type_Bleed;
 	FGameplayTag Effect_Debuff_Stat;
+	FGameplayTag Effect_Debuff_Level;
 	FGameplayTag Effect_Debuff_Stat_Chance;
 	FGameplayTag Effect_Debuff_Stat_Damage;
 	FGameplayTag Effect_Debuff_Stat_Frequency;

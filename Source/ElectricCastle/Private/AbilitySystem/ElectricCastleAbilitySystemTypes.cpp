@@ -7,7 +7,7 @@ bool FElectricCastleGameplayEffectContext::NetSerialize(FArchive& Ar, UPackageMa
 	{
 		GetSavingBits(RepBits);
 	}
-	Ar.SerializeBits(&RepBits, 20);
+	Ar.SerializeBits(&RepBits, 21);
 	AssignValuesToArchive(Ar, Map, RepBits, bOutSuccess);
 	if (Ar.IsLoading())
 	{
@@ -58,49 +58,53 @@ void FElectricCastleGameplayEffectContext::GetSavingBits(uint32& RepBits) const
 	if (bIsSuccessfulDebuff)
 	{
 		RepBits |= 1 << 9;
-		if (DebuffDamage > 0.f)
+		if (DebuffDamage > 0)
 		{
 			RepBits |= 1 << 10;
 		}
-		if (DebuffDuration > 0.f)
+		if (DebuffDamage > 0.f)
 		{
 			RepBits |= 1 << 11;
 		}
-		if (DebuffFrequency > 0.f)
+		if (DebuffDuration > 0.f)
 		{
 			RepBits |= 1 << 12;
+		}
+		if (DebuffFrequency > 0.f)
+		{
+			RepBits |= 1 << 13;
 		}
 	}
 	if (DebuffType.IsValid())
 	{
-		RepBits |= 1 << 13;
+		RepBits |= 1 << 14;
 	}
 	if (DamageType.IsValid())
 	{
-		RepBits |= 1 << 14;
+		RepBits |= 1 << 15;
 	}
 	if (!DeathImpulse.IsZero())
 	{
-		RepBits |= 1 << 15;
+		RepBits |= 1 << 16;
 	}
 	if (!KnockbackVector.IsZero())
 	{
-		RepBits |= 1 << 16;
+		RepBits |= 1 << 17;
 	}
 	if (bIsRadialDamage)
 	{
-		RepBits |= 1 << 17;
+		RepBits |= 1 << 18;
 		if (RadialDamageInnerRadius > 0.f)
-		{
-			RepBits |= 1 << 18;
-		}
-		if (RadialDamageOuterRadius > 0.f)
 		{
 			RepBits |= 1 << 19;
 		}
-		if (RadialDamageOrigin.IsZero())
+		if (RadialDamageOuterRadius > 0.f)
 		{
 			RepBits |= 1 << 20;
+		}
+		if (RadialDamageOrigin.IsZero())
+		{
+			RepBits |= 1 << 21;
 		}
 	}
 }
@@ -166,17 +170,21 @@ void FElectricCastleGameplayEffectContext::AssignValuesToArchive(
 	}
 	if (RepBits & (1 << 10))
 	{
-		Ar << DebuffDamage;
+		Ar << DebuffLevel;
 	}
 	if (RepBits & (1 << 11))
 	{
-		Ar << DebuffDuration;
+		Ar << DebuffDamage;
 	}
 	if (RepBits & (1 << 12))
 	{
-		Ar << DebuffFrequency;
+		Ar << DebuffDuration;
 	}
 	if (RepBits & (1 << 13))
+	{
+		Ar << DebuffFrequency;
+	}
+	if (RepBits & (1 << 14))
 	{
 		if (Ar.IsLoading())
 		{
@@ -187,7 +195,7 @@ void FElectricCastleGameplayEffectContext::AssignValuesToArchive(
 		}
 		DebuffType->NetSerialize(Ar, Map, bOutSuccess);
 	}
-	if (RepBits & (1 << 14))
+	if (RepBits & (1 << 15))
 	{
 		if (Ar.IsLoading())
 		{
@@ -198,26 +206,26 @@ void FElectricCastleGameplayEffectContext::AssignValuesToArchive(
 		}
 		DamageType->NetSerialize(Ar, Map, bOutSuccess);
 	}
-	if (RepBits & (1 << 15))
+	if (RepBits & (1 << 16))
 	{
 		DeathImpulse.NetSerialize(Ar, Map, bOutSuccess);
 	}
-	if (RepBits & (1 << 16))
+	if (RepBits & (1 << 17))
 	{
 		KnockbackVector.NetSerialize(Ar, Map, bOutSuccess);
 	}
-	if (RepBits & (1 << 17))
+	if (RepBits & (1 << 18))
 	{
 		Ar << bIsRadialDamage;
-		if (RepBits & (1 << 18))
+		if (RepBits & (1 << 19))
 		{
 			Ar << RadialDamageInnerRadius;
 		}
-		if (RepBits & (1 << 19))
+		if (RepBits & (1 << 20))
 		{
 			Ar << RadialDamageOuterRadius;
 		}
-		if (RepBits & (1 << 20))
+		if (RepBits & (1 << 21))
 		{
 			RadialDamageOrigin.NetSerialize(Ar, Map, bOutSuccess);
 		}

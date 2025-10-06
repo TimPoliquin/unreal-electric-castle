@@ -8,14 +8,15 @@
 #include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemInterface.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
+#include "AbilitySystem/Debuff/DebuffConfig.h"
+#include "ElectricCastle/ElectricCastleLogChannels.h"
+#include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "GameFramework/Character.h"
 #include "Interaction/CombatInterface.h"
 #include "Interaction/PlayerInterface.h"
 #include "Net/UnrealNetwork.h"
 #include "Player/ElectricCastlePlayerController.h"
 #include "Tags/ElectricCastleGameplayTags.h"
-#include "GameplayEffectComponents/TargetTagsGameplayEffectComponent.h"
-#include "Player/Progression/ProgressionComponent.h"
 
 
 UElectricCastleAttributeSet::UElectricCastleAttributeSet()
@@ -290,56 +291,25 @@ void UElectricCastleAttributeSet::HandleIncomingRefresh(const FEffectProperties&
 
 void UElectricCastleAttributeSet::HandleDebuff(const FEffectProperties& Props)
 {
-	const FElectricCastleGameplayTags& GameplayTags = FElectricCastleGameplayTags::Get();
 	FGameplayEffectContextHandle EffectContext = Props.Source.AbilitySystemComponent->MakeEffectContext();
 	EffectContext.AddSourceObject(Props.Source.AvatarActor);
 
 	const FGameplayTag DebuffTypeTag = UElectricCastleAbilitySystemLibrary::GetDebuffTypeTag(Props.EffectContextHandle);
-	// TODO - get debuff gameplay effect from a data lookup rather than trying to calculate it here in C++.
-	// const float DebuffDamage = UElectricCastleAbilitySystemLibrary::GetDebuffDamage(Props.EffectContextHandle);
-	// const float DebuffDuration = UElectricCastleAbilitySystemLibrary::GetDebuffDuration(Props.EffectContextHandle);
-	// const float DebuffFrequency = UElectricCastleAbilitySystemLibrary::GetDebuffFrequency(Props.EffectContextHandle);
-	//
-	// const FString DebuffName = FString::Printf(TEXT("DynamicDebuff_%s"), *DebuffTypeTag.ToString());
-	// UGameplayEffect* Effect = NewObject<UGameplayEffect>(GetTransientPackage(), FName(DebuffName));
-	//
-	// Effect->DurationPolicy = EGameplayEffectDurationType::HasDuration;
-	// Effect->Period = DebuffFrequency;
-	// Effect->DurationMagnitude = FScalableFloat(DebuffDuration);
-	//
-	// Effect->StackingType = EGameplayEffectStackingType::AggregateBySource;
-	// Effect->StackLimitCount = 1;
-	//
-	// const int32 Index = Effect->Modifiers.Num();
-	// Effect->Modifiers.Add(FGameplayModifierInfo());
-	// FGameplayModifierInfo& ModifierInfo = Effect->Modifiers[Index];
-	//
-	// ModifierInfo.ModifierMagnitude = FScalableFloat(DebuffDamage);
-	// ModifierInfo.ModifierOp = EGameplayModOp::Additive;
-	// ModifierInfo.Attribute = GetMeta_IncomingDamageAttribute();
-	//
-	// UTargetTagsGameplayEffectComponent& TagsComponent = Effect->FindOrAddComponent<
-	// 	UTargetTagsGameplayEffectComponent>();
-	// FInheritedTagContainer InheritedTagContainer = FInheritedTagContainer();
-	// InheritedTagContainer.Added.AddTag(DebuffTypeTag);
-	// if (DebuffTypeTag.MatchesTagExact(GameplayTags.Effect_Debuff_Type_Shock))
-	// {
-	// 	InheritedTagContainer.Added.AddTag(FElectricCastleGameplayTags::Get().Player_Block_CursorTrace);
-	// 	InheritedTagContainer.Added.AddTag(FElectricCastleGameplayTags::Get().Player_Block_Interaction);
-	// 	InheritedTagContainer.Added.AddTag(FElectricCastleGameplayTags::Get().Player_Block_Movement);
-	// 	InheritedTagContainer.Added.AddTag(FElectricCastleGameplayTags::Get().Player_Block_Ability_Offensive);
-	// }
-	// TagsComponent.SetAndApplyTargetTagChanges(InheritedTagContainer);
-	//
-	// if (const FGameplayEffectSpec* MutableSpec = new FGameplayEffectSpec(Effect, EffectContext, 1.f))
-	// {
-	// 	FElectricCastleGameplayEffectContext* AuraContext = static_cast<FElectricCastleGameplayEffectContext*>(MutableSpec->GetContext().
-	// 	                                                                                                                    Get());
-	// 	const TSharedPtr<FGameplayTag> DebuffDamageType = MakeShareable(new FGameplayTag(DamageTypeTag));
-	// 	AuraContext->SetDamageTypeTag(DebuffDamageType);
-	//
-	// 	Props.Target.AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*MutableSpec);
-	// }
+	if (const UDebuffConfig* DebuffConfig = UElectricCastleGameDataSubsystem::Get(Props.Target.AvatarActor)->GetDebuffConfig())
+	{
+		if (const FDebuffConfigRow& DebuffConfigRow = DebuffConfig->GetDebuffConfigByDebuffTag(DebuffTypeTag); DebuffConfigRow.IsValid())
+		{
+			UElectricCastleAbilitySystemLibrary::ApplyBasicGameplayEffect(
+				Props.Target.AvatarActor,
+				DebuffConfigRow.DebuffEffect,
+				UElectricCastleAbilitySystemLibrary::GetDebuffLevel(Props.EffectContextHandle)
+			);
+		}
+		else
+		{
+			UE_LOG(LogElectricCastle, Warning, TEXT("[%s] No debuff config for tag: %s"), *GetName(), *DebuffTypeTag.ToString())
+		}
+	}
 }
 
 void UElectricCastleAttributeSet::HandleOutgoingDamage(const FEffectProperties& Props, const float IncomingDamage)

@@ -84,7 +84,17 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FPlayerFormConfigRow GetPlayerFormConfigRowByFormId(const int32 FormId) const;
 
+	UFUNCTION(BlueprintCallable)
+	TSubclassOf<UGameplayEffect> GetHealthChangeEffect() const { return HealthChangeEffect; }
+
+	UFUNCTION(BlueprintCallable)
+	TSubclassOf<UGameplayEffect> GetManaChangeEffect() const { return ManaChangeEffect; }
+
 protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Global Form Change Effects")
+	TSubclassOf<UGameplayEffect> HealthChangeEffect;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Global Form Change Effects")
+	TSubclassOf<UGameplayEffect> ManaChangeEffect;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FPlayerFormConfigRow Barbarian = FPlayerFormConfigRow(EPlayerForm::Barbarian);
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
