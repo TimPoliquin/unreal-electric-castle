@@ -16,9 +16,18 @@
 void AElectricCastleHUD::BeginPlay()
 {
 	Super::BeginPlay();
-	OverlayWidgetController = NewObject<UOverlayWidgetController>(this, OverlayWidgetControllerClass);
-	AttributeMenuWidgetController = NewObject<UAttributeMenuWidgetController>(this, AttributeMenuWidgetControllerClass);
-	SpellMenuWidgetController = NewObject<USpellMenuWidgetController>(this, SpellMenuWidgetControllerClass);
+	if (!OverlayWidgetController)
+	{
+		OverlayWidgetController = NewObject<UOverlayWidgetController>(this, OverlayWidgetControllerClass);
+	}
+	if (!AttributeMenuWidgetController)
+	{
+		AttributeMenuWidgetController = NewObject<UAttributeMenuWidgetController>(this, AttributeMenuWidgetControllerClass);
+	}
+	if (!SpellMenuWidgetController)
+	{
+		SpellMenuWidgetController = NewObject<USpellMenuWidgetController>(this, SpellMenuWidgetControllerClass);
+	}
 }
 
 
@@ -59,10 +68,10 @@ void AElectricCastleHUD::InitializeWidgets(
 	MenuWidget->AddToViewport();
 	auto OnAbilitySystemReadyCallback = [&]()
 	{
-		const FWidgetControllerParams Params = FWidgetControllerParams(InPlayer, InPlayerController, InPlayerState, InAbilitySystemComponent, InAttributeSet);
-		InitializeOverlayWidgetController(Params);
-		InitializeAttributeWidgetController(Params);
-		InitializeSpellMenuWidgetController(Params);
+		// const FWidgetControllerParams Params = FWidgetControllerParams(InPlayer, InPlayerController, InPlayerState, InAbilitySystemComponent, InAttributeSet);
+		// InitializeOverlayWidgetController(Params);
+		// InitializeAttributeWidgetController(Params);
+		// InitializeSpellMenuWidgetController(Params);
 	};
 	if (UElectricCastleAbilitySystemComponent* AbilitySystemComponent = Cast<UElectricCastleAbilitySystemComponent>(InAbilitySystemComponent))
 	{
@@ -138,6 +147,10 @@ void AElectricCastleHUD::InitializeInventoryViewModel()
 
 void AElectricCastleHUD::InitializeOverlayWidgetController(const FWidgetControllerParams& Params)
 {
+	if (!OverlayWidgetController)
+	{
+		OverlayWidgetController = NewObject<UOverlayWidgetController>(this, OverlayWidgetControllerClass);
+	}
 	OverlayWidgetController->SetWidgetControllerParams(Params);
 	OverlayWidgetController->BindCallbacksToDependencies();
 	OverlayWidgetController->BroadcastInitialValues();
@@ -145,6 +158,10 @@ void AElectricCastleHUD::InitializeOverlayWidgetController(const FWidgetControll
 
 void AElectricCastleHUD::InitializeAttributeWidgetController(const FWidgetControllerParams& Params)
 {
+	if (!AttributeMenuWidgetController)
+	{
+		AttributeMenuWidgetController = NewObject<UAttributeMenuWidgetController>(this, AttributeMenuWidgetControllerClass);
+	}
 	AttributeMenuWidgetController->SetWidgetControllerParams(Params);
 	AttributeMenuWidgetController->BindCallbacksToDependencies();
 	AttributeMenuWidgetController->BroadcastInitialValues();
@@ -152,6 +169,10 @@ void AElectricCastleHUD::InitializeAttributeWidgetController(const FWidgetContro
 
 void AElectricCastleHUD::InitializeSpellMenuWidgetController(const FWidgetControllerParams& Params)
 {
+	if (!SpellMenuWidgetController)
+	{
+		SpellMenuWidgetController = NewObject<USpellMenuWidgetController>(this, SpellMenuWidgetControllerClass);
+	}
 	SpellMenuWidgetController->SetWidgetControllerParams(Params);
 	SpellMenuWidgetController->BindCallbacksToDependencies();
 	SpellMenuWidgetController->BroadcastInitialValues();

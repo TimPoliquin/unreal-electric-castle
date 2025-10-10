@@ -8,7 +8,7 @@ void UAuraUserWidget::SetWidgetController(UObject* InWidgetController)
 {
 	WidgetController = InWidgetController;
 	WidgetControllerSet();
-	if (WidgetController->Implements<UUnbindableInterface>())
+	if (WidgetController && WidgetController->Implements<UUnbindableInterface>())
 	{
 		OnNativeDestruct.AddLambda(
 			[this](UUserWidget* Widget)

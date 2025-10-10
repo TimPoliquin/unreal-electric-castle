@@ -3,9 +3,50 @@
 
 #include "Player/Form/FormConfigLoadRequest.h"
 
+void UFormConfigLoadRequest::AddToLoad(const TSoftObjectPtr<>& ToLoad)
+{
+	if (!ToLoad.IsNull())
+	{
+		Assets.Add(ToLoad);
+	}
+}
+
+void UFormConfigLoadRequest::AddToLoad(const TSoftClassPtr<>& ToLoad)
+{
+	if (!ToLoad.IsNull())
+	{
+		Classes.Add(ToLoad);
+	}
+}
+
+void UFormConfigLoadRequest::LoadAsync()
+{
+	FLoadSoftObjectPathAsyncDelegate LoadDelegate;
+	LoadDelegate.BindLambda([this](FSoftObjectPath ObjectPath, UObject* Loaded)
+		{
+			if (ShouldNotify())
+			{
+				Notify();
+			}
+		}
+	);
+	if (Assets.Num() == 0 && Classes.Num() == 0)
+	{
+		Notify();
+	}
+	for (TSoftObjectPtr<>& Asset : Assets)
+	{
+		Asset.LoadAsync(LoadDelegate);
+	}
+	for (TSoftClassPtr<>& Class : Classes)
+	{
+		Class.LoadAsync(LoadDelegate);
+	}
+}
+
 void UFormConfigLoadRequest::Notify()
 {
-	Callback.Broadcast(GetPlayerFormConfigRow());
+	OnLoadComplete.Broadcast(GetPlayerFormConfigRow());
 	bHasNotified = true;
 }
 
@@ -25,12 +66,25 @@ bool UFormConfigLoadRequest::ShouldNotify() const
 	{
 		return false;
 	}
-	const FPlayerFormConfigRow& Row = GetPlayerFormConfigRow();
-	if (!Row.IsValid())
+	if (const FPlayerFormConfigRow& Row = GetPlayerFormConfigRow(); !Row.IsValid())
 	{
 		return true;
 	}
-	return Row.IsLoaded();
+	for (TSoftObjectPtr<> Asset : Assets)
+	{
+		if (!Asset.IsValid())
+		{
+			return false;
+		}
+	}
+	for (TSoftClassPtr<> Class : Classes)
+	{
+		if (!Class.IsValid())
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 FPlayerFormConfigRow UFormConfigLoadRequest::GetPlayerFormConfigRow() const

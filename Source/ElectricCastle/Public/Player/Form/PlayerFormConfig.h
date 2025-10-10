@@ -9,7 +9,85 @@
 #include "Engine/DataAsset.h"
 #include "PlayerFormConfig.generated.h"
 
+class UGroomComponent;
+class UGroomBindingAsset;
+class UGroomAsset;
 class UFormConfigLoadRequest;
+
+USTRUCT(BlueprintType)
+struct ELECTRICCASTLE_API FFormMaterialConfig
+{
+	GENERATED_BODY()
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSoftObjectPtr<UMaterialInterface> MaterialAsset;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FName MaterialSlotName = NAME_None;
+	bool IsNull() const;
+	bool IsValid() const;
+	bool IsLoaded() const;
+	void AddToLoad(UFormConfigLoadRequest* LoadRequest) const;
+	void SetToComponent(UMeshComponent* MeshComponent, const int32 Idx) const;
+};
+
+USTRUCT(BlueprintType)
+struct ELECTRICCASTLE_API FFormMeshPartConfig
+{
+	GENERATED_BODY()
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSoftObjectPtr<USkeletalMesh> MeshAsset;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<FFormMaterialConfig> Materials;
+	bool IsNull() const;
+	bool IsValid() const;
+	bool IsLoaded() const;
+	void AddToLoad(UFormConfigLoadRequest* LoadRequest) const;
+	void SetToComponent(USkeletalMeshComponent* MeshComponent) const;
+};
+
+USTRUCT(BlueprintType)
+struct ELECTRICCASTLE_API FFormGroomConfig
+{
+	GENERATED_BODY()
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSoftObjectPtr<UGroomAsset> GroomAsset;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSoftObjectPtr<UGroomBindingAsset> GroomBindingAsset;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<FFormMaterialConfig> Materials;
+
+	bool IsNull() const;
+	bool IsValid() const;
+	bool IsLoaded() const;
+	void AddToLoad(UFormConfigLoadRequest* LoadRequest) const;
+	void SetToComponent(UGroomComponent* GroomComponent) const;
+};
+
+USTRUCT(BlueprintType)
+struct ELECTRICCASTLE_API FFormMeshConfig
+{
+	GENERATED_BODY()
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FFormMeshPartConfig Body;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FFormMeshPartConfig Face;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FFormMeshPartConfig Clothing;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Groom")
+	FFormGroomConfig Beard;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Groom")
+	FFormGroomConfig Fuzz;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Groom")
+	FFormGroomConfig Eyebrows;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Groom")
+	FFormGroomConfig Eyelashes;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Groom")
+	FFormGroomConfig Hair;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Groom")
+	FFormGroomConfig Moustache;
+
+	bool IsLoaded() const;
+	void AddToLoad(UFormConfigLoadRequest* LoadRequest) const;
+};
 
 USTRUCT(BlueprintType)
 struct ELECTRICCASTLE_API FPlayerFormConfigRow
@@ -22,7 +100,7 @@ struct ELECTRICCASTLE_API FPlayerFormConfigRow
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(Categories="Abilities.Form"))
 	FGameplayTag FormAbilityTag = FGameplayTag::EmptyTag;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSoftObjectPtr<USkeletalMesh> CharacterMesh;
+	FFormMeshConfig MeshConfig;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSoftClassPtr<UAnimInstance> AnimationBlueprint;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -113,4 +191,6 @@ private:
 	TMap<EPlayerForm, FPlayerFormConfigRow> PlayerFormConfigByEnum;
 	UPROPERTY()
 	TMap<FGameplayTag, UFormConfigLoadRequest*> FormLoadRequests;
+	UFUNCTION()
+	void OnLoadComplete(const FPlayerFormConfigRow& Row);
 };

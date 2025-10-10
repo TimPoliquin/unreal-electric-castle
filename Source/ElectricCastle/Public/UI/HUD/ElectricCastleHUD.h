@@ -127,7 +127,10 @@ T* AElectricCastleHUD::InitializeWidgetController(
 			WidgetControllerClass
 		)
 	);
-	WidgetController->SetWidgetControllerParams(WidgetControllerParams);
-	WidgetController->BindCallbacksToDependencies();
+	if (WidgetController)
+	{
+		WidgetController->SetWidgetControllerParams(WidgetControllerParams);
+		WidgetController->BindCallbacksToDependencies();
+	}
 	return WidgetController;
 }

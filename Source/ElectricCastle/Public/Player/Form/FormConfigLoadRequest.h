@@ -20,17 +20,24 @@ class ELECTRICCASTLE_API UFormConfigLoadRequest : public UObject
 	GENERATED_BODY()
 
 public:
+	void AddToLoad(const TSoftObjectPtr<>& ToLoad);
+	void AddToLoad(const TSoftClassPtr<>& ToLoad);
+	void LoadAsync();
 	UPROPERTY()
 	FGameplayTag FormTag;
 	UPROPERTY()
 	TObjectPtr<UPlayerFormConfig> FormConfig;
 	UPROPERTY()
 	bool bHasNotified = false;
-	FFormConfigLoadRequestSignature Callback;
+	FFormConfigLoadRequestSignature OnLoadComplete;
 	void Notify();
 	bool IsValid() const;
 	bool HasNotified() const;
 	bool ShouldNotify() const;
 	FPlayerFormConfigRow GetPlayerFormConfigRow() const;
 	static UFormConfigLoadRequest* Create(const FGameplayTag& FormTag, UPlayerFormConfig* Config);
+
+private:
+	TArray<TSoftObjectPtr<>> Assets;
+	TArray<TSoftClassPtr<>> Classes;
 };

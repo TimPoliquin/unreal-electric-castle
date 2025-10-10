@@ -9,6 +9,7 @@
 #include "AbilitySystem/ElectricCastleAbilitySystemInterface.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 #include "AbilitySystem/ElectricCastleAttributeSet.h"
+#include "Character/ElectricCastlePlayerCharacter.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "GameFramework/Character.h"
@@ -71,7 +72,7 @@ void UPlayerFormChangeComponent::FormChange_UpdateCharacterMesh(const FPlayerFor
 	if (UPlayerFormConfig* FormConfig = GetPlayerFormConfig())
 	{
 		UFormConfigLoadRequest* LoadRequest = FormConfig->GetOrCreateLoadRequest(Payload.NewFormTag);
-		LoadRequest->Callback.AddUniqueDynamic(this, &UPlayerFormChangeComponent::OnFormDataLoaded);
+		LoadRequest->OnLoadComplete.AddUniqueDynamic(this, &UPlayerFormChangeComponent::OnFormDataLoaded);
 		FormConfig->LoadAsync(LoadRequest);
 	}
 }
@@ -160,7 +161,7 @@ bool UPlayerFormChangeComponent::IsFormLoaded(const FGameplayTag& FormTag) const
 {
 	if (const FPlayerFormConfigRow& FormConfig = GetPlayerFormConfigRow(FormTag); FormConfig.IsValid())
 	{
-		return FormConfig.CharacterMesh.IsValid() && FormConfig.AnimationBlueprint.IsValid();
+		return FormConfig.IsLoaded();
 	}
 	return false;
 }
@@ -186,6 +187,9 @@ FPlayerFormConfigRow UPlayerFormChangeComponent::GetPlayerFormConfigRow(const FG
 
 void UPlayerFormChangeComponent::OnFormDataLoaded(const FPlayerFormConfigRow& FormConfigRow)
 {
-	GetMesh()->SetSkeletalMesh(FormConfigRow.CharacterMesh.Get());
-	GetMesh()->SetAnimInstanceClass(FormConfigRow.AnimationBlueprint.Get());
+	if (AElectricCastlePlayerCharacter* PlayerCharacter = Cast<AElectricCastlePlayerCharacter>(GetOwner()))
+	{
+		PlayerCharacter->SetFormMeshes(FormConfigRow.MeshConfig);
+		PlayerCharacter->SetAnimInstanceClass(FormConfigRow.AnimationBlueprint.Get());
+	}
 }

@@ -5,14 +5,19 @@
 #include "CoreMinimal.h"
 #include "ElectricCastleCharacter.h"
 #include "Camera/ElectricCastleCameraComponent.h"
+#include "Components/LODSyncComponent.h"
 #include "Interaction/FishingActorInterface.h"
 #include "Interaction/PlayerInterface.h"
 #include "Player/ElectricCastlePlayerState.h"
 #include "Player/Equipment/EquipmentEvents.h"
 #include "Player/Form/FormChangeActorInterface.h"
 #include "Player/Form/PlayerFormChangeComponent.h"
+#include "LiveLinkTypes.h"
 #include "ElectricCastlePlayerCharacter.generated.h"
 
+class ULiveLinkRetargetAsset;
+struct FLODMappingData;
+class ULODSyncComponent;
 class UPlayerFormChangeComponent;
 class UBoxComponent;
 class UPlayerEquipmentComponent;
@@ -27,12 +32,31 @@ class UCameraComponent;
 class UNiagaraComponent;
 class APlayerState;
 class UMotionWarpingComponent;
+class UGroomComponent;
+class UMetaHumanComponentUE;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(
 	FOnAnimationCompleteSignature,
 	const EEquipmentSlot&,
 	Slot
 );
+
+USTRUCT(BlueprintType)
+struct ELECTRICCASTLE_API FLiveLinkCharacterConfig
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bUseLiveLink = false;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(EditCondition="bUseLiveLink", EditConditionHides))
+	bool bUseARKit = false;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(EditCondition="bUseLiveLink", EditConditionHides))
+	FLiveLinkSubjectName LiveLinkSubject = FLiveLinkSubjectName(NAME_None);
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(EditCondition="bUseLiveLink && !bUseARKit", EditConditionHides))
+	TSubclassOf<ULiveLinkRetargetAsset> RetargetAsset;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(EditCondition="bUseLiveLink && bUseARKit", EditConditionHides))
+	TSubclassOf<UAnimInstance> BodyAnimInstanceClass;
+};
 
 UCLASS(Abstract, Blueprintable)
 class ELECTRICCASTLE_API AElectricCastlePlayerCharacter : public AElectricCastleCharacter, public IPlayerInterface, public IFishingActorInterface, public IFormChangeActorInterface
@@ -92,6 +116,12 @@ public:
 	virtual void ReturnCamera_Implementation(
 		UCurveFloat* AnimationCurve
 	) override;
+	UFUNCTION(BlueprintNativeEvent)
+	void SetFormMeshes(const FFormMeshConfig& FormMeshConfig);
+	UFUNCTION(BlueprintNativeEvent)
+	void TryApplyGroomAssets(const FFormMeshConfig& FormMeshConfig);
+	UFUNCTION(BlueprintNativeEvent)
+	void SetGroomAssets(const FFormMeshConfig& FormMeshConfig);
 
 	/** FishingActorInterface Start */
 	virtual UFishingComponent* GetFishingComponent_Implementation() const override;
@@ -100,9 +130,12 @@ public:
 
 	/** FormChangeActorInterface Start */
 	virtual UPlayerFormChangeComponent* GetFormChangeComponent_Implementation() const override;
+	void SetAnimInstanceClass(const TSubclassOf<UAnimInstance> InAnimInstance);
 	/** FormChangeActorInterface End */
 
 protected:
+	UFUNCTION(BlueprintNativeEvent)
+	void Construction_SetupMetaHuman();
 	virtual void BeginPlay() override;
 	virtual void BeginDestroy() override;
 	UFUNCTION(BlueprintImplementableEvent)
@@ -111,6 +144,32 @@ protected:
 	void OnEquipmentAnimationRequest(const FEquipmentDelegatePayload& Payload);
 	UFUNCTION(BlueprintNativeEvent)
 	void OnFormChange(const FPlayerFormChangeEventPayload& Payload);
+	UFUNCTION(BlueprintNativeEvent)
+	void PrepareLiveLinkSetup();
+	UFUNCTION(BlueprintImplementableEvent)
+	void LiveLink_SetupARKit(const FLiveLinkSubjectName& LiveLinkSubjectName, UAnimInstance* AnimInstance);
+	UFUNCTION(BlueprintNativeEvent)
+	void LiveLink_SetupLiveLinkInstance(UAnimInstance* AnimInstance);
+	UFUNCTION(BlueprintNativeEvent)
+	void LiveLink_SetUpdateAnimationInEditor();
+	UFUNCTION(BlueprintNativeEvent)
+	void EnableMasterPose(USkeletalMeshComponent* SkeletalMeshComponent);
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components|Metahuman")
+	TObjectPtr<USkeletalMeshComponent> ClothingMesh;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components|Metahuman")
+	TObjectPtr<USkeletalMeshComponent> FaceMesh;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components|Metahuman")
+	TObjectPtr<UGroomComponent> Groom_Fuzz;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components|Metahuman")
+	TObjectPtr<UGroomComponent> Groom_Eyebrows;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components|Metahuman")
+	TObjectPtr<UGroomComponent> Groom_Hair;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components|Metahuman")
+	TObjectPtr<UGroomComponent> Groom_Eyelashes;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components|Metahuman")
+	TObjectPtr<UGroomComponent> Groom_Beard;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components|Metahuman")
+	TObjectPtr<UGroomComponent> Groom_Moustache;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UBoxComponent> FadeDetectionComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
@@ -129,12 +188,18 @@ protected:
 	TObjectPtr<UMotionWarpingComponent> MotionWarpingComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UPlayerFormChangeComponent> FormChangeComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
+	TObjectPtr<UMetaHumanComponentUE> MetaHumanComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
+	TObjectPtr<ULODSyncComponent> LODSyncComponent;
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<USoundBase> LevelUpSound;
 	UPROPERTY(EditDefaultsOnly)
 	float DeathTime = 5.f;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="MotionWarping")
 	FVector FacingTarget = FVector::ZeroVector;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="LiveLink")
+	FLiveLinkCharacterConfig LiveLinkConfig;
 
 private:
 	UPROPERTY()
@@ -157,4 +222,5 @@ private:
 	void OnFadeDetectionEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	FVector DesiredCameraForwardVector;
+	FLODMappingData CreateCustomLODMappingDefault() const;
 };

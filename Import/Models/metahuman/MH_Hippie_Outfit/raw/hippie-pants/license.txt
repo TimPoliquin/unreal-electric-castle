@@ -1,0 +1,11 @@
+Model Information:
+* title:	Male pants (Jeans)
+* source:	https://sketchfab.com/3d-models/male-pants-jeans-6bee760f49614feb95baa459f40cf11b
+* author:	Alexander Kurmanin (https://sketchfab.com/kurmanin)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Male pants (Jeans)" (https://sketchfab.com/3d-models/male-pants-jeans-6bee760f49614feb95baa459f40cf11b) by Alexander Kurmanin (https://sketchfab.com/kurmanin) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

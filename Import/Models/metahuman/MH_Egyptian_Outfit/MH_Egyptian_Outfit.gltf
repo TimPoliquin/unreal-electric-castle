@@ -1,0 +1,3460 @@
+{
+  "asset": {
+    "generator": "UnityGLTF",
+    "version": "2.0"
+  },
+  "extensionsUsed": [
+    "KHR_texture_transform"
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ],
+      "name": "MH_Egyptian_Outfit"
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 7952,
+      "type": "VEC3",
+      "max": [
+        21.512481689453125,
+        23.514825820922852,
+        17.352380752563477
+      ],
+      "min": [
+        -21.514781951904297,
+        -1.9208636283874512,
+        -6.3769197463989258
+      ]
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 7952,
+      "type": "VEC3",
+      "max": [
+        0.99952542781829834,
+        1.0,
+        0.99959665536880493
+      ],
+      "min": [
+        -0.99948340654373169,
+        -1.0,
+        -0.99958544969558716
+      ]
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 7952,
+      "type": "VEC4",
+      "max": [
+        0.9995265007019043,
+        0.99995875358581543,
+        0.99992829561233521,
+        1.0
+      ],
+      "min": [
+        -0.99999558925628662,
+        -0.99999958276748657,
+        -0.9999547004699707,
+        -1.0
+      ]
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5126,
+      "count": 7952,
+      "type": "VEC2",
+      "max": [
+        0.99897783994674683,
+        0.99982672929763794
+      ],
+      "min": [
+        0.00017334461153950542,
+        0.00017333030700683594
+      ]
+    },
+    {
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 7952,
+      "type": "VEC4",
+      "max": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "min": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "bufferView": 5,
+      "componentType": 5123,
+      "count": 40824,
+      "type": "SCALAR",
+      "max": [
+        7951.0
+      ],
+      "min": [
+        0.0
+      ]
+    },
+    {
+      "bufferView": 6,
+      "componentType": 5126,
+      "count": 7952,
+      "type": "VEC3",
+      "max": [
+        23.265411376953125,
+        23.492452621459961,
+        18.627761840820313
+      ],
+      "min": [
+        -23.352680206298828,
+        -3.0277106761932373,
+        -7.9999165534973145
+      ]
+    },
+    {
+      "bufferView": 7,
+      "componentType": 5126,
+      "count": 7952,
+      "type": "VEC3",
+      "max": [
+        0.99952542781829834,
+        1.0,
+        0.99959665536880493
+      ],
+      "min": [
+        -0.99948340654373169,
+        -1.0,
+        -0.99958544969558716
+      ]
+    },
+    {
+      "bufferView": 8,
+      "componentType": 5126,
+      "count": 7952,
+      "type": "VEC4",
+      "max": [
+        0.99872606992721558,
+        0.99995875358581543,
+        0.99975460767745972,
+        1.0
+      ],
+      "min": [
+        -0.99999558925628662,
+        -0.99999290704727173,
+        -0.99998307228088379,
+        -1.0
+      ]
+    },
+    {
+      "bufferView": 9,
+      "componentType": 5126,
+      "count": 7952,
+      "type": "VEC2",
+      "max": [
+        0.99897783994674683,
+        0.99982672929763794
+      ],
+      "min": [
+        0.00017334461153950542,
+        0.00017333030700683594
+      ]
+    },
+    {
+      "bufferView": 10,
+      "componentType": 5126,
+      "count": 7952,
+      "type": "VEC4",
+      "max": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "min": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "bufferView": 11,
+      "componentType": 5123,
+      "count": 40824,
+      "type": "SCALAR",
+      "max": [
+        7951.0
+      ],
+      "min": [
+        0.0
+      ]
+    },
+    {
+      "bufferView": 12,
+      "componentType": 5126,
+      "count": 4304,
+      "type": "VEC3",
+      "max": [
+        30.11474609375,
+        131.81777954101563,
+        17.832326889038086
+      ],
+      "min": [
+        -29.429971694946289,
+        45.334770202636719,
+        -10.372742652893066
+      ]
+    },
+    {
+      "bufferView": 13,
+      "componentType": 5126,
+      "count": 4304,
+      "type": "VEC3",
+      "max": [
+        0.9997517466545105,
+        0.99911218881607056,
+        0.99997913837432861
+      ],
+      "min": [
+        -0.99987703561782837,
+        -0.99864548444747925,
+        -0.99996048212051392
+      ]
+    },
+    {
+      "bufferView": 14,
+      "componentType": 5126,
+      "count": 4304,
+      "type": "VEC4",
+      "max": [
+        0.99988740682601929,
+        0.99999397993087769,
+        1.0,
+        1.0
+      ],
+      "min": [
+        -0.99999988079071045,
+        -0.95846772193908691,
+        -0.99965161085128784,
+        -1.0
+      ]
+    },
+    {
+      "bufferView": 15,
+      "componentType": 5126,
+      "count": 4304,
+      "type": "VEC2",
+      "max": [
+        0.963964581489563,
+        0.95527482032775879
+      ],
+      "min": [
+        0.023651257157325745,
+        0.014638900756835938
+      ]
+    },
+    {
+      "bufferView": 16,
+      "componentType": 5126,
+      "count": 4304,
+      "type": "VEC4",
+      "max": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "min": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "bufferView": 17,
+      "componentType": 5123,
+      "count": 24060,
+      "type": "SCALAR",
+      "max": [
+        4303.0
+      ],
+      "min": [
+        0.0
+      ]
+    },
+    {
+      "bufferView": 18,
+      "componentType": 5126,
+      "count": 209950,
+      "type": "VEC3",
+      "max": [
+        43.237739562988281,
+        132.19786071777344,
+        13.863361358642578
+      ],
+      "min": [
+        -43.2379264831543,
+        88.549575805664063,
+        -10.714473724365234
+      ]
+    },
+    {
+      "bufferView": 19,
+      "componentType": 5126,
+      "count": 209950,
+      "type": "VEC3",
+      "max": [
+        0.99995881319046021,
+        0.99994015693664551,
+        0.999955952167511
+      ],
+      "min": [
+        -0.99995917081832886,
+        -0.99981772899627686,
+        -0.999966561794281
+      ]
+    },
+    {
+      "bufferView": 20,
+      "componentType": 5126,
+      "count": 209950,
+      "type": "VEC4",
+      "max": [
+        0.99992722272872925,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "min": [
+        -1.0,
+        -0.99999827146530151,
+        -0.99999910593032837,
+        -1.0
+      ]
+    },
+    {
+      "bufferView": 21,
+      "componentType": 5126,
+      "count": 209950,
+      "type": "VEC2",
+      "max": [
+        0.93469196557998657,
+        0.99977070093154907
+      ],
+      "min": [
+        0.00022935454035177827,
+        0.052126824855804443
+      ]
+    },
+    {
+      "bufferView": 22,
+      "componentType": 5126,
+      "count": 209950,
+      "type": "VEC4",
+      "max": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "min": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "bufferView": 23,
+      "componentType": 5125,
+      "count": 1085700,
+      "type": "SCALAR",
+      "max": [
+        209949.0
+      ],
+      "min": [
+        0.0
+      ]
+    },
+    {
+      "bufferView": 24,
+      "componentType": 5126,
+      "count": 35,
+      "type": "MAT4"
+    },
+    {
+      "bufferView": 25,
+      "componentType": 5123,
+      "count": 7952,
+      "type": "VEC4",
+      "max": [
+        34.0,
+        34.0,
+        34.0,
+        34.0
+      ],
+      "min": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "bufferView": 26,
+      "componentType": 5126,
+      "count": 7952,
+      "type": "VEC4",
+      "max": [
+        1.0,
+        0.45033672451972961,
+        0.293531596660614,
+        0.2092134952545166
+      ],
+      "min": [
+        0.29609218239784241,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "bufferView": 27,
+      "componentType": 5126,
+      "count": 34,
+      "type": "MAT4"
+    },
+    {
+      "bufferView": 28,
+      "componentType": 5123,
+      "count": 7952,
+      "type": "VEC4",
+      "max": [
+        33.0,
+        33.0,
+        33.0,
+        33.0
+      ],
+      "min": [
+        1.0,
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "bufferView": 29,
+      "componentType": 5126,
+      "count": 7952,
+      "type": "VEC4",
+      "max": [
+        0.999997615814209,
+        0.48691654205322266,
+        0.30717837810516357,
+        0.21953800320625305
+      ],
+      "min": [
+        0.29998862743377686,
+        1.8806194930220954E-06,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "bufferView": 30,
+      "componentType": 5126,
+      "count": 61,
+      "type": "MAT4"
+    },
+    {
+      "bufferView": 31,
+      "componentType": 5123,
+      "count": 4304,
+      "type": "VEC4",
+      "max": [
+        59.0,
+        60.0,
+        60.0,
+        60.0
+      ],
+      "min": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "bufferView": 32,
+      "componentType": 5126,
+      "count": 4304,
+      "type": "VEC4",
+      "max": [
+        0.9776032567024231,
+        0.48425158858299255,
+        0.30911919474601746,
+        0.22157971560955048
+      ],
+      "min": [
+        0.2718144953250885,
+        0.0081035690382123,
+        0.0013925365637987852,
+        1.0209907486569136E-05
+      ]
+    },
+    {
+      "bufferView": 33,
+      "componentType": 5126,
+      "count": 37,
+      "type": "MAT4"
+    },
+    {
+      "bufferView": 34,
+      "componentType": 5123,
+      "count": 209950,
+      "type": "VEC4",
+      "max": [
+        27.0,
+        36.0,
+        36.0,
+        36.0
+      ],
+      "min": [
+        3.0,
+        2.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "bufferView": 35,
+      "componentType": 5126,
+      "count": 209950,
+      "type": "VEC4",
+      "max": [
+        0.95422965288162231,
+        0.49993821978569031,
+        0.29939502477645874,
+        0.21216771006584167
+      ],
+      "min": [
+        0.30539444088935852,
+        0.015716619789600372,
+        0.0,
+        0.0
+      ]
+    }
+  ],
+  "buffers": [
+    {
+      "uri": "MH_Egyptian_Outfit.bin",
+      "byteLength": 24818808
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 95424,
+      "byteStride": 12,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 95424,
+      "byteLength": 95424,
+      "byteStride": 12,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 190848,
+      "byteLength": 127232,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 318080,
+      "byteLength": 63616,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 381696,
+      "byteLength": 127232,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 508928,
+      "byteLength": 81648,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 590576,
+      "byteLength": 95424,
+      "byteStride": 12,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 686000,
+      "byteLength": 95424,
+      "byteStride": 12,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 781424,
+      "byteLength": 127232,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 908656,
+      "byteLength": 63616,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 972272,
+      "byteLength": 127232,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1099504,
+      "byteLength": 81648,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1181152,
+      "byteLength": 51648,
+      "byteStride": 12,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1232800,
+      "byteLength": 51648,
+      "byteStride": 12,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1284448,
+      "byteLength": 68864,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1353312,
+      "byteLength": 34432,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1387744,
+      "byteLength": 68864,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1456608,
+      "byteLength": 48120,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1504728,
+      "byteLength": 2519400,
+      "byteStride": 12,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 4024128,
+      "byteLength": 2519400,
+      "byteStride": 12,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 6543528,
+      "byteLength": 3359200,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 9902728,
+      "byteLength": 1679600,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 11582328,
+      "byteLength": 3359200,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 14941528,
+      "byteLength": 4342800,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 19284328,
+      "byteLength": 2240
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 19286568,
+      "byteLength": 63616,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 19350184,
+      "byteLength": 127232,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 19477416,
+      "byteLength": 2176
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 19479592,
+      "byteLength": 63616,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 19543208,
+      "byteLength": 127232,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 19670440,
+      "byteLength": 3904
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 19674344,
+      "byteLength": 34432,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 19708776,
+      "byteLength": 68864,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 19777640,
+      "byteLength": 2368
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 19780008,
+      "byteLength": 1679600,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 21459608,
+      "byteLength": 3359200,
+      "target": 34962
+    }
+  ],
+  "images": [
+    {
+      "uri": "Footware_Footware_Normal.png",
+      "name": "Footware_Footware_Normal"
+    },
+    {
+      "uri": "base_color_texture.png",
+      "name": "base_color_texture"
+    },
+    {
+      "uri": "Acient_Egypt_Low_Poly_Clothing_Normal.png",
+      "name": "Acient_Egypt_Low_Poly_Clothing_Normal"
+    },
+    {
+      "uri": "base_color_texture0.png",
+      "name": "base_color_texture0"
+    },
+    {
+      "uri": "Body_Accessories_Body_Accessories_Normal.png",
+      "name": "Body_Accessories_Body_Accessories_Normal"
+    },
+    {
+      "uri": "base_color_texture1.png",
+      "name": "base_color_texture1"
+    }
+  ],
+  "materials": [
+    {
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 1,
+          "extensions": {
+            "KHR_texture_transform": {
+              "texCoord": 0
+            }
+          }
+        },
+        "metallicFactor": 0.0
+      },
+      "normalTexture": {
+        "index": 0,
+        "extensions": {
+          "KHR_texture_transform": {
+            "texCoord": 0
+          }
+        }
+      },
+      "alphaMode": "MASK",
+      "doubleSided": true,
+      "name": "Footware"
+    },
+    {
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 1,
+          "extensions": {
+            "KHR_texture_transform": {
+              "texCoord": 0
+            }
+          }
+        },
+        "metallicFactor": 0.0
+      },
+      "normalTexture": {
+        "index": 0,
+        "extensions": {
+          "KHR_texture_transform": {
+            "texCoord": 0
+          }
+        }
+      },
+      "alphaMode": "MASK",
+      "doubleSided": true,
+      "name": "Footware"
+    },
+    {
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 3,
+          "extensions": {
+            "KHR_texture_transform": {
+              "texCoord": 0
+            }
+          }
+        },
+        "metallicFactor": 0.0
+      },
+      "normalTexture": {
+        "index": 2,
+        "extensions": {
+          "KHR_texture_transform": {
+            "texCoord": 0
+          }
+        }
+      },
+      "alphaMode": "MASK",
+      "doubleSided": true,
+      "name": "Clothing"
+    },
+    {
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 5,
+          "extensions": {
+            "KHR_texture_transform": {
+              "texCoord": 0
+            }
+          }
+        },
+        "metallicFactor": 0.0
+      },
+      "normalTexture": {
+        "index": 4,
+        "extensions": {
+          "KHR_texture_transform": {
+            "texCoord": 0
+          }
+        }
+      },
+      "alphaMode": "MASK",
+      "doubleSided": true,
+      "name": "Body_Accessories"
+    }
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1,
+            "TANGENT": 2,
+            "TEXCOORD_0": 3,
+            "COLOR_0": 4,
+            "JOINTS_0": 25,
+            "WEIGHTS_0": 26
+          },
+          "indices": 5,
+          "material": 0
+        }
+      ],
+      "name": "Ancient Egyptian Footwear.2"
+    },
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 6,
+            "NORMAL": 7,
+            "TANGENT": 8,
+            "TEXCOORD_0": 9,
+            "COLOR_0": 10,
+            "JOINTS_0": 28,
+            "WEIGHTS_0": 29
+          },
+          "indices": 11,
+          "material": 1
+        }
+      ],
+      "name": "Ancient Egyptian Footwear.3"
+    },
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 12,
+            "NORMAL": 13,
+            "TANGENT": 14,
+            "TEXCOORD_0": 15,
+            "COLOR_0": 16,
+            "JOINTS_0": 31,
+            "WEIGHTS_0": 32
+          },
+          "indices": 17,
+          "material": 2
+        }
+      ],
+      "name": "Ancient Egyptian Robe"
+    },
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 18,
+            "NORMAL": 19,
+            "TANGENT": 20,
+            "TEXCOORD_0": 21,
+            "COLOR_0": 22,
+            "JOINTS_0": 34,
+            "WEIGHTS_0": 35
+          },
+          "indices": 23,
+          "material": 3
+        }
+      ],
+      "name": " Egyptian Body Accessories"
+    }
+  ],
+  "nodes": [
+    {
+      "children": [
+        1,
+        131,
+        132,
+        133,
+        134
+      ],
+      "name": "AvatarPrototype(Clone)(Clone)"
+    },
+    {
+      "children": [
+        2
+      ],
+      "rotation": [
+        -0.7071068,
+        0.0,
+        0.0,
+        0.7071067
+      ],
+      "scale": [
+        1.0,
+        0.99999994,
+        0.99999994
+      ],
+      "name": "root"
+    },
+    {
+      "children": [
+        3,
+        65,
+        98
+      ],
+      "rotation": [
+        0.01266709,
+        -0.7069931,
+        -0.0126669686,
+        0.7069935
+      ],
+      "scale": [
+        0.99999994,
+        1.0,
+        0.99999994
+      ],
+      "translation": [
+        -2.05212625E-09,
+        -1.92113519,
+        88.09906
+      ],
+      "name": "pelvis"
+    },
+    {
+      "children": [
+        4
+      ],
+      "rotation": [
+        4.19314972E-07,
+        1.87589865E-06,
+        -0.0954120755,
+        0.99543786
+      ],
+      "translation": [
+        1.55091012,
+        0.250808954,
+        1.192093E-07
+      ],
+      "name": "spine_01"
+    },
+    {
+      "children": [
+        5
+      ],
+      "rotation": [
+        9.95661954E-14,
+        2.342666E-13,
+        0.06384277,
+        0.99796
+      ],
+      "translation": [
+        3.46403527,
+        9.516254E-06,
+        1.30950293E-05
+      ],
+      "name": "spine_02"
+    },
+    {
+      "children": [
+        6
+      ],
+      "rotation": [
+        -2.61041464E-07,
+        3.13948658E-06,
+        0.08286187,
+        0.99656105
+      ],
+      "translation": [
+        5.337675,
+        -7.146504E-06,
+        1.98713115E-05
+      ],
+      "name": "spine_03"
+    },
+    {
+      "children": [
+        7
+      ],
+      "rotation": [
+        7.851705E-14,
+        5.8889504E-15,
+        0.07439458,
+        0.9972289
+      ],
+      "translation": [
+        7.40485334,
+        -3.784895E-06,
+        7.45783545E-05
+      ],
+      "name": "spine_04"
+    },
+    {
+      "children": [
+        8,
+        34,
+        35,
+        36,
+        62,
+        63,
+        64
+      ],
+      "rotation": [
+        2.36802947E-07,
+        -1.2238749E-07,
+        -0.013374771,
+        0.9999106
+      ],
+      "translation": [
+        12.6648855,
+        2.62074172E-06,
+        0.000118076779
+      ],
+      "name": "spine_05"
+    },
+    {
+      "children": [
+        9,
+        10,
+        11
+      ],
+      "rotation": [
+        0.07830105,
+        0.7475424,
+        -0.0537590869,
+        0.65738827
+      ],
+      "scale": [
+        1.0,
+        0.9999999,
+        0.9999999
+      ],
+      "translation": [
+        8.622319,
+        0.5424779,
+        -0.726426661
+      ],
+      "name": "clavicle_l"
+    },
+    {
+      "rotation": [
+        -0.00258993218,
+        -0.0270610414,
+        -0.03747116,
+        0.9989279
+      ],
+      "translation": [
+        9.554815,
+        0.563303351,
+        4.87393236
+      ],
+      "name": "clavicle_out_l"
+    },
+    {
+      "rotation": [
+        0.0270610619,
+        -0.00258988258,
+        -0.9989279,
+        -0.0374711156
+      ],
+      "translation": [
+        7.25291252,
+        5.54140568,
+        -2.20793366
+      ],
+      "name": "clavicle_scap_l"
+    },
+    {
+      "children": [
+        12,
+        23,
+        28,
+        30
+      ],
+      "rotation": [
+        -0.02603492,
+        0.384642363,
+        -0.0111753326,
+        0.9226308
+      ],
+      "translation": [
+        13.5451221,
+        -0.000102996841,
+        -0.09317876
+      ],
+      "name": "upperarm_l"
+    },
+    {
+      "children": [
+        13,
+        16,
+        21,
+        22
+      ],
+      "rotation": [
+        -7.568778E-08,
+        1.50642265E-07,
+        -0.314381927,
+        0.9492966
+      ],
+      "translation": [
+        25.7178631,
+        -1.21593475E-05,
+        1.62124634E-05
+      ],
+      "name": "lowerarm_l"
+    },
+    {
+      "children": [
+        14,
+        15
+      ],
+      "rotation": [
+        -0.7071068,
+        7.37569863E-08,
+        9.48304049E-08,
+        0.7071067
+      ],
+      "translation": [
+        23.2138615,
+        4.48226929E-05,
+        -1.874181E-07
+      ],
+      "name": "hand_l"
+    },
+    {
+      "rotation": [
+        -0.7071068,
+        -3.68785E-08,
+        4.74152166E-08,
+        0.7071067
+      ],
+      "translation": [
+        -0.362100124,
+        2.064227,
+        -0.373604536
+      ],
+      "name": "wrist_inner_l"
+    },
+    {
+      "rotation": [
+        0.7071068,
+        4.7415206E-08,
+        3.68785E-08,
+        0.7071067
+      ],
+      "translation": [
+        0.127942756,
+        -1.13276458,
+        -0.6383585
+      ],
+      "name": "wrist_outer_l"
+    },
+    {
+      "children": [
+        17,
+        18,
+        19,
+        20
+      ],
+      "rotation": [
+        2.533197E-07,
+        1.1920929E-07,
+        1.4901131E-08,
+        1.0
+      ],
+      "translation": [
+        -9.49955E-06,
+        9.573792E-06,
+        -9.10759E-05
+      ],
+      "name": "lowerarm_correctiveRoot_l"
+    },
+    {
+      "rotation": [
+        -0.7071068,
+        5.26835642E-08,
+        7.37569863E-08,
+        0.7071067
+      ],
+      "translation": [
+        0.747279942,
+        3.17877865,
+        -1.66801894
+      ],
+      "name": "lowerarm_bck_l"
+    },
+    {
+      "rotation": [
+        0.707106948,
+        7.3757E-08,
+        -5.26835926E-08,
+        0.7071066
+      ],
+      "scale": [
+        1.0,
+        0.9999999,
+        0.9999999
+      ],
+      "translation": [
+        1.54483736,
+        -2.78385234,
+        1.06828082
+      ],
+      "name": "lowerarm_fwd_l"
+    },
+    {
+      "rotation": [
+        1.0,
+        1.49011576E-08,
+        -8.94069743E-08,
+        -4.371139E-08
+      ],
+      "translation": [
+        0.6500497,
+        -0.422816247,
+        -3.690606
+      ],
+      "name": "lowerarm_in_l"
+    },
+    {
+      "rotation": [
+        2.6822093E-07,
+        8.940698E-08,
+        1.49011372E-08,
+        1.0
+      ],
+      "translation": [
+        0.0528565757,
+        1.56047654,
+        1.74813616
+      ],
+      "name": "lowerarm_out_l"
+    },
+    {
+      "rotation": [
+        2.533197E-07,
+        1.1920929E-07,
+        1.4901131E-08,
+        1.0
+      ],
+      "translation": [
+        15.4304752,
+        1.58548355E-05,
+        5.374682E-05
+      ],
+      "name": "lowerarm_twist_01_l"
+    },
+    {
+      "rotation": [
+        2.533197E-07,
+        1.1920929E-07,
+        1.4901131E-08,
+        1.0
+      ],
+      "translation": [
+        7.711608,
+        2.783537E-05,
+        8.03748E-06
+      ],
+      "name": "lowerarm_twist_02_l"
+    },
+    {
+      "children": [
+        24,
+        25,
+        26,
+        27
+      ],
+      "rotation": [
+        0.0,
+        4.65190453E-18,
+        -8.67361738E-19,
+        1.0
+      ],
+      "name": "upperarm_correctiveRoot_l"
+    },
+    {
+      "rotation": [
+        -0.583106041,
+        1.15625873E-08,
+        9.44556E-09,
+        0.812396049
+      ],
+      "translation": [
+        1.42062354,
+        5.02848,
+        0.08850896
+      ],
+      "name": "upperarm_bck_l"
+    },
+    {
+      "rotation": [
+        0.7570514,
+        0.06762328,
+        0.08010133,
+        0.6448908
+      ],
+      "scale": [
+        1.0,
+        1.00000012,
+        1.00000012
+      ],
+      "translation": [
+        3.058855,
+        -5.087072,
+        0.172771752
+      ],
+      "name": "upperarm_fwd_l"
+    },
+    {
+      "rotation": [
+        0.912855,
+        1.78466522E-08,
+        0.408283859,
+        -3.99021722E-08
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        0.9999999
+      ],
+      "translation": [
+        4.414657,
+        -0.7058846,
+        -4.289094
+      ],
+      "name": "upperarm_in_l"
+    },
+    {
+      "rotation": [
+        -1.40946282E-17,
+        1.4901163E-08,
+        9.313227E-10,
+        1.0
+      ],
+      "translation": [
+        0.06401014,
+        0.887679338,
+        4.533989
+      ],
+      "name": "upperarm_out_l"
+    },
+    {
+      "children": [
+        29
+      ],
+      "rotation": [
+        0.0,
+        4.65190453E-18,
+        -8.67361738E-19,
+        1.0
+      ],
+      "translation": [
+        8.42175,
+        -4.23193E-06,
+        3.39746475E-05
+      ],
+      "name": "upperarm_twist_01_l"
+    },
+    {
+      "rotation": [
+        -1.40946282E-17,
+        1.4901163E-08,
+        9.313227E-10,
+        1.0
+      ],
+      "translation": [
+        0.000538826,
+        1.090765E-05,
+        5.79357147E-05
+      ],
+      "name": "upperarm_twistCor_01_l"
+    },
+    {
+      "children": [
+        31,
+        32,
+        33
+      ],
+      "rotation": [
+        0.0,
+        4.65190453E-18,
+        -8.67361738E-19,
+        1.0
+      ],
+      "translation": [
+        17.0706825,
+        -1.40070915E-05,
+        1.57356262E-05
+      ],
+      "name": "upperarm_twist_02_l"
+    },
+    {
+      "rotation": [
+        0.675747931,
+        0.0339308567,
+        -0.0131124118,
+        0.7362347
+      ],
+      "scale": [
+        0.9999999,
+        1.0,
+        1.0
+      ],
+      "translation": [
+        0.490901947,
+        -3.67193961,
+        0.4609294
+      ],
+      "name": "upperarm_bicep_l"
+    },
+    {
+      "rotation": [
+        -0.736234665,
+        0.0131124193,
+        0.0339308642,
+        0.675747931
+      ],
+      "scale": [
+        0.9999999,
+        1.0,
+        1.0
+      ],
+      "translation": [
+        -1.15893364,
+        4.55753136,
+        -0.939312
+      ],
+      "name": "upperarm_tricep_l"
+    },
+    {
+      "rotation": [
+        -1.40946282E-17,
+        1.4901163E-08,
+        9.313227E-10,
+        1.0
+      ],
+      "translation": [
+        0.00107955933,
+        1.66893E-05,
+        6.41346E-05
+      ],
+      "name": "upperarm_twistCor_02_l"
+    },
+    {
+      "rotation": [
+        0.108505987,
+        0.7254655,
+        -0.0214060023,
+        0.679314435
+      ],
+      "scale": [
+        1.00000012,
+        1.0,
+        1.00000012
+      ],
+      "translation": [
+        -2.97623968,
+        -11.4497871,
+        -8.986619
+      ],
+      "name": "clavicle_pec_l"
+    },
+    {
+      "rotation": [
+        0.7254827,
+        -0.1085045,
+        -0.6792962,
+        -0.0214101113
+      ],
+      "scale": [
+        1.0,
+        1.00000012,
+        1.00000024
+      ],
+      "translation": [
+        -2.976419,
+        -11.4497242,
+        8.98664
+      ],
+      "name": "clavicle_pec_r"
+    },
+    {
+      "children": [
+        37,
+        38,
+        39
+      ],
+      "rotation": [
+        0.747559249,
+        -0.07829871,
+        -0.657369137,
+        -0.05376232
+      ],
+      "translation": [
+        8.622304,
+        0.542483449,
+        0.726584
+      ],
+      "name": "clavicle_r"
+    },
+    {
+      "rotation": [
+        -0.002589941,
+        -0.02706128,
+        -0.03747116,
+        0.9989279
+      ],
+      "scale": [
+        0.9999999,
+        1.0,
+        1.0
+      ],
+      "translation": [
+        -9.554666,
+        -0.5634682,
+        -4.87418842
+      ],
+      "name": "clavicle_out_r"
+    },
+    {
+      "rotation": [
+        0.027061196,
+        -0.00258986978,
+        -0.9989279,
+        -0.0374711156
+      ],
+      "translation": [
+        -7.25288773,
+        -5.54150867,
+        2.20767021
+      ],
+      "name": "clavicle_scap_r"
+    },
+    {
+      "children": [
+        40,
+        51,
+        56,
+        58
+      ],
+      "rotation": [
+        -0.02603819,
+        0.384628236,
+        -0.01117044,
+        0.9226367
+      ],
+      "translation": [
+        -13.5451536,
+        -0.000108420849,
+        0.09275055
+      ],
+      "name": "upperarm_r"
+    },
+    {
+      "children": [
+        41,
+        44,
+        49,
+        50
+      ],
+      "rotation": [
+        1.88852738E-07,
+        -1.88119444E-07,
+        -0.314381748,
+        0.949296653
+      ],
+      "translation": [
+        -25.7178745,
+        -3.65972519E-05,
+        -9.059906E-06
+      ],
+      "name": "lowerarm_r"
+    },
+    {
+      "children": [
+        42,
+        43
+      ],
+      "rotation": [
+        -0.7071068,
+        -8.4293724E-08,
+        -4.2146862E-08,
+        0.7071067
+      ],
+      "translation": [
+        -23.2137871,
+        -3.26633453E-05,
+        -2.45061256E-05
+      ],
+      "name": "hand_r"
+    },
+    {
+      "rotation": [
+        -0.7071068,
+        8.429371E-08,
+        8.42937E-08,
+        0.7071067
+      ],
+      "translation": [
+        0.362095267,
+        -2.06424856,
+        0.373619318
+      ],
+      "name": "wrist_inner_r"
+    },
+    {
+      "rotation": [
+        0.7071068,
+        8.42937E-08,
+        -8.429371E-08,
+        0.7071067
+      ],
+      "scale": [
+        1.0,
+        0.9999999,
+        0.9999999
+      ],
+      "translation": [
+        -0.128036663,
+        1.13268185,
+        0.638285637
+      ],
+      "name": "wrist_outer_r"
+    },
+    {
+      "children": [
+        45,
+        46,
+        47,
+        48
+      ],
+      "rotation": [
+        -2.08616285E-07,
+        -2.23517461E-07,
+        7.450534E-09,
+        1.0
+      ],
+      "translation": [
+        1.83968932E-05,
+        -2.360364E-06,
+        9.34600757E-05
+      ],
+      "name": "lowerarm_correctiveRoot_r"
+    },
+    {
+      "rotation": [
+        -0.7071068,
+        2.77555756E-17,
+        0.0,
+        0.7071067
+      ],
+      "translation": [
+        -0.7472243,
+        -3.17873454,
+        1.66801429
+      ],
+      "name": "lowerarm_bck_r"
+    },
+    {
+      "rotation": [
+        0.7071068,
+        -5.551115E-17,
+        4.67924048E-24,
+        0.7071067
+      ],
+      "scale": [
+        1.0,
+        0.9999999,
+        0.9999999
+      ],
+      "translation": [
+        -1.544874,
+        2.78383851,
+        -1.06824493
+      ],
+      "name": "lowerarm_fwd_r"
+    },
+    {
+      "rotation": [
+        1.0,
+        6.938894E-17,
+        -5.55111479E-17,
+        4.371139E-08
+      ],
+      "translation": [
+        -0.6500248,
+        0.422845662,
+        3.69061518
+      ],
+      "name": "lowerarm_in_r"
+    },
+    {
+      "rotation": [
+        2.38418579E-07,
+        5.551115E-17,
+        5.551115E-17,
+        1.0
+      ],
+      "translation": [
+        -0.05284179,
+        -1.5604707,
+        -1.74810922
+      ],
+      "name": "lowerarm_out_r"
+    },
+    {
+      "rotation": [
+        -2.08616285E-07,
+        -2.23517461E-07,
+        7.450534E-09,
+        1.0
+      ],
+      "translation": [
+        -15.4305153,
+        -6.389618E-05,
+        -1.82555559E-05
+      ],
+      "name": "lowerarm_twist_01_r"
+    },
+    {
+      "rotation": [
+        -2.08616285E-07,
+        -2.23517461E-07,
+        7.450534E-09,
+        1.0
+      ],
+      "translation": [
+        -7.711543,
+        2.19941139E-05,
+        -2.43874783E-05
+      ],
+      "name": "lowerarm_twist_02_r"
+    },
+    {
+      "children": [
+        52,
+        53,
+        54,
+        55
+      ],
+      "rotation": [
+        2.38418579E-07,
+        -1.19209275E-07,
+        1.86267335E-09,
+        1.0
+      ],
+      "name": "upperarm_correctiveRoot_r"
+    },
+    {
+      "rotation": [
+        -0.5831061,
+        -8.473951E-08,
+        -6.082271E-08,
+        0.812396
+      ],
+      "translation": [
+        -1.42059946,
+        -5.028486,
+        -0.08845968
+      ],
+      "name": "upperarm_bck_r"
+    },
+    {
+      "rotation": [
+        0.757051468,
+        0.06762326,
+        0.08010136,
+        0.6448907
+      ],
+      "scale": [
+        1.0,
+        1.00000012,
+        1.00000012
+      ],
+      "translation": [
+        -3.0588975,
+        5.08706236,
+        -0.172720134
+      ],
+      "name": "upperarm_fwd_r"
+    },
+    {
+      "rotation": [
+        0.912855,
+        1.91220124E-08,
+        0.408283919,
+        -4.04725746E-08
+      ],
+      "scale": [
+        1.0,
+        1.00000024,
+        1.00000012
+      ],
+      "translation": [
+        -4.41471672,
+        0.7058865,
+        4.289169
+      ],
+      "name": "upperarm_in_r"
+    },
+    {
+      "rotation": [
+        2.356246E-07,
+        -1.04308128E-07,
+        2.457583E-14,
+        1.0
+      ],
+      "translation": [
+        -0.06393351,
+        -0.887689233,
+        -4.534016
+      ],
+      "name": "upperarm_out_r"
+    },
+    {
+      "children": [
+        57
+      ],
+      "rotation": [
+        -2.7194622E-07,
+        -1.341105E-07,
+        2.002343E-07,
+        1.0
+      ],
+      "translation": [
+        -8.421754,
+        -3.695488E-06,
+        -3.159046E-05
+      ],
+      "name": "upperarm_twist_01_r"
+    },
+    {
+      "rotation": [
+        -9.313228E-10,
+        2.06795153E-25,
+        2.793968E-09,
+        1.0
+      ],
+      "translation": [
+        -0.000548362732,
+        -1.09372049E-05,
+        -5.257116E-05
+      ],
+      "name": "upperarm_twistCor_01_r"
+    },
+    {
+      "children": [
+        59,
+        60,
+        61
+      ],
+      "rotation": [
+        -2.7194622E-07,
+        -1.341105E-07,
+        2.002343E-07,
+        1.0
+      ],
+      "translation": [
+        -17.07074,
+        -2.026558E-05,
+        8.583069E-06
+      ],
+      "name": "upperarm_twist_02_r"
+    },
+    {
+      "rotation": [
+        0.675747931,
+        0.0339308567,
+        -0.0131124118,
+        0.7362347
+      ],
+      "scale": [
+        0.9999999,
+        1.0,
+        1.0
+      ],
+      "translation": [
+        -0.4908205,
+        3.67194057,
+        -0.460948259
+      ],
+      "name": "upperarm_bicep_r"
+    },
+    {
+      "rotation": [
+        -0.736234665,
+        0.0131124193,
+        0.0339308642,
+        0.675747931
+      ],
+      "scale": [
+        0.9999999,
+        1.0,
+        1.0
+      ],
+      "translation": [
+        1.1590122,
+        -4.55752754,
+        0.9393366
+      ],
+      "name": "upperarm_tricep_r"
+    },
+    {
+      "rotation": [
+        -9.313228E-10,
+        2.06795153E-25,
+        2.793968E-09,
+        1.0
+      ],
+      "translation": [
+        -0.00107192993,
+        -1.561595E-05,
+        -6.91411042E-05
+      ],
+      "name": "upperarm_twistCor_02_r"
+    },
+    {
+      "rotation": [
+        -1.40707925E-07,
+        -9.28600059E-08,
+        -0.200688884,
+        0.979655
+      ],
+      "translation": [
+        13.9883318,
+        -0.4371453,
+        0.000131670342
+      ],
+      "name": "neck_01"
+    },
+    {
+      "rotation": [
+        0.167311147,
+        0.7577242,
+        0.019259762,
+        0.63046813
+      ],
+      "scale": [
+        1.00000012,
+        1.0,
+        1.00000012
+      ],
+      "translation": [
+        -4.83564043,
+        1.65463078,
+        -12.7601433
+      ],
+      "name": "spine_04_latissimus_l"
+    },
+    {
+      "rotation": [
+        0.757730365,
+        -0.16731295,
+        -0.6304604,
+        0.01925932
+      ],
+      "scale": [
+        1.0,
+        1.00000012,
+        1.00000012
+      ],
+      "translation": [
+        -4.8359437,
+        1.65473056,
+        12.7600374
+      ],
+      "name": "spine_04_latissimus_r"
+    },
+    {
+      "children": [
+        66,
+        87,
+        94,
+        96
+      ],
+      "rotation": [
+        0.07404637,
+        -0.0227448717,
+        0.009287723,
+        0.9969521
+      ],
+      "scale": [
+        1.0,
+        0.9999999,
+        1.0
+      ],
+      "translation": [
+        -3.655315,
+        0.162183985,
+        -8.322576
+      ],
+      "name": "thigh_l"
+    },
+    {
+      "children": [
+        67,
+        70,
+        71,
+        73
+      ],
+      "rotation": [
+        2.3948374E-07,
+        1.1705481E-07,
+        -0.009016274,
+        0.99995935
+      ],
+      "scale": [
+        0.9999999,
+        0.9999999,
+        1.0
+      ],
+      "translation": [
+        -41.0842,
+        0.000277519255,
+        3.7252903E-07
+      ],
+      "name": "calf_l"
+    },
+    {
+      "children": [
+        68,
+        69
+      ],
+      "rotation": [
+        3.46944675E-18,
+        1.86264537E-09,
+        4.65661343E-10,
+        1.0
+      ],
+      "translation": [
+        -7.569043E-06,
+        -3.41529244E-06,
+        4.611909E-06
+      ],
+      "name": "calf_correctiveRoot_l"
+    },
+    {
+      "rotation": [
+        0.720172346,
+        -0.0215295,
+        -0.0129858805,
+        0.6933395
+      ],
+      "scale": [
+        0.9999999,
+        1.0,
+        1.0
+      ],
+      "translation": [
+        -0.298589468,
+        -4.256734,
+        -0.169788286
+      ],
+      "name": "calf_knee_l"
+    },
+    {
+      "rotation": [
+        -0.693339646,
+        0.0129858786,
+        -0.0215294976,
+        0.7201722
+      ],
+      "scale": [
+        0.9999999,
+        1.0,
+        1.0
+      ],
+      "translation": [
+        -0.3231962,
+        4.627759,
+        0.94721
+      ],
+      "name": "calf_kneeBack_l"
+    },
+    {
+      "rotation": [
+        3.46944675E-18,
+        1.86264537E-09,
+        4.65661343E-10,
+        1.0
+      ],
+      "translation": [
+        -24.4946251,
+        -0.000580025662,
+        0.000197620757
+      ],
+      "name": "calf_twist_01_l"
+    },
+    {
+      "children": [
+        72
+      ],
+      "rotation": [
+        3.46944675E-18,
+        1.86264537E-09,
+        4.65661343E-10,
+        1.0
+      ],
+      "translation": [
+        -12.1610518,
+        -0.0002267681,
+        9.138779E-05
+      ],
+      "name": "calf_twist_02_l"
+    },
+    {
+      "rotation": [
+        6.938894E-18,
+        -1.12757026E-17,
+        -3.469447E-18,
+        1.0
+      ],
+      "translation": [
+        -0.005218506,
+        -0.0002743458,
+        -1.16985439E-05
+      ],
+      "name": "calf_twistCor_02_l"
+    },
+    {
+      "children": [
+        74,
+        75,
+        76
+      ],
+      "rotation": [
+        2.532787E-07,
+        0.02463318,
+        -4.785317E-09,
+        0.999696553
+      ],
+      "translation": [
+        -36.7560234,
+        -9.52861E-06,
+        3.93450335E-07
+      ],
+      "name": "foot_l"
+    },
+    {
+      "rotation": [
+        -0.7501635,
+        0.00197556871,
+        -0.05031165,
+        0.6593327
+      ],
+      "scale": [
+        1.0,
+        1.00000012,
+        1.00000012
+      ],
+      "translation": [
+        1.3552717,
+        3.09250736,
+        0.5279088
+      ],
+      "name": "ankle_bck_l"
+    },
+    {
+      "rotation": [
+        0.659332931,
+        -0.0503116474,
+        -0.00197558571,
+        0.750163257
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.00000012
+      ],
+      "translation": [
+        1.32416642,
+        -4.324206,
+        -0.212067619
+      ],
+      "name": "ankle_fwd_l"
+    },
+    {
+      "children": [
+        77,
+        79,
+        81,
+        83,
+        85
+      ],
+      "rotation": [
+        -1.685874E-07,
+        0.0,
+        -0.7071068,
+        0.7071067
+      ],
+      "translation": [
+        -5.408104,
+        -12.8070278,
+        -0.1860771
+      ],
+      "name": "ball_l"
+    },
+    {
+      "children": [
+        78
+      ],
+      "rotation": [
+        -0.00223918678,
+        0.03726931,
+        -0.02842315,
+        0.9988985
+      ],
+      "translation": [
+        1.01780736,
+        0.846699655,
+        2.51166749
+      ],
+      "name": "bigtoe_01_l"
+    },
+    {
+      "rotation": [
+        1.86264537E-09,
+        -7.45058149E-09,
+        3.02679837E-09,
+        1.0
+      ],
+      "translation": [
+        2.52849555,
+        0.04823152,
+        -0.196584478
+      ],
+      "name": "bigtoe_02_l"
+    },
+    {
+      "children": [
+        80
+      ],
+      "rotation": [
+        -0.00433093356,
+        0.0319267847,
+        -0.07412811,
+        0.9967281
+      ],
+      "scale": [
+        0.9999999,
+        1.0,
+        1.0
+      ],
+      "translation": [
+        0.7521981,
+        1.015739,
+        0.3008536
+      ],
+      "name": "indextoe_01_l"
+    },
+    {
+      "rotation": [
+        -1.31017032E-07,
+        -1.06095492E-07,
+        -0.104528479,
+        0.9945219
+      ],
+      "translation": [
+        2.63646126,
+        0.0593028851,
+        -0.218377084
+      ],
+      "name": "indextoe_02_l"
+    },
+    {
+      "children": [
+        82
+      ],
+      "rotation": [
+        -0.0392400324,
+        0.00678814249,
+        -0.113219976,
+        0.992771566
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        0.9999999
+      ],
+      "translation": [
+        -0.7525663,
+        0.570103943,
+        -3.82131386
+      ],
+      "name": "littletoe_01_l"
+    },
+    {
+      "rotation": [
+        2.479011E-07,
+        9.797612E-08,
+        -0.08715572,
+        0.9961947
+      ],
+      "translation": [
+        1.3957386,
+        0.0714734346,
+        -0.1730051
+      ],
+      "name": "littletoe_02_l"
+    },
+    {
+      "children": [
+        84
+      ],
+      "rotation": [
+        -0.0392400324,
+        0.00678814249,
+        -0.113219976,
+        0.992771566
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        0.9999999
+      ],
+      "translation": [
+        0.8125386,
+        0.9265264,
+        -1.26718068
+      ],
+      "name": "middletoe_01_l"
+    },
+    {
+      "rotation": [
+        2.479011E-07,
+        9.797612E-08,
+        -0.08715572,
+        0.9961947
+      ],
+      "translation": [
+        2.08015513,
+        0.0446779057,
+        -0.3229059
+      ],
+      "name": "middletoe_02_l"
+    },
+    {
+      "children": [
+        86
+      ],
+      "rotation": [
+        -0.0392400324,
+        0.00678814249,
+        -0.113219976,
+        0.992771566
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        0.9999999
+      ],
+      "translation": [
+        0.117381319,
+        0.8667808,
+        -2.54431272
+      ],
+      "name": "ringtoe_01_l"
+    },
+    {
+      "rotation": [
+        2.479011E-07,
+        9.797612E-08,
+        -0.08715572,
+        0.9961947
+      ],
+      "translation": [
+        1.93548083,
+        0.08375779,
+        -0.3539205
+      ],
+      "name": "ringtoe_02_l"
+    },
+    {
+      "children": [
+        88,
+        89,
+        90,
+        91,
+        92,
+        93
+      ],
+      "rotation": [
+        7.450582E-09,
+        -5.76795556E-17,
+        4.65661343E-10,
+        1.0
+      ],
+      "name": "thigh_correctiveRoot_l"
+    },
+    {
+      "rotation": [
+        -0.7071068,
+        -1.31708955E-09,
+        -1.31708944E-09,
+        0.7071067
+      ],
+      "translation": [
+        2.562429,
+        9.435752,
+        0.9804628
+      ],
+      "name": "thigh_bck_l"
+    },
+    {
+      "rotation": [
+        -0.7071068,
+        -1.31708955E-09,
+        -1.31708944E-09,
+        0.7071067
+      ],
+      "translation": [
+        -8.69502,
+        10.0804825,
+        0.242803067
+      ],
+      "name": "thigh_bck_lwr_l"
+    },
+    {
+      "rotation": [
+        0.7071068,
+        -1.31708955E-09,
+        1.31708944E-09,
+        0.7071067
+      ],
+      "translation": [
+        5.37333345,
+        -7.733118,
+        -0.0877117
+      ],
+      "name": "thigh_fwd_l"
+    },
+    {
+      "rotation": [
+        0.7071068,
+        -1.31708955E-09,
+        1.31708944E-09,
+        0.7071067
+      ],
+      "translation": [
+        0.322991341,
+        -7.349759,
+        0.5123484
+      ],
+      "name": "thigh_fwd_lwr_l"
+    },
+    {
+      "rotation": [
+        7.450582E-09,
+        -1.86264559E-09,
+        6.938894E-18,
+        1.0
+      ],
+      "translation": [
+        -8.739553,
+        0.017569432,
+        8.059289
+      ],
+      "name": "thigh_in_l"
+    },
+    {
+      "rotation": [
+        1.0,
+        -8.141881E-17,
+        1.86264537E-09,
+        4.371139E-08
+      ],
+      "translation": [
+        4.44199,
+        0.2859106,
+        -6.350014
+      ],
+      "name": "thigh_out_l"
+    },
+    {
+      "children": [
+        95
+      ],
+      "rotation": [
+        7.450582E-09,
+        -5.76795556E-17,
+        4.65661343E-10,
+        1.0
+      ],
+      "translation": [
+        -13.6169538,
+        7.187576E-05,
+        3.50922346E-06
+      ],
+      "name": "thigh_twist_01_l"
+    },
+    {
+      "rotation": [
+        7.450582E-09,
+        -1.86264559E-09,
+        6.938894E-18,
+        1.0
+      ],
+      "translation": [
+        8.29696655E-05,
+        6.172807E-05,
+        -1.11609706E-05
+      ],
+      "name": "thigh_twistCor_01_l"
+    },
+    {
+      "children": [
+        97
+      ],
+      "rotation": [
+        7.450582E-09,
+        -5.76795556E-17,
+        4.65661343E-10,
+        1.0
+      ],
+      "translation": [
+        -27.3497925,
+        0.000177428141,
+        2.98023224E-08
+      ],
+      "name": "thigh_twist_02_l"
+    },
+    {
+      "rotation": [
+        7.450582E-09,
+        -1.86264559E-09,
+        6.938894E-18,
+        1.0
+      ],
+      "translation": [
+        0.000165939331,
+        6.373228E-05,
+        -9.648503E-06
+      ],
+      "name": "thigh_twistCor_02_l"
+    },
+    {
+      "children": [
+        99,
+        120,
+        127,
+        129
+      ],
+      "rotation": [
+        -0.0227449089,
+        -0.07404638,
+        -0.9969521,
+        0.009287728
+      ],
+      "scale": [
+        0.9999999,
+        0.999999762,
+        1.0
+      ],
+      "translation": [
+        -3.65530157,
+        0.162187487,
+        8.322575
+      ],
+      "name": "thigh_r"
+    },
+    {
+      "children": [
+        100,
+        103,
+        104,
+        106
+      ],
+      "rotation": [
+        2.3948374E-07,
+        1.1705481E-07,
+        -0.009016274,
+        0.99995935
+      ],
+      "scale": [
+        0.9999999,
+        0.9999999,
+        1.0
+      ],
+      "translation": [
+        41.08422,
+        -0.0002776385,
+        4.44799662E-06
+      ],
+      "name": "calf_r"
+    },
+    {
+      "children": [
+        101,
+        102
+      ],
+      "translation": [
+        3.74529168E-06,
+        3.88286344E-06,
+        -5.662451E-07
+      ],
+      "name": "calf_correctiveRoot_r"
+    },
+    {
+      "rotation": [
+        0.720172,
+        -0.0215290412,
+        -0.01299769,
+        0.6933397
+      ],
+      "translation": [
+        0.2985858,
+        4.25672531,
+        0.169778
+      ],
+      "name": "calf_knee_r"
+    },
+    {
+      "rotation": [
+        -0.6933399,
+        0.0129977008,
+        -0.021529045,
+        0.7201718
+      ],
+      "translation": [
+        0.3231885,
+        -4.627758,
+        -0.9472294
+      ],
+      "name": "calf_kneeBack_r"
+    },
+    {
+      "translation": [
+        24.4945984,
+        0.0005787145,
+        -0.000198313675
+      ],
+      "name": "calf_twist_01_r"
+    },
+    {
+      "children": [
+        105
+      ],
+      "translation": [
+        12.161025,
+        0.000229509387,
+        -9.170072E-05
+      ],
+      "name": "calf_twist_02_r"
+    },
+    {
+      "rotation": [
+        7.450581E-09,
+        1.86264515E-09,
+        6.98491931E-10,
+        1.0
+      ],
+      "translation": [
+        0.005264282,
+        0.000271619472,
+        1.06629086E-05
+      ],
+      "name": "calf_twistCor_02_r"
+    },
+    {
+      "children": [
+        107,
+        108,
+        109
+      ],
+      "rotation": [
+        2.38346232E-07,
+        0.02463318,
+        -5.873006E-09,
+        0.999696553
+      ],
+      "translation": [
+        36.756012,
+        7.91951E-06,
+        -2.762737E-06
+      ],
+      "name": "foot_r"
+    },
+    {
+      "rotation": [
+        -0.7501635,
+        0.00197556871,
+        -0.05031165,
+        0.6593327
+      ],
+      "scale": [
+        1.0,
+        1.00000012,
+        1.00000012
+      ],
+      "translation": [
+        -1.355287,
+        -3.092505,
+        -0.5279088
+      ],
+      "name": "ankle_bck_r"
+    },
+    {
+      "rotation": [
+        0.659332931,
+        -0.0503116474,
+        -0.00197558571,
+        0.750163257
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.00000012
+      ],
+      "translation": [
+        -1.324197,
+        4.324204,
+        0.212067962
+      ],
+      "name": "ankle_fwd_r"
+    },
+    {
+      "children": [
+        110,
+        112,
+        114,
+        116,
+        118
+      ],
+      "rotation": [
+        -1.685874E-07,
+        0.0,
+        -0.7071068,
+        0.7071067
+      ],
+      "translation": [
+        5.408058,
+        12.8070335,
+        0.186068013
+      ],
+      "name": "ball_r"
+    },
+    {
+      "children": [
+        111
+      ],
+      "rotation": [
+        -0.00223918678,
+        0.03726931,
+        -0.02842315,
+        0.9988985
+      ],
+      "translation": [
+        -1.01781976,
+        -0.8466453,
+        -2.51167631
+      ],
+      "name": "bigtoe_01_r"
+    },
+    {
+      "rotation": [
+        -2.77555756E-17,
+        2.77555756E-17,
+        2.561137E-09,
+        1.0
+      ],
+      "translation": [
+        -2.528489,
+        -0.0482392833,
+        0.196593523
+      ],
+      "name": "bigtoe_02_r"
+    },
+    {
+      "children": [
+        113
+      ],
+      "rotation": [
+        -0.00433093356,
+        0.0319267847,
+        -0.07412811,
+        0.9967281
+      ],
+      "scale": [
+        0.9999999,
+        1.0,
+        1.0
+      ],
+      "translation": [
+        -0.7521905,
+        -1.01569986,
+        -0.300866663
+      ],
+      "name": "indextoe_01_r"
+    },
+    {
+      "rotation": [
+        -1.31017032E-07,
+        -1.06095492E-07,
+        -0.104528479,
+        0.9945219
+      ],
+      "translation": [
+        -2.63645053,
+        -0.0593243949,
+        0.218377814
+      ],
+      "name": "indextoe_02_r"
+    },
+    {
+      "children": [
+        115
+      ],
+      "rotation": [
+        -0.0392400324,
+        0.00678814249,
+        -0.113219976,
+        0.992771566
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        0.9999999
+      ],
+      "translation": [
+        0.752574861,
+        -0.5700806,
+        3.82130814
+      ],
+      "name": "littletoe_01_r"
+    },
+    {
+      "rotation": [
+        2.479011E-07,
+        9.797612E-08,
+        -0.08715572,
+        0.9961947
+      ],
+      "translation": [
+        -1.395745,
+        -0.0714708939,
+        0.173003837
+      ],
+      "name": "littletoe_02_r"
+    },
+    {
+      "children": [
+        117
+      ],
+      "rotation": [
+        -0.0392400324,
+        0.00678814249,
+        -0.113219976,
+        0.992771566
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        0.9999999
+      ],
+      "translation": [
+        -0.8125262,
+        -0.926509738,
+        1.26715982
+      ],
+      "name": "middletoe_01_r"
+    },
+    {
+      "rotation": [
+        2.479011E-07,
+        9.797612E-08,
+        -0.08715572,
+        0.9961947
+      ],
+      "translation": [
+        -2.08015752,
+        -0.044692874,
+        0.3228962
+      ],
+      "name": "middletoe_02_r"
+    },
+    {
+      "children": [
+        119
+      ],
+      "rotation": [
+        -0.0392400324,
+        0.00678814249,
+        -0.113219976,
+        0.992771566
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        0.9999999
+      ],
+      "translation": [
+        -0.117372736,
+        -0.866734564,
+        2.54430723
+      ],
+      "name": "ringtoe_01_r"
+    },
+    {
+      "rotation": [
+        2.479011E-07,
+        9.797612E-08,
+        -0.08715572,
+        0.9961947
+      ],
+      "translation": [
+        -1.93547678,
+        -0.08378756,
+        0.353917658
+      ],
+      "name": "ringtoe_02_r"
+    },
+    {
+      "children": [
+        121,
+        122,
+        123,
+        124,
+        125,
+        126
+      ],
+      "rotation": [
+        2.38418579E-07,
+        1.1734663E-07,
+        -2.79845557E-14,
+        1.0
+      ],
+      "name": "thigh_correctiveRoot_r"
+    },
+    {
+      "rotation": [
+        -0.7071068,
+        8.42937E-08,
+        8.429371E-08,
+        0.7071067
+      ],
+      "scale": [
+        1.0,
+        0.9999999,
+        0.9999999
+      ],
+      "translation": [
+        8.694988,
+        -10.0804749,
+        -0.2428022
+      ],
+      "name": "thigh_bck_lwr_r"
+    },
+    {
+      "rotation": [
+        -0.7071068,
+        8.42937E-08,
+        8.429371E-08,
+        0.7071067
+      ],
+      "scale": [
+        1.0,
+        0.9999999,
+        0.9999999
+      ],
+      "translation": [
+        -2.56241655,
+        -9.43575,
+        -0.980460465
+      ],
+      "name": "thigh_bck_r"
+    },
+    {
+      "rotation": [
+        0.7071068,
+        8.42937E-08,
+        -8.429371E-08,
+        0.7071067
+      ],
+      "scale": [
+        1.0,
+        0.9999999,
+        0.9999999
+      ],
+      "translation": [
+        -0.322981417,
+        7.349752,
+        -0.512355
+      ],
+      "name": "thigh_fwd_lwr_r"
+    },
+    {
+      "rotation": [
+        0.7071068,
+        8.42937E-08,
+        -8.429371E-08,
+        0.7071067
+      ],
+      "scale": [
+        1.0,
+        0.9999999,
+        0.9999999
+      ],
+      "translation": [
+        -5.373331,
+        7.73311853,
+        0.08770901
+      ],
+      "name": "thigh_fwd_r"
+    },
+    {
+      "rotation": [
+        2.38418579E-07,
+        1.1920929E-07,
+        -2.84078316E-14,
+        1.0
+      ],
+      "translation": [
+        8.739578,
+        -0.01756266,
+        -8.05929
+      ],
+      "name": "thigh_in_r"
+    },
+    {
+      "rotation": [
+        1.0,
+        5.183048E-15,
+        -1.1920929E-07,
+        4.371139E-08
+      ],
+      "translation": [
+        -4.44199848,
+        -0.285909176,
+        6.350017
+      ],
+      "name": "thigh_out_r"
+    },
+    {
+      "children": [
+        128
+      ],
+      "rotation": [
+        2.38418579E-07,
+        1.1734663E-07,
+        -2.79845557E-14,
+        1.0
+      ],
+      "translation": [
+        13.61695,
+        -7.194282E-05,
+        -1.40070915E-06
+      ],
+      "name": "thigh_twist_01_r"
+    },
+    {
+      "rotation": [
+        2.38418579E-07,
+        1.1920929E-07,
+        -2.84078316E-14,
+        1.0
+      ],
+      "translation": [
+        -8.29696655E-05,
+        -6.186963E-05,
+        1.02780859E-05
+      ],
+      "name": "thigh_twistCor_01_r"
+    },
+    {
+      "children": [
+        130
+      ],
+      "rotation": [
+        2.38418579E-07,
+        1.1734663E-07,
+        -2.79845557E-14,
+        1.0
+      ],
+      "translation": [
+        27.3498,
+        -0.000177502676,
+        2.451241E-06
+      ],
+      "name": "thigh_twist_02_r"
+    },
+    {
+      "rotation": [
+        2.38418579E-07,
+        1.1920929E-07,
+        -2.84078316E-14,
+        1.0
+      ],
+      "translation": [
+        -0.000158309937,
+        -6.377698E-05,
+        9.238713E-06
+      ],
+      "name": "thigh_twistCor_02_r"
+    },
+    {
+      "skin": 0,
+      "mesh": 0,
+      "name": "Ancient Egyptian Footwear.2"
+    },
+    {
+      "skin": 1,
+      "mesh": 1,
+      "name": "Ancient Egyptian Footwear.3"
+    },
+    {
+      "skin": 2,
+      "mesh": 2,
+      "name": "Ancient Egyptian Robe"
+    },
+    {
+      "skin": 3,
+      "mesh": 3,
+      "name": " Egyptian Body Accessories"
+    }
+  ],
+  "samplers": [
+    {
+      "minFilter": 9987
+    }
+  ],
+  "skins": [
+    {
+      "inverseBindMatrices": 24,
+      "joints": [
+        2,
+        106,
+        109,
+        114,
+        115,
+        118,
+        119,
+        116,
+        117,
+        110,
+        111,
+        112,
+        113,
+        107,
+        108,
+        104,
+        105,
+        103,
+        73,
+        76,
+        79,
+        80,
+        77,
+        78,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        74,
+        75,
+        71,
+        72,
+        70
+      ]
+    },
+    {
+      "inverseBindMatrices": 27,
+      "joints": [
+        2,
+        106,
+        109,
+        114,
+        115,
+        118,
+        116,
+        117,
+        110,
+        111,
+        112,
+        113,
+        107,
+        108,
+        104,
+        105,
+        103,
+        73,
+        76,
+        79,
+        80,
+        77,
+        78,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        74,
+        75,
+        71,
+        72,
+        70
+      ]
+    },
+    {
+      "inverseBindMatrices": 30,
+      "joints": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        8,
+        24,
+        25,
+        26,
+        27,
+        19,
+        20,
+        18,
+        17,
+        29,
+        32,
+        31,
+        33,
+        9,
+        10,
+        36,
+        52,
+        54,
+        53,
+        55,
+        48,
+        46,
+        45,
+        57,
+        60,
+        59,
+        61,
+        37,
+        38,
+        35,
+        63,
+        64,
+        34,
+        104,
+        102,
+        101,
+        128,
+        130,
+        124,
+        122,
+        126,
+        125,
+        121,
+        123,
+        71,
+        69,
+        68,
+        95,
+        97,
+        88,
+        90,
+        93,
+        89,
+        92,
+        91,
+        62
+      ]
+    },
+    {
+      "inverseBindMatrices": 33,
+      "joints": [
+        2,
+        4,
+        5,
+        6,
+        8,
+        24,
+        25,
+        27,
+        13,
+        14,
+        15,
+        22,
+        21,
+        19,
+        20,
+        18,
+        17,
+        9,
+        10,
+        36,
+        52,
+        53,
+        55,
+        41,
+        42,
+        43,
+        50,
+        49,
+        48,
+        47,
+        46,
+        45,
+        37,
+        38,
+        35,
+        34,
+        62
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "source": 0,
+      "name": "Footware_Footware_Normal"
+    },
+    {
+      "sampler": 0,
+      "source": 1,
+      "name": "base_color_texture"
+    },
+    {
+      "sampler": 0,
+      "source": 2,
+      "name": "Acient_Egypt_Low_Poly_Clothing_Normal"
+    },
+    {
+      "sampler": 0,
+      "source": 3,
+      "name": "base_color_texture0"
+    },
+    {
+      "sampler": 0,
+      "source": 4,
+      "name": "Body_Accessories_Body_Accessories_Normal"
+    },
+    {
+      "sampler": 0,
+      "source": 5,
+      "name": "base_color_texture1"
+    }
+  ]
+}

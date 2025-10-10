@@ -29,6 +29,10 @@
 #include "Components/BoxComponent.h"
 #include "Interaction/FadeInterface.h"
 #include "Player/Form/PlayerFormChangeComponent.h"
+#include "GroomComponent.h"
+#include "LiveLinkInstance.h"
+#include "MetaHumanComponentUE.h"
+#include "Components/LODSyncComponent.h"
 
 class UPlayerFormConfig;
 
@@ -40,6 +44,28 @@ AElectricCastlePlayerCharacter::AElectricCastlePlayerCharacter()
 	GetCharacterMovement()->RotationRate = FRotator(0, 400.f, 0);
 	GetCharacterMovement()->bConstrainToPlane = true;
 	GetCharacterMovement()->bSnapToPlaneAtStart = true;
+	ClothingMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Clothing Mesh"));
+	ClothingMesh->SetupAttachment(GetMesh());
+	FaceMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Face Mesh"));
+	FaceMesh->SetupAttachment(GetMesh());
+	Groom_Beard = CreateDefaultSubobject<UGroomComponent>(TEXT("Beard"));
+	Groom_Beard->AttachmentName = FString("FACIAL_C_FacialRoot");
+	Groom_Beard->SetupAttachment(FaceMesh);
+	Groom_Eyebrows = CreateDefaultSubobject<UGroomComponent>(TEXT("Eyebrows"));
+	Groom_Eyebrows->AttachmentName = FString("FACIAL_C_FacialRoot");
+	Groom_Eyebrows->SetupAttachment(FaceMesh);
+	Groom_Eyelashes = CreateDefaultSubobject<UGroomComponent>(TEXT("Eyelashes"));
+	Groom_Eyelashes->AttachmentName = FString("FACIAL_C_FacialRoot");
+	Groom_Eyelashes->SetupAttachment(FaceMesh);
+	Groom_Fuzz = CreateDefaultSubobject<UGroomComponent>(TEXT("Fuzz"));
+	Groom_Fuzz->AttachmentName = FString("FACIAL_C_FacialRoot");
+	Groom_Fuzz->SetupAttachment(FaceMesh);
+	Groom_Hair = CreateDefaultSubobject<UGroomComponent>(TEXT("Hair"));
+	Groom_Hair->AttachmentName = FString("FACIAL_C_FacialRoot");
+	Groom_Hair->SetupAttachment(FaceMesh);
+	Groom_Moustache = CreateDefaultSubobject<UGroomComponent>(TEXT("Moustache"));
+	Groom_Moustache->AttachmentName = FString("FACIAL_C_FacialRoot");
+	Groom_Moustache->SetupAttachment(FaceMesh);
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
@@ -68,6 +94,26 @@ AElectricCastlePlayerCharacter::AElectricCastlePlayerCharacter()
 	MotionWarpingComponent = CreateDefaultSubobject<UMotionWarpingComponent>(TEXT("Motion Warping"));
 	FormChangeComponent = CreateDefaultSubobject<UPlayerFormChangeComponent>(TEXT("Form Change Component"));
 	FormChangeComponent->OnPlayerFormChange.AddDynamic(this, &AElectricCastlePlayerCharacter::OnFormChange);
+	MetaHumanComponent = CreateDefaultSubobject<UMetaHumanComponentUE>(TEXT("MetaHuman"));
+	LODSyncComponent = CreateDefaultSubobject<ULODSyncComponent>(TEXT("LODSync"));
+	LODSyncComponent->NumLODs = 8;
+	LODSyncComponent->ForcedLOD = 1;
+	LODSyncComponent->MinLOD = 0;
+	LODSyncComponent->ComponentsToSync.Add(FComponentSync(FName("Body"), ESyncOption::Drive));
+	LODSyncComponent->ComponentsToSync.Add(FComponentSync(FName("Face"), ESyncOption::Drive));
+	LODSyncComponent->ComponentsToSync.Add(FComponentSync(FName("Torso"), ESyncOption::Passive));
+	LODSyncComponent->ComponentsToSync.Add(FComponentSync(FName("Legs"), ESyncOption::Passive));
+	LODSyncComponent->ComponentsToSync.Add(FComponentSync(FName("Feet"), ESyncOption::Passive));
+	LODSyncComponent->ComponentsToSync.Add(FComponentSync(FName("Hair"), ESyncOption::Passive));
+	LODSyncComponent->ComponentsToSync.Add(FComponentSync(FName("Eyebrows"), ESyncOption::Passive));
+	LODSyncComponent->ComponentsToSync.Add(FComponentSync(FName("Eyelashes"), ESyncOption::Passive));
+	LODSyncComponent->ComponentsToSync.Add(FComponentSync(FName("Mustache"), ESyncOption::Passive));
+	LODSyncComponent->ComponentsToSync.Add(FComponentSync(FName("Beard"), ESyncOption::Passive));
+	const FLODMappingData CustomLODMapping = CreateCustomLODMappingDefault();
+	LODSyncComponent->CustomLODMapping.Add(FName("Body"), CustomLODMapping);
+	LODSyncComponent->CustomLODMapping.Add(FName("Torso"), CustomLODMapping);
+	LODSyncComponent->CustomLODMapping.Add(FName("Legs"), CustomLODMapping);
+	LODSyncComponent->CustomLODMapping.Add(FName("Feet"), CustomLODMapping);
 	GetMesh()->SetCollisionResponseToChannel(ECC_Target, ECR_Ignore);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Target, ECR_Ignore);
 	GetMesh()->SetIsReplicated(true);
@@ -81,6 +127,7 @@ void AElectricCastlePlayerCharacter::BeginPlay()
 	{
 		AIDirectorSubsystem->RegisterActivePlayer(this);
 	}
+	FaceMesh->OnAnimInitialized.AddDynamic(this, &AElectricCastlePlayerCharacter::PrepareLiveLinkSetup);
 	OnCameraReturnDelegate.BindUObject(this, &AElectricCastlePlayerCharacter::OnCameraReturned);
 	FadeDetectionComponent->OnComponentBeginOverlap.AddDynamic(this, &AElectricCastlePlayerCharacter::OnFadeDetectionBeginOverlap);
 	FadeDetectionComponent->OnComponentEndOverlap.AddDynamic(this, &AElectricCastlePlayerCharacter::OnFadeDetectionEndOverlap);
@@ -92,6 +139,57 @@ void AElectricCastlePlayerCharacter::BeginDestroy()
 	if (UElectricCastleAIDirectorGameInstanceSubsystem* AIDirectorSubsystem = UElectricCastleAIDirectorGameInstanceSubsystem::Get(this))
 	{
 		AIDirectorSubsystem->UnregisterActivePlayer(this);
+	}
+}
+
+void AElectricCastlePlayerCharacter::EnableMasterPose_Implementation(USkeletalMeshComponent* SkeletalMeshComponent)
+{
+	if (IsValid(SkeletalMeshComponent->GetSkeletalMeshAsset()))
+	{
+		if (UKismetSystemLibrary::IsValidClass(SkeletalMeshComponent->GetAnimClass()) || UKismetSystemLibrary::IsValidClass(
+			SkeletalMeshComponent->GetSkeletalMeshAsset()->GetPostProcessAnimBlueprint()))
+		{
+			SkeletalMeshComponent->SetLeaderPoseComponent(GetMesh());
+		}
+	}
+}
+
+void AElectricCastlePlayerCharacter::LiveLink_SetUpdateAnimationInEditor_Implementation()
+{
+	if (!LiveLinkConfig.bUseLiveLink)
+	{
+		return;
+	}
+	TArray<USceneComponent*> AllChildComponents;
+	GetRootComponent()->GetChildrenComponents(true, AllChildComponents);
+	for (UActorComponent* Component : AllChildComponents)
+	{
+		if (USkeletalMeshComponent* SkeletalMeshComponent = Cast<USkeletalMeshComponent>(Component))
+		{
+			SkeletalMeshComponent->SetUpdateAnimationInEditor(true);
+		}
+	}
+}
+
+void AElectricCastlePlayerCharacter::LiveLink_SetupLiveLinkInstance_Implementation(UAnimInstance* AnimInstance)
+{
+	ULiveLinkInstance* LiveLinkInstance = Cast<ULiveLinkInstance>(AnimInstance);
+	LiveLinkInstance->SetSubject(LiveLinkConfig.LiveLinkSubject);
+	LiveLinkInstance->SetRetargetAsset(LiveLinkConfig.RetargetAsset);
+}
+
+void AElectricCastlePlayerCharacter::PrepareLiveLinkSetup_Implementation()
+{
+	if (LiveLinkConfig.bUseLiveLink)
+	{
+		if (LiveLinkConfig.bUseARKit)
+		{
+			LiveLink_SetupARKit(LiveLinkConfig.LiveLinkSubject, GetMesh()->GetAnimInstance());
+		}
+		else
+		{
+			LiveLink_SetupLiveLinkInstance(GetMesh()->GetAnimInstance());
+		}
 	}
 }
 
@@ -279,6 +377,20 @@ void AElectricCastlePlayerCharacter::OnFadeDetectionEndOverlap(UPrimitiveCompone
 	}
 }
 
+FLODMappingData AElectricCastlePlayerCharacter::CreateCustomLODMappingDefault() const
+{
+	FLODMappingData CustomLODMapping;
+	CustomLODMapping.Mapping.Add(0);
+	CustomLODMapping.Mapping.Add(0);
+	CustomLODMapping.Mapping.Add(1);
+	CustomLODMapping.Mapping.Add(1);
+	CustomLODMapping.Mapping.Add(2);
+	CustomLODMapping.Mapping.Add(2);
+	CustomLODMapping.Mapping.Add(3);
+	CustomLODMapping.Mapping.Add(3);
+	return CustomLODMapping;
+}
+
 int32 AElectricCastlePlayerCharacter::GetCharacterLevel_Implementation() const
 {
 	const UProgressionComponent* ProgressionComponent = UProgressionComponent::Get(this);
@@ -451,6 +563,39 @@ void AElectricCastlePlayerCharacter::ReturnCamera_Implementation(
 	);
 }
 
+void AElectricCastlePlayerCharacter::SetFormMeshes_Implementation(const FFormMeshConfig& FormMeshConfig)
+{
+	FormMeshConfig.Body.SetToComponent(GetMesh());
+	FormMeshConfig.Face.SetToComponent(FaceMesh);
+	FormMeshConfig.Clothing.SetToComponent(ClothingMesh);
+	TryApplyGroomAssets(FormMeshConfig);
+}
+
+void AElectricCastlePlayerCharacter::TryApplyGroomAssets_Implementation(const FFormMeshConfig& FormMeshConfig)
+{
+	if (FaceMesh && FaceMesh->GetSkeletalMeshAsset() && FaceMesh->IsRegistered())
+	{
+		SetGroomAssets(FormMeshConfig);
+	}
+	else
+	{
+		GetWorld()->GetTimerManager().SetTimerForNextTick([this, FormMeshConfig]()
+		{
+			TryApplyGroomAssets(FormMeshConfig);
+		});
+	}
+}
+
+void AElectricCastlePlayerCharacter::SetGroomAssets_Implementation(const FFormMeshConfig& FormMeshConfig)
+{
+	FormMeshConfig.Beard.SetToComponent(Groom_Beard);
+	FormMeshConfig.Eyebrows.SetToComponent(Groom_Eyebrows);
+	FormMeshConfig.Eyelashes.SetToComponent(Groom_Eyelashes);
+	FormMeshConfig.Fuzz.SetToComponent(Groom_Fuzz);
+	FormMeshConfig.Hair.SetToComponent(Groom_Hair);
+	FormMeshConfig.Moustache.SetToComponent(Groom_Moustache);
+}
+
 UFishingComponent* AElectricCastlePlayerCharacter::GetFishingComponent_Implementation() const
 {
 	return FishingComponent;
@@ -473,4 +618,36 @@ void AElectricCastlePlayerCharacter::ShowFishingStatusEffect_Implementation(UNia
 UPlayerFormChangeComponent* AElectricCastlePlayerCharacter::GetFormChangeComponent_Implementation() const
 {
 	return FormChangeComponent;
+}
+
+void AElectricCastlePlayerCharacter::SetAnimInstanceClass(const TSubclassOf<UAnimInstance> InAnimInstance)
+{
+	GetMesh()->SetAnimInstanceClass(InAnimInstance);
+}
+
+void AElectricCastlePlayerCharacter::Construction_SetupMetaHuman_Implementation()
+{
+	TArray<USceneComponent*> BodyChildComponents;
+	GetMesh()->GetChildrenComponents(false, BodyChildComponents);
+	for (USceneComponent* ChildComponent : BodyChildComponents)
+	{
+		if (USkeletalMeshComponent* SkeletalMeshComponent = Cast<USkeletalMeshComponent>(ChildComponent))
+		{
+			if (SkeletalMeshComponent != FaceMesh)
+			{
+				EnableMasterPose(SkeletalMeshComponent);
+			}
+		}
+	}
+	if (LiveLinkConfig.bUseLiveLink)
+	{
+		if (LiveLinkConfig.bUseARKit)
+		{
+			GetMesh()->SetAnimInstanceClass(LiveLinkConfig.BodyAnimInstanceClass);
+		}
+		else
+		{
+			GetMesh()->SetAnimInstanceClass(ULiveLinkInstance::StaticClass());
+		}
+	}
 }

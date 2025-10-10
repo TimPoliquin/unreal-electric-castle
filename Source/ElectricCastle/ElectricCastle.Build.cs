@@ -11,11 +11,13 @@ public class ElectricCastle : ModuleRules
 		PublicDependencyModuleNames.AddRange(new[]
 		{
 			"Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "CommonInput", "GameplayAbilities", "UMG", "SlateCore",
-			"ModelViewViewModel", "CableComponent", "AIModule", "MotionWarping"
+			"ModelViewViewModel", "CableComponent", "AIModule", "MotionWarping", "LiveLinkInterface"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new[]
-			{ "GameplayTags", "GameplayTasks", "NavigationSystem", "Niagara", "AIModule" });
+		{
+			"GameplayTags", "GameplayTasks", "NavigationSystem", "Niagara", "AIModule", "HairStrandsCore", "MetaHumanSDKRuntime", "LiveLinkAnimationCore"
+		});
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
