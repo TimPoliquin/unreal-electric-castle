@@ -242,7 +242,7 @@ int32 UElectricCastleAbilitySystemLibrary::GetXPReward(
 	return 0;
 }
 
-void UElectricCastleAbilitySystemLibrary::GetLivePlayersWithinRadius(
+void UElectricCastleAbilitySystemLibrary::GetLiveActorsWithinRadius(
 	const UObject* WorldContextObject,
 	const TArray<AActor*>& ActorsToIgnore,
 	const TArray<FName>& TagsToIgnore,
@@ -384,6 +384,7 @@ FGameplayEffectContextHandle UElectricCastleAbilitySystemLibrary::ApplyDamageEff
 		SetRadialDamageInnerRadius(EffectContextHandle, DamageEffectParams.RadialDamageInnerRadius);
 		SetRadialDamageOuterRadius(EffectContextHandle, DamageEffectParams.RadialDamageOuterRadius);
 	}
+	SpecHandle.Data->AddDynamicAssetTag(DamageEffectParams.DamageType);
 	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(
 		SpecHandle,
 		DamageEffectParams.DamageType,

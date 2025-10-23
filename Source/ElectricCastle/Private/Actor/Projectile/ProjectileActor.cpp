@@ -104,7 +104,7 @@ TArray<AActor*> AProjectileActor::FindImpactTargets_Implementation()
 	IgnoreActors.Add(this);
 	IgnoreActors.Add(GetOwner());
 	TArray<AActor*> Targets;
-	UElectricCastleAbilitySystemLibrary::GetLivePlayersWithinRadius(this, IgnoreActors, TagsToIgnore, GetActorLocation(), ImpactRadius, Targets);
+	UElectricCastleAbilitySystemLibrary::GetLiveActorsWithinRadius(this, IgnoreActors, TagsToIgnore, GetActorLocation(), ImpactRadius, Targets);
 	return Targets;
 }
 

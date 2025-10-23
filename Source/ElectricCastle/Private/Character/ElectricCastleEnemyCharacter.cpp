@@ -214,7 +214,10 @@ void AElectricCastleEnemyCharacter::PossessedBy(AController* NewController)
 		return;
 	}
 	AuraAIController = CastChecked<AElectricCastleAIController>(NewController);
-	AuraAIController->GetBlackboardComponent()->InitializeBlackboard(*BehaviorTree->BlackboardAsset);
+	if (AuraAIController->GetBlackboardComponent() && BehaviorTree)
+	{
+		AuraAIController->GetBlackboardComponent()->InitializeBlackboard(*BehaviorTree->BlackboardAsset);
+	}
 	AuraAIController->RunBehaviorTree(BehaviorTree);
 	AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("HitReacting"), false);
 	AuraAIController->GetBlackboardComponent()->SetValueAsBool(
