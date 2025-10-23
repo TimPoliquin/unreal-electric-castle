@@ -132,7 +132,7 @@ void UBeamGameplayAbility::DetermineCascadingTargets(AActor* CueTarget, TArray<A
 		ActorsToIgnore.AddUnique(CueTarget);
 	}
 	TArray<AActor*> ActorsInRange;
-	UElectricCastleAbilitySystemLibrary::GetLivePlayersWithinRadius(
+	UElectricCastleAbilitySystemLibrary::GetLiveActorsWithinRadius(
 		GetAvatarActorFromActorInfo(),
 		ActorsToIgnore,
 		ICombatInterface::GetTargetTagsToIgnore(GetAvatarActorFromActorInfo()),

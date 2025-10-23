@@ -123,13 +123,13 @@ FGameplayCueParameters UDamageGameplayAbility::MakeGameplayCueParamsFromMontageT
 	return CueParams;
 }
 
-FVector UDamageGameplayAbility::GetTargetsAtImpact(const FGameplayTag& MontageTag, const float ImpactRadius, TArray<AActor*>& OutTargets) const
+FVector UDamageGameplayAbility::GetTargetsAtImpact(const FGameplayTag& MontageTag, const float ImpactRadius, TArray<AActor*>& OutTargets, bool bDebug) const
 {
 	const FVector& SocketLocation = ICombatInterface::GetCombatSocketLocation(GetAvatarActorFromActorInfo(), MontageTag);
 	const TArray<FName> IgnoreTargetTags = ICombatInterface::GetTargetTagsToIgnore(GetAvatarActorFromActorInfo());
 	TArray<AActor*> ActorsToIgnore;
 	ActorsToIgnore.Add(GetAvatarActorFromActorInfo());
-	UElectricCastleAbilitySystemLibrary::GetLivePlayersWithinRadius(GetAvatarActorFromActorInfo(), ActorsToIgnore, IgnoreTargetTags, SocketLocation, ImpactRadius, OutTargets);
+	UElectricCastleAbilitySystemLibrary::GetLiveActorsWithinRadius(GetAvatarActorFromActorInfo(), ActorsToIgnore, IgnoreTargetTags, SocketLocation, ImpactRadius, OutTargets, bDebug);
 	return SocketLocation;
 }
 

@@ -242,7 +242,7 @@ int32 UElectricCastleAbilitySystemLibrary::GetXPReward(
 	return 0;
 }
 
-void UElectricCastleAbilitySystemLibrary::GetLivePlayersWithinRadius(
+void UElectricCastleAbilitySystemLibrary::GetLiveActorsWithinRadius(
 	const UObject* WorldContextObject,
 	const TArray<AActor*>& ActorsToIgnore,
 	const TArray<FName>& TagsToIgnore,

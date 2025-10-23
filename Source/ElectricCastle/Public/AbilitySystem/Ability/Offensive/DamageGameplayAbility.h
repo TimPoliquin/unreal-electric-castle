@@ -60,7 +60,7 @@ public:
 	FGameplayCueParameters MakeDefaultGameplayCueParams(const FVector& ImpactLocation) const;
 
 	UFUNCTION(BlueprintCallable)
-	FVector GetTargetsAtImpact(const FGameplayTag& MontageTag, const float ImpactRadius, TArray<AActor*>& OutTargets) const;
+	FVector GetTargetsAtImpact(const FGameplayTag& MontageTag, float ImpactRadius, TArray<AActor*>& OutTargets, bool bDebug = false) const;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")

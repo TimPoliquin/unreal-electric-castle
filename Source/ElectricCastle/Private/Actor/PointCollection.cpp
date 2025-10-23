@@ -76,7 +76,7 @@ TArray<USceneComponent*> APointCollection::GetGroundPoints(
 			Point->GetComponentLocation().Z - 500.f
 		);
 		TArray<AActor*> IgnoreActors;
-		UElectricCastleAbilitySystemLibrary::GetLivePlayersWithinRadius(
+		UElectricCastleAbilitySystemLibrary::GetLiveActorsWithinRadius(
 			this,
 			TArray<AActor*>(),
 			TArray<FName>(),

@@ -235,7 +235,7 @@ public:
 	static int32 GetXPReward(const UObject* WorldContextObject, const ECharacterClass& CharacterClass, int32 Level);
 
 	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayMechanics")
-	static void GetLivePlayersWithinRadius(
+	static void GetLiveActorsWithinRadius(
 		const UObject* WorldContextObject,
 		const TArray<AActor*>& ActorsToIgnore,
 		const TArray<FName>& TagsToIgnore,
