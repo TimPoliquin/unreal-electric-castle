@@ -106,9 +106,9 @@ struct ELECTRICCASTLE_API FPlayerFormConfigRow
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSoftObjectPtr<UTexture2D> PortraitImage;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TArray<TObjectPtr<UGameplayAbility>> Abilities;
+	TArray<TSubclassOf<UGameplayAbility>> Abilities;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TArray<TObjectPtr<UGameplayAbility>> PassiveAbilities;
+	TArray<TSubclassOf<UGameplayAbility>> PassiveAbilities;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<UGameplayEffect> FormAttributes;
 

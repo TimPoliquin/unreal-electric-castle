@@ -384,6 +384,7 @@ FGameplayEffectContextHandle UElectricCastleAbilitySystemLibrary::ApplyDamageEff
 		SetRadialDamageInnerRadius(EffectContextHandle, DamageEffectParams.RadialDamageInnerRadius);
 		SetRadialDamageOuterRadius(EffectContextHandle, DamageEffectParams.RadialDamageOuterRadius);
 	}
+	SpecHandle.Data->AddDynamicAssetTag(DamageEffectParams.DamageType);
 	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(
 		SpecHandle,
 		DamageEffectParams.DamageType,
