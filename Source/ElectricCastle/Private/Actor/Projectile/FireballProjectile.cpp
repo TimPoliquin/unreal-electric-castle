@@ -17,6 +17,7 @@ void AFireballProjectile::GetLifetimeReplicatedProps(TArray<class FLifetimePrope
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AFireballProjectile, ExplosionDamageConfig);
+	DOREPLIFETIME(AFireballProjectile, AbilityLevel);
 }
 
 bool AFireballProjectile::IsWithinExplodeDistance() const
@@ -57,6 +58,7 @@ void AFireballProjectile::ExplodeOnTarget(
 		ExplosionDamageEffectClass,
 		ExplosionDamageConfig,
 		AbilityLevel,
+		DamageEffectParams.AbilityAssetTags,
 		GetActorLocation()
 	);
 	UElectricCastleAbilitySystemLibrary::ApplyDamageEffect(

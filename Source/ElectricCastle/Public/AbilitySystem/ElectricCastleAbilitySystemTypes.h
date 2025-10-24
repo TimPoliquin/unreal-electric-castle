@@ -420,8 +420,10 @@ struct FDamageEffectParams
 	float RadialDamageInnerRadius = 0.f;
 	UPROPERTY(BlueprintReadWrite)
 	float RadialDamageOuterRadius = 0.f;
-	UPROPERTY(BluePrintReadWrite)
+	UPROPERTY(BlueprintReadWrite)
 	FVector RadialDamageOrigin = FVector::ZeroVector;
+	UPROPERTY(BlueprintReadWrite)
+	FGameplayTagContainer AbilityAssetTags;
 
 	void FillFromDamageConfig(const FElectricCastleDamageConfig& DamageConfig)
 	{

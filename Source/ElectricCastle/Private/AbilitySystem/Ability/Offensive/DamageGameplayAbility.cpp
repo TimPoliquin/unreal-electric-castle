@@ -84,6 +84,7 @@ FDamageEffectParams UDamageGameplayAbility::MakeDamageEffectParamsFromClassDefau
 		DamageEffectClass,
 		DamageConfig,
 		GetAbilityLevel(),
+		GetAssetTags(),
 		RadialDamageOrigin,
 		bOverrideKnockbackDirection,
 		InKnockbackDirectionOverride,
