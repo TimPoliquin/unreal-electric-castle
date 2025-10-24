@@ -37,8 +37,7 @@ public:
 	void SetupExplosionConfig(
 		const TSubclassOf<UGameplayEffect>& InExplosionDamageEffectClass,
 		const FElectricCastleDamageConfig& InExplosionDamageConfig,
-		int32
-		InAbilityLevel
+		const int32 InAbilityLevel
 	);
 
 protected:
@@ -67,5 +66,6 @@ private:
 	TSubclassOf<UGameplayEffect> ExplosionDamageEffectClass;
 	UPROPERTY(Replicated)
 	FElectricCastleDamageConfig ExplosionDamageConfig;
+	UPROPERTY(Replicated)
 	int32 AbilityLevel;
 };

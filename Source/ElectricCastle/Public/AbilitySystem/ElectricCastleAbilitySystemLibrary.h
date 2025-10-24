@@ -309,6 +309,7 @@ public:
 		TSubclassOf<UGameplayEffect> DamageEffectClass,
 		const FElectricCastleDamageConfig& InDamageConfig,
 		int32 AbilityLevel,
+		const FGameplayTagContainer& AbilityAssetTags,
 		FVector RadialDamageOrigin = FVector::ZeroVector,
 		bool bOverrideKnockbackDirection = false,
 		FVector InKnockbackDirectionOverride = FVector::ZeroVector,

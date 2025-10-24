@@ -385,6 +385,7 @@ FGameplayEffectContextHandle UElectricCastleAbilitySystemLibrary::ApplyDamageEff
 		SetRadialDamageOuterRadius(EffectContextHandle, DamageEffectParams.RadialDamageOuterRadius);
 	}
 	SpecHandle.Data->AddDynamicAssetTag(DamageEffectParams.DamageType);
+	SpecHandle.Data->AppendDynamicAssetTags(DamageEffectParams.AbilityAssetTags);
 	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(
 		SpecHandle,
 		DamageEffectParams.DamageType,
@@ -600,6 +601,7 @@ FDamageEffectParams UElectricCastleAbilitySystemLibrary::MakeCustomDamageEffectP
 	TSubclassOf<UGameplayEffect> DamageEffectClass,
 	const FElectricCastleDamageConfig& InDamageConfig,
 	int32 AbilityLevel,
+	const FGameplayTagContainer& InAbilityAssetTags,
 	FVector RadialDamageOrigin,
 	bool bOverrideKnockbackDirection,
 	FVector InKnockbackDirectionOverride,
@@ -622,6 +624,7 @@ FDamageEffectParams UElectricCastleAbilitySystemLibrary::MakeCustomDamageEffectP
 	);
 	DamageEffectParams.AbilityLevel = AbilityLevel;
 	DamageEffectParams.BaseDamage = InDamageConfig.GetDamageAtLevel(AbilityLevel);
+	DamageEffectParams.AbilityAssetTags = InAbilityAssetTags;
 	if (IsValid(TargetActor))
 	{
 		FRotator Rotation = (TargetActor->GetActorLocation() - SourceActor->GetActorLocation())
