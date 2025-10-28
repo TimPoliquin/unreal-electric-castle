@@ -201,7 +201,12 @@ protected:
 
 	UFUNCTION(BlueprintNativeEvent)
 	void OnAbilitySystemReady(UElectricCastleAbilitySystemComponent* InAbilitySystemComponent);
-
+	UFUNCTION()
+	void OnEffectChange_LightningDamage(FGameplayTag LightningDamageTag, int Count);
+	UFUNCTION(BlueprintNativeEvent)
+	void OnEffectAdd_LightningDamage();
+	UFUNCTION(BlueprintNativeEvent)
+	void OnEffectRemove_LightningDamage();
 private:
 	bool bDead = false;
 	UPROPERTY(EditAnywhere, Category = "Abilities")

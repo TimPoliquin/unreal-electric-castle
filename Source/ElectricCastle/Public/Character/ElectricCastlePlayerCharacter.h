@@ -75,6 +75,8 @@ public:
 	virtual void OnRep_ActiveAbilityTag() override;
 	virtual void OnRep_StatusEffectTags() override;
 	virtual void OnAbilitySystemReady_Implementation(UElectricCastleAbilitySystemComponent* InAbilitySystemComponent) override;
+	virtual void OnEffectAdd_LightningDamage_Implementation() override;
+	virtual void OnEffectRemove_LightningDamage_Implementation() override;
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	AElectricCastlePlayerState* GetElectricCastlePlayerState() const;
 	UFUNCTION(BlueprintCallable, BlueprintPure)

@@ -4,6 +4,7 @@
 #include "Character/ElectricCastleCharacter.h"
 
 #include "AbilitySystemComponent.h"
+#include "NiagaraFunctionLibrary.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
 #include "AbilitySystem/ElectricCastleAttributeSet.h"
 #include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
@@ -295,6 +296,27 @@ void AElectricCastleCharacter::OnAbilitySystemReady_Implementation(UElectricCast
 	GetOnAbilitySystemRegisteredDelegate().Broadcast(InAbilitySystemComponent);
 }
 
+void AElectricCastleCharacter::OnEffectChange_LightningDamage(FGameplayTag LightningDamageTag, int Count)
+{
+	if (Count > 0)
+	{
+		OnEffectAdd_LightningDamage();
+	} else
+	{
+		OnEffectRemove_LightningDamage();
+	}
+}
+
+void AElectricCastleCharacter::OnEffectRemove_LightningDamage_Implementation()
+{
+	// TODO
+}
+
+void AElectricCastleCharacter::OnEffectAdd_LightningDamage_Implementation()
+{
+	// TODO
+}
+
 void AElectricCastleCharacter::Dissolve(
 	UMeshComponent* InMesh,
 	UMaterialInstance* MaterialInstance,
@@ -352,6 +374,7 @@ void AElectricCastleCharacter::RegisterStatusEffectTags(UAbilitySystemComponent*
 		FElectricCastleGameplayTags::Get().Effect_Debuff_Type_Burn,
 		EGameplayTagEventType::NewOrRemoved
 	).AddUObject(this, &AElectricCastleCharacter::OnDebuffTypeBurnChanged);
+	InAbilitySystemComponent->RegisterGameplayTagEvent(FElectricCastleGameplayTags::Get().Effect_Damage_Magic_Lightning, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &AElectricCastleCharacter::OnEffectChange_LightningDamage);
 }
 
 void AElectricCastleCharacter::ApplyEffectToSelf(TSubclassOf<UGameplayEffect> Attributes, const float Level) const

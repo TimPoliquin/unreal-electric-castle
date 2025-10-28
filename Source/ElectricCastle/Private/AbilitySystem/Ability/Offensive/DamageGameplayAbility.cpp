@@ -8,6 +8,7 @@
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 #include "Character/EnemyInterface.h"
 #include "Interaction/CombatInterface.h"
+#include "Tags/ElectricCastleGameplayTags.h"
 #include "Utils/ArrayUtils.h"
 
 void UDamageGameplayAbility::ActivateAbility(
@@ -55,6 +56,20 @@ void UDamageGameplayAbility::DealDamage(AActor* TargetActor)
 	);
 }
 
+void UDamageGameplayAbility::DamageTargets_Implementation(const TArray<AActor*>& Targets, const FVector& ImpactLocation, const FGameplayTag& MontageTag)
+{
+	for (AActor* Target : Targets)
+	{
+		const FDamageEffectParams DamageEffectParams = MakeDamageEffectParamsFromClassDefaults(Target, ImpactLocation);
+		UElectricCastleAbilitySystemLibrary::ApplyDamageEffect(DamageEffectParams);
+		if (ImpactCueTag.IsValid())
+		{
+			const FGameplayCueParameters ImpactCueParams = MakeGameplayCueParamsFromMontageTag(MontageTag, ImpactLocation);
+			K2_ExecuteGameplayCueWithParams(ImpactCueTag, ImpactCueParams);
+		}
+	}
+}
+
 FTaggedMontage UDamageGameplayAbility::GetRandomAttackMontage() const
 {
 	const AActor* AvatarActor = GetAvatarActorFromActorInfo();
@@ -78,13 +93,24 @@ FDamageEffectParams UDamageGameplayAbility::MakeDamageEffectParamsFromClassDefau
 	float PitchOverride
 ) const
 {
+	FGameplayTagContainer AssetTags;
+	if (const UAbilitySystemComponent* AbilitySystemComponent = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetAvatarActorFromActorInfo()))
+	{
+		const FGameplayTagContainer& ActiveTags = AbilitySystemComponent->GetOwnedGameplayTags();
+		const FGameplayTagContainer& DamageTags = ActiveTags.Filter(FElectricCastleGameplayTags::Get().Effect_Damage.GetSingleTagContainer());
+		AssetTags.AppendTags(GetAssetTags());
+		AssetTags.AppendTags(DamageTags);
+	} else
+	{
+		AssetTags = GetAssetTags();
+	}
 	return UElectricCastleAbilitySystemLibrary::MakeCustomDamageEffectParams(
 		GetAvatarActorFromActorInfo(),
 		TargetActor,
 		DamageEffectClass,
 		DamageConfig,
 		GetAbilityLevel(),
-		GetAssetTags(),
+		AssetTags,
 		RadialDamageOrigin,
 		bOverrideKnockbackDirection,
 		InKnockbackDirectionOverride,
@@ -132,6 +158,14 @@ FVector UDamageGameplayAbility::GetTargetsAtImpact(const FGameplayTag& MontageTa
 	ActorsToIgnore.Add(GetAvatarActorFromActorInfo());
 	UElectricCastleAbilitySystemLibrary::GetLiveActorsWithinRadius(GetAvatarActorFromActorInfo(), ActorsToIgnore, IgnoreTargetTags, SocketLocation, ImpactRadius, OutTargets, bDebug);
 	return SocketLocation;
+}
+
+void UDamageGameplayAbility::GetTargetsAtImpactLocation(const FVector& ImpactLocation, float ImpactRadius, TArray<AActor*>& OutTargets, bool bDebug) const
+{
+	const TArray<FName> IgnoreTargetTags = ICombatInterface::GetTargetTagsToIgnore(GetAvatarActorFromActorInfo());
+	TArray<AActor*> ActorsToIgnore;
+	ActorsToIgnore.Add(GetAvatarActorFromActorInfo());
+	UElectricCastleAbilitySystemLibrary::GetLiveActorsWithinRadius(GetAvatarActorFromActorInfo(), ActorsToIgnore, IgnoreTargetTags, ImpactLocation, ImpactRadius, OutTargets, bDebug);
 }
 
 void UDamageGameplayAbility::FaceTarget_Implementation()

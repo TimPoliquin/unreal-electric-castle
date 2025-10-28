@@ -74,7 +74,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Item|Equipment")
 	void UseNothing();
 	void Equip(const EEquipmentSlot& Slot, const FGameplayTag& ItemType);
-	USkeletalMeshComponent* GetWeapon() const;
+	AEquipmentActor* GetWeapon() const;
+	USkeletalMeshComponent* GetWeaponMesh() const;
 	UFUNCTION(BlueprintCallable, Category="Item|Equipment")
 	FGameplayTag GetToolType() const;
 	UFUNCTION(BlueprintCallable, Category="Item|Equipment")

@@ -14,10 +14,4 @@ class ELECTRICCASTLE_API UMeleeAttackGameplayAbility : public UDamageGameplayAbi
 {
 	GENERATED_BODY()
 
-protected:
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void DamageTargets(const TArray<AActor*>& Targets, const FVector& ImpactLocation, const FGameplayTag& MontageTag);
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(Categories="GameplayCue"))
-	FGameplayTag ImpactCueTag = FGameplayTag::EmptyTag;
 };
