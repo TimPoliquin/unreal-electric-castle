@@ -127,6 +127,14 @@ struct FElectricCastleGameplayTags
 	FGameplayTag Abilities_Form_Native;
 	FGameplayTag Abilities_Form_Roman;
 
+	FGameplayTag Abilities_Barbarian;
+	FGameplayTag Abilities_Egyptian;
+	FGameplayTag Abilities_Futureman;
+	FGameplayTag Abilities_Highlander;
+	FGameplayTag Abilities_Hippie;
+	FGameplayTag Abilities_Knight;
+	FGameplayTag Abilities_Native;
+	FGameplayTag Abilities_Roman;
 	FGameplayTag Abilities_Offensive;
 	FGameplayTag Abilities_Offensive_Fire_FireBolt;
 	FGameplayTag Abilities_Offensive_Fire_FireBlast;

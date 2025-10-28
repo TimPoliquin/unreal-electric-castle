@@ -82,12 +82,12 @@ float UExecCalc_Damage::CalculateBaseDamage(
 	if (IsMagicalAttack(ExecutionParams))
 	{
 		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(
-			DamageStatics().AttackPowerDef,
+			DamageStatics().MagicPowerDef,
 			EvaluateParameters,
 			MagicalDamage
 		);
 	}
-	const float Damage = PhysicalDamage > MagicalDamage ? PhysicalDamage : MagicalDamage;
+	const float Damage = PhysicalDamage + MagicalDamage;
 	return Damage;
 }
 

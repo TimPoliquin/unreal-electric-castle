@@ -33,6 +33,8 @@
 #include "LiveLinkInstance.h"
 #include "MetaHumanComponentUE.h"
 #include "Components/LODSyncComponent.h"
+#include "Item/Equipment/EquipmentActor.h"
+#include "Player/Equipment/WeaponInterface.h"
 
 class UPlayerFormConfig;
 
@@ -303,6 +305,21 @@ void AElectricCastlePlayerCharacter::OnAbilitySystemReady_Implementation(UElectr
 	EquipmentComponent->OnEquipmentAnimationRequest.AddDynamic(this, &AElectricCastlePlayerCharacter::OnEquipmentAnimationRequest);
 }
 
+void AElectricCastlePlayerCharacter::OnEffectAdd_LightningDamage_Implementation()
+{
+	if (EquipmentComponent && EquipmentComponent->IsUsingWeapon())
+	{
+		IWeaponInterface::EffectAdd_Lightning(EquipmentComponent->GetWeapon());
+	}
+}
+
+void AElectricCastlePlayerCharacter::OnEffectRemove_LightningDamage_Implementation()
+{
+	if (EquipmentComponent && EquipmentComponent->IsUsingWeapon())
+	{
+		IWeaponInterface::EffectRemove_Lightning(EquipmentComponent->GetWeapon());
+	}}
+
 AElectricCastlePlayerState* AElectricCastlePlayerCharacter::GetElectricCastlePlayerState() const
 {
 	return Cast<AElectricCastlePlayerState>(GetPlayerState());
@@ -424,7 +441,7 @@ void AElectricCastlePlayerCharacter::Die()
 
 USkeletalMeshComponent* AElectricCastlePlayerCharacter::GetWeapon_Implementation() const
 {
-	return EquipmentComponent->GetWeapon();
+	return EquipmentComponent->GetWeaponMesh();
 }
 
 void AElectricCastlePlayerCharacter::UpdateFacingTarget_Implementation(const FVector& InFacingTarget)

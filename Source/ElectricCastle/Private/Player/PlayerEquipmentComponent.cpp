@@ -158,7 +158,12 @@ void UPlayerEquipmentComponent::Equip(const EEquipmentSlot& Slot, const FGamepla
 	}
 }
 
-USkeletalMeshComponent* UPlayerEquipmentComponent::GetWeapon() const
+AEquipmentActor* UPlayerEquipmentComponent::GetWeapon() const
+{
+	return Weapon;
+}
+
+USkeletalMeshComponent* UPlayerEquipmentComponent::GetWeaponMesh() const
 {
 	if (EquipmentUseMode == EEquipmentUseMode::Weapon && EquipmentSlots.Contains(EEquipmentSlot::Weapon) &&
 		IsValid(Weapon))

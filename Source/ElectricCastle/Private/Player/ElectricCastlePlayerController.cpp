@@ -12,8 +12,10 @@
 #include "CommonInputSubsystem.h"
 #include "Camera/CameraComponent.h"
 #include "Character/EnemyInterface.h"
+#include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "Input/ElectricCastleInputComponent.h"
+#include "Net/UnrealNetwork.h"
 #include "Player/Form/PlayerFormConfig.h"
 #include "Tags/ElectricCastleGameplayTags.h"
 #include "UI/Widget/DamageTextComponent.h"
@@ -47,6 +49,12 @@ void AElectricCastlePlayerController::PlayerTick(float DeltaTime)
 	Super::PlayerTick(DeltaTime);
 	CursorTrace();
 	UpdateMagicCircleLocation();
+}
+
+void AElectricCastlePlayerController::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AElectricCastlePlayerController, InputType);
 }
 
 void AElectricCastlePlayerController::ShowMagicCircle(UMaterialInterface* DecalMaterial)
@@ -239,11 +247,12 @@ bool AElectricCastlePlayerController::IsNotTargeting() const
 
 void AElectricCastlePlayerController::InitializeInputMode(const ECommonInputType NewInputMode)
 {
+	UE_LOG(LogElectricCastle, Warning, TEXT("[%s] Changing InputType: %s"), *GetName(), *UEnum::GetValueAsString(NewInputMode))
 	FInputModeGameAndUI InputModeData;
 	switch (NewInputMode)
 	{
 	case ECommonInputType::MouseAndKeyboard:
-		InputType = EAuraInputMode::MouseAndKeyboard;
+		SetInputMode_KeyboardAndMouse_Server();
 		bShowMouseCursor = true;
 		DefaultMouseCursor = EMouseCursor::Default;
 		InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
@@ -252,7 +261,7 @@ void AElectricCastlePlayerController::InitializeInputMode(const ECommonInputType
 		break;
 	case ECommonInputType::Gamepad:
 	default:
-		InputType = EAuraInputMode::Gamepad;
+		SetInputMode_Gamepad_Server();
 		bShowMouseCursor = false;
 		DefaultMouseCursor = EMouseCursor::Default;
 		InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
@@ -260,4 +269,14 @@ void AElectricCastlePlayerController::InitializeInputMode(const ECommonInputType
 		SetInputMode(InputModeData);
 		break;
 	}
+}
+
+void AElectricCastlePlayerController::SetInputMode_KeyboardAndMouse_Server_Implementation()
+{
+	InputType = EAuraInputMode::MouseAndKeyboard;
+}
+
+void AElectricCastlePlayerController::SetInputMode_Gamepad_Server_Implementation()
+{
+	InputType = EAuraInputMode::Gamepad;
 }

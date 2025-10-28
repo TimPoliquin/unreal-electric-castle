@@ -120,6 +120,7 @@ class ELECTRICCASTLE_API AElectricCastlePlayerController : public APlayerControl
 public:
 	AElectricCastlePlayerController();
 	virtual void PlayerTick(float DeltaTime) override;
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UFUNCTION(Client, Reliable)
 	virtual void ShowDamageNumber(
@@ -183,6 +184,7 @@ private:
 	UPROPERTY(VisibleInstanceOnly, Category = "Combat")
 	TObjectPtr<AMagicCircle> MagicCircle;
 	FHitResult CursorHit;
+	UPROPERTY(Replicated)
 	EAuraInputMode InputType = EAuraInputMode::MouseAndKeyboard;
 
 	void UpdateMagicCircleLocation() const;
@@ -191,4 +193,8 @@ private:
 	bool IsTargetingOther() const;
 	bool IsNotTargeting() const;
 	void InitializeInputMode(ECommonInputType NewInputMode);
+	UFUNCTION(Server, Reliable)
+	void SetInputMode_Gamepad_Server();
+	UFUNCTION(Server, Reliable)
+	void SetInputMode_KeyboardAndMouse_Server();
 };

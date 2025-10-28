@@ -34,6 +34,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void DealDamage(AActor* TargetActor);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void DamageTargets(const TArray<AActor*>& Targets, const FVector& ImpactLocation, const FGameplayTag& MontageTag);
+
 
 	UFUNCTION(BlueprintCallable)
 	FTaggedMontage GetRandomAttackMontage() const;
@@ -61,12 +64,16 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	FVector GetTargetsAtImpact(const FGameplayTag& MontageTag, float ImpactRadius, TArray<AActor*>& OutTargets, bool bDebug = false) const;
+	UFUNCTION(BlueprintCallable)
+	void GetTargetsAtImpactLocation(const FVector& ImpactLocation, float ImpactRadius, TArray<AActor*>& OutTargets, bool bDebug = false) const;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
 	TSubclassOf<UGameplayEffect> DamageEffectClass;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Damage")
 	FElectricCastleDamageConfig DamageConfig;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Damage", meta=(Categories="GameplayCue"))
+	FGameplayTag ImpactCueTag = FGameplayTag::EmptyTag;
 
 	int32 GetDamageAtLevel(const int32 AbilityLevel) const;
 

@@ -334,6 +334,14 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 	Instance.Abilities_Form_Knight = TagManager.AddNativeGameplayTag(FName("Abilities.Form.Knight"));
 	Instance.Abilities_Form_Native = TagManager.AddNativeGameplayTag(FName("Abilities.Form.Native"));
 	Instance.Abilities_Form_Roman = TagManager.AddNativeGameplayTag(FName("Abilities.Form.Roman"));
+	Instance.Abilities_Barbarian = TagManager.AddNativeGameplayTag(FName("Abilities.Barbarian"));
+	Instance.Abilities_Egyptian = TagManager.AddNativeGameplayTag(FName("Abilities.Egyptian"));
+	Instance.Abilities_Futureman = TagManager.AddNativeGameplayTag(FName("Abilities.Futureman"));
+	Instance.Abilities_Highlander = TagManager.AddNativeGameplayTag(FName("Abilities.Highlander"));
+	Instance.Abilities_Hippie = TagManager.AddNativeGameplayTag(FName("Abilities.Hippie"));
+	Instance.Abilities_Knight = TagManager.AddNativeGameplayTag(FName("Abilities.Knight"));
+	Instance.Abilities_Native = TagManager.AddNativeGameplayTag(FName("Abilities.Native"));
+	Instance.Abilities_Roman = TagManager.AddNativeGameplayTag(FName("Abilities.Roman"));
 	Instance.Abilities_Offensive = TagManager.AddNativeGameplayTag(
 		FName("Abilities.Offensive"),
 		FString("Root tag for offensive abilities")
