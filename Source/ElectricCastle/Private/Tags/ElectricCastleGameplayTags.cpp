@@ -222,6 +222,7 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FName("Effect.Magnitude"),
 		FString("Generic tag for specifying magnitude of effect across multiple effects")
 	);
+	Instance.Effect_State_Aiming = TagManager.AddNativeGameplayTag(FName("Effect.State.Aiming"), FString("Indicates that the character is aiming"));
 	Instance.Effect_Resist = TagManager.AddNativeGameplayTag(
 		FName("Effect.Resist"),
 		FString("Root tag for all resistance effects")
@@ -501,6 +502,7 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FName("Player.Block.Movement"),
 		FString("Blocks player movement")
 	);
+	Instance.Player_Block_Rotation = TagManager.AddNativeGameplayTag(FName("Player.Block.Rotation"), FString("Blocks player rotation"));
 	Instance.Player_Block_Interaction = TagManager.AddNativeGameplayTag(
 		FName("Player.Block.Interaction"),
 		FString("Blocks player's ability to interact with the environment")

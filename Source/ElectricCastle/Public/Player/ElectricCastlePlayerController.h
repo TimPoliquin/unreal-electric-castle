@@ -140,6 +140,12 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool IsInputTypeGamepad() const { return InputType == EAuraInputMode::Gamepad; }
 
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsTargetingEnemy() const;
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsTargetingOther() const;
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsNotTargeting() const;
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
@@ -189,9 +195,6 @@ private:
 
 	void UpdateMagicCircleLocation() const;
 
-	bool IsTargetingEnemy() const;
-	bool IsTargetingOther() const;
-	bool IsNotTargeting() const;
 	void InitializeInputMode(ECommonInputType NewInputMode);
 	UFUNCTION(Server, Reliable)
 	void SetInputMode_Gamepad_Server();

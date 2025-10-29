@@ -5,7 +5,6 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
-#include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraFunctionLibrary.h"
@@ -14,6 +13,7 @@
 #include "ElectricCastle/ElectricCastle.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Components/AudioComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Interaction/CombatInterface.h"
 #include "Net/UnrealNetwork.h"
 #include "Utils/TagUtils.h"
@@ -23,14 +23,15 @@ AProjectileActor::AProjectileActor()
 	PrimaryActorTick.bCanEverTick = false;
 	// DEVNOTE: Ensures that the state is replicated from server -> client
 	bReplicates = true;
-	Sphere = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
-	SetRootComponent(Sphere);
-	Sphere->SetCollisionObjectType(ECC_Projectile);
-	Sphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	Sphere->SetCollisionResponseToAllChannels(ECR_Ignore);
-	Sphere->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
-	Sphere->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Overlap);
-	Sphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	SetRootComponent(CreateDefaultSubobject<USceneComponent>(TEXT("Root")));
+	CollisionComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Sphere"));
+	CollisionComponent->SetupAttachment(GetRootComponent());
+	CollisionComponent->SetCollisionObjectType(ECC_Projectile);
+	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	CollisionComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
+	CollisionComponent->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
+	CollisionComponent->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Overlap);
+	CollisionComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
 	ProjectileMovement->InitialSpeed = 550.f;
@@ -112,8 +113,11 @@ void AProjectileActor::BeginPlay()
 {
 	Super::BeginPlay();
 	SetReplicateMovement(true);
-	SetLifeSpan(LifeSpan);
-	Sphere->OnComponentBeginOverlap.AddDynamic(this, &AProjectileActor::OnSphereOverlap);
+	if (bAutoDestroy)
+	{
+		SetLifeSpan(LifeSpan);
+	}
+	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AProjectileActor::OnSphereOverlap);
 	if (TravelSound)
 	{
 		TravelSoundComponent = UGameplayStatics::SpawnSoundAttached(TravelSound, GetRootComponent());

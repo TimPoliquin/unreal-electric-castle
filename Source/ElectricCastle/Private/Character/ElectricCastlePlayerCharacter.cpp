@@ -275,6 +275,7 @@ void AElectricCastlePlayerCharacter::OnRep_StatusEffectTags()
 		FGameplayTagContainer BlockedTags;
 		BlockedTags.AddTag(GameplayTags.Player_Block_CursorTrace);
 		BlockedTags.AddTag(GameplayTags.Player_Block_Movement);
+		BlockedTags.AddTag(GameplayTags.Player_Block_Rotation);
 		BlockedTags.AddTag(GameplayTags.Player_Block_Ability_Offensive);
 		BlockedTags.AddTag(GameplayTags.Player_Block_Interaction);
 		if (IsShocked())
@@ -448,6 +449,13 @@ void AElectricCastlePlayerCharacter::UpdateFacingTarget_Implementation(const FVe
 {
 	FacingTarget = InFacingTarget;
 	MotionWarpingComponent->AddOrUpdateWarpTargetFromLocation(FName("FacingTarget"), FacingTarget);
+	
+}
+
+void AElectricCastlePlayerCharacter::ClearFacingTarget_Implementation()
+{
+	FacingTarget = FVector::ZeroVector;
+	MotionWarpingComponent->RemoveWarpTarget(FName("FacingTarget"));
 }
 
 int32 AElectricCastlePlayerCharacter::GetXP_Implementation()

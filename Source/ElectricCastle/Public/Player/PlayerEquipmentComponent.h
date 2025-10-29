@@ -88,6 +88,8 @@ public:
 	void PlayEquipAnimation(EEquipmentSlot Slot) const;
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void EquipAnimationCompleted(const EEquipmentSlot Slot);
+	UFUNCTION(BlueprintCallable)
+	void ChangeWeapon(const FGameplayTag& WeaponTag, FName HandSocket);
 
 protected:
 	virtual void BeginPlay() override;

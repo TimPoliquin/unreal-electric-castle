@@ -13,6 +13,7 @@
 #include "Player/Form/FormChangeActorInterface.h"
 #include "Player/Form/PlayerFormChangeComponent.h"
 #include "LiveLinkTypes.h"
+#include "Player/Equipment/EquipmentManagerInterface.h"
 #include "ElectricCastlePlayerCharacter.generated.h"
 
 class ULiveLinkRetargetAsset;
@@ -59,7 +60,7 @@ struct ELECTRICCASTLE_API FLiveLinkCharacterConfig
 };
 
 UCLASS(Abstract, Blueprintable)
-class ELECTRICCASTLE_API AElectricCastlePlayerCharacter : public AElectricCastleCharacter, public IPlayerInterface, public IFishingActorInterface, public IFormChangeActorInterface
+class ELECTRICCASTLE_API AElectricCastlePlayerCharacter : public AElectricCastleCharacter, public IPlayerInterface, public IFishingActorInterface, public IFormChangeActorInterface, public IEquipmentManagerInterface
 {
 	GENERATED_BODY()
 
@@ -89,6 +90,7 @@ public:
 	virtual void Die() override;
 	virtual USkeletalMeshComponent* GetWeapon_Implementation() const override;
 	virtual void UpdateFacingTarget_Implementation(const FVector& InFacingTarget) override;
+	virtual void ClearFacingTarget_Implementation() override;
 
 	// Player Interface
 	virtual int32 GetXP_Implementation() override;
@@ -134,6 +136,11 @@ public:
 	virtual UPlayerFormChangeComponent* GetFormChangeComponent_Implementation() const override;
 	void SetAnimInstanceClass(const TSubclassOf<UAnimInstance> InAnimInstance);
 	/** FormChangeActorInterface End */
+
+	/** EquipmentManagerInterface Start */
+	virtual UPlayerEquipmentComponent* GetEquipmentComponent_Implementation() const override { return EquipmentComponent; }
+	/** EquipmentManagerInterface End */
+	
 
 protected:
 	UFUNCTION(BlueprintNativeEvent)

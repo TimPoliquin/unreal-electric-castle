@@ -15,6 +15,7 @@
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "Player/PlayerEquipmentComponent.h"
 #include "Player/Form/FormConfigLoadRequest.h"
 #include "Player/Form/PlayerFormConfig.h"
 #include "Tags/ElectricCastleGameplayTags.h"
@@ -191,5 +192,9 @@ void UPlayerFormChangeComponent::OnFormDataLoaded(const FPlayerFormConfigRow& Fo
 	{
 		PlayerCharacter->SetFormMeshes(FormConfigRow.MeshConfig);
 		PlayerCharacter->SetAnimInstanceClass(FormConfigRow.AnimationBlueprint.Get());
+		if (UPlayerEquipmentComponent* EquipmentComponent = IEquipmentManagerInterface::GetEquipmentComponent(PlayerCharacter))
+		{
+			EquipmentComponent->ChangeWeapon(FormConfigRow.WeaponTag, FormConfigRow.WeaponHandSocketName);
+		}
 	}
 }

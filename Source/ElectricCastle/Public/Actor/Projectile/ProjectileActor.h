@@ -7,6 +7,7 @@
 #include "GameFramework/Actor.h"
 #include "ProjectileActor.generated.h"
 
+class UCapsuleComponent;
 struct FGameplayEffectSpecHandle;
 class UProjectileMovementComponent;
 class USphereComponent;
@@ -59,10 +60,14 @@ protected:
 	TObjectPtr<UProjectileMovementComponent> ProjectileMovement;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float ImpactRadius = 1.f;
+	UPROPERTY(EditDefaultsOnly)
+	bool bAutoDestroy = true;
+	UPROPERTY(EditDefaultsOnly, meta=(EditCondition="bAutoDestroy", ClampMin = "0", UIMin = "0.01"))
+	float LifeSpan = 2.f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UCapsuleComponent> CollisionComponent;
 
 private:
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<USphereComponent> Sphere;
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UNiagaraSystem> ImpactEffect;
 	UPROPERTY(EditAnywhere)
@@ -72,6 +77,4 @@ private:
 	UPROPERTY()
 	TObjectPtr<UAudioComponent> TravelSoundComponent;
 	bool bHit = false;
-	UPROPERTY(EditDefaultsOnly)
-	float LifeSpan = 2.f;
 };

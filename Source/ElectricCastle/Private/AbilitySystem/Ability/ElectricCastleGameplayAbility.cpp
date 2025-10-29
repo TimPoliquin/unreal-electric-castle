@@ -4,6 +4,8 @@
 #include "AbilitySystem/Ability/ElectricCastleGameplayAbility.h"
 #include "Abilities/Tasks/AbilityTask.h"
 #include "AbilitySystem/ElectricCastleAttributeSet.h"
+#include "Interaction/CombatInterface.h"
+#include "Player/ElectricCastlePlayerController.h"
 
 FString UElectricCastleGameplayAbility::GetDescription_Implementation(const int32 AbilityLevel) const
 {
@@ -19,6 +21,29 @@ void UElectricCastleGameplayAbility::ExecuteTask(UAbilityTask* Task) const
 			Task->SetAbilitySystemComponent(AbilitySystemComponent);
 			Task->ReadyForActivation();
 		}
+	}
+}
+
+bool UElectricCastleGameplayAbility::ShouldSetMotionTarget() const
+{
+	if (const APawn* PlayerPawn = Cast<APawn>(GetAvatarActorFromActorInfo()))
+	{
+		if (const AElectricCastlePlayerController* ElectricCastlePlayerController = Cast<AElectricCastlePlayerController>(PlayerPawn->GetController()))
+		{
+			return ElectricCastlePlayerController->IsInputTypeMouse() && ElectricCastlePlayerController->IsTargetingEnemy();
+		}
+	}
+	return false;
+}
+
+void UElectricCastleGameplayAbility::FaceHitTarget_Implementation(const FHitResult& HitResult)
+{
+	if (HitResult.bBlockingHit)
+	{
+		ICombatInterface::UpdateFacingTarget(GetAvatarActorFromActorInfo(), HitResult.ImpactPoint);
+	} else
+	{
+		ICombatInterface::ClearFacingTarget(GetAvatarActorFromActorInfo());
 	}
 }
 

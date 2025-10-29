@@ -14,6 +14,8 @@
 #include "Character/EnemyInterface.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Input/ElectricCastleInputComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Player/Form/PlayerFormConfig.h"
@@ -116,23 +118,40 @@ void AElectricCastlePlayerController::SetupInputComponent()
 
 void AElectricCastlePlayerController::Move(const FInputActionValue& Value)
 {
-	if (GetAbilitySystemComponent() && GetAbilitySystemComponent()->HasMatchingGameplayTag(
+	const bool bCanMove = GetAbilitySystemComponent() && !GetAbilitySystemComponent()->HasMatchingGameplayTag(
 		FElectricCastleGameplayTags::Get().Player_Block_Movement
-	))
-	{
-		return;
-	}
-	if (APawn* ControlledPawn = GetPawn<APawn>())
+	);
+
+	const bool bCanRotate = GetAbilitySystemComponent() && !GetAbilitySystemComponent()->HasMatchingGameplayTag(
+		FElectricCastleGameplayTags::Get().Player_Block_Rotation
+	);
+
+	if (ACharacter* ControlledPawn = GetPawn<ACharacter>())
 	{
 		const FVector2D InputAxisVector = Value.Get<FVector2D>();
-		// const FRotator Rotation = GetControlRotation();
-		const FRotator Rotation = ControlledPawn->FindComponentByClass<UCameraComponent>()->
-		                                          GetComponentRotation();
+		const FRotator Rotation = ControlledPawn->FindComponentByClass<UCameraComponent>()->GetComponentRotation();
 		const FRotator YawRotation(0.f, Rotation.Yaw, 0.f);
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-		ControlledPawn->AddMovementInput(ForwardDirection, InputAxisVector.Y);
-		ControlledPawn->AddMovementInput(RightDirection, InputAxisVector.X);
+		UCharacterMovementComponent* CharacterMovement = ControlledPawn->GetCharacterMovement();
+		if (bCanMove)
+		{
+			CharacterMovement->bOrientRotationToMovement = true;
+			ControlledPawn->bUseControllerRotationYaw = false;
+			ControlledPawn->AddMovementInput(ForwardDirection, InputAxisVector.Y);
+			ControlledPawn->AddMovementInput(RightDirection, InputAxisVector.X);
+		}
+		else if (bCanRotate)
+		{
+			CharacterMovement->bOrientRotationToMovement = false;
+			ControlledPawn->bUseControllerRotationYaw = true;
+			// Use horizontal input to rotate the pawn
+			if (!FMath::IsNearlyZero(InputAxisVector.X))
+			{
+				const float RotationAmount = InputAxisVector.X * GetWorld()->GetDeltaSeconds() * 90.f;
+				ControlledPawn->AddControllerYawInput(RotationAmount);
+			}
+		}
 	}
 }
 

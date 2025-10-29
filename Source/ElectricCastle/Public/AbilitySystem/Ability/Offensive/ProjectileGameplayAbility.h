@@ -32,11 +32,11 @@ protected:
 	) override;
 
 	UFUNCTION(BlueprintCallable, Category ="Projectile")
-	void SpawnProjectile(
+	AProjectileActor* SpawnProjectile(
 		const FVector& ProjectileTargetLocation,
 		const AActor* HitActor,
 		const FGameplayTag& SocketTag
-	) const;
+	);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void FireProjectileAtTarget(const FGameplayTag& SocketTag);
@@ -52,13 +52,16 @@ protected:
 		const FVector& SpawnLocation,
 		const FRotator& SpawnRotation,
 		const FOnSpawnProjectileFinishedSignature* BeforeFinishSpawning = nullptr
-	) const;
+	);
+
+	UFUNCTION(BlueprintCallable)
+	AProjectileActor* SpawnProjectile_Basic();
 
 	/**
 	 * Angle (y) for projectile to be fired.
-	 * Defaults to 0 to allow projectile to travel parallel to the ground. 
+	 * Defaults to 0 to allow the projectile to travel parallel to the ground. 
 	 */
-	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Projectile")
 	float Pitch = 0.f;
 
 private:
