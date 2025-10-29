@@ -223,6 +223,15 @@ void AElectricCastlePlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetime
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 }
 
+void AElectricCastlePlayerCharacter::FaceRotation(const FRotator NewControlRotation, const float DeltaTime)
+{
+	Super::FaceRotation(NewControlRotation, DeltaTime);
+	if (bUseControllerRotationYaw)
+	{
+		Server_UpdateFacingRotation(GetActorRotation());
+	}
+}
+
 UElectricCastleAttributeSet* AElectricCastlePlayerCharacter::GetAttributeSet() const
 {
 	if (const AElectricCastlePlayerState* ElectricCastlePlayerState = GetElectricCastlePlayerState())
@@ -319,7 +328,8 @@ void AElectricCastlePlayerCharacter::OnEffectRemove_LightningDamage_Implementati
 	if (EquipmentComponent && EquipmentComponent->IsUsingWeapon())
 	{
 		IWeaponInterface::EffectRemove_Lightning(EquipmentComponent->GetWeapon());
-	}}
+	}
+}
 
 AElectricCastlePlayerState* AElectricCastlePlayerCharacter::GetElectricCastlePlayerState() const
 {
@@ -358,6 +368,11 @@ void AElectricCastlePlayerCharacter::InitializePlayerControllerHUD(
 			GetAttributeSet()
 		);
 	}
+}
+
+void AElectricCastlePlayerCharacter::Server_UpdateFacingRotation_Implementation(FRotator NewControlRotation)
+{
+	SetActorRotation(NewControlRotation);
 }
 
 void AElectricCastlePlayerCharacter::OnCameraReturned()
@@ -449,7 +464,6 @@ void AElectricCastlePlayerCharacter::UpdateFacingTarget_Implementation(const FVe
 {
 	FacingTarget = InFacingTarget;
 	MotionWarpingComponent->AddOrUpdateWarpTargetFromLocation(FName("FacingTarget"), FacingTarget);
-	
 }
 
 void AElectricCastlePlayerCharacter::ClearFacingTarget_Implementation()

@@ -60,7 +60,8 @@ struct ELECTRICCASTLE_API FLiveLinkCharacterConfig
 };
 
 UCLASS(Abstract, Blueprintable)
-class ELECTRICCASTLE_API AElectricCastlePlayerCharacter : public AElectricCastleCharacter, public IPlayerInterface, public IFishingActorInterface, public IFormChangeActorInterface, public IEquipmentManagerInterface
+class ELECTRICCASTLE_API AElectricCastlePlayerCharacter : public AElectricCastleCharacter, public IPlayerInterface, public IFishingActorInterface, public IFormChangeActorInterface,
+                                                          public IEquipmentManagerInterface
 {
 	GENERATED_BODY()
 
@@ -69,6 +70,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void FaceRotation(FRotator NewControlRotation, float DeltaTime = 0) override;
 	virtual UElectricCastleAttributeSet* GetAttributeSet() const override;
 
 	virtual void PossessedBy(AController* NewController) override;
@@ -140,7 +142,7 @@ public:
 	/** EquipmentManagerInterface Start */
 	virtual UPlayerEquipmentComponent* GetEquipmentComponent_Implementation() const override { return EquipmentComponent; }
 	/** EquipmentManagerInterface End */
-	
+
 
 protected:
 	UFUNCTION(BlueprintNativeEvent)
@@ -220,6 +222,8 @@ private:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_LevelUpParticles() const;
+	UFUNCTION(Server, Reliable)
+	void Server_UpdateFacingRotation(FRotator NewControlRotation);
 	UFUNCTION()
 	void OnCameraReturned();
 	UFUNCTION()
