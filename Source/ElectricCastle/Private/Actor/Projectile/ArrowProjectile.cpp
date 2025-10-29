@@ -4,6 +4,7 @@
 #include "Actor/Projectile/ArrowProjectile.h"
 
 #include "NiagaraComponent.h"
+#include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Net/UnrealNetwork.h"
@@ -46,11 +47,17 @@ void AArrowProjectile::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty
 
 void AArrowProjectile::Release_Implementation()
 {
+	const AActor* HitTarget = UElectricCastleAbilitySystemLibrary::FindHitBySphereTrace(bMatchOwnerForward ? GetOwner() : this, CollisionComponent->GetScaledCapsuleRadius());
+	float ReleasePitch = Pitch;
+	if (IsValid(HitTarget))
+	{
+		UElectricCastleAbilitySystemLibrary::CalculatePitchToHitTarget(GetActorLocation(), HitTarget->GetActorLocation(), ProjectileMovement->InitialSpeed, ReleasePitch);
+	}
 	const FVector ForwardVector = bMatchOwnerForward ? GetOwner()->GetActorForwardVector() : GetActorForwardVector();
 	// Get the actor's right vector (axis to rotate around)
 	const FVector RightVector = bMatchOwnerForward ? GetOwner()->GetActorRightVector() : GetActorRightVector();
 	// Create a rotation of +10 degrees around the right axis
-	const FQuat RotationQuat = FQuat(RightVector, FMath::DegreesToRadians(-1 * Pitch));
+	const FQuat RotationQuat = FQuat(RightVector, FMath::DegreesToRadians(-1 * ReleasePitch));
 	// Apply the rotation to the forward vector
 	const FVector NewForward = RotationQuat.RotateVector(ForwardVector);
 	ProjectileMovement->Velocity = NewForward * ProjectileMovement->InitialSpeed;

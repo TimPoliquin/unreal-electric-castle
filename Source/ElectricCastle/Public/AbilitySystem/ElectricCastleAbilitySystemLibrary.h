@@ -342,6 +342,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayMechanics")
 	static int32 GetAbilityLevelByAbilityTag(AActor* Actor, const FGameplayTag& AbilityTag);
 
+	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayMechanics")
+	static AActor* FindHitBySphereTrace(const AActor* Player, const float Radius = 1.f, const float TraceDistance = 10000.0f);
+	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayMechanics")
+	static bool CalculatePitchToHitTarget(const FVector& Start, const FVector& Target, const float ProjectileSpeed, float& OutPitchDegrees);
+
 private:
 	static bool GetWidgetControllerParams(
 		const UObject* WorldContextObject,
