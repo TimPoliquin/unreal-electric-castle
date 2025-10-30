@@ -146,6 +146,7 @@ public:
 	bool IsTargetingOther() const;
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool IsNotTargeting() const;
+	void SetupInputMode();
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Input")
@@ -189,7 +190,7 @@ private:
 	UFUNCTION()
 	void HandleFormChangeInputAction(const FInputActionValue& InputActionValue);
 	void UpdateMagicCircleLocation() const;
-	void InitializeInputMode(ECommonInputType NewInputMode);
+	void OnInputTypeChange(ECommonInputType NewInputMode);
 	UFUNCTION(Server, Reliable)
 	void SetInputMode_Gamepad_Server();
 	UFUNCTION(Server, Reliable)
