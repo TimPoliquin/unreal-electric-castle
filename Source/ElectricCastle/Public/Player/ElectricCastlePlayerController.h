@@ -146,58 +146,63 @@ public:
 	bool IsTargetingOther() const;
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool IsNotTargeting() const;
-protected:
-	virtual void BeginPlay() override;
-	virtual void SetupInputComponent() override;
 
-private:
+protected:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputMappingContext> AuraContext;
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputAction> MoveAction;
-
-	FHighlightContext HighlightContext;
-
-	void Move(const FInputActionValue& Value);
-	void CursorTrace();
-
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> AimAction;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	float AimClampMin = -1.f;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	float AimClampMax = 1.f;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputConfiguration> InputConfig;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputAction> FormChangeAction;
-
 	UPROPERTY()
 	TObjectPtr<UElectricCastleAbilitySystemComponent> AbilitySystemComponent;
-	UElectricCastleAbilitySystemComponent* GetAbilitySystemComponent();
+	// UI
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UDamageTextComponent> DamageTextComponentClass;
+	UPROPERTY(EditDefaultsOnly, Category="Combat")
+	TSubclassOf<AMagicCircle> MagicCircleClass;
+	UPROPERTY(VisibleInstanceOnly, Category = "Combat")
+	TObjectPtr<AMagicCircle> MagicCircle;
+	virtual void BeginPlay() override;
+	virtual void SetupInputComponent() override;
 
+private:
+	FHighlightContext HighlightContext;
+
+	void Move(const FInputActionValue& Value);
+	void Aim(const FInputActionValue& InputActionValue);
+	void CursorTrace();
+	void CursorTrace_Mouse();
+	void CursorTrace_Gamepad();
+	UElectricCastleAbilitySystemComponent* GetAbilitySystemComponent();
 	void AbilityInputTagPressed(FGameplayTag InputTag);
 	void AbilityInputTagReleased(FGameplayTag InputTag);
 	void AbilityInputTagHeld(FGameplayTag InputTag);
 	UFUNCTION()
 	void HandleFormChangeInputAction(const FInputActionValue& InputActionValue);
-
-
-	// UI
-	UPROPERTY(EditDefaultsOnly, Category = "UI")
-	TSubclassOf<UDamageTextComponent> DamageTextComponentClass;
-
-	// Character Movement / Targeting
-	FVector CachedDestination = FVector::ZeroVector;
-	float FollowTime = 0.f;
-	ETargetingStatus TargetingStatus = ETargetingStatus::NotTargeting;
-	UPROPERTY(EditDefaultsOnly, Category="Combat")
-	TSubclassOf<AMagicCircle> MagicCircleClass;
-	UPROPERTY(VisibleInstanceOnly, Category = "Combat")
-	TObjectPtr<AMagicCircle> MagicCircle;
-	FHitResult CursorHit;
-	UPROPERTY(Replicated)
-	EAuraInputMode InputType = EAuraInputMode::MouseAndKeyboard;
-
 	void UpdateMagicCircleLocation() const;
-
 	void InitializeInputMode(ECommonInputType NewInputMode);
 	UFUNCTION(Server, Reliable)
 	void SetInputMode_Gamepad_Server();
 	UFUNCTION(Server, Reliable)
 	void SetInputMode_KeyboardAndMouse_Server();
+	UFUNCTION()
+	void OnEffectStateChanged_Aiming(FGameplayTag AimingTag, int TagCount);
+
+	bool IsAiming();
+
+	// Character Movement / Targeting
+	ETargetingStatus TargetingStatus = ETargetingStatus::NotTargeting;
+
+	FHitResult CursorHit;
+	UPROPERTY(Replicated)
+	EAuraInputMode InputType = EAuraInputMode::MouseAndKeyboard;
 };

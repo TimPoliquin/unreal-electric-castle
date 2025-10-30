@@ -769,7 +769,7 @@ int32 UElectricCastleAbilitySystemLibrary::GetAbilityLevelByAbilityTag(
 	return 0;
 }
 
-AActor* UElectricCastleAbilitySystemLibrary::FindHitBySphereTrace(const AActor* Player, const float Radius, const float TraceDistance)
+AActor* UElectricCastleAbilitySystemLibrary::FindHitBySphereTrace(const AActor* Player, const FSphereTraceParams& TraceParams)
 {
 	if (!IsValid(Player))
 	{
@@ -781,7 +781,7 @@ AActor* UElectricCastleAbilitySystemLibrary::FindHitBySphereTrace(const AActor* 
 		return nullptr;
 	}
 	const FVector Start = Player->GetActorLocation();
-	const FVector End = Start + Player->GetActorForwardVector() * TraceDistance;
+	const FVector End = Start + Player->GetActorForwardVector() * TraceParams.TraceDistance;
 
 	FHitResult HitResult;
 	FCollisionQueryParams Params;
@@ -792,8 +792,40 @@ AActor* UElectricCastleAbilitySystemLibrary::FindHitBySphereTrace(const AActor* 
 		Start,
 		End,
 		FQuat::Identity,
-		ECC_Pawn, // Trace against pawns (enemies usually derive from APawn)
-		FCollisionShape::MakeSphere(Radius),
+		TraceParams.TraceChannel,
+		FCollisionShape::MakeSphere(TraceParams.TraceRadius),
+		Params
+	))
+	{
+		return HitResult.GetActor(); // The first actor hit in front
+	}
+
+	return nullptr;
+}
+
+AActor* UElectricCastleAbilitySystemLibrary::FindHitByLineTrace(const AActor* Player, const FLineTraceParams& TraceParams)
+{
+	if (!IsValid(Player))
+	{
+		return nullptr;
+	}
+	UWorld* World = Player->GetWorld();
+	if (!IsValid(World))
+	{
+		return nullptr;
+	}
+	const FVector Start = Player->GetActorLocation();
+	const FVector End = Start + Player->GetActorForwardVector() * TraceParams.TraceDistance;
+
+	FHitResult HitResult;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(Player); // Don’t hit yourself
+
+	if (World->LineTraceSingleByChannel(
+		HitResult,
+		Start,
+		End,
+		TraceParams.TraceChannel, // Trace against pawns (enemies usually derive from APawn)
 		Params
 	))
 	{

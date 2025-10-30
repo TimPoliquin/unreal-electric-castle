@@ -8,6 +8,7 @@
 #include "GameplayTagContainer.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "AbilitySystemComponent.h"
+#include "Utils/TraceParams.h"
 #include "ElectricCastleAbilitySystemLibrary.generated.h"
 
 class ULootTiers;
@@ -343,7 +344,9 @@ public:
 	static int32 GetAbilityLevelByAbilityTag(AActor* Actor, const FGameplayTag& AbilityTag);
 
 	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayMechanics")
-	static AActor* FindHitBySphereTrace(const AActor* Player, const float Radius = 1.f, const float TraceDistance = 10000.0f);
+	static AActor* FindHitBySphereTrace(const AActor* Player, const FSphereTraceParams& TraceParams);
+	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayMechanics")
+	static AActor* FindHitByLineTrace(const AActor* Player, const FLineTraceParams& TraceParams);
 	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayMechanics")
 	static bool CalculatePitchToHitTarget(const FVector& Start, const FVector& Target, const float ProjectileSpeed, float& OutPitchDegrees);
 

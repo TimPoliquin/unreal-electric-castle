@@ -47,7 +47,9 @@ void AArrowProjectile::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty
 
 void AArrowProjectile::Release_Implementation()
 {
-	const AActor* HitTarget = UElectricCastleAbilitySystemLibrary::FindHitBySphereTrace(bMatchOwnerForward ? GetOwner() : this, CollisionComponent->GetScaledCapsuleRadius());
+	FSphereTraceParams Params;
+	Params.TraceRadius = CollisionComponent->GetScaledCapsuleRadius();
+	const AActor* HitTarget = UElectricCastleAbilitySystemLibrary::FindHitBySphereTrace(bMatchOwnerForward ? GetOwner() : this, Params);
 	float ReleasePitch = Pitch;
 	if (IsValid(HitTarget))
 	{
