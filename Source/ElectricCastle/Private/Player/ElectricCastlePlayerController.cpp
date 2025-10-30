@@ -43,8 +43,8 @@ void AElectricCastlePlayerController::BeginPlay()
 	}
 	if (UCommonInputSubsystem* CommonSubsystem = UCommonInputSubsystem::Get(GetLocalPlayer()))
 	{
-		CommonSubsystem->OnInputMethodChangedNative.AddUObject(this, &AElectricCastlePlayerController::InitializeInputMode);
-		InitializeInputMode(CommonSubsystem->GetCurrentInputType());
+		CommonSubsystem->OnInputMethodChangedNative.AddUObject(this, &AElectricCastlePlayerController::OnInputTypeChange);
+		OnInputTypeChange(CommonSubsystem->GetCurrentInputType());
 	}
 	if (IElectricCastleAbilitySystemInterface::IsAbilitySystemReady(GetPawn()))
 	{
@@ -353,30 +353,30 @@ bool AElectricCastlePlayerController::IsNotTargeting() const
 	return TargetingStatus == ETargetingStatus::NotTargeting;
 }
 
-void AElectricCastlePlayerController::InitializeInputMode(const ECommonInputType NewInputMode)
+void AElectricCastlePlayerController::SetupInputMode()
+{
+	FInputModeGameAndUI InputModeData;
+	bShowMouseCursor = IsInputTypeMouse();
+	DefaultMouseCursor = EMouseCursor::Default;
+	InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+	InputModeData.SetHideCursorDuringCapture(!IsInputTypeMouse());
+	SetInputMode(InputModeData);
+}
+
+void AElectricCastlePlayerController::OnInputTypeChange(const ECommonInputType NewInputMode)
 {
 	UE_LOG(LogElectricCastle, Warning, TEXT("[%s] Changing InputType: %s"), *GetName(), *UEnum::GetValueAsString(NewInputMode))
-	FInputModeGameAndUI InputModeData;
 	switch (NewInputMode)
 	{
 	case ECommonInputType::MouseAndKeyboard:
 		SetInputMode_KeyboardAndMouse_Server();
-		bShowMouseCursor = true;
-		DefaultMouseCursor = EMouseCursor::Default;
-		InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-		InputModeData.SetHideCursorDuringCapture(false);
-		SetInputMode(InputModeData);
 		break;
 	case ECommonInputType::Gamepad:
 	default:
 		SetInputMode_Gamepad_Server();
-		bShowMouseCursor = false;
-		DefaultMouseCursor = EMouseCursor::Default;
-		InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-		InputModeData.SetHideCursorDuringCapture(true);
-		SetInputMode(InputModeData);
 		break;
 	}
+	SetupInputMode();
 }
 
 void AElectricCastlePlayerController::OnEffectStateChanged_Aiming(const FGameplayTag AimingTag, const int TagCount)
@@ -384,10 +384,14 @@ void AElectricCastlePlayerController::OnEffectStateChanged_Aiming(const FGamepla
 	if (TagCount > 0)
 	{
 		bShowMouseCursor = false;
+		FInputModeGameOnly InputModeData;
+		InputModeData.SetConsumeCaptureMouseDown(true);
+		SetInputMode(InputModeData);
 	}
 	else
 	{
 		bShowMouseCursor = IsInputTypeMouse();
+		SetupInputMode();
 	}
 }
 
