@@ -38,8 +38,7 @@ void UBeamGameplayAbility::ActivateAbility(
 		ExecuteTask(WaitInputRelease);
 	}
 	if (UTargetDataUnderMouse* TargetDataUnderMouseTask = UTargetDataUnderMouse::CreateTargetDataUnderMouse(
-		this,
-		false
+		this
 	))
 	{
 		TargetDataUnderMouseTask->HasMouseTarget.AddDynamic(this, &UBeamGameplayAbility::OnReceiveMouseData);

@@ -76,6 +76,14 @@ void ICombatInterface::UpdateFacingTarget(UObject* Actor, const FVector& FacingT
 	}
 }
 
+void ICombatInterface::ClearFacingTarget(UObject* Actor)
+{
+	if (Actor && Actor->Implements<UCombatInterface>())
+	{
+		Execute_ClearFacingTarget(Actor);
+	}
+}
+
 FVector ICombatInterface::GetCombatSocketLocation(const UObject* Actor, const FGameplayTag& SocketTag)
 {
 	if (Actor && Actor->Implements<UCombatInterface>())

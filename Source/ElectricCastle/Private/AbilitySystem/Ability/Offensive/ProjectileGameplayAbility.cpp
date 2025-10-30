@@ -19,22 +19,22 @@ void UProjectileGameplayAbility::ActivateAbility(
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
-void UProjectileGameplayAbility::SpawnProjectile(
+AProjectileActor* UProjectileGameplayAbility::SpawnProjectile(
 	const FVector& ProjectileTargetLocation,
 	const AActor* HitActor,
 	const FGameplayTag& SocketTag
-) const
+)
 {
 	AActor* OwningActor = GetAvatarActorFromActorInfo();
 	if (!OwningActor->HasAuthority())
 	{
 		// Do not execute on client - run on server only
-		return;
+		return nullptr;
 	}
 	check(ProjectileClass);
 	const FVector SpawnLocation = GetProjectileSpawnLocation(SocketTag);
 	const FRotator Rotation = GetProjectileSpawnRotation(ProjectileTargetLocation, SpawnLocation, HitActor);
-	SpawnProjectile(SpawnLocation, Rotation);
+	return SpawnProjectile(SpawnLocation, Rotation);
 }
 
 void UProjectileGameplayAbility::FireProjectileAtTarget_Implementation(const FGameplayTag& SocketTag)
@@ -70,7 +70,7 @@ AProjectileActor* UProjectileGameplayAbility::SpawnProjectile(
 	const FVector& SpawnLocation,
 	const FRotator& SpawnRotation,
 	const FOnSpawnProjectileFinishedSignature* BeforeFinishSpawning
-) const
+)
 {
 	FTransform SpawnTransform;
 	SpawnTransform.SetLocation(SpawnLocation);
@@ -84,12 +84,24 @@ AProjectileActor* UProjectileGameplayAbility::SpawnProjectile(
 		ESpawnActorCollisionHandlingMethod::AlwaysSpawn
 	);
 	SpawnedProjectile->DamageEffectParams = MakeDamageEffectParamsFromClassDefaults();
+	SpawnedProjectile->SetOwner(GetAvatarActorFromActorInfo());
 	if (BeforeFinishSpawning)
 	{
 		BeforeFinishSpawning->ExecuteIfBound(SpawnedProjectile);
 	}
 	SpawnedProjectile->FinishSpawning(SpawnTransform);
 	return SpawnedProjectile;
+}
+
+AProjectileActor* UProjectileGameplayAbility::SpawnProjectile_Basic()
+{
+	if (const AActor* OwningActor = GetAvatarActorFromActorInfo(); !OwningActor->HasAuthority())
+	{
+		// Do not execute on client - run on server only
+		return nullptr;
+	}
+	check(ProjectileClass);
+	return SpawnProjectile(GetAvatarActorFromActorInfo()->GetActorLocation(), GetAvatarActorFromActorInfo()->GetActorForwardVector().Rotation());
 }
 
 FGameplayEffectSpecHandle UProjectileGameplayAbility::MakeDamageEffectSpecHandle(

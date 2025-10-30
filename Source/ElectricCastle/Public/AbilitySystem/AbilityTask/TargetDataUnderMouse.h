@@ -32,11 +32,7 @@ public:
 		)
 	)
 	static UTargetDataUnderMouse* CreateTargetDataUnderMouse(
-		UGameplayAbility* OwningAbility,
-		bool bPreferLivingActors,
-		float SweepRadius = 5.f,
-		float SweepDistance = 10000,
-		bool bDebug = false
+		UGameplayAbility* OwningAbility
 	);
 	bool bPreferLivingActors = true;
 	float SweepRadius = 5.f;
@@ -59,5 +55,4 @@ protected:
 
 private:
 	void SendMouseCursorDataToServer() const;
-	bool ShouldTrySphereTrace(const FHitResult& HitResult) const;
 };

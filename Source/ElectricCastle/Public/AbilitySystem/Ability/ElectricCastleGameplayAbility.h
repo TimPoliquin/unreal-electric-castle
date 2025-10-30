@@ -44,6 +44,14 @@ public:
 
 protected:
 	void ExecuteTask(UAbilityTask* Task) const;
+	/**
+	 * Determines whether the ability should use motion warping. This is primarily true if the user is using keyboard & mouse input, and has a target selected.
+	 * @return 
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintPure, DisplayName="Should Set Motion Warping Target?")
+	bool ShouldSetMotionTarget() const;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void FaceHitTarget(const FHitResult& HitResult);
 
 private:
 	UPROPERTY(EditDefaultsOnly)

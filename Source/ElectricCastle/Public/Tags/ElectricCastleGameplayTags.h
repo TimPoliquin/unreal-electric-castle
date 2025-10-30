@@ -85,6 +85,7 @@ struct FElectricCastleGameplayTags
 	FGameplayTag Effect_HitReact_Default;
 	FGameplayTag Effect_HitReact_Shock;
 	FGameplayTag Effect_Magnitude;
+	FGameplayTag Effect_State_Aiming;
 
 	FGameplayTag Effect_Resist;
 	FGameplayTag Effect_Resist_Magic;
@@ -178,6 +179,7 @@ struct FElectricCastleGameplayTags
 	/** Player Tags **/
 	FGameplayTag Player_Block_CursorTrace;
 	FGameplayTag Player_Block_Movement;
+	FGameplayTag Player_Block_Rotation;
 	FGameplayTag Player_Block_Ability_Offensive;
 	FGameplayTag Player_Block_Interaction;
 	FGameplayTag Player_Block_ChangeForm;

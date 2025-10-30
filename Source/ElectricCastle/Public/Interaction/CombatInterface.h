@@ -90,6 +90,8 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void UpdateFacingTarget(const FVector& FacingTarget);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void ClearFacingTarget();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	USkeletalMeshComponent* GetWeapon() const;
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	FGameplayTag GetHitReactAbilityTagByDamageType(const FGameplayTag& DamageTypeTag) const;
@@ -117,6 +119,7 @@ public:
 	static void SetActiveAbilityTag(UObject* Actor, const FGameplayTag& ActiveAbilityTag);
 	static void ClearActiveAbilityTag(UObject* Actor);
 	static void UpdateFacingTarget(UObject* Actor, const FVector& FacingTarget);
+	static void ClearFacingTarget(UObject* Actor);
 	static FVector GetCombatSocketLocation(const UObject* Actor, const FGameplayTag& SocketTag);
 	static USkeletalMeshComponent* GetWeapon(const UObject* Actor);
 	static FGameplayTag GetHitReactAbilityTagByDamageType(const UObject* Actor, const FGameplayTag& DamageTypeTag);

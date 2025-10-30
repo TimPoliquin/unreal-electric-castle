@@ -769,6 +769,102 @@ int32 UElectricCastleAbilitySystemLibrary::GetAbilityLevelByAbilityTag(
 	return 0;
 }
 
+AActor* UElectricCastleAbilitySystemLibrary::FindHitBySphereTrace(const AActor* Player, const FSphereTraceParams& TraceParams)
+{
+	if (!IsValid(Player))
+	{
+		return nullptr;
+	}
+	UWorld* World = Player->GetWorld();
+	if (!IsValid(World))
+	{
+		return nullptr;
+	}
+	const FVector Start = Player->GetActorLocation();
+	const FVector End = Start + Player->GetActorForwardVector() * TraceParams.TraceDistance;
+
+	FHitResult HitResult;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(Player); // Don’t hit yourself
+
+	if (World->SweepSingleByChannel(
+		HitResult,
+		Start,
+		End,
+		FQuat::Identity,
+		TraceParams.TraceChannel,
+		FCollisionShape::MakeSphere(TraceParams.TraceRadius),
+		Params
+	))
+	{
+		return HitResult.GetActor(); // The first actor hit in front
+	}
+
+	return nullptr;
+}
+
+AActor* UElectricCastleAbilitySystemLibrary::FindHitByLineTrace(const AActor* Player, const FLineTraceParams& TraceParams)
+{
+	if (!IsValid(Player))
+	{
+		return nullptr;
+	}
+	UWorld* World = Player->GetWorld();
+	if (!IsValid(World))
+	{
+		return nullptr;
+	}
+	const FVector Start = Player->GetActorLocation();
+	const FVector End = Start + Player->GetActorForwardVector() * TraceParams.TraceDistance;
+
+	FHitResult HitResult;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(Player); // Don’t hit yourself
+
+	if (World->LineTraceSingleByChannel(
+		HitResult,
+		Start,
+		End,
+		TraceParams.TraceChannel, // Trace against pawns (enemies usually derive from APawn)
+		Params
+	))
+	{
+		return HitResult.GetActor(); // The first actor hit in front
+	}
+
+	return nullptr;
+}
+
+bool UElectricCastleAbilitySystemLibrary::CalculatePitchToHitTarget(const FVector& Start, const FVector& Target, const float ProjectileSpeed, float& OutPitchDegrees)
+{
+	const FVector Delta = Target - Start;
+
+	constexpr float g = 980.0f; // cm/s^2
+	const float x = FVector(Delta.X, Delta.Y, 0).Size(); // horizontal distance
+	const float y = Delta.Z; // vertical difference
+	const float v = ProjectileSpeed;
+
+	const float v2 = v * v;
+	const float v4 = v2 * v2;
+
+	const float Discriminant = v4 - g * (g * x * x + 2 * y * v2);
+
+	if (Discriminant < 0)
+	{
+		return false; // No valid solution (target out of range)
+	}
+
+	const float SqrtDisc = FMath::Sqrt(Discriminant);
+
+	// Two possible angles: high arc and low arc
+	const float TanTheta = (v2 - SqrtDisc) / (g * x);
+
+	const float Theta = FMath::Atan(TanTheta); // radians
+	OutPitchDegrees = FMath::RadiansToDegrees(Theta);
+
+	return true;
+}
+
 bool UElectricCastleAbilitySystemLibrary::IsBlockedHit(const FGameplayEffectContextHandle& EffectContextHandle)
 {
 	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const FElectricCastleGameplayEffectContext*>(
