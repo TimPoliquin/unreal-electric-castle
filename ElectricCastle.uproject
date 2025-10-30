@@ -12,6 +12,11 @@
 				"Engine",
 				"GameplayAbilities"
 			]
+		},
+      {
+        "Name": "ElectricCastleEditor",
+        "Type": "Editor",
+        "LoadingPhase": "Default"
 		}
 	],
 	"Plugins": [
