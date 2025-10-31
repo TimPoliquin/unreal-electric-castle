@@ -54,8 +54,8 @@ protected:
 	void FaceHitTarget(const FHitResult& HitResult);
 
 private:
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category="Properties")
 	FName AbilityName;
-	UPROPERTY(EditDefaultsOnly, Category="Input", meta=(Categories="InputTag"))
+	UPROPERTY(EditDefaultsOnly, Category="Properties", meta=(Categories="InputTag"))
 	TArray<FGameplayTag> StartupInputTags;
 };
