@@ -58,14 +58,38 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FVector GetFaceTargetLocation() const;
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FGameplayCueParameters MakeGameplayCueParamsFromMontageTag(const FGameplayTag& MontageTag, const FVector& ImpactLocation) const;
+	FGameplayCueParameters MakeGameplayCueParamsFromMontageTag(
+		const FGameplayTag& MontageTag,
+		const FVector& ImpactLocation
+	) const;
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FGameplayCueParameters MakeDefaultGameplayCueParams(const FVector& ImpactLocation) const;
 
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FVector GetMontageDamageLocation(const FGameplayTag& MontageTag) const;
+
 	UFUNCTION(BlueprintCallable)
-	FVector GetTargetsAtImpact(const FGameplayTag& MontageTag, float ImpactRadius, TArray<AActor*>& OutTargets, bool bDebug = false) const;
+	FVector GetTargetsAtImpact(
+		const FGameplayTag& MontageTag,
+		float ImpactRadius,
+		TArray<AActor*>& OutTargets,
+		bool bDebug = false
+	) const;
 	UFUNCTION(BlueprintCallable)
-	void GetTargetsAtImpactLocation(const FVector& ImpactLocation, float ImpactRadius, TArray<AActor*>& OutTargets, bool bDebug = false) const;
+	void GetTargetsAtImpactLocation(
+		const FVector& ImpactLocation,
+		float ImpactRadius,
+		TArray<AActor*>& OutTargets,
+		bool bDebug = false
+	) const;
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	void GetTargetsInAttackRange(
+		const FVector& AttackStart,
+		const FVector& AttackEnd,
+		float ImpactRadius,
+		TArray<AActor*>& OutTargets,
+		bool bDebug = false
+	) const;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")

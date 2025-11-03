@@ -28,6 +28,8 @@ AElectricCastleCharacter::AElectricCastleCharacter()
 	GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECC_ExcludeCharacters, ECR_Ignore);
 	GetMesh()->SetGenerateOverlapEvents(true);
+	// fixes animations not replicating bone positions correctly on the server
+	GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
 	EffectAttachComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Effect Attach Component"));
 	EffectAttachComponent->SetupAttachment(GetRootComponent());
 	EffectAttachComponent->SetAbsolute(false, true, false);
@@ -41,7 +43,8 @@ AElectricCastleCharacter::AElectricCastleCharacter()
 		TEXT("Halo of Protection Niagara Component")
 	);
 	HaloOfProtectionNiagaraComponent->SetupAttachment(EffectAttachComponent);
-	HaloOfProtectionNiagaraComponent->PassiveSpellTag = FElectricCastleGameplayTags::Get().Abilities_Passive_HaloOfProtection;
+	HaloOfProtectionNiagaraComponent->PassiveSpellTag = FElectricCastleGameplayTags::Get().
+		Abilities_Passive_HaloOfProtection;
 	LifeSiphonNiagaraComponent = CreateDefaultSubobject<UPassiveNiagaraComponent>(
 		TEXT("Life Siphon Niagara Component")
 	);
@@ -106,10 +109,26 @@ FVector AElectricCastleCharacter::GetCombatSocketLocation_Implementation(const F
 		USkeletalMeshComponent* Weapon = Execute_GetWeapon(this);
 		if (IsValid(Weapon) && Weapon->HasAnySockets() && Weapon->GetSocketByName(SocketName))
 		{
+			UE_LOG(
+				LogElectricCastle,
+				Warning,
+				TEXT("[%s] Weapon socket location: [%s] %s"),
+				*GetName(),
+				*SocketName.ToString(),
+				*Weapon->GetSocketLocation(SocketName).ToString()
+			)
 			return Weapon->GetSocketLocation(SocketName);
 		}
 		if (GetMesh()->GetSocketByName(SocketName))
 		{
+			UE_LOG(
+				LogElectricCastle,
+				Warning,
+				TEXT("[%s] Character socket location: [%s] %s"),
+				*GetName(),
+				*SocketName.ToString(),
+				*GetMesh()->GetSocketLocation(SocketName).ToString()
+			)
 			return GetMesh()->GetSocketLocation(SocketName);
 		}
 		return GetActorLocation();
@@ -291,7 +310,9 @@ void AElectricCastleCharacter::MulticastHandleDeath_Implementation()
 	OnDeathDelegate.Broadcast(this);
 }
 
-void AElectricCastleCharacter::OnAbilitySystemReady_Implementation(UElectricCastleAbilitySystemComponent* InAbilitySystemComponent)
+void AElectricCastleCharacter::OnAbilitySystemReady_Implementation(
+	UElectricCastleAbilitySystemComponent* InAbilitySystemComponent
+)
 {
 	GetOnAbilitySystemRegisteredDelegate().Broadcast(InAbilitySystemComponent);
 }
@@ -301,7 +322,8 @@ void AElectricCastleCharacter::OnEffectChange_LightningDamage(FGameplayTag Light
 	if (Count > 0)
 	{
 		OnEffectAdd_LightningDamage();
-	} else
+	}
+	else
 	{
 		OnEffectRemove_LightningDamage();
 	}
@@ -374,7 +396,10 @@ void AElectricCastleCharacter::RegisterStatusEffectTags(UAbilitySystemComponent*
 		FElectricCastleGameplayTags::Get().Effect_Debuff_Type_Burn,
 		EGameplayTagEventType::NewOrRemoved
 	).AddUObject(this, &AElectricCastleCharacter::OnDebuffTypeBurnChanged);
-	InAbilitySystemComponent->RegisterGameplayTagEvent(FElectricCastleGameplayTags::Get().Effect_Damage_Magic_Lightning, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &AElectricCastleCharacter::OnEffectChange_LightningDamage);
+	InAbilitySystemComponent->RegisterGameplayTagEvent(
+		FElectricCastleGameplayTags::Get().Effect_Damage_Magic_Lightning,
+		EGameplayTagEventType::NewOrRemoved
+	).AddUObject(this, &AElectricCastleCharacter::OnEffectChange_LightningDamage);
 }
 
 void AElectricCastleCharacter::ApplyEffectToSelf(TSubclassOf<UGameplayEffect> Attributes, const float Level) const

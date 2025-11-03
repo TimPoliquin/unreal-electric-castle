@@ -5,6 +5,7 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
+#include "KismetTraceUtils.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemTypes.h"
 #include "AbilitySystem/ElectricCastleAttributeSet.h"
@@ -12,16 +13,17 @@
 #include "AbilitySystem/Data/CharacterClassInfo.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Character/ElectricCastleCharacter.h"
+#include "ElectricCastle/ElectricCastle.h"
 #include "Engine/OverlapResult.h"
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
-#include "Interaction/CombatInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/ElectricCastlePlayerState.h"
 #include "Tags/ElectricCastleGameplayTags.h"
 #include "UI/HUD/ElectricCastleHUD.h"
-#include "Utils/TagUtils.h"
 
-UOverlayWidgetController* UElectricCastleAbilitySystemLibrary::GetOverlayWidgetController(const UObject* WorldContextObject)
+UOverlayWidgetController* UElectricCastleAbilitySystemLibrary::GetOverlayWidgetController(
+	const UObject* WorldContextObject
+)
 {
 	if (const AElectricCastleHUD* HUD = GetElectricCastleHUD(WorldContextObject))
 	{
@@ -272,24 +274,73 @@ void UElectricCastleAbilitySystemLibrary::GetLiveActorsWithinRadius(
 		{
 			DrawDebugSphere(World, SphereOrigin, Radius, 10, FColor::Red, false, 1.f, 0, 1.f);
 		}
-		for (const FOverlapResult& Overlap : Overlaps)
-		{
-			AActor* OverlapActor = Overlap.GetActor();
-			// skip actor if it has any of the tags in the ignore list
-			if (TagUtils::HasAnyTag(OverlapActor, TagsToIgnore))
-			{
-				continue;
-			}
-			if (ICombatInterface::IsAlive(Overlap.GetActor()))
-			{
-				OutOverlappingActors.AddUnique(OverlapActor);
-			}
-		}
+		FilterHitOverlaps(TagsToIgnore, OutOverlappingActors, Overlaps);
 	}
 	else
 	{
-		UE_LOG(LogElectricCastle, Warning, TEXT("[%s] No world found for context object %s!"), *FString("ElectricCastleAbilitySystemLibrary::GetLivePlayersWithinRadius"),
-		       *WorldContextObject->GetName())
+		UE_LOG(
+			LogElectricCastle,
+			Warning,
+			TEXT("[%s] No world found for context object %s!"),
+			*FString("ElectricCastleAbilitySystemLibrary::GetLivePlayersWithinRadius"),
+			*WorldContextObject->GetName()
+		)
+	}
+}
+
+void UElectricCastleAbilitySystemLibrary::GetLiveActorsWithinSweepRadius(
+	const UObject* WorldContextObject,
+	const TArray<AActor*>& ActorsToIgnore,
+	const TArray<FName>& TagsToIgnore,
+	const FVector& SphereStart,
+	const FVector& SphereEnd,
+	const float Radius,
+	TArray<AActor*>& OutOverlappingActors,
+	const bool bDebug
+)
+{
+	FCollisionQueryParams SphereParams;
+	SphereParams.AddIgnoredActors(ActorsToIgnore);
+	if (const UWorld* World = GEngine->GetWorldFromContextObject(
+		WorldContextObject,
+		EGetWorldErrorMode::LogAndReturnNull
+	))
+	{
+		TArray<FHitResult> Overlaps;
+		World->SweepMultiByChannel(
+			Overlaps,
+			SphereStart,
+			SphereEnd,
+			FQuat::Identity,
+			ECC_Pawn,
+			FCollisionShape::MakeSphere(Radius),
+			SphereParams
+		);
+			UE_LOG(
+				LogElectricCastle,
+				Warning,
+				TEXT(
+					"[ElectricCastleAbilitySystemLibrary::GetLiveActorsWithinSweepRadius]: Found actors: [%d] between %s - %s"
+				),
+				Overlaps.Num(),
+				*SphereStart.ToString(),
+				*SphereEnd.ToString()
+			)
+		if (bDebug)
+		{
+			DrawDebugSweptSphere(World, SphereStart, SphereEnd, Radius, FColor::Red, false, 1.f);
+		}
+		FilterHitOverlaps(TagsToIgnore, OutOverlappingActors, Overlaps);
+	}
+	else
+	{
+		UE_LOG(
+			LogElectricCastle,
+			Warning,
+			TEXT("[%s] No world found for context object %s!"),
+			*FString("ElectricCastleAbilitySystemLibrary::GetLivePlayersWithinSweepRadius"),
+			*WorldContextObject->GetName()
+		)
 	}
 }
 
@@ -342,7 +393,10 @@ bool UElectricCastleAbilitySystemLibrary::CanEquipAbility(
 	return StatusTag.MatchesAny(EquippableStatuses);
 }
 
-bool UElectricCastleAbilitySystemLibrary::AbilityHasSlotTag(const FGameplayAbilitySpec& AbilitySpec, const FGameplayTag& SlotTag)
+bool UElectricCastleAbilitySystemLibrary::AbilityHasSlotTag(
+	const FGameplayAbilitySpec& AbilitySpec,
+	const FGameplayTag& SlotTag
+)
 {
 	for (const FGameplayTag& Tag : AbilitySpec.GetDynamicSpecSourceTags())
 	{
@@ -359,7 +413,9 @@ bool UElectricCastleAbilitySystemLibrary::AbilityHasAnySlot(const FGameplayAbili
 	return AbilitySpec.GetDynamicSpecSourceTags().HasTag(FElectricCastleGameplayTags::Get().InputTag);
 }
 
-FGameplayEffectContextHandle UElectricCastleAbilitySystemLibrary::ApplyDamageEffect(const FDamageEffectParams& DamageEffectParams)
+FGameplayEffectContextHandle UElectricCastleAbilitySystemLibrary::ApplyDamageEffect(
+	const FDamageEffectParams& DamageEffectParams
+)
 {
 	checkf(
 		DamageEffectParams.TargetAbilitySystemComponent,
@@ -466,7 +522,9 @@ TArray<FVector> UElectricCastleAbilitySystemLibrary::EvenlyRotatedVectors(
 	return Vectors;
 }
 
-FPredictionKey UElectricCastleAbilitySystemLibrary::GetPredictionKeyFromAbilitySpec(const FGameplayAbilitySpec& AbilitySpec)
+FPredictionKey UElectricCastleAbilitySystemLibrary::GetPredictionKeyFromAbilitySpec(
+	const FGameplayAbilitySpec& AbilitySpec
+)
 {
 	if (TArray<UGameplayAbility*> Instances = AbilitySpec.GetAbilityInstances(); Instances.Num() > 0)
 	{
@@ -701,9 +759,13 @@ FActiveGameplayEffectHandle UElectricCastleAbilitySystemLibrary::ApplyBasicGamep
 		);
 		return ActiveEffectHandle;
 	}
-	UE_LOG(LogElectricCastle, Error, TEXT("[%s] Cannot apply basic gameplay effect - no AbilitySystem available on actor! [%s]"),
-	       *FString("UElectricCastleAbilitySystemLibrary::ApplyBasicGameplayEffect"),
-	       *TargetActor->GetName())
+	UE_LOG(
+		LogElectricCastle,
+		Error,
+		TEXT("[%s] Cannot apply basic gameplay effect - no AbilitySystem available on actor! [%s]"),
+		*FString("UElectricCastleAbilitySystemLibrary::ApplyBasicGameplayEffect"),
+		*TargetActor->GetName()
+	)
 	return FActiveGameplayEffectHandle();
 }
 
@@ -769,7 +831,10 @@ int32 UElectricCastleAbilitySystemLibrary::GetAbilityLevelByAbilityTag(
 	return 0;
 }
 
-AActor* UElectricCastleAbilitySystemLibrary::FindHitBySphereTrace(const AActor* Player, const FSphereTraceParams& TraceParams)
+AActor* UElectricCastleAbilitySystemLibrary::FindHitBySphereTrace(
+	const AActor* Player,
+	const FSphereTraceParams& TraceParams
+)
 {
 	if (!IsValid(Player))
 	{
@@ -803,7 +868,10 @@ AActor* UElectricCastleAbilitySystemLibrary::FindHitBySphereTrace(const AActor* 
 	return nullptr;
 }
 
-AActor* UElectricCastleAbilitySystemLibrary::FindHitByLineTrace(const AActor* Player, const FLineTraceParams& TraceParams)
+AActor* UElectricCastleAbilitySystemLibrary::FindHitByLineTrace(
+	const AActor* Player,
+	const FLineTraceParams& TraceParams
+)
 {
 	if (!IsValid(Player))
 	{
@@ -825,7 +893,8 @@ AActor* UElectricCastleAbilitySystemLibrary::FindHitByLineTrace(const AActor* Pl
 		HitResult,
 		Start,
 		End,
-		TraceParams.TraceChannel, // Trace against pawns (enemies usually derive from APawn)
+		TraceParams.TraceChannel,
+		// Trace against pawns (enemies usually derive from APawn)
 		Params
 	))
 	{
@@ -835,7 +904,12 @@ AActor* UElectricCastleAbilitySystemLibrary::FindHitByLineTrace(const AActor* Pl
 	return nullptr;
 }
 
-bool UElectricCastleAbilitySystemLibrary::CalculatePitchToHitTarget(const FVector& Start, const FVector& Target, const float ProjectileSpeed, float& OutPitchDegrees)
+bool UElectricCastleAbilitySystemLibrary::CalculatePitchToHitTarget(
+	const FVector& Start,
+	const FVector& Target,
+	const float ProjectileSpeed,
+	float& OutPitchDegrees
+)
 {
 	const FVector Delta = Target - Start;
 
@@ -867,7 +941,8 @@ bool UElectricCastleAbilitySystemLibrary::CalculatePitchToHitTarget(const FVecto
 
 bool UElectricCastleAbilitySystemLibrary::IsBlockedHit(const FGameplayEffectContextHandle& EffectContextHandle)
 {
-	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const FElectricCastleGameplayEffectContext*>(
+	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const
+		FElectricCastleGameplayEffectContext*>(
 		EffectContextHandle.Get()))
 	{
 		return AuraEffectContext->IsBlockedHit();
@@ -877,7 +952,8 @@ bool UElectricCastleAbilitySystemLibrary::IsBlockedHit(const FGameplayEffectCont
 
 bool UElectricCastleAbilitySystemLibrary::IsCriticalHit(const FGameplayEffectContextHandle& EffectContextHandle)
 {
-	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const FElectricCastleGameplayEffectContext*>(
+	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const
+		FElectricCastleGameplayEffectContext*>(
 		EffectContextHandle.Get()))
 	{
 		return AuraEffectContext->IsCriticalHit();
@@ -887,7 +963,8 @@ bool UElectricCastleAbilitySystemLibrary::IsCriticalHit(const FGameplayEffectCon
 
 bool UElectricCastleAbilitySystemLibrary::IsRadialDamage(const FGameplayEffectContextHandle& EffectContextHandle)
 {
-	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const FElectricCastleGameplayEffectContext*>(
+	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const
+		FElectricCastleGameplayEffectContext*>(
 		EffectContextHandle.Get()))
 	{
 		return AuraEffectContext->IsRadialDamage();
@@ -895,9 +972,12 @@ bool UElectricCastleAbilitySystemLibrary::IsRadialDamage(const FGameplayEffectCo
 	return false;
 }
 
-float UElectricCastleAbilitySystemLibrary::GetRadialDamageInnerRadius(const FGameplayEffectContextHandle& EffectContextHandle)
+float UElectricCastleAbilitySystemLibrary::GetRadialDamageInnerRadius(
+	const FGameplayEffectContextHandle& EffectContextHandle
+)
 {
-	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const FElectricCastleGameplayEffectContext*>(
+	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const
+		FElectricCastleGameplayEffectContext*>(
 		EffectContextHandle.Get()))
 	{
 		return AuraEffectContext->GetRadialDamageInnerRadius();
@@ -905,9 +985,12 @@ float UElectricCastleAbilitySystemLibrary::GetRadialDamageInnerRadius(const FGam
 	return 0.f;
 }
 
-float UElectricCastleAbilitySystemLibrary::GetRadialDamageOuterRadius(const FGameplayEffectContextHandle& EffectContextHandle)
+float UElectricCastleAbilitySystemLibrary::GetRadialDamageOuterRadius(
+	const FGameplayEffectContextHandle& EffectContextHandle
+)
 {
-	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const FElectricCastleGameplayEffectContext*>(
+	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const
+		FElectricCastleGameplayEffectContext*>(
 		EffectContextHandle.Get()))
 	{
 		return AuraEffectContext->GetRadialDamageOuterRadius();
@@ -915,9 +998,12 @@ float UElectricCastleAbilitySystemLibrary::GetRadialDamageOuterRadius(const FGam
 	return 0.f;
 }
 
-FVector UElectricCastleAbilitySystemLibrary::GetRadialDamageOrigin(const FGameplayEffectContextHandle& EffectContextHandle)
+FVector UElectricCastleAbilitySystemLibrary::GetRadialDamageOrigin(
+	const FGameplayEffectContextHandle& EffectContextHandle
+)
 {
-	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const FElectricCastleGameplayEffectContext*>(
+	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const
+		FElectricCastleGameplayEffectContext*>(
 		EffectContextHandle.Get()))
 	{
 		return AuraEffectContext->GetRadialDamageOrigin();
@@ -975,7 +1061,8 @@ void UElectricCastleAbilitySystemLibrary::SetRadialDamageOrigin(
 
 bool UElectricCastleAbilitySystemLibrary::IsSuccessfulDebuff(const FGameplayEffectContextHandle& EffectContextHandle)
 {
-	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const FElectricCastleGameplayEffectContext*>(
+	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const
+		FElectricCastleGameplayEffectContext*>(
 		EffectContextHandle.Get()))
 	{
 		return AuraEffectContext->IsSuccessfullDebuff();
@@ -985,7 +1072,8 @@ bool UElectricCastleAbilitySystemLibrary::IsSuccessfulDebuff(const FGameplayEffe
 
 float UElectricCastleAbilitySystemLibrary::GetDebuffDamage(const FGameplayEffectContextHandle& EffectContextHandle)
 {
-	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const FElectricCastleGameplayEffectContext*>(
+	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const
+		FElectricCastleGameplayEffectContext*>(
 		EffectContextHandle.Get()))
 	{
 		return AuraEffectContext->GetDebuffDamage();
@@ -995,7 +1083,8 @@ float UElectricCastleAbilitySystemLibrary::GetDebuffDamage(const FGameplayEffect
 
 int32 UElectricCastleAbilitySystemLibrary::GetDebuffLevel(const FGameplayEffectContextHandle& EffectContextHandle)
 {
-	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const FElectricCastleGameplayEffectContext*>(
+	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const
+		FElectricCastleGameplayEffectContext*>(
 		EffectContextHandle.Get()))
 	{
 		return AuraEffectContext->GetDebuffLevel();
@@ -1005,7 +1094,8 @@ int32 UElectricCastleAbilitySystemLibrary::GetDebuffLevel(const FGameplayEffectC
 
 float UElectricCastleAbilitySystemLibrary::GetDebuffDuration(const FGameplayEffectContextHandle& EffectContextHandle)
 {
-	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const FElectricCastleGameplayEffectContext*>(
+	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const
+		FElectricCastleGameplayEffectContext*>(
 		EffectContextHandle.Get()))
 	{
 		return AuraEffectContext->GetDebuffDuration();
@@ -1015,7 +1105,8 @@ float UElectricCastleAbilitySystemLibrary::GetDebuffDuration(const FGameplayEffe
 
 float UElectricCastleAbilitySystemLibrary::GetDebuffFrequency(const FGameplayEffectContextHandle& EffectContextHandle)
 {
-	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const FElectricCastleGameplayEffectContext*>(
+	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const
+		FElectricCastleGameplayEffectContext*>(
 		EffectContextHandle.Get()))
 	{
 		return AuraEffectContext->GetDebuffFrequency();
@@ -1023,9 +1114,12 @@ float UElectricCastleAbilitySystemLibrary::GetDebuffFrequency(const FGameplayEff
 	return 0.f;
 }
 
-FGameplayTag UElectricCastleAbilitySystemLibrary::GetDebuffTypeTag(const FGameplayEffectContextHandle& EffectContextHandle)
+FGameplayTag UElectricCastleAbilitySystemLibrary::GetDebuffTypeTag(
+	const FGameplayEffectContextHandle& EffectContextHandle
+)
 {
-	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const FElectricCastleGameplayEffectContext*>(
+	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const
+		FElectricCastleGameplayEffectContext*>(
 		EffectContextHandle.Get()))
 	{
 		return *AuraEffectContext->GetDebuffTypeTag();
@@ -1033,9 +1127,12 @@ FGameplayTag UElectricCastleAbilitySystemLibrary::GetDebuffTypeTag(const FGamepl
 	return FGameplayTag();
 }
 
-FGameplayTag UElectricCastleAbilitySystemLibrary::GetDamageTypeTag(const FGameplayEffectContextHandle& EffectContextHandle)
+FGameplayTag UElectricCastleAbilitySystemLibrary::GetDamageTypeTag(
+	const FGameplayEffectContextHandle& EffectContextHandle
+)
 {
-	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const FElectricCastleGameplayEffectContext*>(
+	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const
+		FElectricCastleGameplayEffectContext*>(
 		EffectContextHandle.Get()))
 	{
 		return *AuraEffectContext->GetDamageTypeTag();
@@ -1045,7 +1142,8 @@ FGameplayTag UElectricCastleAbilitySystemLibrary::GetDamageTypeTag(const FGamepl
 
 FVector UElectricCastleAbilitySystemLibrary::GetDeathImpulse(const FGameplayEffectContextHandle& EffectContextHandle)
 {
-	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const FElectricCastleGameplayEffectContext*>(
+	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const
+		FElectricCastleGameplayEffectContext*>(
 		EffectContextHandle.Get()))
 	{
 		return AuraEffectContext->GetDeathImpulse();
@@ -1055,7 +1153,8 @@ FVector UElectricCastleAbilitySystemLibrary::GetDeathImpulse(const FGameplayEffe
 
 FVector UElectricCastleAbilitySystemLibrary::GetKnockbackVector(const FGameplayEffectContextHandle& EffectContextHandle)
 {
-	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const FElectricCastleGameplayEffectContext*>(
+	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const
+		FElectricCastleGameplayEffectContext*>(
 		EffectContextHandle.Get()))
 	{
 		return AuraEffectContext->GetKnockbackVector();

@@ -106,6 +106,10 @@ void UPlayerEquipmentComponent::UseTool()
 
 void UPlayerEquipmentComponent::UseWeapon()
 {
+	if (!GetOwner()->HasAuthority())
+	{
+		return;
+	}
 	if (IsValid(Tool))
 	{
 		Tool->SetHidden(true);
@@ -141,8 +145,12 @@ void UPlayerEquipmentComponent::UseNothing()
 		GetOwner()
 	))
 	{
-		AbilitySystemComponent->RemoveReplicatedLooseGameplayTag(FElectricCastleGameplayTags::Get().Player_Equipped_Tool);
-		AbilitySystemComponent->RemoveReplicatedLooseGameplayTag(FElectricCastleGameplayTags::Get().Player_Equipped_Weapon);
+		AbilitySystemComponent->RemoveReplicatedLooseGameplayTag(
+			FElectricCastleGameplayTags::Get().Player_Equipped_Tool
+		);
+		AbilitySystemComponent->RemoveReplicatedLooseGameplayTag(
+			FElectricCastleGameplayTags::Get().Player_Equipped_Weapon
+		);
 	}
 }
 
@@ -267,7 +275,13 @@ AEquipmentActor* UPlayerEquipmentComponent::SpawnEquipment(const EEquipmentSlot&
 	USkeletalMeshComponent* CharacterMesh = GetCharacterMesh();
 	if (!IsValid(CharacterMesh))
 	{
-		UE_LOG(LogElectricCastle, Warning, TEXT("[%s] No character mesh set for player %s"), *GetName(), *GetOwner()->GetName())
+		UE_LOG(
+			LogElectricCastle,
+			Warning,
+			TEXT("[%s] No character mesh set for player %s"),
+			*GetName(),
+			*GetOwner()->GetName()
+		)
 		return nullptr;
 	}
 	const FName SocketName = EquipmentSocketNames[Slot];
@@ -289,14 +303,29 @@ AEquipmentActor* UPlayerEquipmentComponent::SpawnEquipment(const EEquipmentSlot&
 	);
 	if (!Equipment)
 	{
-		UE_LOG(LogElectricCastle, Error, TEXT("[%s][%s] Failed to spawn equipment for slot [%s]. Check item configuration."), *GetOwner()->GetName(), *GetName(), *ItemDefinition.ItemType.ToString());
+		UE_LOG(
+			LogElectricCastle,
+			Error,
+			TEXT("[%s][%s] Failed to spawn equipment for slot [%s]. Check item configuration."),
+			*GetOwner()->GetName(),
+			*GetName(),
+			*ItemDefinition.ItemType.ToString()
+		);
 		return nullptr;
 	}
 	Equipment->AttachToComponent(
 		CharacterMesh,
-		FAttachmentTransformRules::KeepWorldTransform,
+		FAttachmentTransformRules::SnapToTargetNotIncludingScale,
 		SocketName
 	);
+	UE_LOG(
+		LogElectricCastle,
+		Warning,
+		TEXT("[%s] Spawned equipment [%s] at socket %s"),
+		GetOwner()->HasAuthority() ? *FString("Server") : *FString("Client"),
+		*Equipment->GetName(),
+		*SocketName.ToString()
+	)
 	return Equipment;
 }
 
@@ -335,7 +364,13 @@ bool UPlayerEquipmentComponent::DeserializeComponentData(const TArray<uint8>& Da
 	}
 	catch (...)
 	{
-		UE_LOG(LogTemp, Error, TEXT("[%s:%s] Failed to deserialize equipment data"), *GetOwner()->GetName(), *GetName());
+		UE_LOG(
+			LogTemp,
+			Error,
+			TEXT("[%s:%s] Failed to deserialize equipment data"),
+			*GetOwner()->GetName(),
+			*GetName()
+		);
 		return false;
 	}
 }

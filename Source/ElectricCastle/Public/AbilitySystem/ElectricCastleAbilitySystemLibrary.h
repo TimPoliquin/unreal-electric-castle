@@ -8,6 +8,8 @@
 #include "GameplayTagContainer.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "AbilitySystemComponent.h"
+#include "Interaction/CombatInterface.h"
+#include "Utils/TagUtils.h"
 #include "Utils/TraceParams.h"
 #include "ElectricCastleAbilitySystemLibrary.generated.h"
 
@@ -165,7 +167,8 @@ public:
 		const FGameplayTag& DebuffTypeTag,
 		int32 Level,
 		float DebuffDamage,
-		float DebuffDuration, float DebuffFrequency
+		float DebuffDuration,
+		float DebuffFrequency
 	);
 	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")
 	static void SetIsSuccessfulDebuff(
@@ -230,10 +233,19 @@ public:
 		UElectricCastleAbilitySystemComponent* AbilitySystemComponent,
 		const FGameplayTag& AbilityTag
 	);
-	static bool IsAbilityEquipped(UElectricCastleAbilitySystemComponent* AbilitySystemComponent, const FGameplayTag& AbilityTag);
+	static bool IsAbilityEquipped(
+		UElectricCastleAbilitySystemComponent* AbilitySystemComponent,
+		const FGameplayTag& AbilityTag
+	);
 
 	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")
 	static int32 GetXPReward(const UObject* WorldContextObject, const ECharacterClass& CharacterClass, int32 Level);
+	template <typename HitResult>
+	static void FilterHitOverlaps(
+		const TArray<FName>& TagsToIgnore,
+		TArray<AActor*>& OutOverlappingActors,
+		TArray<HitResult> Overlaps
+	);
 
 	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayMechanics")
 	static void GetLiveActorsWithinRadius(
@@ -247,6 +259,18 @@ public:
 	);
 
 	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayMechanics")
+	static void GetLiveActorsWithinSweepRadius(
+		const UObject* WorldContextObject,
+		const TArray<AActor*>& ActorsToIgnore,
+		const TArray<FName>& TagsToIgnore,
+		const FVector& SphereStart,
+		const FVector& SphereEnd,
+		const float Radius,
+		TArray<AActor*>& OutOverlappingActors,
+		const bool bDebug = false
+	);
+
+	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayMechanics")
 	static void GetClosestActors(
 		int32 MaxCount,
 		const FVector& Location,
@@ -254,7 +278,10 @@ public:
 		TArray<AActor*>& OutActors
 	);
 
-	static bool CanEquipAbility(UElectricCastleAbilitySystemComponent* AbilitySystemComponent, const FGameplayTag& AbilityTag);
+	static bool CanEquipAbility(
+		UElectricCastleAbilitySystemComponent* AbilitySystemComponent,
+		const FGameplayTag& AbilityTag
+	);
 	static bool AbilityHasSlotTag(const FGameplayAbilitySpec& AbilitySpec, const FGameplayTag& SlotTag);
 	static bool AbilityHasAnySlot(const FGameplayAbilitySpec& AbilitySpec);
 
@@ -348,7 +375,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayMechanics")
 	static AActor* FindHitByLineTrace(const AActor* Player, const FLineTraceParams& TraceParams);
 	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayMechanics")
-	static bool CalculatePitchToHitTarget(const FVector& Start, const FVector& Target, const float ProjectileSpeed, float& OutPitchDegrees);
+	static bool CalculatePitchToHitTarget(
+		const FVector& Start,
+		const FVector& Target,
+		const float ProjectileSpeed,
+		float& OutPitchDegrees
+	);
 
 private:
 	static bool GetWidgetControllerParams(
@@ -363,3 +395,25 @@ private:
 		int Level
 	);
 };
+
+template <typename HitResult>
+void UElectricCastleAbilitySystemLibrary::FilterHitOverlaps(
+	const TArray<FName>& TagsToIgnore,
+	TArray<AActor*>& OutOverlappingActors,
+	TArray<HitResult> Overlaps
+)
+{
+	for (const HitResult& Overlap : Overlaps)
+	{
+		AActor* OverlapActor = Overlap.GetActor();
+		// skip actor if it has any of the tags in the ignore list
+		if (TagUtils::HasAnyTag(OverlapActor, TagsToIgnore))
+		{
+			continue;
+		}
+		if (ICombatInterface::IsAlive(Overlap.GetActor()))
+		{
+			OutOverlappingActors.AddUnique(OverlapActor);
+		}
+	}
+}

@@ -10,6 +10,7 @@
 AEquipmentActor::AEquipmentActor()
 {
 	PrimaryActorTick.bCanEverTick = false;
+	bReplicates = true;
 	SetRootComponent(CreateDefaultSubobject<USceneComponent>(TEXT("Root")));
 	MeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Mesh"));
 	MeshComponent->SetupAttachment(GetRootComponent());

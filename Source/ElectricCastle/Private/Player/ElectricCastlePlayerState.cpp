@@ -10,7 +10,9 @@
 AElectricCastlePlayerState::AElectricCastlePlayerState()
 {
 	SetNetUpdateFrequency(100.f);
-	AbilitySystemComponent = CreateDefaultSubobject<UElectricCastleAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	AbilitySystemComponent = CreateDefaultSubobject<UElectricCastleAbilitySystemComponent>(
+		TEXT("AbilitySystemComponent")
+	);
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 	AbilitySystemComponent->bShouldSave = true;

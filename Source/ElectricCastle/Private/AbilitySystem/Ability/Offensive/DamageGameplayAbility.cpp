@@ -7,6 +7,7 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 #include "Character/EnemyInterface.h"
+#include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Interaction/CombatInterface.h"
 #include "Tags/ElectricCastleGameplayTags.h"
 #include "Utils/ArrayUtils.h"
@@ -56,7 +57,11 @@ void UDamageGameplayAbility::DealDamage(AActor* TargetActor)
 	);
 }
 
-void UDamageGameplayAbility::DamageTargets_Implementation(const TArray<AActor*>& Targets, const FVector& ImpactLocation, const FGameplayTag& MontageTag)
+void UDamageGameplayAbility::DamageTargets_Implementation(
+	const TArray<AActor*>& Targets,
+	const FVector& ImpactLocation,
+	const FGameplayTag& MontageTag
+)
 {
 	for (AActor* Target : Targets)
 	{
@@ -64,7 +69,10 @@ void UDamageGameplayAbility::DamageTargets_Implementation(const TArray<AActor*>&
 		UElectricCastleAbilitySystemLibrary::ApplyDamageEffect(DamageEffectParams);
 		if (ImpactCueTag.IsValid())
 		{
-			const FGameplayCueParameters ImpactCueParams = MakeGameplayCueParamsFromMontageTag(MontageTag, ImpactLocation);
+			const FGameplayCueParameters ImpactCueParams = MakeGameplayCueParamsFromMontageTag(
+				MontageTag,
+				ImpactLocation
+			);
 			K2_ExecuteGameplayCueWithParams(ImpactCueTag, ImpactCueParams);
 		}
 	}
@@ -94,13 +102,17 @@ FDamageEffectParams UDamageGameplayAbility::MakeDamageEffectParamsFromClassDefau
 ) const
 {
 	FGameplayTagContainer AssetTags;
-	if (const UAbilitySystemComponent* AbilitySystemComponent = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetAvatarActorFromActorInfo()))
+	if (const UAbilitySystemComponent* AbilitySystemComponent =
+		UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetAvatarActorFromActorInfo()))
 	{
 		const FGameplayTagContainer& ActiveTags = AbilitySystemComponent->GetOwnedGameplayTags();
-		const FGameplayTagContainer& DamageTags = ActiveTags.Filter(FElectricCastleGameplayTags::Get().Effect_Damage.GetSingleTagContainer());
+		const FGameplayTagContainer& DamageTags = ActiveTags.Filter(
+			FElectricCastleGameplayTags::Get().Effect_Damage.GetSingleTagContainer()
+		);
 		AssetTags.AppendTags(GetAssetTags());
 		AssetTags.AppendTags(DamageTags);
-	} else
+	}
+	else
 	{
 		AssetTags = GetAssetTags();
 	}
@@ -143,29 +155,99 @@ FGameplayCueParameters UDamageGameplayAbility::MakeDefaultGameplayCueParams(cons
 	return CueParams;
 }
 
-FGameplayCueParameters UDamageGameplayAbility::MakeGameplayCueParamsFromMontageTag(const FGameplayTag& MontageTag, const FVector& ImpactLocation) const
+FVector UDamageGameplayAbility::GetMontageDamageLocation(const FGameplayTag& MontageTag) const
+{
+	return ICombatInterface::GetCombatSocketLocation(GetAvatarActorFromActorInfo(), MontageTag);
+}
+
+FGameplayCueParameters UDamageGameplayAbility::MakeGameplayCueParamsFromMontageTag(
+	const FGameplayTag& MontageTag,
+	const FVector& ImpactLocation
+) const
 {
 	FGameplayCueParameters CueParams = MakeDefaultGameplayCueParams(ImpactLocation);
 	CueParams.AggregatedSourceTags.AddTag(MontageTag);
 	return CueParams;
 }
 
-FVector UDamageGameplayAbility::GetTargetsAtImpact(const FGameplayTag& MontageTag, const float ImpactRadius, TArray<AActor*>& OutTargets, bool bDebug) const
+FVector UDamageGameplayAbility::GetTargetsAtImpact(
+	const FGameplayTag& MontageTag,
+	const float ImpactRadius,
+	TArray<AActor*>& OutTargets,
+	bool bDebug
+) const
 {
-	const FVector& SocketLocation = ICombatInterface::GetCombatSocketLocation(GetAvatarActorFromActorInfo(), MontageTag);
+	const FVector& SocketLocation = ICombatInterface::GetCombatSocketLocation(
+		GetAvatarActorFromActorInfo(),
+		MontageTag
+	);
 	const TArray<FName> IgnoreTargetTags = ICombatInterface::GetTargetTagsToIgnore(GetAvatarActorFromActorInfo());
 	TArray<AActor*> ActorsToIgnore;
 	ActorsToIgnore.Add(GetAvatarActorFromActorInfo());
-	UElectricCastleAbilitySystemLibrary::GetLiveActorsWithinRadius(GetAvatarActorFromActorInfo(), ActorsToIgnore, IgnoreTargetTags, SocketLocation, ImpactRadius, OutTargets, bDebug);
+	UElectricCastleAbilitySystemLibrary::GetLiveActorsWithinRadius(
+		GetAvatarActorFromActorInfo(),
+		ActorsToIgnore,
+		IgnoreTargetTags,
+		SocketLocation,
+		ImpactRadius,
+		OutTargets,
+		bDebug
+	);
 	return SocketLocation;
 }
 
-void UDamageGameplayAbility::GetTargetsAtImpactLocation(const FVector& ImpactLocation, float ImpactRadius, TArray<AActor*>& OutTargets, bool bDebug) const
+void UDamageGameplayAbility::GetTargetsAtImpactLocation(
+	const FVector& ImpactLocation,
+	float ImpactRadius,
+	TArray<AActor*>& OutTargets,
+	bool bDebug
+) const
 {
 	const TArray<FName> IgnoreTargetTags = ICombatInterface::GetTargetTagsToIgnore(GetAvatarActorFromActorInfo());
 	TArray<AActor*> ActorsToIgnore;
 	ActorsToIgnore.Add(GetAvatarActorFromActorInfo());
-	UElectricCastleAbilitySystemLibrary::GetLiveActorsWithinRadius(GetAvatarActorFromActorInfo(), ActorsToIgnore, IgnoreTargetTags, ImpactLocation, ImpactRadius, OutTargets, bDebug);
+	UElectricCastleAbilitySystemLibrary::GetLiveActorsWithinRadius(
+		GetAvatarActorFromActorInfo(),
+		ActorsToIgnore,
+		IgnoreTargetTags,
+		ImpactLocation,
+		ImpactRadius,
+		OutTargets,
+		bDebug
+	);
+}
+
+void UDamageGameplayAbility::GetTargetsInAttackRange(
+	const FVector& AttackStart,
+	const FVector& AttackEnd,
+	float ImpactRadius,
+	TArray<AActor*>& OutTargets,
+	bool bDebug
+) const
+{
+	const TArray<FName> IgnoreTargetTags = ICombatInterface::GetTargetTagsToIgnore(GetAvatarActorFromActorInfo());
+	TArray<AActor*> ActorsToIgnore;
+	ActorsToIgnore.Add(GetAvatarActorFromActorInfo());
+	UElectricCastleAbilitySystemLibrary::GetLiveActorsWithinSweepRadius(
+		GetAvatarActorFromActorInfo(),
+		ActorsToIgnore,
+		IgnoreTargetTags,
+		AttackStart,
+		AttackEnd,
+		ImpactRadius,
+		OutTargets,
+		bDebug
+	);
+	UE_LOG(
+		LogElectricCastle,
+		Warning,
+		TEXT(
+			"[DamageGameplayAbility::GetTargetsInAttackRange]: Found actors: [%d] between %s - %s"
+		),
+		OutTargets.Num(),
+		*AttackStart.ToString(),
+		*AttackEnd.ToString()
+	)
 }
 
 void UDamageGameplayAbility::FaceTarget_Implementation()
