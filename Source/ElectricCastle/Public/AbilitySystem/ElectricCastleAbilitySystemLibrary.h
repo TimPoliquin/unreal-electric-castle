@@ -406,22 +406,19 @@ void UElectricCastleAbilitySystemLibrary::FilterHitOverlaps(
 	for (const HitResult& Overlap : Overlaps)
 	{
 		AActor* OverlapActor = Overlap.GetActor();
+		// skip actor if it is not valid
+		if (!OverlapActor || !IsValid(OverlapActor))
+		{
+			continue;
+		}
 		// skip actor if it has any of the tags in the ignore list
-		if (!OverlapActor
-			|| !IsValid(OverlapActor)
-			|| OverlapActor->IsTemplate()
-			|| OverlapActor->GetClass()->HasAnyClassFlags(CLASS_Abstract)
-		)
+		if (TagUtils::HasAnyTag(OverlapActor, TagsToIgnore))
 		{
 			continue;
 		}
-		if (!TagUtils::HasAnyTag(OverlapActor, TagsToIgnore))
+		if (ICombatInterface::IsAlive(Overlap.GetActor()))
 		{
-			continue;
-		}
-		if (!ICombatInterface::IsAlive(OverlapActor))
-		{
-			OutOverlappingActors.Add(OverlapActor);
+			OutOverlappingActors.AddUnique(OverlapActor);
 		}
 	}
 }
