@@ -1,3 +1,15 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:2180cec2d7f9d5565839f859e78bcf96ffc381475da5ee078ee4b969656adc8b
-size 444
+﻿// Copyright Alien Shores
+
+
+#include "Player/Equipment/EquipmentManagerInterface.h"
+
+
+// Add default functionality here for any IEquipmentManagerInterface functions that are not pure virtual.
+UPlayerEquipmentComponent* IEquipmentManagerInterface::GetEquipmentComponent(const UObject* Object)
+{
+	if (IsValid(Object) && Object->Implements<UEquipmentManagerInterface>())
+	{
+		return Execute_GetEquipmentComponent(Object);
+	}
+	return nullptr;
+}

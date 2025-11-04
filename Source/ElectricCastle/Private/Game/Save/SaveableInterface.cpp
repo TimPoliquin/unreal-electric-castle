@@ -1,3 +1,46 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:632d04ba86e871b6f10225f57ff94af03337b53999ea9cbfded4292bbc3af8b3
-size 907
+﻿// Copyright Alien Shores
+
+
+#include "Game/Save/SaveableInterface.h"
+
+#include "Serialization/ObjectAndNameAsStringProxyArchive.h"
+
+
+TArray<uint8> ISaveableInterface::SaveData_Implementation()
+{
+	TArray<uint8> Data;
+	return Data;
+}
+
+bool ISaveableInterface::LoadData_Implementation(const TArray<uint8>& Data)
+{
+	if (AActor* ThisObject = Cast<AActor>(this))
+	{
+		FMemoryReader MemoryReader(Data);
+		FObjectAndNameAsStringProxyArchive Archive(MemoryReader, true);
+		Archive.ArIsSaveGame = true;
+		ThisObject->Serialize(Archive);
+		return true;
+	}
+
+	return false;
+}
+
+bool ISaveableInterface::ShouldSave_Implementation() const
+{
+	if (const UObject* ThisObject = Cast<UObject>(this))
+	{
+		return IsValid(ThisObject);
+	}
+	return false;
+}
+
+bool ISaveableInterface::ShouldAutoSpawn_Implementation() const
+{
+	return false;
+}
+
+bool ISaveableInterface::ShouldLoadTransform_Implementation() const
+{
+	return false;
+}

@@ -1,3 +1,39 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:fc856267ea9ca8ed5f5d627b97589db1339ef5a80bc0968a17abbe1182afbaea
-size 1133
+﻿// Copyright Alien Shores
+
+
+#include "Game/ElectricCastleGameState.h"
+
+#include "Kismet/GameplayStatics.h"
+#include "Player/InventoryComponent.h"
+#include "Player/Progression/ProgressionComponent.h"
+
+AElectricCastleGameState::AElectricCastleGameState()
+{
+	SetNetUpdateFrequency(100.f);
+	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("PlayerInventoryComponent"));
+	ProgressionComponent = CreateDefaultSubobject<UProgressionComponent>(TEXT("ProgressionComponent"));
+}
+
+void AElectricCastleGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+}
+
+AElectricCastleGameState* AElectricCastleGameState::Get(const UObject* WorldContextObject)
+{
+	if (IsValid(WorldContextObject))
+	{
+		return Cast<AElectricCastleGameState>(UGameplayStatics::GetGameState(WorldContextObject));
+	}
+	return nullptr;
+}
+
+UInventoryComponent* AElectricCastleGameState::GetInventoryComponent() const
+{
+	return InventoryComponent;
+}
+
+UProgressionComponent* AElectricCastleGameState::GetProgressionComponent() const
+{
+	return ProgressionComponent;
+}

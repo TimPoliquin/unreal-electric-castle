@@ -1,3 +1,18 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:5877806f1534687e6bf385e0c7c485228a50a29c1e5e18c64e6f3e4b82ce1659
-size 485
+// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Components/WidgetComponent.h"
+#include "DamageTextComponent.generated.h"
+
+
+UCLASS(BlueprintType, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+class ELECTRICCASTLE_API UDamageTextComponent : public UWidgetComponent
+{
+	GENERATED_BODY()
+
+public:
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void SetDamageText(const float Damage, const bool IsBlockedHit, const bool IsCriticalHit);
+};

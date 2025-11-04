@@ -1,3 +1,28 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:d9ac746b16518f4033191a22e0d047ff4277149d014194cd95312311d0a7f294
-size 647
+// Copyright Alien Shores
+
+
+#include "AbilitySystem/Data/AbilityInfo.h"
+
+#include "ElectricCastle/ElectricCastleLogChannels.h"
+
+FElectricCastleAbilityInfo UAbilityInfo::FindAbilityInfoForTag(const FGameplayTag AbilityTag, bool bLogNotFound) const
+{
+	for (const FElectricCastleAbilityInfo& AbilityInfo : AbilityInformation)
+	{
+		if (AbilityInfo.AbilityTag.MatchesTagExact(AbilityTag))
+		{
+			return AbilityInfo;
+		}
+	}
+	if (bLogNotFound)
+	{
+		UE_LOG(
+			LogElectricCastle,
+			Error,
+			TEXT("Unable to find ability by tag [%s] on Ability Info [%s]"),
+			*AbilityTag.ToString(),
+			*GetNameSafe(this)
+		);
+	}
+	return FElectricCastleAbilityInfo();
+}

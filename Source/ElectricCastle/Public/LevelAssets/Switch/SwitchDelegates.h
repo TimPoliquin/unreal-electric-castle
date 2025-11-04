@@ -1,3 +1,21 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:8b5a628d071306c842cdd65f1c0dddfb4e6aec1d686c01a92976cd3b7507acc9
-size 420
+﻿#pragma once
+
+#include "CoreMinimal.h"
+#include "SwitchDelegates.generated.h"
+
+USTRUCT(BlueprintType)
+struct FOnSwitchStatusChangedPayload
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite)
+	TObjectPtr<AActor> Switch;
+
+	bool IsValid() const
+	{
+		return Switch != nullptr;
+	}
+};
+
+UDELEGATE()
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSwitchStatusChangedSignature, const FOnSwitchStatusChangedPayload&, Payload);

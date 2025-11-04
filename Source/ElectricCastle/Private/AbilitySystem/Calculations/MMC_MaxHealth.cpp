@@ -1,3 +1,33 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:1c131c02e5df9fe8799598a250f7e0d83aa9fb07a0e252b69eb23a5f549bac29
-size 1403
+// Copyright Alien Shores
+
+
+#include "AbilitySystem/Calculations/MMC_MaxHealth.h"
+
+#include "AbilitySystem/ElectricCastleAbilitySystemInterface.h"
+#include "AbilitySystem/ElectricCastleAttributeSet.h"
+
+UMMC_MaxHealth::UMMC_MaxHealth()
+{
+	ConstitutionDefinition.AttributeToCapture = UElectricCastleAttributeSet::GetConstitutionAttribute();
+	ConstitutionDefinition.AttributeSource = EGameplayEffectAttributeCaptureSource::Target;
+	ConstitutionDefinition.bSnapshot = false;
+	RelevantAttributesToCapture.Add(ConstitutionDefinition);
+}
+
+float UMMC_MaxHealth::CalculateBaseMagnitude_Implementation(const FGameplayEffectSpec& Spec) const
+{
+	// Gather tags from source and target
+	FAggregatorEvaluateParameters EvaluateParameters;
+	EvaluateParameters.SourceTags = Spec.CapturedSourceTags.GetAggregatedTags();
+	EvaluateParameters.TargetTags = Spec.CapturedTargetTags.GetAggregatedTags();
+
+	float Constitution = 0.f;
+	GetCapturedAttributeMagnitude(ConstitutionDefinition, Spec, EvaluateParameters, Constitution);
+	// Ensure Vigor is always a positive number
+	Constitution = FMath::Max(Constitution, 0.f);
+
+	// Max health is a function of vigor and character level.
+	const int32 PlayerLevel = IElectricCastleAbilitySystemInterface::GetCharacterLevel(Spec.GetContext().GetSourceObject());
+	const float CalculatedMaxHealth = 77.5f + (2.5f * Constitution) + (10.f * (PlayerLevel - 1));
+	return CalculatedMaxHealth;
+}

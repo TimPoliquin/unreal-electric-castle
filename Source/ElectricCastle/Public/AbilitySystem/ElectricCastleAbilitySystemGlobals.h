@@ -1,3 +1,19 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:9740d0d378658796fb03d2b80517b5f6306ef22f302ce456117cbb54b9e584f9
-size 382
+// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "AbilitySystemGlobals.h"
+#include "ElectricCastleAbilitySystemGlobals.generated.h"
+
+/**
+ * 
+ */
+UCLASS()
+class ELECTRICCASTLE_API UElectricCastleAbilitySystemGlobals : public UAbilitySystemGlobals
+{
+	GENERATED_BODY()
+
+public:
+	virtual FGameplayEffectContext* AllocGameplayEffectContext() const override;
+};

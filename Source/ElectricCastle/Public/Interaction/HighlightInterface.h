@@ -1,3 +1,36 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:fce802f2a313e8b64e4e3538bade6d23ee803693885b27b6069592e4a9d4418d
-size 969
+// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "UObject/Interface.h"
+#include "HighlightInterface.generated.h"
+
+// This class does not need to be modified.
+UINTERFACE(MinimalAPI, BlueprintType)
+class UHighlightInterface : public UInterface
+{
+	GENERATED_BODY()
+};
+
+/**
+ * 
+ */
+class ELECTRICCASTLE_API IHighlightInterface
+{
+	GENERATED_BODY()
+
+	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
+public:
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void HighlightActor();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void UnHighlightActor();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	bool SetMoveToLocation(FVector& OutDestination);
+
+	static void HighlightActor(UObject* Actor);
+	static void UnHighlightActor(UObject* Actor);
+	static bool IsHighlightActor(const UObject* Actor);
+	static bool SetMoveToLocation(UObject* Actor, FVector& OutDestination);
+};

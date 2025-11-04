@@ -1,3 +1,80 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:d25e2fc1b4236372e064900e7d16d5622c0d5a35a9060891957bc7618d91a8fc
-size 2445
+// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "AbilitySystem/ElectricCastleAbilitySystemTypes.h"
+#include "GameFramework/Actor.h"
+#include "ProjectileActor.generated.h"
+
+class UCapsuleComponent;
+struct FGameplayEffectSpecHandle;
+class UProjectileMovementComponent;
+class USphereComponent;
+class UNiagaraSystem;
+class UAudioComponent;
+
+UCLASS(Abstract, Blueprintable)
+class ELECTRICCASTLE_API AProjectileActor : public AActor
+{
+	GENERATED_BODY()
+
+public:
+	AProjectileActor();
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+	UPROPERTY(BlueprintReadWrite, meta = (ExposeOnSpawn = true), Replicated)
+	FDamageEffectParams DamageEffectParams;
+
+	UProjectileMovementComponent* GetProjectileMovementComponent() const;
+	UPROPERTY()
+	TObjectPtr<USceneComponent> HomingTargetSceneComponent;
+	UPROPERTY(EditDefaultsOnly)
+	bool bShouldDestroyOnTargetDeath = true;
+	UFUNCTION(BlueprintCallable)
+	void SetHomingTarget(AActor* Target);
+	UFUNCTION()
+	void OnTargetDead(AActor* DeadActor);
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Projectile")
+	FVector GetImpactDirection(const AActor* HitActor) const;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	TArray<AActor*> FindImpactTargets();
+
+protected:
+	virtual void BeginPlay() override;
+	virtual void Destroyed() override;
+
+	UFUNCTION()
+	virtual void OnSphereOverlap(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComponent,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult
+	);
+	bool IsValidOverlap(const AActor* OtherActor) const;
+	UFUNCTION(BlueprintCallable)
+	void PlayImpactEffect();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UProjectileMovementComponent> ProjectileMovement;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float ImpactRadius = 1.f;
+	UPROPERTY(EditDefaultsOnly)
+	bool bAutoDestroy = true;
+	UPROPERTY(EditDefaultsOnly, meta=(EditCondition="bAutoDestroy", ClampMin = "0", UIMin = "0.01"))
+	float LifeSpan = 2.f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UCapsuleComponent> CollisionComponent;
+
+private:
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UNiagaraSystem> ImpactEffect;
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<USoundBase> ImpactSound;
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<USoundBase> TravelSound;
+	UPROPERTY()
+	TObjectPtr<UAudioComponent> TravelSoundComponent;
+	bool bHit = false;
+};

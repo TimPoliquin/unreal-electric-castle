@@ -1,3 +1,54 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:5c31e195bb62c8436eb51d6ae03189c0ee196fcbc332d856bc447e7abb13f0b8
-size 1134
+﻿// Copyright Alien Shores
+
+
+#include "Item/Equipment/EquipmentActor.h"
+
+#include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
+
+
+// Sets default values
+AEquipmentActor::AEquipmentActor()
+{
+	PrimaryActorTick.bCanEverTick = false;
+	bReplicates = true;
+	SetRootComponent(CreateDefaultSubobject<USceneComponent>(TEXT("Root")));
+	MeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Mesh"));
+	MeshComponent->SetupAttachment(GetRootComponent());
+}
+
+USkeletalMeshComponent* AEquipmentActor::GetMesh() const
+{
+	return MeshComponent;
+}
+
+bool AEquipmentActor::IsEquipped() const
+{
+	return bIsEquipped;
+}
+
+void AEquipmentActor::Equip(AActor* InOwner)
+{
+	if (IsEquipped())
+	{
+		return;
+	}
+	bIsEquipped = true;
+	if (EquipGameplayEffect)
+	{
+		EquippedHandle = UElectricCastleAbilitySystemLibrary::ApplyBasicGameplayEffect(InOwner, EquipGameplayEffect);
+	}
+}
+
+void AEquipmentActor::UnEquip(AActor* InOwner)
+{
+	if (!IsEquipped())
+	{
+		return;
+	}
+	bIsEquipped = false;
+	if (EquippedHandle.IsValid())
+	{
+		UElectricCastleAbilitySystemLibrary::RemoveGameplayEffect(InOwner, EquippedHandle);
+		EquippedHandle.Invalidate();
+	}
+}

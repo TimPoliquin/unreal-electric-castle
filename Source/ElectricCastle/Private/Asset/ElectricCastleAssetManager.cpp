@@ -1,3 +1,20 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:c60658c29d8432d0c346fb76ffce05d69ee246a45ff4f9c794356674abc5fe5f
-size 555
+// Copyright Alien Shores
+
+
+#include "Asset/ElectricCastleAssetManager.h"
+
+#include "Tags/ElectricCastleGameplayTags.h"
+#include "AbilitySystemGlobals.h"
+
+UElectricCastleAssetManager& UElectricCastleAssetManager::Get()
+{
+	return *Cast<UElectricCastleAssetManager>(GEngine->AssetManager);
+}
+
+void UElectricCastleAssetManager::StartInitialLoading()
+{
+	Super::StartInitialLoading();
+	FElectricCastleGameplayTags::InitializeNativeGameplayTags();
+	// DEVNOTE: Required to use TargetData (TargetDataUnderMouse)
+	UAbilitySystemGlobals::Get().InitGlobalData();
+}

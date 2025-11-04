@@ -1,3 +1,25 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:de0d43cec32ab585779cf24f60fce53e2ac90b3dded67473c6d8176d00f67d0a
-size 383
+﻿#pragma once
+
+#include "EquipmentTypes.generated.h"
+
+UENUM(BlueprintType)
+enum class EEquipmentSlot : uint8
+{
+	/** None */
+	None,
+	/** Tool slot */
+	Tool,
+	/** Weapon slot */
+	Weapon
+};
+
+UENUM(BlueprintType)
+enum class EEquipmentUseMode : uint8
+{
+	/** The player is using nothing */
+	None,
+	/** The player is using a tool */
+	Tool,
+	/** The player is using a weapon */
+	Weapon
+};

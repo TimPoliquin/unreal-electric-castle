@@ -1,3 +1,57 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:30f3b0ffc7e8549cd64eace104794aa5bb128d93d6f09bcf9e9e89070eace9e7
-size 1573
+﻿// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "WidgetVisibilityEvents.h"
+#include "Blueprint/UserWidget.h"
+#include "AuraFishingMessageWidget.generated.h"
+
+class UInputAction;
+
+/**
+ * 
+ */
+UCLASS()
+class ELECTRICCASTLE_API UAuraFishingMessageWidget : public UUserWidget
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(BlueprintAssignable, Category="Event")
+	FWidgetEventSignature OnContinue;
+	UPROPERTY(BlueprintAssignable, Category="Event")
+	FWidgetEventSignature OnCancel;
+	UPROPERTY(BlueprintAssignable, Category="Event")
+	FWidgetEventSignature OnShown;
+	UPROPERTY(BlueprintAssignable, Category="Event")
+	FWidgetEventSignature OnHidden;
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void Show();
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void Hide();
+
+protected:
+	virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void Continue();
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void Cancel();
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void Shown();
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void Hidden();
+
+	UFUNCTION(BlueprintCallable)
+	bool IsKeyBoundToInputAction(const FKeyEvent& Input, const UInputAction* InputAction) const;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Input")
+	FKey CancelKey = EKeys::Escape;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Input")
+	FKey ContinueKey = EKeys::Enter;
+
+private:
+	bool bIsShowing = false;
+	bool bAllowInput = false;
+};

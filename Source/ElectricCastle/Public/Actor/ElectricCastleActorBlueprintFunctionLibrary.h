@@ -1,3 +1,30 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:f5fbd85a89d558bbaed056d1af0d98a2a46028bbe3bba07c15511f0889edc2bd
-size 649
+﻿// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "ElectricCastleActorBlueprintFunctionLibrary.generated.h"
+
+/**
+ * 
+ */
+UCLASS()
+class ELECTRICCASTLE_API UElectricCastleActorBlueprintFunctionLibrary : public UBlueprintFunctionLibrary
+{
+	GENERATED_BODY()
+
+public:
+	static void SinusoidalMovement(
+		AActor* Actor,
+		float DeltaSeconds,
+		float& RunningTime,
+		float PeriodMultiplier,
+		float Amplitude,
+		const FVector& InitialLocation
+	);
+
+	static void DisableActor(AActor* Actor);
+
+	static UShapeComponent* FindCollisionComponent(const AActor* Actor);
+	static UMeshComponent* FindMeshComponent(const AActor* Actor);
+};

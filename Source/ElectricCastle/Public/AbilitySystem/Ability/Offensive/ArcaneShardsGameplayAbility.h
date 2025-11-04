@@ -1,3 +1,28 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:c0b6f6fe0c5cd1f76cfab0c144cda55ff7bdc334976eecc55de3e8a8ca6db5ad
-size 678
+﻿// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "AbilitySystem/Ability//Offensive/DamageGameplayAbility.h"
+#include "ArcaneShardsGameplayAbility.generated.h"
+
+/**
+ * 
+ */
+UCLASS(Abstract, Blueprintable)
+class ELECTRICCASTLE_API UArcaneShardsGameplayAbility : public UDamageGameplayAbility
+{
+	GENERATED_BODY()
+
+public:
+	virtual FString GetDescription_Implementation(const int32 AbilityLevel) const override;
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	int32 GetNumShards(const int32 AbilityLevel) const
+	{
+		return FMath::Min(AbilityLevel, MaxNumShards);
+	}
+
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	int32 MaxNumShards = 11;
+};

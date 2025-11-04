@@ -1,3 +1,40 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:4ae87b42bbdd44575a10705ff3397e22a1c724a6ebda2c6b3b1e542b9e2ccd58
-size 956
+// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "GameplayEffectTypes.h"
+#include "GameFramework/Actor.h"
+#include "EffectAreaActor.generated.h"
+
+class UApplyGameplayEffectComponent;
+class UAbilitySystemComponent;
+class UGameplayEffect;
+
+UCLASS()
+class ELECTRICCASTLE_API AEffectAreaActor : public AActor
+{
+	GENERATED_BODY()
+
+public:
+	AEffectAreaActor();
+
+protected:
+	virtual void BeginPlay() override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UApplyGameplayEffectComponent> EffectComponent;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn")
+	bool bPlaySpawnEffect = false;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Spawn")
+	TObjectPtr<USoundBase> SpawnSound;
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
+	void PlaySpawnEffect();
+
+private:
+	UPROPERTY()
+	TMap<FActiveGameplayEffectHandle, UAbilitySystemComponent*> ActiveEffectHandles;
+};

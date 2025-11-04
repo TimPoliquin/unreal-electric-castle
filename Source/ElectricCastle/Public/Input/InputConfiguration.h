@@ -1,3 +1,37 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:e81d16d5dbd3774f885810f79430fa61ef28355b9fa97283a7b04b2ddc653e02
-size 808
+// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
+#include "Engine/DataAsset.h"
+#include "InputConfiguration.generated.h"
+
+class UInputAction;
+
+USTRUCT(BlueprintType)
+struct FInputConfigurationRow
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly)
+	const UInputAction* InputAction = nullptr;
+	UPROPERTY(EditDefaultsOnly, meta=(Categories="InputTag"))
+	FGameplayTag InputTag = FGameplayTag::EmptyTag;
+};
+
+/**
+ * 
+ */
+UCLASS()
+class ELECTRICCASTLE_API UInputConfiguration : public UDataAsset
+{
+	GENERATED_BODY()
+
+public:
+	const UInputAction* FindAbilityInputActionForTag(const FGameplayTag& InputTag, bool bLogNotFound = false) const;
+
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+	TArray<FInputConfigurationRow> AbilityInputActions;
+};

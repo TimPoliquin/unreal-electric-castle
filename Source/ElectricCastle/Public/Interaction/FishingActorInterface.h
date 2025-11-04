@@ -1,3 +1,34 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:c367bb2f9523f7bec194f21209bb72f58d994bbbf8b64570de51b613750e7668
-size 847
+﻿// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "UObject/Interface.h"
+#include "FishingActorInterface.generated.h"
+
+class UFishingComponent;
+class UNiagaraSystem;
+class IFishingComponentInterface;
+// This class does not need to be modified.
+UINTERFACE()
+class UFishingActorInterface : public UInterface
+{
+	GENERATED_BODY()
+};
+
+/**
+ * 
+ */
+class ELECTRICCASTLE_API IFishingActorInterface
+{
+	GENERATED_BODY()
+
+	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
+public:
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	UFishingComponent* GetFishingComponent() const;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void ShowFishingStatusEffect(UNiagaraSystem* EffectSystem);
+
+	static UFishingComponent* GetFishingComponent(const UObject* Actor);
+};

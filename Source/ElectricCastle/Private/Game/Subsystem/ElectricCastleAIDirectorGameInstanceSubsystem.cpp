@@ -1,3 +1,35 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:44bf78b23da5965f2df37562eb515a84e010341716b8a09211ab39d68bd45d99
-size 1285
+﻿// Copyright Alien Shores
+
+
+#include "Game/Subsystem/ElectricCastleAIDirectorGameInstanceSubsystem.h"
+
+#include "ElectricCastle/ElectricCastleLogChannels.h"
+#include "Kismet/GameplayStatics.h"
+
+UElectricCastleAIDirectorGameInstanceSubsystem* UElectricCastleAIDirectorGameInstanceSubsystem::Get(const UObject* WorldContextObject)
+{
+	if (!IsValid(WorldContextObject))
+	{
+		UE_LOG(LogElectricCastle, Warning, TEXT("[%s] Invalid world context object provided - cannot lookup game instance subsystem"), *FString("UElectricCastleAIDirectorGameInstanceSubsystem::Get"));
+		return nullptr;
+	}
+	if (const UGameInstance* GameInstance = IsValid(WorldContextObject) ? UGameplayStatics::GetGameInstance(WorldContextObject) : nullptr)
+	{
+		return GameInstance->GetSubsystem<UElectricCastleAIDirectorGameInstanceSubsystem>();
+	}
+	UE_LOG(LogElectricCastle, Warning, TEXT("[%s] No subsystem found for context object: %s"), *FString("UElectricCastleAIDirectorGameInstanceSubsystem::Get"), *WorldContextObject->GetName());
+	return nullptr;
+}
+
+TArray<AActor*> UElectricCastleAIDirectorGameInstanceSubsystem::GetActivePlayerActors()
+{
+	TArray<AActor*> Results;
+	for (TWeakObjectPtr<AActor> Actor : ActivePlayerActors)
+	{
+		if (Actor.IsValid())
+		{
+			Results.Add(Actor.Get());
+		}
+	}
+	return Results;
+}

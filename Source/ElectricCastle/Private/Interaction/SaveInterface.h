@@ -1,3 +1,31 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:ddaa524cdcb6941c4b73442843d537c4edd07a868538a970ff29e479d41dd653
-size 673
+﻿// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "UObject/Interface.h"
+#include "SaveInterface.generated.h"
+
+// This class does not need to be modified.
+UINTERFACE()
+class USaveInterface : public UInterface
+{
+	GENERATED_BODY()
+};
+
+/**
+ * 
+ */
+class ELECTRICCASTLE_API ISaveInterface
+{
+	GENERATED_BODY()
+
+	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
+public:
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	bool ShouldLoadTransform() const;
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void LoadActor();
+
+	static bool ShouldLoadTransform(const UObject* Object);
+};

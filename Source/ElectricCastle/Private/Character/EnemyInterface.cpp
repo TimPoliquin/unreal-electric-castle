@@ -1,3 +1,20 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:519a8658c3084131750ede1af32818ebe8bc8ca46b3e5663f2de954cffc90396
-size 446
+// Copyright Alien Shores
+
+
+#include "Character/EnemyInterface.h"
+
+
+// Add default functionality here for any IEnemyInterface functions that are not pure virtual.
+bool IEnemyInterface::IsEnemyActor(const UObject* Actor)
+{
+	return IsValid(Actor) && Actor->Implements<UEnemyInterface>();
+}
+
+AActor* IEnemyInterface::GetCombatTarget(const UObject* Actor)
+{
+	if (IsEnemyActor(Actor))
+	{
+		return Execute_GetCombatTarget(Actor);
+	}
+	return nullptr;
+}

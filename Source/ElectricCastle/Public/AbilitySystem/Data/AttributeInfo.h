@@ -1,3 +1,40 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:9d1d195359936c01b03e881cb7db7c2c4502798eb445b7c13f4cd229044dcbac
-size 917
+// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
+#include "Engine/DataAsset.h"
+#include "AttributeInfo.generated.h"
+
+USTRUCT(BlueprintType)
+struct FAttributeInfoRow
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(Categories="Attributes"))
+	FGameplayTag Tag = FGameplayTag();
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FText AttributeName = FText();
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FText AttributeDescription = FText();
+	UPROPERTY(BlueprintReadOnly)
+	float AttributeValue = 0.f;
+};
+
+
+/**
+ * 
+ */
+UCLASS()
+class ELECTRICCASTLE_API UAttributeInfo : public UDataAsset
+{
+	GENERATED_BODY()
+
+public:
+	FAttributeInfoRow FindAttributeInfoForTag(const FGameplayTag& AttributeTag, bool bLogNotFound = false) const;
+
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TArray<FAttributeInfoRow> AttributeInformation;
+};

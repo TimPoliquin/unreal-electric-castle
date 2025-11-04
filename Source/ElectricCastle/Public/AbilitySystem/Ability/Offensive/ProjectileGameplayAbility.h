@@ -1,3 +1,69 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:f3c20310408b05307796985788191160748b62a5ee6501de747c6c30c7acaadb
-size 1973
+// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "DamageGameplayAbility.h"
+#include "Actor/Projectile/ProjectileActor.h"
+#include "ProjectileGameplayAbility.generated.h"
+
+class AProjectileActor;
+class UGameplayEffect;
+
+DECLARE_DELEGATE_OneParam(FOnSpawnProjectileFinishedSignature, AProjectileActor*);
+
+/**
+ * 
+ */
+UCLASS(Abstract, Blueprintable)
+class ELECTRICCASTLE_API UProjectileGameplayAbility : public UDamageGameplayAbility
+{
+	GENERATED_BODY()
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projectile")
+	TSubclassOf<AProjectileActor> ProjectileClass;
+
+	virtual void ActivateAbility(
+		const FGameplayAbilitySpecHandle Handle,
+		const FGameplayAbilityActorInfo* ActorInfo,
+		const FGameplayAbilityActivationInfo ActivationInfo,
+		const FGameplayEventData* TriggerEventData
+	) override;
+
+	UFUNCTION(BlueprintCallable, Category ="Projectile")
+	AProjectileActor* SpawnProjectile(
+		const FVector& ProjectileTargetLocation,
+		const AActor* HitActor,
+		const FGameplayTag& SocketTag
+	);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void FireProjectileAtTarget(const FGameplayTag& SocketTag);
+
+	FVector GetProjectileSpawnLocation(const FGameplayTag& SocketTag) const;
+	FRotator GetProjectileSpawnRotation(
+		const FVector& TargetLocation,
+		const FVector& SpawnLocation,
+		const AActor* TargetActor
+	) const;
+
+	AProjectileActor* SpawnProjectile(
+		const FVector& SpawnLocation,
+		const FRotator& SpawnRotation,
+		const FOnSpawnProjectileFinishedSignature* BeforeFinishSpawning = nullptr
+	);
+
+	UFUNCTION(BlueprintCallable)
+	AProjectileActor* SpawnProjectile_Basic();
+
+	/**
+	 * Angle (y) for projectile to be fired.
+	 * Defaults to 0 to allow the projectile to travel parallel to the ground. 
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Projectile")
+	float Pitch = 0.f;
+
+private:
+	FGameplayEffectSpecHandle MakeDamageEffectSpecHandle(AActor* SourceObject, const FVector& TargetLocation) const;
+};

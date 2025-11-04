@@ -1,3 +1,31 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:3048f15d8cc595aabb217143de68f3c113e851f8b701e24b54e141551a51fb00
-size 672
+﻿// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "GameFramework/HUD.h"
+#include "LoadScreenHUD.generated.h"
+
+class UMVVM_LoadScreen;
+class ULoadScreenWidget;
+/**
+ * 
+ */
+UCLASS()
+class ELECTRICCASTLE_API ALoadScreenHUD : public AHUD
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ULoadScreenWidget> LoadScreenWidgetClass;
+	UPROPERTY(BlueprintReadOnly)
+	TObjectPtr<ULoadScreenWidget> LoadScreenWidget;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UMVVM_LoadScreen> LoadScreenViewModelClass;
+	UPROPERTY(BlueprintReadOnly)
+	TObjectPtr<UMVVM_LoadScreen> LoadScreenViewModel;
+
+protected:
+	virtual void BeginPlay() override;
+};

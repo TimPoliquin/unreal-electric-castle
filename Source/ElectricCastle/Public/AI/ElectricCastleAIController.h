@@ -1,3 +1,31 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:f065a3fc2046d9dd92bc12198bd9b9ed6da29069d77a904c119be04c2bec9f6a
-size 675
+// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Runtime/AIModule/Classes/AIController.h"
+#include "ElectricCastleAIController.generated.h"
+
+class UBehaviorTreeComponent;
+class UBlackboardComponent;
+
+UCLASS()
+class ELECTRICCASTLE_API AElectricCastleAIController : public AAIController
+{
+	GENERATED_BODY()
+
+public:
+	// Sets default values for this actor's properties
+	AElectricCastleAIController();
+
+protected:
+	UPROPERTY()
+	TObjectPtr<UBehaviorTreeComponent> BehaviorTreeComponent;
+
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+public:
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+};

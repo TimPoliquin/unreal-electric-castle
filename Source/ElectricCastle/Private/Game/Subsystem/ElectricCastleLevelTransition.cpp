@@ -1,3 +1,27 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:21181abc3f3e2daed937ccf3285e95f0b579cd62aad05bd5b0e9d0ed6f43c7cd
-size 733
+﻿// Copyright Alien Shores
+
+
+#include "Game/Subsystem/ElectricCastleLevelTransition.h"
+
+#include "Game/Save/SaveGameManager.h"
+#include "Game/Subsystem/ElectricCastleLevelManager.h"
+
+void UElectricCastleLevelTransition::Initialize(const FAuraLevelTransitionParams& Params)
+{
+	DestinationPlayerStartTag = Params.PlayerStartTag;
+	bShouldLoad = Params.ShouldLoad();
+	SaveSlot = Params.SaveSlot;
+	FCoreUObjectDelegates::PostLoadMapWithWorld.AddWeakLambda(this, [this](UWorld* World)
+	{
+		if (bShouldLoad)
+		{
+			USaveGameManager::Get(World)->ApplySaveGame(SaveSlot, SlotIndex);
+		}
+		OnComplete.Broadcast(World);
+	});
+}
+
+FName UElectricCastleLevelTransition::GetDestinationPlayerStartTag() const
+{
+	return DestinationPlayerStartTag;
+}

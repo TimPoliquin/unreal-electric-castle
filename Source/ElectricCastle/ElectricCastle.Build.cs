@@ -1,3 +1,30 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:1dc973fef507c52a970a718f02f143a22a8f7426961e6f1e48596d95a158dcb7
-size 1080
+// Copyright Alien Shores
+
+using UnrealBuildTool;
+
+public class ElectricCastle : ModuleRules
+{
+	public ElectricCastle(ReadOnlyTargetRules Target) : base(Target)
+	{
+		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+		bEnableExceptions = true;
+		PublicDependencyModuleNames.AddRange(new[]
+		{
+			"Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "CommonInput", "GameplayAbilities", "UMG", "SlateCore",
+			"ModelViewViewModel", "CableComponent", "AIModule", "MotionWarping", "LiveLinkInterface"
+		});
+
+		PrivateDependencyModuleNames.AddRange(new[]
+		{
+			"GameplayTags", "GameplayTasks", "NavigationSystem", "Niagara", "AIModule", "HairStrandsCore", "MetaHumanSDKRuntime", "LiveLinkAnimationCore"
+		});
+
+		// Uncomment if you are using Slate UI
+		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
+
+		// Uncomment if you are using online features
+		// PrivateDependencyModuleNames.Add("OnlineSubsystem");
+
+		// To include OnlineSubsystemSteam, add it to the plugins section in your uproject file with the Enabled attribute set to true
+	}
+}

@@ -1,3 +1,51 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:dea7119b5f96d738a912cf0cae83761cb49a40dc476b5e7a847568a00819eb08
-size 1594
+﻿// Copyright Alien Shores
+
+
+#include "Material/MaterialBlueprintLibrary.h"
+
+#include "Kismet/KismetMaterialLibrary.h"
+
+void UMaterialBlueprintLibrary::ReplaceMaterialsWithDynamicMaterials(UMeshComponent* Mesh, TArray<UMaterialInterface*>& OriginalMaterials, TArray<UMaterialInstanceDynamic*>& DynamicMaterials)
+{
+	OriginalMaterials.Append(Mesh->GetMaterials());
+	for (int Idx = 0; Idx < Mesh->GetNumMaterials(); Idx++)
+	{
+		UMaterialInterface* Material = Mesh->GetMaterial(Idx);
+		if (UMaterialInstanceDynamic* DynamicMaterialInstance = Cast<UMaterialInstanceDynamic>(Material))
+		{
+			DynamicMaterials.Add(DynamicMaterialInstance);
+		}
+		else
+		{
+			DynamicMaterials.Add(
+				UKismetMaterialLibrary::CreateDynamicMaterialInstance(
+					Mesh,
+					Material
+				)
+			);
+		}
+		Mesh->SetMaterial(Idx, DynamicMaterials[Idx]);
+	}
+}
+
+void UMaterialBlueprintLibrary::SetScalarParameterOnDynamicMaterials(UMeshComponent* Mesh, const FName Parameter, const float Value)
+{
+	for (UMaterialInterface* Material : Mesh->GetMaterials())
+	{
+		if (UMaterialInstanceDynamic* DynamicMaterialInstance = Cast<UMaterialInstanceDynamic>(Material))
+		{
+			DynamicMaterialInstance->SetScalarParameterValue(Parameter, Value);
+		}
+	}
+}
+
+void UMaterialBlueprintLibrary::SetBooleanParameterOnDynamicMaterials(UMeshComponent* Mesh, const FName Parameter, const bool Value)
+{
+	for (UMaterialInterface* Material : Mesh->GetMaterials())
+	{
+		if (UMaterialInstanceDynamic* DynamicMaterialInstance = Cast<UMaterialInstanceDynamic>(Material))
+		{
+			DynamicMaterialInstance->SetScalarParameterValue(Parameter, Value);
+		}
+	}
+}

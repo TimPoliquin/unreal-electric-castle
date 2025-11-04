@@ -1,3 +1,23 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:92901e139e11643f4fce066acbc047463e2e0eb541d1dab72845aad36d5206fe
-size 509
+﻿// Copyright Alien Shores
+
+
+#include "AbilitySystem/Data/LootTiers.h"
+
+TArray<FLootItem> ULootTiers::GetLootItems() const
+{
+	TArray<FLootItem> Items;
+	for (const FLootItem& LootItem : LootItems)
+	{
+		for (int32 i = 0; i < LootItem.MaxNumberToSpawn; i++)
+		{
+			if (FMath::FRandRange(0, 100.f) < LootItem.ChanceToSpawn)
+			{
+				FLootItem NewItem;
+				NewItem.LootClass = LootItem.LootClass;
+				NewItem.bLootLevelOverride = LootItem.bLootLevelOverride;
+				Items.Add(NewItem);
+			}
+		}
+	}
+	return Items;
+}

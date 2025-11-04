@@ -1,3 +1,33 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:57a47ac9a6ec7178f8d0702db3d0c359b1783d31c1b7cf8827471058e6b5a3ba
-size 1216
+﻿// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "SaveGameTypes.h"
+#include "Kismet/BlueprintFunctionLibrary.h"
+#include "SaveGameBlueprintFunctionLibrary.generated.h"
+
+/**
+ * 
+ */
+UCLASS()
+class ELECTRICCASTLE_API USaveGameBlueprintFunctionLibrary : public UBlueprintFunctionLibrary
+{
+	GENERATED_BODY()
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "AuraSaveGameBlueprintFunctionLibrary|WorldData")
+	static void AddActorData(const FActorSaveData& ActorData, FWorldSaveData& WorldSaveData);
+
+	UFUNCTION(BlueprintCallable, Category = "AuraSaveGameBlueprintFunctionLibrary|WorldData")
+	static bool RemoveActorData(const FString& ActorName, FWorldSaveData& WorldSaveData);
+
+	UFUNCTION(BlueprintCallable, Category = "AuraSaveGameBlueprintFunctionLibrary|WorldData")
+	static bool FindActorData(const FString& ActorName, const FWorldSaveData& WorldSaveData, FActorSaveData& ActorSaveData);
+
+	UFUNCTION(BlueprintCallable, Category = "AuraSaveGameBlueprintFunctionLibrary|WorldData")
+	static int32 GetActorCount(FWorldSaveData& WorldSaveData);
+
+	UFUNCTION(BlueprintCallable, Category = "AuraSaveGameBlueprintFunctionLibrary|SaveId")
+	static FString GenerateSaveID(const UObject* Object);
+};

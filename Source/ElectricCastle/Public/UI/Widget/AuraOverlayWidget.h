@@ -1,3 +1,30 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:72dbf8f80422dd7d297fb3eadc5ec180fa00aab48efa346c3b98c0558053e8c3
-size 673
+﻿// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "AuraUserWidget.h"
+#include "AuraOverlayWidget.generated.h"
+
+
+enum class EAuraMenuTab : uint8;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOverlayOpenMenuSignature, const EAuraMenuTab&, OpenTab);
+
+/**
+ * 
+ */
+UCLASS()
+class ELECTRICCASTLE_API UAuraOverlayWidget : public UAuraUserWidget
+{
+	GENERATED_BODY()
+
+public:
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
+	void Show();
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
+	void Hide();
+
+	UFUNCTION(BlueprintCallable)
+	void RequestOpenMenu(const EAuraMenuTab OpenTab);
+	FOverlayOpenMenuSignature OnOpenMenuDelegate;
+};

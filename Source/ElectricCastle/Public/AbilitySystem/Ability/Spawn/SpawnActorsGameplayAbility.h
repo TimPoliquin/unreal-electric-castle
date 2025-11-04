@@ -1,3 +1,43 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:01df3f073da4587d813e43e85db2844346feaa5f1c12abb2615989ac04c369d3
-size 1138
+// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "AbilitySystem/Ability/ElectricCastleGameplayAbility.h"
+#include "SpawnActorsGameplayAbility.generated.h"
+
+/**
+ * 
+ */
+UCLASS()
+class ELECTRICCASTLE_API USpawnActorsGameplayAbility : public UElectricCastleGameplayAbility
+{
+	GENERATED_BODY()
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "AuraSummonAbility")
+	TArray<FVector> GetSpawnLocations() const;
+	UFUNCTION(BlueprintCallable, Category = "Summoning")
+	TSubclassOf<APawn> GetRandomSpawnClass() const;
+
+
+	UPROPERTY(EditDefaultsOnly, Category="Summoning")
+	int32 NumToSpawn = 5;
+	UPROPERTY(EditDefaultsOnly, Category="Summoning")
+	TArray<TSubclassOf<APawn>> SpawnClasses;
+	UPROPERTY(EditDefaultsOnly, Category="Summoning")
+	float MinSpawnRadius = 75.f;
+	UPROPERTY(EditDefaultsOnly, Category="Summoning")
+	float MaxSpawnRadius = 300.f;
+	UPROPERTY(EditDefaultsOnly, Category="Summoning")
+	float SpawnSpread = 120.f;
+	UPROPERTY(EditDefaultsOnly, Category="Debug")
+	bool bShowDebug;
+
+private:
+	void DrawDebugRange(
+		const FVector& Location,
+		const FVector& Direction,
+		const FVector& LeftExtent
+	) const;
+};

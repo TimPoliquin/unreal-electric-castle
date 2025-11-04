@@ -1,3 +1,18 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:0f3bb19763107257a9ef7dd519e3c422ca7ba9d4f39b1c503f00209a26e879ba
-size 472
+﻿#pragma once
+#include "EquipmentTypes.h"
+#include "GameplayTagContainer.h"
+
+#include "EquipmentEvents.generated.h"
+
+USTRUCT(BlueprintType)
+struct FEquipmentDelegatePayload
+{
+	GENERATED_BODY()
+	UPROPERTY(BlueprintReadWrite)
+	EEquipmentSlot EquipmentSlot = EEquipmentSlot::None;
+	UPROPERTY(BlueprintReadWrite)
+	FGameplayTag EquipmentTag;
+};
+
+UDELEGATE()
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEquipmentDelegateSignature, const FEquipmentDelegatePayload&, Payload);
