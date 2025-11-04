@@ -1,3 +1,32 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:d896d35dcc3303892f2999dd82b6ff75556b16cb4c0dac0f8c981bdfe89ed7b2
-size 850
+﻿// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
+#include "NiagaraComponent.h"
+#include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
+#include "PassiveNiagaraComponent.generated.h"
+
+
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+class ELECTRICCASTLE_API UPassiveNiagaraComponent : public UNiagaraComponent
+{
+	GENERATED_BODY()
+
+public:
+	// Sets default values for this component's properties
+	UPassiveNiagaraComponent();
+
+	UPROPERTY(EditDefaultsOnly)
+	FGameplayTag PassiveSpellTag;
+
+protected:
+	// Called when the game starts
+	virtual void BeginPlay() override;
+
+private:
+	UFUNCTION()
+	void OnPassiveActivate(const FGameplayTag& AbilityTag, const bool bActivate);
+	void ActivateIfAbilityIsAlreadyActive(UElectricCastleAbilitySystemComponent* AbilitySystemComponent);
+};

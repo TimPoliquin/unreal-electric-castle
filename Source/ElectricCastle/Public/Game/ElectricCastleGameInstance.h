@@ -1,3 +1,33 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:1df3a45acd7c88e0ca15bb08cd0f44c2a502198d117ea9c89c5b33543b5c86a5
-size 991
+﻿// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Engine/GameInstance.h"
+#include "ElectricCastleGameInstance.generated.h"
+
+class USaveGameManager;
+class UElectricCastleAIDirectorGameInstanceSubsystem;
+class UElectricCastleGameDataSubsystem;
+class UElectricCastleLevelManager;
+/**
+ * 
+ */
+UCLASS()
+class ELECTRICCASTLE_API UElectricCastleGameInstance : public UGameInstance
+{
+	GENERATED_BODY()
+
+public:
+	static UElectricCastleGameInstance* Get(const UObject* WorldContextObject);
+
+protected:
+	UPROPERTY(EditDefaultsOnly, Category="Subsystem")
+	TSubclassOf<UElectricCastleAIDirectorGameInstanceSubsystem> AIDirectorSubsystem;
+	UPROPERTY(EditDefaultsOnly, Category = "Subsystem")
+	TSubclassOf<UElectricCastleGameDataSubsystem> CharacterSubsystem;
+	UPROPERTY(EditDefaultsOnly, Category = "Subsystem")
+	TSubclassOf<UElectricCastleLevelManager> LevelSubsystem;
+	UPROPERTY(EditDefaultsOnly, Category = "Subsystem")
+	TSubclassOf<USaveGameManager> SaveGameSubsystem;
+};

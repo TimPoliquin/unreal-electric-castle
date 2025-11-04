@@ -1,3 +1,14 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:1d174d0e120c4d1abfdc6e8b21bf760f70adced66e20337acb1326b7be59b5d7
-size 346
+﻿// Copyright Alien Shores
+
+
+#include "Item/Pickup/TieredItemInterface.h"
+
+
+// Add default functionality here for any ITieredItemInterface functions that are not pure virtual.
+void ITieredItemInterface::SetItemLevel(UObject* Object, int32 Level)
+{
+	if (Object->Implements<UTieredItemInterface>())
+	{
+		Execute_SetItemLevel(Object, Level);
+	}
+}

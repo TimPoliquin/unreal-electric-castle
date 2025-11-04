@@ -1,3 +1,16 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:c7a1ef1a7b8d33a8fcd9ec70d8f73c9738eebd7b1b8583b6e488f47d906928bf
-size 515
+﻿// Copyright Alien Shores
+
+
+#include "FishingSuccessWidgetInterface.h"
+
+#include "Fishing/FishCatch.h"
+
+
+// Add default functionality here for any IFishingSuccessWidgetInterface functions that are not pure virtual.
+void IFishingSuccessWidgetInterface::SetFishingCatchInfo(UObject* FishingSuccessWidget, const UFishCatch* FishCatch)
+{
+	if (IsValid(FishingSuccessWidget) && FishingSuccessWidget->Implements<UFishingSuccessWidgetInterface>())
+	{
+		Execute_SetFishingCatchInfo(FishingSuccessWidget, FishCatch);
+	}
+}

@@ -1,3 +1,24 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:9a50473379c7deca5f8a88a284e7a34fd4005c0db3c737cee9b1460e98cc7e28
-size 563
+// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "AbilitySystem/Ability/Passive/PassiveGameplayAbility.h"
+#include "HaloOfProtectionGameplayAbility.generated.h"
+
+/**
+ * 
+ */
+UCLASS()
+class ELECTRICCASTLE_API UHaloOfProtectionGameplayAbility : public UPassiveGameplayAbility
+{
+	GENERATED_BODY()
+
+public:
+	virtual FString GetDescription_Implementation(const int32 AbilityLevel) const override;
+	float GetProtectionAtLevel(int32 Level) const;
+
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FScalableFloat ProtectionConfig;
+};

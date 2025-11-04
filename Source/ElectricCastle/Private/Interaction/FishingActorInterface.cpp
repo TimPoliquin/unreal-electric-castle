@@ -1,3 +1,15 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:2dc9206baf30a42ae8871a209e33baeb7084b3cc0724f2e4cf2d184e8914e299
-size 407
+﻿// Copyright Alien Shores
+
+
+#include "Interaction/FishingActorInterface.h"
+
+
+// Add default functionality here for any IFishingActorInterface functions that are not pure virtual.
+UFishingComponent* IFishingActorInterface::GetFishingComponent(const UObject* Actor)
+{
+	if (IsValid(Actor) && Actor->Implements<UFishingActorInterface>())
+	{
+		return Execute_GetFishingComponent(Actor);
+	}
+	return nullptr;
+}

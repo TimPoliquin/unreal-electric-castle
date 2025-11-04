@@ -1,3 +1,29 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:38062f8f44cb12c5f56fb49b79c170a5a27323027e910c15895013c24e38ea6f
-size 622
+﻿// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "AbilitySystem/AbilityTask/WaitTick.h"
+
+UWaitTick::UWaitTick(const FObjectInitializer& ObjectInitializer)
+{
+	bTickingTask = true;
+}
+
+UWaitTick* UWaitTick::WaitTick(UGameplayAbility* OwningAbility, FName TaskInstanceName)
+{
+	UWaitTick* MyObj = NewAbilityTask<UWaitTick>(OwningAbility, TaskInstanceName);
+	return MyObj;
+}
+
+void UWaitTick::Activate()
+{
+	Super::Activate();
+}
+
+void UWaitTick::TickTask(float DeltaTime)
+{
+	Super::TickTask(DeltaTime);
+	if (ShouldBroadcastAbilityTaskDelegates())
+	{
+		OnTick.Broadcast(DeltaTime);
+	}
+}

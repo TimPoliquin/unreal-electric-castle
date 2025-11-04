@@ -1,3 +1,30 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:8349f6c70c0185a767a0947805a0f7af01545b35a343f36bd1b757377f9c37fa
-size 698
+﻿// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "UObject/Object.h"
+#include "ElectricCastleLevelTransition.generated.h"
+
+struct FAuraLevelTransitionParams;
+DECLARE_MULTICAST_DELEGATE_OneParam(FAuraLevelTransitionCompleteSignature, UWorld* World);
+
+/**
+ * 
+ */
+UCLASS()
+class ELECTRICCASTLE_API UElectricCastleLevelTransition : public UObject
+{
+	GENERATED_BODY()
+
+public:
+	void Initialize(const FAuraLevelTransitionParams& Params);
+	FName GetDestinationPlayerStartTag() const;
+	FAuraLevelTransitionCompleteSignature OnComplete;
+
+private:
+	FString SaveSlot = FString("");
+	int32 SlotIndex = 0;
+	FName DestinationPlayerStartTag = NAME_None;
+	bool bShouldLoad = false;
+};

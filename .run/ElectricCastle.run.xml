@@ -1,0 +1,140 @@
+﻿<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="ElectricCastle" type="Uproject" factoryName="rider.uproject">
+    <configuration_1 setup="1">
+      <option name="CONFIGURATION" value="DebugGame Editor" />
+      <option name="PLATFORM" value="Win64" />
+      <option name="CURRENT_LAUNCH_PROFILE" value="Local" />
+      <option name="EXECUTABLE_PATH" value="$PROJECT_DIR$/../../tools/unreal-engine/UE_5.6/Engine/Binaries/Win64/UnrealEditor-Win64-DebugGame.exe" />
+      <option name="MANDATORY_PROGRAM_PARAMETERS" value=" &quot;D:\git\unreal-electric-castle\ElectricCastle.uproject&quot;" />
+      <option name="CUSTOM_PROGRAM_PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="D:\tools\unreal-engine\UE_5.6" />
+      <option name="PASS_PARENT_ENVS" value="1" />
+      <option name="USE_EXTERNAL_CONSOLE" value="1" />
+      <option name="TERMINAL_INTERACTION_BEHAVIOR" value="FORCE_CONSOLE" />
+      <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/ElectricCastle.uproject" />
+    </configuration_1>
+    <configuration_2 setup="1">
+      <option name="CONFIGURATION" value="DebugGame" />
+      <option name="PLATFORM" value="Win64" />
+      <option name="CURRENT_LAUNCH_PROFILE" value="Local" />
+      <option name="EXECUTABLE_PATH" value="$PROJECT_DIR$/Binaries/Win64/ElectricCastle-Win64-DebugGame.exe" />
+      <option name="MANDATORY_PROGRAM_PARAMETERS" value="" />
+      <option name="CUSTOM_PROGRAM_PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="D:\tools\unreal-engine\UE_5.6" />
+      <option name="PASS_PARENT_ENVS" value="1" />
+      <option name="USE_EXTERNAL_CONSOLE" value="1" />
+      <option name="TERMINAL_INTERACTION_BEHAVIOR" value="FORCE_CONSOLE" />
+      <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/ElectricCastle.uproject" />
+    </configuration_2>
+    <configuration_3 setup="1">
+      <option name="CONFIGURATION" value="Development Editor" />
+      <option name="PLATFORM" value="Win64" />
+      <option name="CURRENT_LAUNCH_PROFILE" value="Local" />
+      <option name="EXECUTABLE_PATH" value="$PROJECT_DIR$/../../tools/unreal-engine/UE_5.6/Engine/Binaries/Win64/UnrealEditor.exe" />
+      <option name="MANDATORY_PROGRAM_PARAMETERS" value=" &quot;D:\git\unreal-electric-castle\ElectricCastle.uproject&quot;" />
+      <option name="CUSTOM_PROGRAM_PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="D:\tools\unreal-engine\UE_5.6" />
+      <option name="PASS_PARENT_ENVS" value="1" />
+      <option name="USE_EXTERNAL_CONSOLE" value="1" />
+      <option name="TERMINAL_INTERACTION_BEHAVIOR" value="FORCE_CONSOLE" />
+      <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/ElectricCastle.uproject" />
+    </configuration_3>
+    <configuration_4 setup="1">
+      <option name="CONFIGURATION" value="Development" />
+      <option name="PLATFORM" value="Win64" />
+      <option name="CURRENT_LAUNCH_PROFILE" value="Local" />
+      <option name="EXECUTABLE_PATH" value="$PROJECT_DIR$/Binaries/Win64/ElectricCastle.exe" />
+      <option name="MANDATORY_PROGRAM_PARAMETERS" value="" />
+      <option name="CUSTOM_PROGRAM_PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="D:\tools\unreal-engine\UE_5.6" />
+      <option name="PASS_PARENT_ENVS" value="1" />
+      <option name="USE_EXTERNAL_CONSOLE" value="1" />
+      <option name="TERMINAL_INTERACTION_BEHAVIOR" value="FORCE_CONSOLE" />
+      <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/ElectricCastle.uproject" />
+    </configuration_4>
+    <configuration_5 setup="1">
+      <option name="CONFIGURATION" value="Shipping" />
+      <option name="PLATFORM" value="Win64" />
+      <option name="CURRENT_LAUNCH_PROFILE" value="Local" />
+      <option name="EXECUTABLE_PATH" value="$PROJECT_DIR$/Binaries/Win64/ElectricCastle-Win64-Shipping.exe" />
+      <option name="MANDATORY_PROGRAM_PARAMETERS" value="" />
+      <option name="CUSTOM_PROGRAM_PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="D:\tools\unreal-engine\UE_5.6" />
+      <option name="PASS_PARENT_ENVS" value="1" />
+      <option name="USE_EXTERNAL_CONSOLE" value="1" />
+      <option name="TERMINAL_INTERACTION_BEHAVIOR" value="FORCE_CONSOLE" />
+      <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/ElectricCastle.uproject" />
+    </configuration_5>
+    <configuration_6 setup="1">
+      <option name="CONFIGURATION" value="DebugGame Editor" />
+      <option name="PLATFORM" value="Mac" />
+      <option name="CURRENT_LAUNCH_PROFILE" value="Local" />
+      <option name="EXECUTABLE_PATH" value="$PROJECT_DIR$/../../Unreal Engine/UE_5.6/Engine/Binaries/Mac/UnrealEditor-Mac-DebugGame.app/Contents/MacOS/UnrealEditor-Mac-DebugGame" />
+      <option name="MANDATORY_PROGRAM_PARAMETERS" value=" &quot;$PROJECT_DIR$/ElectricCastle.uproject&quot;" />
+      <option name="CUSTOM_PROGRAM_PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../../Unreal Engine/UE_5.6" />
+      <option name="PASS_PARENT_ENVS" value="1" />
+      <option name="USE_EXTERNAL_CONSOLE" value="0" />
+      <option name="TERMINAL_INTERACTION_BEHAVIOR" value="FORCE_CONSOLE" />
+      <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/ElectricCastle.uproject" />
+    </configuration_6>
+    <configuration_7 setup="1">
+      <option name="CONFIGURATION" value="DebugGame" />
+      <option name="PLATFORM" value="Mac" />
+      <option name="CURRENT_LAUNCH_PROFILE" value="Local" />
+      <option name="EXECUTABLE_PATH" value="$PROJECT_DIR$/Binaries/Mac/ElectricCastle-Mac-DebugGame.app/Contents/MacOS/ElectricCastle-Mac-DebugGame" />
+      <option name="MANDATORY_PROGRAM_PARAMETERS" value="" />
+      <option name="CUSTOM_PROGRAM_PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../../Unreal Engine/UE_5.6" />
+      <option name="PASS_PARENT_ENVS" value="1" />
+      <option name="USE_EXTERNAL_CONSOLE" value="0" />
+      <option name="TERMINAL_INTERACTION_BEHAVIOR" value="FORCE_CONSOLE" />
+      <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/ElectricCastle.uproject" />
+    </configuration_7>
+    <configuration_8 setup="1">
+      <option name="CONFIGURATION" value="Development Editor" />
+      <option name="PLATFORM" value="Mac" />
+      <option name="CURRENT_LAUNCH_PROFILE" value="Local" />
+      <option name="EXECUTABLE_PATH" value="$PROJECT_DIR$/../../Unreal Engine/UE_5.6/Engine/Binaries/Mac/UnrealEditor.app/Contents/MacOS/UnrealEditor" />
+      <option name="MANDATORY_PROGRAM_PARAMETERS" value=" &quot;$PROJECT_DIR$/ElectricCastle.uproject&quot;" />
+      <option name="CUSTOM_PROGRAM_PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../../Unreal Engine/UE_5.6" />
+      <option name="PASS_PARENT_ENVS" value="1" />
+      <option name="USE_EXTERNAL_CONSOLE" value="0" />
+      <option name="TERMINAL_INTERACTION_BEHAVIOR" value="FORCE_CONSOLE" />
+      <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/ElectricCastle.uproject" />
+    </configuration_8>
+    <configuration_9 setup="1">
+      <option name="CONFIGURATION" value="Development" />
+      <option name="PLATFORM" value="Mac" />
+      <option name="CURRENT_LAUNCH_PROFILE" value="Local" />
+      <option name="EXECUTABLE_PATH" value="$PROJECT_DIR$/Binaries/Mac/ElectricCastle.app/Contents/MacOS/ElectricCastle" />
+      <option name="MANDATORY_PROGRAM_PARAMETERS" value="" />
+      <option name="CUSTOM_PROGRAM_PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../../Unreal Engine/UE_5.6" />
+      <option name="PASS_PARENT_ENVS" value="1" />
+      <option name="USE_EXTERNAL_CONSOLE" value="0" />
+      <option name="TERMINAL_INTERACTION_BEHAVIOR" value="FORCE_CONSOLE" />
+      <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/ElectricCastle.uproject" />
+    </configuration_9>
+    <configuration_10 setup="1">
+      <option name="CONFIGURATION" value="Shipping" />
+      <option name="PLATFORM" value="Mac" />
+      <option name="CURRENT_LAUNCH_PROFILE" value="Local" />
+      <option name="EXECUTABLE_PATH" value="$PROJECT_DIR$/Binaries/Mac/ElectricCastle-Mac-Shipping.app/Contents/MacOS/ElectricCastle-Mac-Shipping" />
+      <option name="MANDATORY_PROGRAM_PARAMETERS" value="" />
+      <option name="CUSTOM_PROGRAM_PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../../Unreal Engine/UE_5.6" />
+      <option name="PASS_PARENT_ENVS" value="1" />
+      <option name="USE_EXTERNAL_CONSOLE" value="0" />
+      <option name="TERMINAL_INTERACTION_BEHAVIOR" value="FORCE_CONSOLE" />
+      <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/ElectricCastle.uproject" />
+    </configuration_10>
+    <option name="DEFAULT_PROJECT_PATH" value="$PROJECT_DIR$/ElectricCastle.uproject" />
+    <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/ElectricCastle.uproject" />
+    <option name="AUTO_SELECT_PRIORITY" value="10010" />
+    <method v="2">
+      <option name="Build" />
+    </method>
+  </configuration>
+</component>

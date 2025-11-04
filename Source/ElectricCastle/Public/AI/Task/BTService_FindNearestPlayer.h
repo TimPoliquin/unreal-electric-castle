@@ -1,3 +1,26 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:c60ff554c00b032f531d5a4fbffa44d04b930fa9c7c1963086a2687f61208c9a
-size 672
+﻿// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "BehaviorTree/BTService.h"
+#include "BTService_FindNearestPlayer.generated.h"
+
+/**
+ * 
+ */
+UCLASS()
+class ELECTRICCASTLE_API UBTService_FindNearestPlayer : public UBTService
+{
+	GENERATED_BODY()
+
+public:
+	UBTService_FindNearestPlayer();
+	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Selectors")
+	FBlackboardKeySelector TargetToFollowSelector;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Selectors")
+	FBlackboardKeySelector DistanceToTargetSelector;
+};

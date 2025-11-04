@@ -1,3 +1,36 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:1517a9d7a3ffac5f008b5aa896379ea8ef7ecf9ff37d842d32b2f398e6bdafb9
-size 882
+// Copyright Alien Shores
+
+
+#include "Interaction/HighlightInterface.h"
+
+
+// Add default functionality here for any IIHighlightInterface functions that are not pure virtual.
+void IHighlightInterface::HighlightActor(UObject* Actor)
+{
+	if (IsValid(Actor) && Actor->Implements<UHighlightInterface>())
+	{
+		Execute_HighlightActor(Actor);
+	}
+}
+
+void IHighlightInterface::UnHighlightActor(UObject* Actor)
+{
+	if (IsValid(Actor) && Actor->Implements<UHighlightInterface>())
+	{
+		Execute_UnHighlightActor(Actor);
+	}
+}
+
+bool IHighlightInterface::IsHighlightActor(const UObject* Actor)
+{
+	return IsValid(Actor) && Actor->Implements<UHighlightInterface>();
+}
+
+bool IHighlightInterface::SetMoveToLocation(UObject* Actor, FVector& OutDestination)
+{
+	if (IsValid(Actor) && Actor->Implements<UHighlightInterface>())
+	{
+		return Execute_SetMoveToLocation(Actor, OutDestination);
+	}
+	return false;
+}
