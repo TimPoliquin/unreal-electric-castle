@@ -1,3 +1,20 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:9ac9bc13ffcf5f3d94d4701cd9e4194e7fdee26e8dd787f5b216fb78b73e863c
-size 532
+﻿// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "BehaviorTree/BTDecorator.h"
+#include "BTDecorator_InsideProcessingRange.generated.h"
+
+/**
+ * 
+ */
+UCLASS()
+class ELECTRICCASTLE_API UBTDecorator_InsideProcessingRange : public UBTDecorator
+{
+	GENERATED_BODY()
+protected:
+	virtual bool CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const override;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Selectors")
+	FBlackboardKeySelector DistanceToTargetSelector;
+};

@@ -1,3 +1,19 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:d85f0585d569ae50317b12fc28e640d485665943747d92962b88cf906803e0ce
-size 409
+﻿// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "BeamGameplayAbility.h"
+#include "ElectrocuteBeamGameplayAbility.generated.h"
+
+/**
+ * 
+ */
+UCLASS(Abstract, Blueprintable)
+class ELECTRICCASTLE_API UElectrocuteBeamGameplayAbility : public UBeamGameplayAbility
+{
+	GENERATED_BODY()
+
+public:
+	virtual FString GetDescription_Implementation(const int32 AbilityLevel) const override;
+};

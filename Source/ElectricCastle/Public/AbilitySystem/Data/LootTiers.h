@@ -1,3 +1,38 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:e05aa71b357ac40bc8f5fb2915853e573febe6b5d187836ef5de3a3923e0b027
-size 907
+﻿// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "UObject/Object.h"
+#include "LootTiers.generated.h"
+
+USTRUCT(BlueprintType)
+struct FLootItem
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "LootTiers|Spawning")
+	TSubclassOf<AActor> LootClass;
+	UPROPERTY(EditAnywhere, Category = "LootTiers|Spawning")
+	float ChanceToSpawn = 0.f;
+	UPROPERTY(EditAnywhere, Category = "LootTiers|Spawning")
+	int32 MaxNumberToSpawn = 1;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "LootTiers|Spawning")
+	bool bLootLevelOverride = true;
+};
+
+/**
+ * 
+ */
+UCLASS(BlueprintType)
+class ELECTRICCASTLE_API ULootTiers : public UDataAsset
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditDefaultsOnly, Category = "LootTiers|Spawning")
+	TArray<FLootItem> LootItems;
+
+	UFUNCTION(BlueprintCallable, Category = "LootTiers|Spawning")
+	TArray<FLootItem> GetLootItems() const;
+};

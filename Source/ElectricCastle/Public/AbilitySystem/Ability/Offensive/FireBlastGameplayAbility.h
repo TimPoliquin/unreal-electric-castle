@@ -1,3 +1,32 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:f416559af4ed2f219ab02ebb418e023bcb3553c10b5afbbb2b0a02dc9effadaf
-size 833
+﻿// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "DamageGameplayAbility.h"
+#include "FireBlastGameplayAbility.generated.h"
+
+class AFireballProjectile;
+/**
+ * 
+ */
+UCLASS(Abstract, Blueprintable)
+class ELECTRICCASTLE_API UFireBlastGameplayAbility : public UDamageGameplayAbility
+{
+	GENERATED_BODY()
+
+public:
+	virtual FString GetDescription_Implementation(const int32 AbilityLevel) const override;
+	UFUNCTION(BlueprintCallable, Category = "FireBlast")
+	TArray<AFireballProjectile*> SpawnFireballs();
+
+protected:
+	UPROPERTY(EditDefaultsOnly, Category="FireBlast")
+	int32 NumFireballs = 12;
+
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "FireBlast")
+	TSubclassOf<AFireballProjectile> FireballClass;
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	FElectricCastleDamageConfig ExplosionDamageConfig;
+};

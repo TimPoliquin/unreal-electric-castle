@@ -1,3 +1,25 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:fc3ef4fdc21a9a4c56d847be083cda248df812d91b92876148124fc0ed76eb73
-size 549
+﻿// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "EnemySpawnConfig.h"
+#include "Engine/TargetPoint.h"
+#include "EnemySpawnPoint.generated.h"
+
+class AElectricCastleEnemyCharacter;
+
+UCLASS()
+class ELECTRICCASTLE_API AEnemySpawnPoint : public ATargetPoint
+{
+	GENERATED_BODY()
+
+public:
+	AEnemySpawnPoint();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemey Class")
+	FEnemySpawnConfig SpawnConfig;
+
+	UFUNCTION(BlueprintCallable, Category = "Enemey Class")
+	AElectricCastleEnemyCharacter* SpawnEnemy() const;
+};

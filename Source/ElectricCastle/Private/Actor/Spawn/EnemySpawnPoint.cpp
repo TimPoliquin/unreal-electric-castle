@@ -1,3 +1,21 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:bc3fafbb54056f43727650d5a1df9b8053d7c523653f5232085a4142c77c043d
-size 490
+﻿// Copyright Alien Shores
+
+
+#include "Actor/Spawn/EnemySpawnPoint.h"
+
+#include "ElectricCastle/ElectricCastleLogChannels.h"
+
+AEnemySpawnPoint::AEnemySpawnPoint()
+{
+	PrimaryActorTick.bCanEverTick = false;
+}
+
+AElectricCastleEnemyCharacter* AEnemySpawnPoint::SpawnEnemy() const
+{
+	AElectricCastleEnemyCharacter* Enemy = SpawnConfig.Spawn(this);
+	if (!Enemy)
+	{
+		UE_LOG(LogElectricCastle, Warning, TEXT("[%s] Failed to spawn enemy - check configuration!"), *GetName());
+	}
+	return Enemy;
+}

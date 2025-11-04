@@ -1,3 +1,27 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:a938c653ac5435e13ad226356619373ba1a3fc3903e7b22becf772b410ad59b5
-size 703
+﻿#include "Game/Save/SaveGameTypes.h"
+
+FActorSaveData FGlobalSaveData::GetPlayerSaveData(const AElectricCastlePlayerState* PlayerState)
+{
+	FActorSaveData* Match = PlayerSaveData.FindByPredicate([PlayerState](const FActorSaveData& SaveData)
+	{
+		return SaveData.IsValid() && SaveData.ActorName.Equals(PlayerState->GetName());
+	});
+	if (Match)
+	{
+		return *Match;
+	}
+	return FActorSaveData();
+}
+
+void FGlobalSaveData::AddPlayerSaveData(const FActorSaveData& ActorSaveData)
+{
+	for (int32 Idx = 0; Idx < PlayerSaveData.Num(); Idx++)
+	{
+		if (PlayerSaveData[Idx].ActorName.Equals(ActorSaveData.ActorName))
+		{
+			PlayerSaveData[Idx] = ActorSaveData;
+			return;
+		}
+	}
+	PlayerSaveData.Add(ActorSaveData);
+}

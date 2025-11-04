@@ -1,3 +1,22 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:e8be9c63391ee5a2182f5c9476ad201567a0e1d602b321210b2ac298d20677aa
-size 412
+// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Engine/AssetManager.h"
+#include "ElectricCastleAssetManager.generated.h"
+
+/**
+ * Configured in DefaultEngine.ini
+ */
+UCLASS()
+class ELECTRICCASTLE_API UElectricCastleAssetManager : public UAssetManager
+{
+	GENERATED_BODY()
+
+public:
+	static UElectricCastleAssetManager& Get();
+
+protected:
+	virtual void StartInitialLoading() override;
+};

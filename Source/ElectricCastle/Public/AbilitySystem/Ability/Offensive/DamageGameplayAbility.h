@@ -1,3 +1,110 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:b64c7d0cff7fdcfd22c11d4d43f0c8df5d4bb22a955afce9f9d3430f2a21f88e
-size 3521
+// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "AbilitySystem/Ability/ElectricCastleGameplayAbility.h"
+#include "AbilitySystem/ElectricCastleAbilitySystemTypes.h"
+#include "DamageGameplayAbility.generated.h"
+
+struct FTaggedMontage;
+
+/**
+ * 
+ */
+UCLASS(Abstract, Blueprintable)
+class ELECTRICCASTLE_API UDamageGameplayAbility : public UElectricCastleGameplayAbility
+{
+	GENERATED_BODY()
+
+public:
+	virtual void ActivateAbility(
+		const FGameplayAbilitySpecHandle Handle,
+		const FGameplayAbilityActorInfo* ActorInfo,
+		const FGameplayAbilityActivationInfo ActivationInfo,
+		const FGameplayEventData* TriggerEventData
+	) override;
+	virtual void EndAbility(
+		const FGameplayAbilitySpecHandle Handle,
+		const FGameplayAbilityActorInfo* ActorInfo,
+		const FGameplayAbilityActivationInfo ActivationInfo,
+		bool bReplicateEndAbility,
+		bool bWasCancelled
+	) override;
+
+	UFUNCTION(BlueprintCallable)
+	void DealDamage(AActor* TargetActor);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void DamageTargets(const TArray<AActor*>& Targets, const FVector& ImpactLocation, const FGameplayTag& MontageTag);
+
+
+	UFUNCTION(BlueprintCallable)
+	FTaggedMontage GetRandomAttackMontage() const;
+
+	UFUNCTION(BlueprintPure)
+	FDamageEffectParams MakeDamageEffectParamsFromClassDefaults(
+		AActor* TargetActor = nullptr,
+		FVector RadialDamageOrigin = FVector::ZeroVector,
+		bool bOverrideKnockbackDirection = false,
+		FVector InKnockbackDirectionOverride = FVector::ZeroVector,
+		bool bOverrideDeathImpulse = false,
+		FVector InDeathImpulseDirectionOverride = FVector::ZeroVector,
+		bool bOverridePitch = false,
+		float PitchOverride = 0.f
+	) const;
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void FaceTarget();
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FVector GetFaceTargetLocation() const;
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FGameplayCueParameters MakeGameplayCueParamsFromMontageTag(
+		const FGameplayTag& MontageTag,
+		const FVector& ImpactLocation
+	) const;
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FGameplayCueParameters MakeDefaultGameplayCueParams(const FVector& ImpactLocation) const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FVector GetMontageDamageLocation(const FGameplayTag& MontageTag) const;
+
+	UFUNCTION(BlueprintCallable)
+	FVector GetTargetsAtImpact(
+		const FGameplayTag& MontageTag,
+		float ImpactRadius,
+		TArray<AActor*>& OutTargets,
+		bool bDebug = false
+	) const;
+	UFUNCTION(BlueprintCallable)
+	void GetTargetsAtImpactLocation(
+		const FVector& ImpactLocation,
+		float ImpactRadius,
+		TArray<AActor*>& OutTargets,
+		bool bDebug = false
+	) const;
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	void GetTargetsInAttackRange(
+		const FVector& AttackStart,
+		const FVector& AttackEnd,
+		float ImpactRadius,
+		TArray<AActor*>& OutTargets,
+		bool bDebug = false
+	) const;
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
+	TSubclassOf<UGameplayEffect> DamageEffectClass;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Damage")
+	FElectricCastleDamageConfig DamageConfig;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Damage", meta=(Categories="GameplayCue"))
+	FGameplayTag ImpactCueTag = FGameplayTag::EmptyTag;
+
+	int32 GetDamageAtLevel(const int32 AbilityLevel) const;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Configuration")
+	bool bAutoActivateAbilityTag = true;
+	UPROPERTY(EditDefaultsOnly, Category = "Configuration")
+	bool bAutoDeactivateAbilityTag = true;
+
+	FGameplayTag GetDefaultAbilityTag() const;
+};

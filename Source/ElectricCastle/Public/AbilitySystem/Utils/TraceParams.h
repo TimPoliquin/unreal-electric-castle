@@ -1,3 +1,28 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:6580f944b35471f3f3799a1873366b0d29dc5c4a19442d79aca6e4384de04274
-size 713
+﻿// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "TraceParams.generated.h"
+
+USTRUCT(BlueprintType)
+struct ELECTRICCASTLE_API FLineTraceParams
+{
+	GENERATED_BODY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float TraceDistance = 5000.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TEnumAsByte<ECollisionChannel> TraceChannel = ECC_Pawn;
+};
+
+USTRUCT(BlueprintType)
+struct ELECTRICCASTLE_API FSphereTraceParams
+{
+	GENERATED_BODY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float TraceDistance = 5000.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float TraceRadius = 1.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TEnumAsByte<ECollisionChannel> TraceChannel = ECC_Pawn;
+};

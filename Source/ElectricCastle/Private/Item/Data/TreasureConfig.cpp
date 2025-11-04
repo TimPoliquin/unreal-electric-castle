@@ -1,3 +1,21 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:e0c22f0dd01c25dd683c0e4e14c0d23c503e114fd316c5832ce50d678a04fe4d
-size 648
+﻿// Copyright Alien Shores
+
+
+#include "Item/Data/TreasureConfig.h"
+
+#include "Utils/ArrayUtils.h"
+
+FTreasureConfigRow UTreasureConfig::GetTreasureConfig(const float Value, const bool Randomize) const
+{
+	FTreasureConfigRow Config = FTreasureConfigRow();
+	const FTreasureConfigOption* Option = TreasureConfigs.FindByPredicate([Value](const FTreasureConfigOption& Current)
+	{
+		return Value >= Current.Range.Min && Value < Current.Range.Max;
+	});
+	if (Option)
+	{
+		Config.Mesh = UArrayUtils::GetRandomElement(Option->Meshes).LoadSynchronous();
+		Config.Value = FMath::RoundHalfToEven(Randomize ? Option->Range.Value() : Value);
+	}
+	return Config;
+}

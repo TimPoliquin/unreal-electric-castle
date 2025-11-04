@@ -1,3 +1,31 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:d735a402afe30432ac81df3a021777529223dfa044f6f097250bce684c71c318
-size 688
+﻿// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Components/ActorComponent.h"
+#include "SpawnEventPayloadDefinitions.h"
+#include "ActorTrackerComponent.generated.h"
+
+
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+class ELECTRICCASTLE_API UActorTrackerComponent : public UActorComponent
+{
+	GENERATED_BODY()
+
+public:
+	UActorTrackerComponent();
+
+	UFUNCTION(BlueprintCallable)
+	void Track(AActor* Actor);
+	UPROPERTY(BlueprintAssignable)
+	FOnAuraActorTrackerCountChangedDelegate OnCountChanged;
+
+protected:
+	UPROPERTY(VisibleInstanceOnly)
+	TArray<AActor*> Actors;
+
+private:
+	UFUNCTION()
+	void OnTrackedActorDestroyed(AActor* DestroyedActor);
+};

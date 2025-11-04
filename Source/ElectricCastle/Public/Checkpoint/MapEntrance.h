@@ -1,3 +1,32 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:96787cc329c124dc551308ba54c77042d023c31bcc87c54dd417fbd256811761
-size 686
+﻿// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Checkpoint.h"
+#include "MapEntrance.generated.h"
+
+UCLASS()
+class ELECTRICCASTLE_API AMapEntrance : public ACheckpoint
+{
+	GENERATED_BODY()
+
+public:
+	AMapEntrance(const FObjectInitializer& ObjectInitializer);
+
+protected:
+	virtual void BeginPlay() override;
+	UPROPERTY(EditAnywhere)
+	TSoftObjectPtr<UWorld> DestinationMap;
+	UPROPERTY(EditAnywhere)
+	FName DestinationPlayerStartTag;
+
+	virtual void OnSphereOverlap(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComponent,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult
+	) override;
+};

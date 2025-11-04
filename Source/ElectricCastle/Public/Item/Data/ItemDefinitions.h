@@ -1,3 +1,26 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:9bf7ba6ad672ace0806eef20db4f2b79f5b50cb1c8daf221dbdf35062ce5ab97
-size 575
+﻿// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
+#include "Engine/DataAsset.h"
+#include "Item/ItemTypes.h"
+#include "ItemDefinitions.generated.h"
+
+/**
+ * 
+ */
+UCLASS()
+class ELECTRICCASTLE_API UItemDefinitions : public UDataAsset
+{
+	GENERATED_BODY()
+
+public:
+	FItemDefinition FindItemByItemType(const FGameplayTag& ItemType) const;
+	void AddToMap(TMap<FGameplayTag, FItemDefinition>& ItemDefinitionMap) const;
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Item")
+	TArray<FItemDefinition> ItemInfo;
+};

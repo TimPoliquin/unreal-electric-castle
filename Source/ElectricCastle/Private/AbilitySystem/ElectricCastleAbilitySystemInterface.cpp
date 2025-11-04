@@ -1,3 +1,27 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:83a322bf8c0475938ab368f380a4ce81fb86994ae072b2183da2eaa94b894f48
-size 911
+﻿// Copyright Alien Shores
+
+
+#include "AbilitySystem/ElectricCastleAbilitySystemInterface.h"
+
+#include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
+#include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
+
+
+// Add default functionality here for any IElectricCastleAbilitySystemInterface functions that are not pure virtual.
+int32 IElectricCastleAbilitySystemInterface::GetCharacterLevel(const UObject* Character)
+{
+	if (IsValid(Character) && Character->Implements<UElectricCastleAbilitySystemInterface>())
+	{
+		return Execute_GetCharacterLevel(Character);
+	}
+	return -1;
+}
+
+bool IElectricCastleAbilitySystemInterface::IsAbilitySystemReady(AActor* Actor)
+{
+	if (const UElectricCastleAbilitySystemComponent* AbilitySystemComponent = UElectricCastleAbilitySystemLibrary::GetAbilitySystemComponent(Actor))
+	{
+		return AbilitySystemComponent->HasFiredOnAbilitiesGivenDelegate();
+	}
+	return false;
+}

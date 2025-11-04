@@ -1,3 +1,28 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:bec54482845bc6cbaa9f2423e433168b1a9a620305d591df033ce437178c5185
-size 559
+﻿// Copyright Alien Shores
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "UObject/Interface.h"
+#include "PanelInterface.generated.h"
+
+class USizeBox;
+// This class does not need to be modified.
+UINTERFACE()
+class UPanelInterface : public UInterface
+{
+	GENERATED_BODY()
+};
+
+/**
+ * 
+ */
+class ELECTRICCASTLE_API IPanelInterface
+{
+	GENERATED_BODY()
+
+	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
+public:
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	USizeBox* GetSizeBox() const;
+};
