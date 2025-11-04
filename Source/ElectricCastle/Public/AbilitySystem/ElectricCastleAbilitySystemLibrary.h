@@ -407,13 +407,21 @@ void UElectricCastleAbilitySystemLibrary::FilterHitOverlaps(
 	{
 		AActor* OverlapActor = Overlap.GetActor();
 		// skip actor if it has any of the tags in the ignore list
-		if (TagUtils::HasAnyTag(OverlapActor, TagsToIgnore))
+		if (!OverlapActor
+			|| !IsValid(OverlapActor)
+			|| OverlapActor->IsTemplate()
+			|| OverlapActor->GetClass()->HasAnyClassFlags(CLASS_Abstract)
+		)
 		{
 			continue;
 		}
-		if (ICombatInterface::IsAlive(Overlap.GetActor()))
+		if (!TagUtils::HasAnyTag(OverlapActor, TagsToIgnore))
 		{
-			OutOverlappingActors.AddUnique(OverlapActor);
+			continue;
+		}
+		if (!ICombatInterface::IsAlive(OverlapActor))
+		{
+			OutOverlappingActors.Add(OverlapActor);
 		}
 	}
 }

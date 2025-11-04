@@ -109,26 +109,10 @@ FVector AElectricCastleCharacter::GetCombatSocketLocation_Implementation(const F
 		USkeletalMeshComponent* Weapon = Execute_GetWeapon(this);
 		if (IsValid(Weapon) && Weapon->HasAnySockets() && Weapon->GetSocketByName(SocketName))
 		{
-			UE_LOG(
-				LogElectricCastle,
-				Warning,
-				TEXT("[%s] Weapon socket location: [%s] %s"),
-				*GetName(),
-				*SocketName.ToString(),
-				*Weapon->GetSocketLocation(SocketName).ToString()
-			)
 			return Weapon->GetSocketLocation(SocketName);
 		}
 		if (GetMesh()->GetSocketByName(SocketName))
 		{
-			UE_LOG(
-				LogElectricCastle,
-				Warning,
-				TEXT("[%s] Character socket location: [%s] %s"),
-				*GetName(),
-				*SocketName.ToString(),
-				*GetMesh()->GetSocketLocation(SocketName).ToString()
-			)
 			return GetMesh()->GetSocketLocation(SocketName);
 		}
 		return GetActorLocation();
