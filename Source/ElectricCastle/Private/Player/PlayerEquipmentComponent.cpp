@@ -236,23 +236,24 @@ void UPlayerEquipmentComponent::EquipAnimationCompleted_Implementation(const EEq
 
 void UPlayerEquipmentComponent::ChangeWeapon(const FGameplayTag& WeaponTag, const FName HandSocket)
 {
-	if (WeaponTag.IsValid())
+	if (Weapon)
 	{
-		if (Weapon)
-		{
-			Weapon->UnEquip(GetOwner());
-			GetWorld()->DestroyActor(Weapon);
-			Weapon = nullptr;
-		}
-		if (!HandSocket.IsNone())
-		{
-			EquipmentSocketNames[EEquipmentSlot::Weapon] = HandSocket;
-		}
-		Equip(EEquipmentSlot::Weapon, WeaponTag);
-		if (IsUsingWeapon())
-		{
-			UseWeapon();
-		}
+		Weapon->UnEquip(GetOwner());
+		GetWorld()->DestroyActor(Weapon);
+		Weapon = nullptr;
+	}
+	if (!WeaponTag.IsValid())
+	{
+		return;
+	}
+	if (!HandSocket.IsNone())
+	{
+		EquipmentSocketNames[EEquipmentSlot::Weapon] = HandSocket;
+	}
+	Equip(EEquipmentSlot::Weapon, WeaponTag);
+	if (IsUsingWeapon())
+	{
+		UseWeapon();
 	}
 }
 

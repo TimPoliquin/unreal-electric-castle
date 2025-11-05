@@ -7,6 +7,28 @@
 #include "Utils/RichTextMacros.h"
 #include "ElectricCastleGameplayAbility.generated.h"
 
+USTRUCT(BlueprintType)
+struct ELECTRICCASTLE_API FComboAbilityConfig
+{
+	GENERATED_BODY()
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FName ComboSectionName = NAME_None;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(Categories="Event.Montage"))
+	FGameplayTag MontageEventTag = FGameplayTag::EmptyTag;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	bool bIsWeaponAbility = true;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FName SocketName = NAME_None;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	bool bOverrideAbilityImpactRadius = false;
+	UPROPERTY(
+		EditDefaultsOnly,
+		BlueprintReadWrite,
+		meta=(EditCondition="bOverrideAbilityImpactRadius", EditConditionHides)
+	)
+	float ImpactRadius = 25.f;
+};
+
 /**
  * 
  */
@@ -43,6 +65,9 @@ public:
 	float GetCooldown(const float InLevel = 1.f) const;
 
 protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties")
+	bool bDebug = false;
+
 	void ExecuteTask(UAbilityTask* Task) const;
 	/**
 	 * Determines whether the ability should use motion warping. This is primarily true if the user is using keyboard & mouse input, and has a target selected.
@@ -52,6 +77,28 @@ protected:
 	bool ShouldSetMotionTarget() const;
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void FaceHitTarget(const FHitResult& HitResult);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static void GetActorDifference(
+		const TArray<AActor*>& AList,
+		const TSet<AActor*>& BList,
+		TArray<AActor*>& OutDifference
+	);
+
+	UFUNCTION(BlueprintCallable)
+	void DebugLog(const FString LogString, const float TimeToDisplay = 1.f, const FColor Color = FColor::Red) const;
+
+	UFUNCTION(BlueprintCallable)
+	bool GetComboMontageHitLocationFromList(
+		int32 ComboIdx,
+		TArray<FComboAbilityConfig> ComboConfigs,
+		FVector& ComboHitLocation
+	) const;
+	UFUNCTION(BlueprintCallable)
+	bool GetComboMontageHitLocation(
+		const FComboAbilityConfig& ComboConfigs,
+		FVector& ComboHitLocation
+	) const;
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category="Properties")
