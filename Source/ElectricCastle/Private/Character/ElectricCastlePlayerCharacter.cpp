@@ -125,20 +125,28 @@ AElectricCastlePlayerCharacter::AElectricCastlePlayerCharacter()
 void AElectricCastlePlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	if (UElectricCastleAIDirectorGameInstanceSubsystem* AIDirectorSubsystem = UElectricCastleAIDirectorGameInstanceSubsystem::Get(this))
+	if (UElectricCastleAIDirectorGameInstanceSubsystem* AIDirectorSubsystem =
+		UElectricCastleAIDirectorGameInstanceSubsystem::Get(this))
 	{
 		AIDirectorSubsystem->RegisterActivePlayer(this);
 	}
 	FaceMesh->OnAnimInitialized.AddDynamic(this, &AElectricCastlePlayerCharacter::PrepareLiveLinkSetup);
 	OnCameraReturnDelegate.BindUObject(this, &AElectricCastlePlayerCharacter::OnCameraReturned);
-	FadeDetectionComponent->OnComponentBeginOverlap.AddDynamic(this, &AElectricCastlePlayerCharacter::OnFadeDetectionBeginOverlap);
-	FadeDetectionComponent->OnComponentEndOverlap.AddDynamic(this, &AElectricCastlePlayerCharacter::OnFadeDetectionEndOverlap);
+	FadeDetectionComponent->OnComponentBeginOverlap.AddDynamic(
+		this,
+		&AElectricCastlePlayerCharacter::OnFadeDetectionBeginOverlap
+	);
+	FadeDetectionComponent->OnComponentEndOverlap.AddDynamic(
+		this,
+		&AElectricCastlePlayerCharacter::OnFadeDetectionEndOverlap
+	);
 }
 
 void AElectricCastlePlayerCharacter::BeginDestroy()
 {
 	Super::BeginDestroy();
-	if (UElectricCastleAIDirectorGameInstanceSubsystem* AIDirectorSubsystem = UElectricCastleAIDirectorGameInstanceSubsystem::Get(this))
+	if (UElectricCastleAIDirectorGameInstanceSubsystem* AIDirectorSubsystem =
+		UElectricCastleAIDirectorGameInstanceSubsystem::Get(this))
 	{
 		AIDirectorSubsystem->UnregisterActivePlayer(this);
 	}
@@ -148,8 +156,10 @@ void AElectricCastlePlayerCharacter::EnableMasterPose_Implementation(USkeletalMe
 {
 	if (IsValid(SkeletalMeshComponent->GetSkeletalMeshAsset()))
 	{
-		if (UKismetSystemLibrary::IsValidClass(SkeletalMeshComponent->GetAnimClass()) || UKismetSystemLibrary::IsValidClass(
-			SkeletalMeshComponent->GetSkeletalMeshAsset()->GetPostProcessAnimBlueprint()))
+		if (UKismetSystemLibrary::IsValidClass(SkeletalMeshComponent->GetAnimClass()) ||
+			UKismetSystemLibrary::IsValidClass(
+				SkeletalMeshComponent->GetSkeletalMeshAsset()->GetPostProcessAnimBlueprint()
+			))
 		{
 			SkeletalMeshComponent->SetLeaderPoseComponent(GetMesh());
 		}
@@ -203,7 +213,9 @@ void AElectricCastlePlayerCharacter::OnFormChange_Implementation(const FPlayerFo
 	FormChangeComponent->FormChange_UpdateAbilities(Payload);
 }
 
-void AElectricCastlePlayerCharacter::OnEquipmentAnimationRequest_Implementation(const FEquipmentDelegatePayload& Payload)
+void AElectricCastlePlayerCharacter::OnEquipmentAnimationRequest_Implementation(
+	const FEquipmentDelegatePayload& Payload
+)
 {
 	EquipmentComponent->UseEquipment(Payload.EquipmentSlot);
 }
@@ -246,12 +258,16 @@ void AElectricCastlePlayerCharacter::PossessedBy(AController* NewController)
 	Super::PossessedBy(NewController);
 	// Init ability actor info for the server
 	InitializeAbilityActorInfo();
-	if (UElectricCastleLevelManager* LevelManager = UElectricCastleLevelManager::Get(this); LevelManager->IsTransitioningLevels())
+	if (UElectricCastleLevelManager* LevelManager = UElectricCastleLevelManager::Get(this); LevelManager->
+		IsTransitioningLevels())
 	{
-		LevelManager->OnLevelTransitionComplete.AddWeakLambda(this, [&]()
-		{
-			OnLevelLoaded();
-		});
+		LevelManager->OnLevelTransitionComplete.AddWeakLambda(
+			this,
+			[&]()
+			{
+				OnLevelLoaded();
+			}
+		);
 	}
 	else
 	{
@@ -278,7 +294,8 @@ void AElectricCastlePlayerCharacter::OnRep_ActiveAbilityTag()
 void AElectricCastlePlayerCharacter::OnRep_StatusEffectTags()
 {
 	Super::OnRep_StatusEffectTags();
-	if (UElectricCastleAbilitySystemComponent* ElectricCastleAbilitySystemComponent = GetElectricCastleAbilitySystemComponent())
+	if (UElectricCastleAbilitySystemComponent* ElectricCastleAbilitySystemComponent =
+		GetElectricCastleAbilitySystemComponent())
 	{
 		const FElectricCastleGameplayTags& GameplayTags = FElectricCastleGameplayTags::Get();
 		FGameplayTagContainer BlockedTags;
@@ -308,11 +325,19 @@ void AElectricCastlePlayerCharacter::OnRep_StatusEffectTags()
 	}
 }
 
-void AElectricCastlePlayerCharacter::OnAbilitySystemReady_Implementation(UElectricCastleAbilitySystemComponent* InAbilitySystemComponent)
+void AElectricCastlePlayerCharacter::OnAbilitySystemReady_Implementation(
+	UElectricCastleAbilitySystemComponent* InAbilitySystemComponent
+)
 {
 	Super::OnAbilitySystemReady_Implementation(InAbilitySystemComponent);
-	FishingComponent->OnFishingComponentCastAnimationDelegate.AddDynamic(this, &AElectricCastlePlayerCharacter::PlayFishingRodCastMontage);
-	EquipmentComponent->OnEquipmentAnimationRequest.AddDynamic(this, &AElectricCastlePlayerCharacter::OnEquipmentAnimationRequest);
+	FishingComponent->OnFishingComponentCastAnimationDelegate.AddDynamic(
+		this,
+		&AElectricCastlePlayerCharacter::PlayFishingRodCastMontage
+	);
+	EquipmentComponent->OnEquipmentAnimationRequest.AddDynamic(
+		this,
+		&AElectricCastlePlayerCharacter::OnEquipmentAnimationRequest
+	);
 }
 
 void AElectricCastlePlayerCharacter::OnEffectAdd_LightningDamage_Implementation()
@@ -393,8 +418,14 @@ void AElectricCastlePlayerCharacter::OnLevelLoaded()
 	AddCharacterAbilities();
 }
 
-void AElectricCastlePlayerCharacter::OnFadeDetectionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
-                                                                 const FHitResult& SweepResult)
+void AElectricCastlePlayerCharacter::OnFadeDetectionBeginOverlap(
+	UPrimitiveComponent* OverlappedComponent,
+	AActor* OtherActor,
+	UPrimitiveComponent* OtherComp,
+	int32 OtherBodyIndex,
+	bool bFromSweep,
+	const FHitResult& SweepResult
+)
 {
 	if (OtherActor->Implements<UFadeInterface>())
 	{
@@ -402,7 +433,12 @@ void AElectricCastlePlayerCharacter::OnFadeDetectionBeginOverlap(UPrimitiveCompo
 	}
 }
 
-void AElectricCastlePlayerCharacter::OnFadeDetectionEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+void AElectricCastlePlayerCharacter::OnFadeDetectionEndOverlap(
+	UPrimitiveComponent* OverlappedComponent,
+	AActor* OtherActor,
+	UPrimitiveComponent* OtherComp,
+	int32 OtherBodyIndex
+)
 {
 	if (OtherActor->Implements<UFadeInterface>())
 	{
@@ -427,7 +463,11 @@ FLODMappingData AElectricCastlePlayerCharacter::CreateCustomLODMappingDefault() 
 int32 AElectricCastlePlayerCharacter::GetCharacterLevel_Implementation() const
 {
 	const UProgressionComponent* ProgressionComponent = UProgressionComponent::Get(this);
-	checkf(ProgressionComponent, TEXT("[%s] No access to progression component while trying to get character level"), *GetName());
+	checkf(
+		ProgressionComponent,
+		TEXT("[%s] No access to progression component while trying to get character level"),
+		*GetName()
+	);
 	return ProgressionComponent->GetCharacterLevel();
 }
 
@@ -510,14 +550,22 @@ void AElectricCastlePlayerCharacter::Multicast_LevelUpParticles_Implementation()
 int32 AElectricCastlePlayerCharacter::FindLevelForXP_Implementation(const int32 InXP) const
 {
 	const UProgressionComponent* ProgressionComponent = UProgressionComponent::Get(this);
-	checkf(ProgressionComponent, TEXT("[%s] No access to progression component while trying to FindLevelByXP"), *GetName());
+	checkf(
+		ProgressionComponent,
+		TEXT("[%s] No access to progression component while trying to FindLevelByXP"),
+		*GetName()
+	);
 	return ProgressionComponent->FindLevelByXP(InXP);
 }
 
 FLevelUpRewards AElectricCastlePlayerCharacter::GetLevelUpRewards_Implementation(const int32 InLevel) const
 {
 	const UProgressionComponent* ProgressionComponent = UProgressionComponent::Get(this);
-	checkf(ProgressionComponent, TEXT("[%s] No access to progression component while trying to GetLevelUpRewards"), *GetName());
+	checkf(
+		ProgressionComponent,
+		TEXT("[%s] No access to progression component while trying to GetLevelUpRewards"),
+		*GetName()
+	);
 	return ProgressionComponent->GetLevelUpRewards(InLevel);
 }
 
@@ -527,7 +575,11 @@ void AElectricCastlePlayerCharacter::ApplyLevelUpRewards_Implementation(
 )
 {
 	UProgressionComponent* ProgressionComponent = UProgressionComponent::Get(this);
-	checkf(ProgressionComponent, TEXT("[%s] No access to progression component while trying to ApplyLevelUpRewards"), *GetName());
+	checkf(
+		ProgressionComponent,
+		TEXT("[%s] No access to progression component while trying to ApplyLevelUpRewards"),
+		*GetName()
+	);
 	ProgressionComponent->AddSpellPoints(InLevelUpRewards.SpellPoints);
 	ProgressionComponent->AddToLevel(LevelIncrement);
 }
@@ -535,14 +587,22 @@ void AElectricCastlePlayerCharacter::ApplyLevelUpRewards_Implementation(
 int32 AElectricCastlePlayerCharacter::GetSpellPoints_Implementation() const
 {
 	const UProgressionComponent* ProgressionComponent = UProgressionComponent::Get(this);
-	checkf(ProgressionComponent, TEXT("[%s] No access to progression component while trying to GetSpellPoints"), *GetName());
+	checkf(
+		ProgressionComponent,
+		TEXT("[%s] No access to progression component while trying to GetSpellPoints"),
+		*GetName()
+	);
 	return ProgressionComponent->GetSpellPoints();
 }
 
 void AElectricCastlePlayerCharacter::SpendSpellPoints_Implementation(const int32 SpentPoints)
 {
 	UProgressionComponent* ProgressionComponent = UProgressionComponent::Get(this);
-	checkf(ProgressionComponent, TEXT("[%s] No access to progression component while trying to AddSpellPoints"), *GetName());
+	checkf(
+		ProgressionComponent,
+		TEXT("[%s] No access to progression component while trying to AddSpellPoints"),
+		*GetName()
+	);
 	return ProgressionComponent->AddSpellPoints(-1 * SpentPoints);
 }
 
@@ -618,10 +678,12 @@ void AElectricCastlePlayerCharacter::TryApplyGroomAssets_Implementation(const FF
 	}
 	else
 	{
-		GetWorld()->GetTimerManager().SetTimerForNextTick([this, FormMeshConfig]()
-		{
-			TryApplyGroomAssets(FormMeshConfig);
-		});
+		GetWorld()->GetTimerManager().SetTimerForNextTick(
+			[this, FormMeshConfig]()
+			{
+				TryApplyGroomAssets(FormMeshConfig);
+			}
+		);
 	}
 }
 

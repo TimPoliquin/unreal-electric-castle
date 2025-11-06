@@ -67,7 +67,7 @@ TArray<AFireballProjectile*> UFireBlastGameplayAbility::SpawnFireballs()
 		);
 		Fireball->DamageEffectParams = MakeDamageEffectParamsFromClassDefaults(nullptr);
 		Fireball->ReturnToActor = GetAvatarActorFromActorInfo();
-		Fireball->SetupExplosionConfig(DamageEffectClass, ExplosionDamageConfig, GetAbilityLevel());
+		Fireball->SetupExplosionConfig(DamageEffectClass, ExplosionDamageConfig);
 		Fireball->SetOwner(GetAvatarActorFromActorInfo());
 		Fireballs.Add(Fireball);
 		Fireball->FinishSpawning(SpawnTransform);

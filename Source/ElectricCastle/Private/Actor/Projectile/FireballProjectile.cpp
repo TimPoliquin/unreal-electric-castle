@@ -5,19 +5,11 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
-#include "Net/UnrealNetwork.h"
 
 
 AFireballProjectile::AFireballProjectile()
 {
 	PrimaryActorTick.bCanEverTick = true;
-}
-
-void AFireballProjectile::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(AFireballProjectile, ExplosionDamageConfig);
-	DOREPLIFETIME(AFireballProjectile, AbilityLevel);
 }
 
 bool AFireballProjectile::IsWithinExplodeDistance() const
@@ -33,48 +25,6 @@ FVector AFireballProjectile::GetReturnToLocation() const
 	return IsValid(ReturnToActor)
 		       ? ReturnToActor->GetActorLocation()
 		       : InitialLocation;
-}
-
-void AFireballProjectile::Explode_Implementation()
-{
-	TArray<AActor*> TargetActors = FindImpactTargets();
-	for (AActor* TargetActor : TargetActors)
-	{
-		ExplodeOnTarget(TargetActor);
-	}
-}
-
-void AFireballProjectile::ExplodeOnTarget(
-	AActor* Target
-)
-{
-	if (!IsValid(Target))
-	{
-		return;
-	}
-	FDamageEffectParams ExplosionDamageEffectParams = UElectricCastleAbilitySystemLibrary::MakeCustomDamageEffectParams(
-		GetOwner(),
-		Target,
-		ExplosionDamageEffectClass,
-		ExplosionDamageConfig,
-		AbilityLevel,
-		DamageEffectParams.AbilityAssetTags,
-		GetActorLocation()
-	);
-	UElectricCastleAbilitySystemLibrary::ApplyDamageEffect(
-		ExplosionDamageEffectParams
-	);
-}
-
-void AFireballProjectile::SetupExplosionConfig(
-	const TSubclassOf<UGameplayEffect>& InExplosionDamageEffectClass,
-	const FElectricCastleDamageConfig& InExplosionDamageConfig,
-	const int32 InAbilityLevel
-)
-{
-	ExplosionDamageEffectClass = InExplosionDamageEffectClass;
-	ExplosionDamageConfig = InExplosionDamageConfig;
-	AbilityLevel = InAbilityLevel;
 }
 
 void AFireballProjectile::BeginPlay()

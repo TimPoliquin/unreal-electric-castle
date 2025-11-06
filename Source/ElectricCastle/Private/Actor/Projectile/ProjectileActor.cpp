@@ -43,6 +43,7 @@ void AProjectileActor::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AProjectileActor, DamageEffectParams);
+	DOREPLIFETIME(AProjectileActor, ExplosionDamageConfig);
 }
 
 UProjectileMovementComponent* AProjectileActor::GetProjectileMovementComponent() const
@@ -98,15 +99,37 @@ FVector AProjectileActor::GetImpactDirection(const AActor* HitActor) const
 	return FVector::ZeroVector;
 }
 
-TArray<AActor*> AProjectileActor::FindImpactTargets_Implementation()
+TArray<AActor*> AProjectileActor::FindExplosionTargets_Implementation()
 {
-	TArray<FName> TagsToIgnore = ICombatInterface::GetTargetTagsToIgnore(GetOwner());
+	TArray<FName> TagsToIgnore = DamageEffectParams.IgnoreTags;
 	TArray<AActor*> IgnoreActors;
 	IgnoreActors.Add(this);
 	IgnoreActors.Add(GetOwner());
 	TArray<AActor*> Targets;
-	UElectricCastleAbilitySystemLibrary::GetLiveActorsWithinRadius(this, IgnoreActors, TagsToIgnore, GetActorLocation(), ImpactRadius, Targets);
+	UElectricCastleAbilitySystemLibrary::GetLiveActorsWithinRadius(
+		this,
+		IgnoreActors,
+		TagsToIgnore,
+		GetActorLocation(),
+		ImpactRadius,
+		Targets,
+		bDebug
+	);
 	return Targets;
+}
+
+void AProjectileActor::SetupExplosionConfig(
+	const TSubclassOf<UGameplayEffect>& InExplosionDamageEffectClass,
+	const FElectricCastleDamageConfig& InExplosionDamageConfig
+)
+{
+	ExplosionDamageEffectClass = InExplosionDamageEffectClass;
+	ExplosionDamageConfig = InExplosionDamageConfig;
+}
+
+void AProjectileActor::ApplyDamageEffectParams_Implementation(const FDamageEffectParams& InDamageEffectParams)
+{
+	DamageEffectParams = InDamageEffectParams;
 }
 
 void AProjectileActor::BeginPlay()
@@ -160,6 +183,10 @@ void AProjectileActor::OnSphereOverlap(
 			DamageEffectParams.TargetAbilitySystemComponent = OtherAbilitySystem;
 			UElectricCastleAbilitySystemLibrary::ApplyDamageEffect(DamageEffectParams);
 		}
+		if (bExplodeOnImpact)
+		{
+			Explode();
+		}
 		Destroy();
 	}
 }
@@ -171,7 +198,7 @@ bool AProjectileActor::IsValidOverlap(const AActor* OtherActor) const
 	{
 		return false;
 	}
-	if (TagUtils::HasAnyTag(OtherActor, ICombatInterface::GetTargetTagsToIgnore(SourceAvatarActor)))
+	if (TagUtils::HasAnyTag(OtherActor, DamageEffectParams.IgnoreTags))
 	{
 		return false;
 	}
@@ -211,6 +238,35 @@ void AProjectileActor::PlayImpactEffect()
 		TravelSoundComponent->DestroyComponent();
 	}
 	bHit = true;
+}
+
+void AProjectileActor::Explode_Implementation()
+{
+	for (AActor* TargetActor : FindExplosionTargets())
+	{
+		ExplodeOnTarget(TargetActor);
+	}
+}
+
+void AProjectileActor::ExplodeOnTarget_Implementation(AActor* TargetActor)
+{
+	if (!IsValid(TargetActor))
+	{
+		return;
+	}
+	const FDamageEffectParams& ExplosionDamageEffectParams =
+		UElectricCastleAbilitySystemLibrary::MakeCustomDamageEffectParams(
+			GetOwner(),
+			TargetActor,
+			ExplosionDamageEffectClass,
+			ExplosionDamageConfig,
+			DamageEffectParams.AbilityLevel,
+			DamageEffectParams.AbilityAssetTags,
+			GetActorLocation()
+		);
+	UElectricCastleAbilitySystemLibrary::ApplyDamageEffect(
+		ExplosionDamageEffectParams
+	);
 }
 
 void AProjectileActor::Destroyed()

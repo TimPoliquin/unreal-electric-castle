@@ -316,16 +316,16 @@ void UElectricCastleAbilitySystemLibrary::GetLiveActorsWithinSweepRadius(
 			FCollisionShape::MakeSphere(Radius),
 			SphereParams
 		);
-			UE_LOG(
-				LogElectricCastle,
-				Warning,
-				TEXT(
-					"[ElectricCastleAbilitySystemLibrary::GetLiveActorsWithinSweepRadius]: Found actors: [%d] between %s - %s"
-				),
-				Overlaps.Num(),
-				*SphereStart.ToString(),
-				*SphereEnd.ToString()
-			)
+		UE_LOG(
+			LogElectricCastle,
+			Warning,
+			TEXT(
+				"[ElectricCastleAbilitySystemLibrary::GetLiveActorsWithinSweepRadius]: Found actors: [%d] between %s - %s"
+			),
+			Overlaps.Num(),
+			*SphereStart.ToString(),
+			*SphereEnd.ToString()
+		)
 		if (bDebug)
 		{
 			DrawDebugSweptSphere(World, SphereStart, SphereEnd, Radius, FColor::Red, false, 1.f);
@@ -683,6 +683,7 @@ FDamageEffectParams UElectricCastleAbilitySystemLibrary::MakeCustomDamageEffectP
 	DamageEffectParams.AbilityLevel = AbilityLevel;
 	DamageEffectParams.BaseDamage = InDamageConfig.GetDamageAtLevel(AbilityLevel);
 	DamageEffectParams.AbilityAssetTags = InAbilityAssetTags;
+	DamageEffectParams.IgnoreTags = ICombatInterface::GetTargetTagsToIgnore(SourceActor);
 	if (IsValid(TargetActor))
 	{
 		FRotator Rotation = (TargetActor->GetActorLocation() - SourceActor->GetActorLocation())
@@ -887,6 +888,7 @@ AActor* UElectricCastleAbilitySystemLibrary::FindHitByLineTrace(
 
 	FHitResult HitResult;
 	FCollisionQueryParams Params;
+	Params.bDebugQuery = TraceParams.bDebug;
 	Params.AddIgnoredActor(Player); // Don’t hit yourself
 
 	if (World->LineTraceSingleByChannel(

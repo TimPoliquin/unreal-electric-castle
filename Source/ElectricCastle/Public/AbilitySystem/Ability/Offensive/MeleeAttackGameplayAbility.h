@@ -13,5 +13,4 @@ UCLASS(Abstract, Blueprintable)
 class ELECTRICCASTLE_API UMeleeAttackGameplayAbility : public UDamageGameplayAbility
 {
 	GENERATED_BODY()
-
 };

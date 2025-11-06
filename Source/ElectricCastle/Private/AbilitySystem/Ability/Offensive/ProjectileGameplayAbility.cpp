@@ -83,7 +83,7 @@ AProjectileActor* UProjectileGameplayAbility::SpawnProjectile(
 		Cast<APawn>(GetAvatarActorFromActorInfo()),
 		ESpawnActorCollisionHandlingMethod::AlwaysSpawn
 	);
-	SpawnedProjectile->DamageEffectParams = MakeDamageEffectParamsFromClassDefaults();
+	ApplyDefaultDamageConfig(SpawnedProjectile);
 	SpawnedProjectile->SetOwner(GetAvatarActorFromActorInfo());
 	if (BeforeFinishSpawning)
 	{
@@ -101,7 +101,10 @@ AProjectileActor* UProjectileGameplayAbility::SpawnProjectile_Basic()
 		return nullptr;
 	}
 	check(ProjectileClass);
-	return SpawnProjectile(GetAvatarActorFromActorInfo()->GetActorLocation(), GetAvatarActorFromActorInfo()->GetActorForwardVector().Rotation());
+	return SpawnProjectile(
+		GetAvatarActorFromActorInfo()->GetActorLocation(),
+		GetAvatarActorFromActorInfo()->GetActorForwardVector().Rotation()
+	);
 }
 
 FGameplayEffectSpecHandle UProjectileGameplayAbility::MakeDamageEffectSpecHandle(

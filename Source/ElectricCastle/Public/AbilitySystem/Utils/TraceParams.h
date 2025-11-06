@@ -13,6 +13,8 @@ struct ELECTRICCASTLE_API FLineTraceParams
 	float TraceDistance = 5000.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TEnumAsByte<ECollisionChannel> TraceChannel = ECC_Pawn;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bDebug = false;
 };
 
 USTRUCT(BlueprintType)
@@ -25,4 +27,6 @@ struct ELECTRICCASTLE_API FSphereTraceParams
 	float TraceRadius = 1.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TEnumAsByte<ECollisionChannel> TraceChannel = ECC_Pawn;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bDebug = false;
 };
