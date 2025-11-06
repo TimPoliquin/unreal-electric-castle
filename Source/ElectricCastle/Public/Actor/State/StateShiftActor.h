@@ -3,46 +3,48 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "StateShiftTypes.h"
-#include "UObject/Interface.h"
+#include "StateShiftInterface.h"
+#include "GameFramework/Actor.h"
 #include "StateShiftActor.generated.h"
 
-class USphereComponent;
-class UStateShiftComponent;
-// This class does not need to be modified.
-UINTERFACE()
-class UStateShiftActor : public UInterface
-{
-	GENERATED_BODY()
-};
-
-/**
- * 
- */
-class ELECTRICCASTLE_API IStateShiftActor
+UCLASS()
+class ELECTRICCASTLE_API AStateShiftActor : public AActor, public IStateShiftInterface
 {
 	GENERATED_BODY()
 
-	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	UShapeComponent* GetStateShiftCollisionComponent();
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	UStateShiftComponent* GetStateShiftComponent();
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void StateShiftReaction_Visibility_Show();
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void StateShiftReaction_Visibility_Hide();
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void StateShiftReaction_Visibility_FadeIn();
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void StateShiftReaction_Visibility_FadeOut();
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void StateShiftReaction_Collision_Enable();
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void StateShiftReaction_Collision_Disable();
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void StateShiftReaction_Custom();
+	// Sets default values for this actor's properties
+	AStateShiftActor();
 
-	static void EnableStateShiftCollision(UObject* Object);
+	/** Start IStateShiftInterface **/
+	virtual UStateShiftComponent* GetStateShiftComponent() const override;
+	UFUNCTION(BlueprintCallable)
+	virtual UShapeComponent* GetStateShiftCollisionComponent() const override;
+	virtual void StateShiftReaction_Implementation(const FStateShiftStateChangedPayload& Payload) override;
+	/** End IStateShiftInterface **/
+
+protected:
+	virtual void BeginPlay() override;
+	virtual void PostInitializeComponents() override;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Components")
+	TObjectPtr<UStateShiftComponent> StateShiftComponent;
+	UFUNCTION(BlueprintNativeEvent)
+	UShapeComponent* FindStateShiftCollisionComponent() const;
+	UFUNCTION(NetMulticast, Reliable)
+	void StateShiftReaction_NetMulticast(const FStateShiftStateChangedPayload& Payload);
+	UFUNCTION(BlueprintNativeEvent)
+	void StateShiftReaction_Visibility_Show();
+	UFUNCTION(BlueprintNativeEvent)
+	void StateShiftReaction_Visibility_Hide();
+	UFUNCTION(BlueprintNativeEvent)
+	void StateShiftReaction_Visibility_FadeIn();
+	UFUNCTION(BlueprintNativeEvent)
+	void StateShiftReaction_Visibility_FadeOut();
+	UFUNCTION(BlueprintNativeEvent)
+	void StateShiftReaction_Collision_Enable();
+	UFUNCTION(BlueprintNativeEvent)
+	void StateShiftReaction_Collision_Disable();
+	UFUNCTION(BlueprintNativeEvent)
+	void StateShiftReaction_Custom();
 };

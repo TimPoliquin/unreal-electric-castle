@@ -28,7 +28,9 @@ struct ELECTRICCASTLE_API FStateShiftStateChangedPayload
 {
 	GENERATED_BODY()
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	EStateShiftState StateShiftState = EStateShiftState::Normal;
+	EStateShiftState OldState = EStateShiftState::Normal;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	EStateShiftState NewState = EStateShiftState::Normal;
 };
 
 UDELEGATE()

@@ -33,14 +33,13 @@ public:
 	void SetCurrentState(EStateShiftState NewState);
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	TArray<EStateShiftReactionType> GetReactions(const EStateShiftState NewState) const;
+	UPROPERTY(BlueprintAssignable)
+	FOnStateShiftStateChangedSignature OnStateShiftStateChanged;
 
 protected:
-	virtual void BeginPlay() override;
-	void HandleStateShift(EStateShiftState NewState);
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties|StateShift")
 	FStateReactions StateShiftReactions;
-	
+
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Properties|StateShift", Replicated)
 	EStateShiftState CurrentState = EStateShiftState::Normal;
 };

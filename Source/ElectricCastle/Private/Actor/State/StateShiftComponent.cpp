@@ -3,7 +3,6 @@
 
 #include "Actor/State/StateShiftComponent.h"
 
-#include "Actor/State/StateShiftActor.h"
 #include "Actor/State/StateShiftBlueprintFunctionLibrary.h"
 #include "Net/UnrealNetwork.h"
 
@@ -20,19 +19,6 @@ void UStateShiftComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProp
 	DOREPLIFETIME(UStateShiftComponent, CurrentState);
 }
 
-
-void UStateShiftComponent::BeginPlay()
-{
-	Super::BeginPlay();
-	IStateShiftActor::EnableStateShiftCollision(GetOwner());
-	UStateShiftBlueprintFunctionLibrary::HandleStateShift(GetOwner(), CurrentState);
-}
-
-void UStateShiftComponent::HandleStateShift(EStateShiftState NewState)
-{
-	UStateShiftBlueprintFunctionLibrary::HandleStateShift(GetOwner(), NewState);
-}
-
 bool UStateShiftComponent::ShouldChangeState(const EStateShiftState NewState) const
 {
 	return NewState != CurrentState;
@@ -40,7 +26,12 @@ bool UStateShiftComponent::ShouldChangeState(const EStateShiftState NewState) co
 
 void UStateShiftComponent::SetCurrentState(EStateShiftState NewState)
 {
-	CurrentState = NewState;
+	if (NewState != CurrentState)
+	{
+		const EStateShiftState OldState = CurrentState;
+		CurrentState = NewState;
+		OnStateShiftStateChanged.Broadcast(FStateShiftStateChangedPayload(OldState, NewState));
+	}
 }
 
 TArray<EStateShiftReactionType> UStateShiftComponent::GetReactions(const EStateShiftState NewState) const
