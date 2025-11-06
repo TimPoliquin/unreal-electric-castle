@@ -7,6 +7,7 @@
 #include "AbilitySystem/ElectricCastleAbilitySystemTypes.h"
 #include "DamageGameplayAbility.generated.h"
 
+class IDamageDealingActor;
 struct FTaggedMontage;
 
 /**
@@ -73,14 +74,14 @@ public:
 		const FGameplayTag& MontageTag,
 		float ImpactRadius,
 		TArray<AActor*>& OutTargets,
-		bool bDebug = false
+		bool bInDebug = false
 	) const;
 	UFUNCTION(BlueprintCallable)
 	void GetTargetsAtImpactLocation(
 		const FVector& ImpactLocation,
 		float ImpactRadius,
 		TArray<AActor*>& OutTargets,
-		bool bDebug = false
+		bool bInDebug = false
 	) const;
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	void GetTargetsInAttackRange(
@@ -88,8 +89,11 @@ public:
 		const FVector& AttackEnd,
 		float ImpactRadius,
 		TArray<AActor*>& OutTargets,
-		bool bDebug = false
+		bool bInDebug = false
 	) const;
+
+	UFUNCTION(BlueprintCallable)
+	void ApplyDefaultDamageConfig(AActor* DamageDealingActor) const;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")

@@ -16,8 +16,6 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void StartOutgoingTimeline();
-	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
-
 
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<AActor> ReturnToActor;
@@ -25,20 +23,6 @@ public:
 	bool IsWithinExplodeDistance() const;
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FVector GetReturnToLocation() const;
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void Explode();
-
-	UFUNCTION(BlueprintCallable, Category="Fireball")
-	void ExplodeOnTarget(
-		AActor* Target
-	);
-
-	void SetupExplosionConfig(
-		const TSubclassOf<UGameplayEffect>& InExplosionDamageEffectClass,
-		const FElectricCastleDamageConfig& InExplosionDamageConfig,
-		const int32 InAbilityLevel
-	);
 
 protected:
 	virtual void BeginPlay() override;
@@ -60,12 +44,4 @@ protected:
 	FVector InitialLocation;
 	UPROPERTY(BlueprintReadOnly)
 	FVector ApexLocation;
-
-private:
-	UPROPERTY()
-	TSubclassOf<UGameplayEffect> ExplosionDamageEffectClass;
-	UPROPERTY(Replicated)
-	FElectricCastleDamageConfig ExplosionDamageConfig;
-	UPROPERTY(Replicated)
-	int32 AbilityLevel;
 };

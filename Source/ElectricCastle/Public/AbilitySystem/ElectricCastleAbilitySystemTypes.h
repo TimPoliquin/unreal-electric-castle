@@ -227,7 +227,8 @@ private:
 };
 
 template <>
-struct TStructOpsTypeTraits<FElectricCastleGameplayEffectContext> : TStructOpsTypeTraitsBase2<FElectricCastleGameplayEffectContext>
+struct TStructOpsTypeTraits<
+		FElectricCastleGameplayEffectContext> : TStructOpsTypeTraitsBase2<FElectricCastleGameplayEffectContext>
 {
 	enum
 	{
@@ -351,9 +352,9 @@ struct FElectricCastleDamageConfig
 	float KnockbackChance = 0.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bIsRadialDamage = false;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(EditCondition="bIsRadialDamage", EditConditionHides))
 	float RadialDamageInnerRadius = 0.f;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(EditCondition="bIsRadialDamage", EditConditionHides))
 	float RadialDamageOuterRadius = 0.f;
 
 	FElectricCastleRadialDamageParams GetRadialDamageParams() const
@@ -424,6 +425,8 @@ struct FDamageEffectParams
 	FVector RadialDamageOrigin = FVector::ZeroVector;
 	UPROPERTY(BlueprintReadWrite)
 	FGameplayTagContainer AbilityAssetTags;
+	UPROPERTY(BlueprintReadWrite)
+	TArray<FName> IgnoreTags;
 
 	void FillFromDamageConfig(const FElectricCastleDamageConfig& DamageConfig)
 	{

@@ -60,7 +60,9 @@ struct ELECTRICCASTLE_API FLiveLinkCharacterConfig
 };
 
 UCLASS(Abstract, Blueprintable)
-class ELECTRICCASTLE_API AElectricCastlePlayerCharacter : public AElectricCastleCharacter, public IPlayerInterface, public IFishingActorInterface, public IFormChangeActorInterface,
+class ELECTRICCASTLE_API AElectricCastlePlayerCharacter : public AElectricCastleCharacter, public IPlayerInterface,
+                                                          public IFishingActorInterface,
+                                                          public IFormChangeActorInterface,
                                                           public IEquipmentManagerInterface
 {
 	GENERATED_BODY()
@@ -77,7 +79,9 @@ public:
 	virtual void OnRep_PlayerState() override;
 	virtual void OnRep_ActiveAbilityTag() override;
 	virtual void OnRep_StatusEffectTags() override;
-	virtual void OnAbilitySystemReady_Implementation(UElectricCastleAbilitySystemComponent* InAbilitySystemComponent) override;
+	virtual void OnAbilitySystemReady_Implementation(
+		UElectricCastleAbilitySystemComponent* InAbilitySystemComponent
+	) override;
 	virtual void OnEffectAdd_LightningDamage_Implementation() override;
 	virtual void OnEffectRemove_LightningDamage_Implementation() override;
 	UFUNCTION(BlueprintCallable, BlueprintPure)
@@ -140,12 +144,16 @@ public:
 	/** FormChangeActorInterface End */
 
 	/** EquipmentManagerInterface Start */
-	virtual UPlayerEquipmentComponent* GetEquipmentComponent_Implementation() const override { return EquipmentComponent; }
+	virtual UPlayerEquipmentComponent* GetEquipmentComponent_Implementation() const override
+	{
+		return EquipmentComponent;
+	}
+
 	/** EquipmentManagerInterface End */
 
 
 protected:
-	UFUNCTION(BlueprintNativeEvent)
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void Construction_SetupMetaHuman();
 	virtual void BeginPlay() override;
 	virtual void BeginDestroy() override;
@@ -218,7 +226,10 @@ private:
 	FOnCameraMoveFinishedSignature OnCameraReturnDelegate;
 
 	virtual void InitializeAbilityActorInfo() override;
-	void InitializePlayerControllerHUD(APlayerController* InPlayerController, AElectricCastlePlayerState* InPlayerState);
+	void InitializePlayerControllerHUD(
+		APlayerController* InPlayerController,
+		AElectricCastlePlayerState* InPlayerState
+	);
 
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_LevelUpParticles() const;
@@ -229,10 +240,21 @@ private:
 	UFUNCTION()
 	void OnLevelLoaded();
 	UFUNCTION()
-	void OnFadeDetectionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
-	                                 const FHitResult& SweepResult);
+	void OnFadeDetectionBeginOverlap(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult
+	);
 	UFUNCTION()
-	void OnFadeDetectionEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	void OnFadeDetectionEndOverlap(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex
+	);
 
 	FVector DesiredCameraForwardVector;
 	FLODMappingData CreateCustomLODMappingDefault() const;

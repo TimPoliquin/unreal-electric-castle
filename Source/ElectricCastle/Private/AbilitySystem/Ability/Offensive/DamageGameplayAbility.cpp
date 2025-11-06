@@ -6,6 +6,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
+#include "Actor/DamageDealingActor.h"
 #include "Character/EnemyInterface.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Interaction/CombatInterface.h"
@@ -174,7 +175,7 @@ FVector UDamageGameplayAbility::GetTargetsAtImpact(
 	const FGameplayTag& MontageTag,
 	const float ImpactRadius,
 	TArray<AActor*>& OutTargets,
-	bool bDebug
+	bool bInDebug
 ) const
 {
 	const FVector& SocketLocation = ICombatInterface::GetCombatSocketLocation(
@@ -191,7 +192,7 @@ FVector UDamageGameplayAbility::GetTargetsAtImpact(
 		SocketLocation,
 		ImpactRadius,
 		OutTargets,
-		bDebug
+		bInDebug
 	);
 	return SocketLocation;
 }
@@ -200,7 +201,7 @@ void UDamageGameplayAbility::GetTargetsAtImpactLocation(
 	const FVector& ImpactLocation,
 	float ImpactRadius,
 	TArray<AActor*>& OutTargets,
-	bool bDebug
+	bool bInDebug
 ) const
 {
 	const TArray<FName> IgnoreTargetTags = ICombatInterface::GetTargetTagsToIgnore(GetAvatarActorFromActorInfo());
@@ -213,16 +214,16 @@ void UDamageGameplayAbility::GetTargetsAtImpactLocation(
 		ImpactLocation,
 		ImpactRadius,
 		OutTargets,
-		bDebug
+		bInDebug
 	);
 }
 
 void UDamageGameplayAbility::GetTargetsInAttackRange(
 	const FVector& AttackStart,
 	const FVector& AttackEnd,
-	float ImpactRadius,
+	const float ImpactRadius,
 	TArray<AActor*>& OutTargets,
-	bool bDebug
+	const bool bInDebug
 ) const
 {
 	const TArray<FName> IgnoreTargetTags = ICombatInterface::GetTargetTagsToIgnore(GetAvatarActorFromActorInfo());
@@ -236,7 +237,7 @@ void UDamageGameplayAbility::GetTargetsInAttackRange(
 		AttackEnd,
 		ImpactRadius,
 		OutTargets,
-		bDebug
+		bInDebug
 	);
 	UE_LOG(
 		LogElectricCastle,
@@ -248,6 +249,11 @@ void UDamageGameplayAbility::GetTargetsInAttackRange(
 		*AttackStart.ToString(),
 		*AttackEnd.ToString()
 	)
+}
+
+void UDamageGameplayAbility::ApplyDefaultDamageConfig(AActor* DamageDealingActor) const
+{
+	IDamageDealingActor::ApplyDamageEffectParams(DamageDealingActor, MakeDamageEffectParamsFromClassDefaults());
 }
 
 void UDamageGameplayAbility::FaceTarget_Implementation()

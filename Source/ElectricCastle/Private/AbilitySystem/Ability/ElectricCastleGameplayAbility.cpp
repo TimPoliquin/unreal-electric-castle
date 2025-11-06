@@ -4,6 +4,8 @@
 #include "AbilitySystem/Ability/ElectricCastleGameplayAbility.h"
 #include "Abilities/Tasks/AbilityTask.h"
 #include "AbilitySystem/ElectricCastleAttributeSet.h"
+#include "ElectricCastle/ElectricCastleLogChannels.h"
+#include "GameFramework/Character.h"
 #include "Interaction/CombatInterface.h"
 #include "Player/ElectricCastlePlayerController.h"
 
@@ -28,10 +30,75 @@ bool UElectricCastleGameplayAbility::ShouldSetMotionTarget() const
 {
 	if (const APawn* PlayerPawn = Cast<APawn>(GetAvatarActorFromActorInfo()))
 	{
-		if (const AElectricCastlePlayerController* ElectricCastlePlayerController = Cast<AElectricCastlePlayerController>(PlayerPawn->GetController()))
+		if (const AElectricCastlePlayerController* ElectricCastlePlayerController = Cast<
+			AElectricCastlePlayerController>(PlayerPawn->GetController()))
 		{
-			return ElectricCastlePlayerController->IsInputTypeMouse() && ElectricCastlePlayerController->IsTargetingEnemy();
+			return ElectricCastlePlayerController->IsInputTypeMouse() && ElectricCastlePlayerController->
+				IsTargetingEnemy();
 		}
+	}
+	return false;
+}
+
+void UElectricCastleGameplayAbility::GetActorDifference(
+	const TArray<AActor*>& AList,
+	const TSet<AActor*>& BList,
+	TArray<AActor*>& OutDifference
+)
+{
+	for (AActor* Actor : AList)
+	{
+		if (!BList.Contains(Actor))
+		{
+			OutDifference.Add(Actor);
+		}
+	}
+}
+
+void UElectricCastleGameplayAbility::DebugLog(
+	const FString LogString,
+	const float TimeToDisplay,
+	const FColor Color
+) const
+{
+	if (bDebug)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, TimeToDisplay, Color, LogString);
+	}
+}
+
+bool UElectricCastleGameplayAbility::GetComboMontageHitLocationFromList(
+	const int32 ComboIdx,
+	const TArray<FComboAbilityConfig> ComboConfigs,
+	FVector& ComboHitLocation
+) const
+{
+	if (!ComboConfigs.IsValidIndex(ComboIdx))
+	{
+		UE_LOG(LogElectricCastle, Warning, TEXT("[%s] Invalid Combo Index: %d"), *GetName(), ComboIdx);
+		return false;
+	}
+	return GetComboMontageHitLocation(ComboConfigs[ComboIdx], ComboHitLocation);
+}
+
+bool UElectricCastleGameplayAbility::GetComboMontageHitLocation(
+	const FComboAbilityConfig& ComboConfig,
+	FVector& ComboHitLocation
+) const
+{
+	const USkeletalMeshComponent* MeshComponent = nullptr;
+	if (ComboConfig.bIsWeaponAbility)
+	{
+		MeshComponent = ICombatInterface::GetWeapon(GetAvatarActorFromActorInfo());
+	}
+	else if (const ACharacter* Character = Cast<ACharacter>(GetAvatarActorFromActorInfo()))
+	{
+		MeshComponent = Character->GetMesh();
+	}
+	if (MeshComponent)
+	{
+		ComboHitLocation = MeshComponent->GetSocketLocation(ComboConfig.SocketName);
+		return true;
 	}
 	return false;
 }
@@ -41,7 +108,8 @@ void UElectricCastleGameplayAbility::FaceHitTarget_Implementation(const FHitResu
 	if (HitResult.bBlockingHit)
 	{
 		ICombatInterface::UpdateFacingTarget(GetAvatarActorFromActorInfo(), HitResult.ImpactPoint);
-	} else
+	}
+	else
 	{
 		ICombatInterface::ClearFacingTarget(GetAvatarActorFromActorInfo());
 	}
