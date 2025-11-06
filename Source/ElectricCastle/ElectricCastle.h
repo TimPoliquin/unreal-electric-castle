@@ -13,6 +13,7 @@
 #define ECC_Projectile ECollisionChannel::ECC_GameTraceChannel1
 #define ECC_Target ECollisionChannel::ECC_GameTraceChannel2
 #define ECC_ExcludeCharacters ECollisionChannel::ECC_GameTraceChannel3
+#define ECC_StateShift ECollisionChannel::ECC_GameTraceChannel4
 // Custom Tag Names
 #define TAG_PLAYER FName("Player")
 #define TAG_ENEMY FName("Enemy")
