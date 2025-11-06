@@ -86,6 +86,7 @@ struct FElectricCastleGameplayTags
 	FGameplayTag Effect_HitReact_Shock;
 	FGameplayTag Effect_Magnitude;
 	FGameplayTag Effect_State_Aiming;
+	FGameplayTag Effect_State_PsychedelicVision;
 
 	FGameplayTag Effect_Resist;
 	FGameplayTag Effect_Resist_Magic;

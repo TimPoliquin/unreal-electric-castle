@@ -222,7 +222,14 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FName("Effect.Magnitude"),
 		FString("Generic tag for specifying magnitude of effect across multiple effects")
 	);
-	Instance.Effect_State_Aiming = TagManager.AddNativeGameplayTag(FName("Effect.State.Aiming"), FString("Indicates that the character is aiming"));
+	Instance.Effect_State_Aiming = TagManager.AddNativeGameplayTag(
+		FName("Effect.State.Aiming"),
+		FString("Indicates that the character is aiming")
+	);
+	Instance.Effect_State_PsychedelicVision = TagManager.AddNativeGameplayTag(
+		FName("Effect.State.PsychedelicVision"),
+		FString("Indicates that the character is experience psychedelic visions")
+	);
 	Instance.Effect_Resist = TagManager.AddNativeGameplayTag(
 		FName("Effect.Resist"),
 		FString("Root tag for all resistance effects")
@@ -502,7 +509,10 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FName("Player.Block.Movement"),
 		FString("Blocks player movement")
 	);
-	Instance.Player_Block_Rotation = TagManager.AddNativeGameplayTag(FName("Player.Block.Rotation"), FString("Blocks player rotation"));
+	Instance.Player_Block_Rotation = TagManager.AddNativeGameplayTag(
+		FName("Player.Block.Rotation"),
+		FString("Blocks player rotation")
+	);
 	Instance.Player_Block_Interaction = TagManager.AddNativeGameplayTag(
 		FName("Player.Block.Interaction"),
 		FString("Blocks player's ability to interact with the environment")
@@ -532,13 +542,34 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FString("Player has a weapon equipped")
 	);
 	Instance.Player_Form = TagManager.AddNativeGameplayTag(FName("Player.Form"), FString("Player form root tag"));
-	Instance.Player_Form_Barbarian = TagManager.AddNativeGameplayTag(FName("Player.Form.Barbarian"), FString("Barbarian form tag"));
-	Instance.Player_Form_Egyptian = TagManager.AddNativeGameplayTag(FName("Player.Form.Egyptian"), FString("Egyptian form tag"));
-	Instance.Player_Form_Futureman = TagManager.AddNativeGameplayTag(FName("Player.Form.Futureman"), FString("Futureman form tag"));
-	Instance.Player_Form_Highlander = TagManager.AddNativeGameplayTag(FName("Player.Form.Highlander"), FString("Highlander form tag"));
-	Instance.Player_Form_Hippie = TagManager.AddNativeGameplayTag(FName("Player.Form.Hippie"), FString("Hippie form tag"));
-	Instance.Player_Form_Knight = TagManager.AddNativeGameplayTag(FName("Player.Form.Knight"), FString("Knight form tag"));
-	Instance.Player_Form_Native = TagManager.AddNativeGameplayTag(FName("Player.Form.Native"), FString("Native form tag"));
+	Instance.Player_Form_Barbarian = TagManager.AddNativeGameplayTag(
+		FName("Player.Form.Barbarian"),
+		FString("Barbarian form tag")
+	);
+	Instance.Player_Form_Egyptian = TagManager.AddNativeGameplayTag(
+		FName("Player.Form.Egyptian"),
+		FString("Egyptian form tag")
+	);
+	Instance.Player_Form_Futureman = TagManager.AddNativeGameplayTag(
+		FName("Player.Form.Futureman"),
+		FString("Futureman form tag")
+	);
+	Instance.Player_Form_Highlander = TagManager.AddNativeGameplayTag(
+		FName("Player.Form.Highlander"),
+		FString("Highlander form tag")
+	);
+	Instance.Player_Form_Hippie = TagManager.AddNativeGameplayTag(
+		FName("Player.Form.Hippie"),
+		FString("Hippie form tag")
+	);
+	Instance.Player_Form_Knight = TagManager.AddNativeGameplayTag(
+		FName("Player.Form.Knight"),
+		FString("Knight form tag")
+	);
+	Instance.Player_Form_Native = TagManager.AddNativeGameplayTag(
+		FName("Player.Form.Native"),
+		FString("Native form tag")
+	);
 	Instance.Player_Form_Roman = TagManager.AddNativeGameplayTag(FName("Player.Form.Roman"), FString("Roman form tag"));
 	Instance.Player_POI_Fishing = TagManager.AddNativeGameplayTag(
 		FName("Player.POI.Fishing"),
@@ -625,8 +656,14 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 	Instance.Fish_Rarity = TagManager.AddNativeGameplayTag(FName("Fish.Rarity"), FString("Fish Rarity root tag"));
 	Instance.Fish_Tag = TagManager.AddNativeGameplayTag(FName("Fish.Tag"), FString("Fish Tags root tag"));
 	/** Message Tags **/
-	Instance.Message_Default_Item_Pickup = TagManager.AddNativeGameplayTag(FName("Message.Default.Item.Pickup"), FString("Pickup item message tag"));
-	Instance.Message_Default_Item_Use = TagManager.AddNativeGameplayTag(FName("Message.Default.Item.Use"), FString("Use item message tag"));
+	Instance.Message_Default_Item_Pickup = TagManager.AddNativeGameplayTag(
+		FName("Message.Default.Item.Pickup"),
+		FString("Pickup item message tag")
+	);
+	Instance.Message_Default_Item_Use = TagManager.AddNativeGameplayTag(
+		FName("Message.Default.Item.Use"),
+		FString("Use item message tag")
+	);
 
 	Instance.DamageTypes.Add(Instance.Effect_Damage_Magic_Arcane);
 	Instance.DamageTypes.Add(Instance.Effect_Damage_Magic_Dark);
@@ -641,7 +678,10 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 	Instance.DamageTypeToResistanceType.Add(Instance.Effect_Damage_Magic_Arcane, Instance.Effect_Resist_Magic_Arcane);
 	Instance.DamageTypeToResistanceType.Add(Instance.Effect_Damage_Magic_Dark, Instance.Effect_Resist_Magic_Dark);
 	Instance.DamageTypeToResistanceType.Add(Instance.Effect_Damage_Magic_Fire, Instance.Effect_Resist_Magic_Fire);
-	Instance.DamageTypeToResistanceType.Add(Instance.Effect_Damage_Magic_Lightning, Instance.Effect_Resist_Magic_Lightning);
+	Instance.DamageTypeToResistanceType.Add(
+		Instance.Effect_Damage_Magic_Lightning,
+		Instance.Effect_Resist_Magic_Lightning
+	);
 	Instance.DamageTypeToResistanceType.Add(Instance.Effect_Damage_Magic_Psych, Instance.Effect_Resist_Magic_Psych);
 	Instance.DamageTypeToResistanceType.Add(Instance.Effect_Damage_Magic_Spirit, Instance.Effect_Resist_Magic_Spirit);
 	Instance.DamageTypeToResistanceType.Add(Instance.Effect_Damage_Magic_Sun, Instance.Effect_Resist_Magic_Sun);
@@ -673,6 +713,11 @@ FGameplayTag FElectricCastleGameplayTags::GetDamageTypeResistanceTag(const FGame
 	{
 		return DamageTypeToResistanceType[DamageTypeTag];
 	}
-	UE_LOG(LogElectricCastle, Warning, TEXT("[FElectricCastleGameplayTags] No resistance tag for damage type: %s"), *DamageTypeTag.ToString());
+	UE_LOG(
+		LogElectricCastle,
+		Warning,
+		TEXT("[FElectricCastleGameplayTags] No resistance tag for damage type: %s"),
+		*DamageTypeTag.ToString()
+	);
 	return FGameplayTag::EmptyTag;
 }
