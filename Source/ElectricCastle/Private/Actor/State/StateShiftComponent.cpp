@@ -24,13 +24,13 @@ bool UStateShiftComponent::ShouldChangeState(const EStateShiftState NewState) co
 	return NewState != CurrentState;
 }
 
-void UStateShiftComponent::SetCurrentState(EStateShiftState NewState)
+void UStateShiftComponent::ChangeState(const FStateShiftRequest& StateShiftRequest)
 {
-	if (NewState != CurrentState)
+	if (StateShiftRequest.NewState != CurrentState)
 	{
 		const EStateShiftState OldState = CurrentState;
-		CurrentState = NewState;
-		OnStateShiftStateChanged.Broadcast(FStateShiftStateChangedPayload(OldState, NewState));
+		CurrentState = StateShiftRequest.NewState;
+		OnStateShiftStateChanged.Broadcast(FStateShiftStateChangedPayload::FromRequest(StateShiftRequest, OldState));
 	}
 }
 

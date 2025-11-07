@@ -7,6 +7,8 @@
 #include "GameFramework/Actor.h"
 #include "StateShiftActor.generated.h"
 
+class USphereMaskComponent;
+
 UCLASS()
 class ELECTRICCASTLE_API AStateShiftActor : public AActor, public IStateShiftInterface
 {
@@ -29,6 +31,8 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UStateShiftComponent> StateShiftComponent;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Components")
+	TObjectPtr<USphereMaskComponent> SphereMaskComponent;
 	UFUNCTION(BlueprintNativeEvent)
 	UShapeComponent* FindStateShiftCollisionComponent() const;
 	UFUNCTION(NetMulticast, Reliable)
@@ -37,6 +41,8 @@ protected:
 	void StateShiftReaction_Visibility_Show();
 	UFUNCTION(BlueprintNativeEvent)
 	void StateShiftReaction_Visibility_Hide();
+	UFUNCTION(BlueprintNativeEvent)
+	void StateShiftReaction_Visibility_Mask(const FStateShiftStateChangedPayload& Payload);
 	UFUNCTION(BlueprintNativeEvent)
 	void StateShiftReaction_Visibility_FadeIn();
 	UFUNCTION(BlueprintNativeEvent)

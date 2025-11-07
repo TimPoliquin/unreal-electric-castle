@@ -18,6 +18,4 @@ class ELECTRICCASTLE_API UStateShiftBlueprintFunctionLibrary : public UBlueprint
 public:
 	UFUNCTION(BlueprintCallable, Category = "StateShiftBlueprintFunctionLibrary", meta=( DefaultToSelf="Actor"))
 	static void SetActorVisibility(AActor* Actor, const bool bEnableVisibility);
-	UFUNCTION(BlueprintCallable, Category = "StateShiftBlueprintFunctionLibrary", meta=( DefaultToSelf="Actor"))
-	static void HandleStateShift(AActor* Actor, EStateShiftState NewState);
 };

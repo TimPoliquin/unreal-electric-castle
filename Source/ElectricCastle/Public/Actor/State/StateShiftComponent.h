@@ -29,8 +29,7 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool ShouldChangeState(const EStateShiftState NewState) const;
-	UFUNCTION(BlueprintCallable)
-	void SetCurrentState(EStateShiftState NewState);
+	void ChangeState(const FStateShiftRequest& StateShiftRequest);
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	TArray<EStateShiftReactionType> GetReactions(const EStateShiftState NewState) const;
 	UPROPERTY(BlueprintAssignable)

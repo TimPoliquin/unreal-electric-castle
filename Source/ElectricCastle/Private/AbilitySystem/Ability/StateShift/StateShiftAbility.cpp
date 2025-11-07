@@ -4,9 +4,19 @@
 #include "AbilitySystem/Ability/StateShift/StateShiftAbility.h"
 
 #include "Actor/State/StateShiftBlueprintFunctionLibrary.h"
+#include "Actor/State/StateShiftComponent.h"
+#include "Actor/State/StateShiftInterface.h"
+#include "Components/PostProcessComponent.h"
 #include "Components/SphereComponent.h"
 #include "ElectricCastle/ElectricCastle.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
+
+
+UStateShiftAbility::UStateShiftAbility()
+{
+	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
+	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
+}
 
 void UStateShiftAbility::ApplyStateShiftDetectionComponent_Implementation()
 {
@@ -43,12 +53,47 @@ void UStateShiftAbility::EndAbility(
 )
 {
 	RemoveStateShiftDetectionComponent();
+	RemoveVisualEffect();
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 
 float UStateShiftAbility::GetEffectRadius() const
 {
 	return DetectionRadius.GetValueAtLevel(GetAbilityLevel());
+}
+
+void UStateShiftAbility::ApplyVisualEffect_Implementation()
+{
+	if (!PostProcessMaterial)
+	{
+		return;
+	}
+	// Create and attach a post process component
+	PostProcessComponent = NewObject<UPostProcessComponent>(
+		GetAvatarActorFromActorInfo(),
+		UPostProcessComponent::StaticClass()
+	);
+	if (IsValid(PostProcessComponent))
+	{
+		PostProcessComponent->RegisterComponent();
+		PostProcessComponent->bUnbound = true; // Affect entire screen
+		PostProcessComponent->Priority = 1.0f;
+
+		// Add the post process material as a blendable
+		FWeightedBlendable Blendable(1.0f, PostProcessMaterial);
+		PostProcessComponent->Settings.WeightedBlendables.Array.Add(Blendable);
+	}
+}
+
+
+void UStateShiftAbility::RemoveVisualEffect_Implementation()
+{
+	if (IsValid(PostProcessComponent))
+	{
+		PostProcessComponent->UnregisterComponent();
+		PostProcessComponent->DestroyComponent();
+		PostProcessComponent = nullptr;
+	}
 }
 
 void UStateShiftAbility::OnStateShiftBeginOverlap_Implementation(
@@ -64,7 +109,7 @@ void UStateShiftAbility::OnStateShiftBeginOverlap_Implementation(
 	{
 		return;
 	}
-	UStateShiftBlueprintFunctionLibrary::HandleStateShift(OtherActor, ShiftState);
+	HandleStateShift(OtherActor, ShiftState);
 }
 
 
@@ -79,7 +124,7 @@ void UStateShiftAbility::OnStateShiftEndOverlap_Implementation(
 	{
 		return;
 	}
-	UStateShiftBlueprintFunctionLibrary::HandleStateShift(OtherActor, BaseState);
+	HandleStateShift(OtherActor, BaseState);
 }
 
 void UStateShiftAbility::CreateDetectionComponent()
@@ -121,5 +166,45 @@ void UStateShiftAbility::CreateDetectionComponent()
 			DetectionComponent,
 			FAttachmentTransformRules::SnapToTargetNotIncludingScale
 		);
+	}
+}
+
+void UStateShiftAbility::HandleStateShift(AActor* OtherActor, EStateShiftState NewState)
+{
+	if (!IsValid(OtherActor) || !OtherActor->Implements<UStateShiftInterface>())
+	{
+		UE_LOG(
+			LogElectricCastle,
+			Warning,
+			TEXT("[UStateShiftBlueprintFunctionLibrary::HandleStateShift] Actor is not a UStateShiftInterface! %s"),
+			OtherActor ? *OtherActor->GetName() : TEXT("NULL")
+		);
+		return;
+	}
+	if (UStateShiftComponent* StateShiftComponent = IStateShiftInterface::GetStateShiftComponent(OtherActor))
+	{
+		if (!StateShiftComponent->ShouldChangeState(NewState))
+		{
+			UE_LOG(
+				LogElectricCastle,
+				Warning,
+				TEXT("[%s] Actor does not need to change states to %s"),
+				*OtherActor->GetName(),
+				*UEnum::GetValueAsString(NewState)
+			)
+			return;
+		}
+		StateShiftComponent->ChangeState(
+			FStateShiftRequest(GetAvatarActorFromActorInfo(), GetEffectRadius(), NewState)
+		);
+	}
+	else
+	{
+		UE_LOG(
+			LogElectricCastle,
+			Warning,
+			TEXT("[%s] Actor does not have a state shift component"),
+			*OtherActor->GetName()
+		)
 	}
 }
