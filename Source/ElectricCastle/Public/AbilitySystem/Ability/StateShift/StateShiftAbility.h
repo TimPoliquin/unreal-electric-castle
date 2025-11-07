@@ -7,6 +7,7 @@
 #include "Actor/State/StateShiftTypes.h"
 #include "StateShiftAbility.generated.h"
 
+class UPostProcessComponent;
 class USphereComponent;
 /**
  * 
@@ -15,6 +16,9 @@ UCLASS()
 class ELECTRICCASTLE_API UStateShiftAbility : public UElectricCastleGameplayAbility
 {
 	GENERATED_BODY()
+
+public:
+	UStateShiftAbility();
 
 	virtual void EndAbility(
 		const FGameplayAbilitySpecHandle Handle,
@@ -47,19 +51,29 @@ protected:
 	);
 	UFUNCTION(BlueprintCallable, Category = "StateShiftAbility")
 	float GetEffectRadius() const;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void ApplyVisualEffect();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void RemoveVisualEffect();
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties")
 	FScalableFloat DetectionRadius;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties")
 	EStateShiftState ShiftState = EStateShiftState::Psychedelic;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties")
 	EStateShiftState BaseState = EStateShiftState::Normal;
+	// Post process material for visual effect
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Properties")
+	UMaterialInterface* PostProcessMaterial;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties", meta=(EditCondition="bDebug"))
 	TObjectPtr<UMaterialInterface> DebugMaterial;
-	UPROPERTY(BlueprintReadOnly, Category = "StateShiftAbility")
+	UPROPERTY(BlueprintReadOnly, Category = "Private")
 	TObjectPtr<USphereComponent> DetectionComponent;
+	UPROPERTY(BlueprintReadOnly, Category="Private")
+	TObjectPtr<UPostProcessComponent> PostProcessComponent;
 
 private:
 	void CreateDetectionComponent();
+	void HandleStateShift(AActor* OtherActor, EStateShiftState NewState);
 	UPROPERTY()
 	TObjectPtr<UStaticMeshComponent> DebugMeshComponent;
 };

@@ -3,6 +3,7 @@
 
 #include "Actor/State/StateShiftActor.h"
 
+#include "Actor/State/SphereMaskComponent.h"
 #include "Actor/State/StateShiftBlueprintFunctionLibrary.h"
 #include "Actor/State/StateShiftComponent.h"
 #include "Components/ShapeComponent.h"
@@ -17,6 +18,7 @@ AStateShiftActor::AStateShiftActor()
 	PrimaryActorTick.bCanEverTick = true;
 	SetReplicates(true);
 	StateShiftComponent = CreateDefaultSubobject<UStateShiftComponent>(TEXT("StateShiftComponent"));
+	SphereMaskComponent = CreateDefaultSubobject<USphereMaskComponent>(TEXT("SphereMaskComponent"));
 }
 
 UStateShiftComponent* AStateShiftActor::GetStateShiftComponent() const
@@ -96,6 +98,9 @@ void AStateShiftActor::StateShiftReaction_NetMulticast_Implementation(const FSta
 		case EStateShiftReactionType::Visibility_Hide:
 			StateShiftReaction_Visibility_Hide();
 			break;
+		case EStateShiftReactionType::Visibility_Mask:
+			StateShiftReaction_Visibility_Mask(Payload);
+			break;
 		case EStateShiftReactionType::Visibility_FadeIn:
 			StateShiftReaction_Visibility_FadeIn();
 			break;
@@ -116,12 +121,28 @@ void AStateShiftActor::StateShiftReaction_NetMulticast_Implementation(const FSta
 
 void AStateShiftActor::StateShiftReaction_Visibility_Show_Implementation()
 {
+	if (SphereMaskComponent->IsSphereMaskActive())
+	{
+		SphereMaskComponent->RemoveSphereMask();
+	}
 	UStateShiftBlueprintFunctionLibrary::SetActorVisibility(this, true);
 }
 
 void AStateShiftActor::StateShiftReaction_Visibility_Hide_Implementation()
 {
+	if (SphereMaskComponent->IsSphereMaskActive())
+	{
+		SphereMaskComponent->RemoveSphereMask();
+	}
 	UStateShiftBlueprintFunctionLibrary::SetActorVisibility(this, false);
+}
+
+void AStateShiftActor::StateShiftReaction_Visibility_Mask_Implementation(const FStateShiftStateChangedPayload& Payload)
+{
+	if (Payload.Instigator)
+	{
+		SphereMaskComponent->ApplySphereMask(Payload.Instigator, Payload.Radius, true);
+	}
 }
 
 void AStateShiftActor::StateShiftReaction_Visibility_FadeOut_Implementation()

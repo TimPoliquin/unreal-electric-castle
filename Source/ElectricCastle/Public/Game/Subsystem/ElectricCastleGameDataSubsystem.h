@@ -47,6 +47,9 @@ public:
 	TSubclassOf<UGameplayEffect> GetDefaultInteractEffectClass() const { return DefaultInteractEffectClass; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
+	UMaterialParameterCollection* GetPsychedelicVisionParameters() const { return PsychedelicVisionParameters; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	int32 GetDefaultPlayerLevel() const { return DefaultPlayerLevel; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
@@ -82,6 +85,8 @@ protected:
 	TObjectPtr<UAbilityInfo> AbilityInfo;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Ability Info")
 	TSubclassOf<UGameplayEffect> DefaultInteractEffectClass;
+	UPROPERTY(EditDefaultsOnly, Category="Ability Info")
+	TObjectPtr<UMaterialParameterCollection> PsychedelicVisionParameters;
 	UPROPERTY(EditDefaultsOnly, Category="Items")
 	TArray<UItemDefinitions*> ItemInfos;
 	UPROPERTY(EditDefaultsOnly, Category="Items|Fishing")
