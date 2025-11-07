@@ -255,6 +255,8 @@ private:
 		UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex
 	);
+	UFUNCTION()
+	void UpdatePlayerPositionInMaterialParameterCollections();
 
 	FVector DesiredCameraForwardVector;
 	FLODMappingData CreateCustomLODMappingDefault() const;

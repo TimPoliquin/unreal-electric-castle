@@ -33,7 +33,9 @@
 #include "LiveLinkInstance.h"
 #include "MetaHumanComponentUE.h"
 #include "Components/LODSyncComponent.h"
+#include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "Item/Equipment/EquipmentActor.h"
+#include "Materials/MaterialParameterCollectionInstance.h"
 #include "Player/Equipment/WeaponInterface.h"
 
 class UPlayerFormConfig;
@@ -223,6 +225,7 @@ void AElectricCastlePlayerCharacter::OnEquipmentAnimationRequest_Implementation(
 void AElectricCastlePlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	UpdatePlayerPositionInMaterialParameterCollections();
 }
 
 void AElectricCastlePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -443,6 +446,30 @@ void AElectricCastlePlayerCharacter::OnFadeDetectionEndOverlap(
 	if (OtherActor->Implements<UFadeInterface>())
 	{
 		IFadeInterface::Execute_FadeIn(OtherActor);
+	}
+}
+
+void AElectricCastlePlayerCharacter::UpdatePlayerPositionInMaterialParameterCollections()
+{
+	UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(this);
+	if (!GameDataSubsystem || !AbilitySystemComponent)
+	{
+		return;
+	}
+	if (AbilitySystemComponent->HasMatchingGameplayTag(
+		FElectricCastleGameplayTags::Get().Effect_State_PsychedelicVision
+	))
+	{
+		// Get the Material Parameter Collection Instance
+		UMaterialParameterCollectionInstance* CollectionInstance = GetWorld()->GetParameterCollectionInstance(
+			GameDataSubsystem->GetPsychedelicVisionParameters()
+		);
+		if (!CollectionInstance)
+		{
+			return;
+		}
+		// Update the vector parameter value
+		CollectionInstance->SetVectorParameterValue(FName("PlayerPosition"), GetActorLocation());
 	}
 }
 
