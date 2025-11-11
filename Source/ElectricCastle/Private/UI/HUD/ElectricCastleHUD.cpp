@@ -5,35 +5,25 @@
 
 #include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
 #include "Blueprint/UserWidget.h"
+#include "ElectricCastle/ElectricCastleLogChannels.h"
+#include "GameFramework/GameStateBase.h"
+#include "Player/ElectricCastlePlayerState.h"
+#include "UI/HUD/OverlayWidget.h"
 #include "UI/ViewModel/MVVM_Inventory.h"
+#include "UI/ViewModel/MVVM_PlayerState.h"
 #include "UI/Widget/AuraMenuWidget.h"
-#include "UI/Widget/AuraUserWidget.h"
 #include "UI/WidgetController/AttributeMenuWidgetController.h"
 #include "UI/WidgetController/SpellMenuWidgetController.h"
-#include "UI/WidgetController/OverlayWidgetController.h"
-#include "UI/Widget/AuraOverlayWidget.h"
 
 void AElectricCastleHUD::BeginPlay()
 {
 	Super::BeginPlay();
-	if (!OverlayWidgetController)
-	{
-		OverlayWidgetController = NewObject<UOverlayWidgetController>(this, OverlayWidgetControllerClass);
-	}
-	if (!AttributeMenuWidgetController)
-	{
-		AttributeMenuWidgetController = NewObject<UAttributeMenuWidgetController>(this, AttributeMenuWidgetControllerClass);
-	}
-	if (!SpellMenuWidgetController)
-	{
-		SpellMenuWidgetController = NewObject<USpellMenuWidgetController>(this, SpellMenuWidgetControllerClass);
-	}
 }
 
-
-UOverlayWidgetController* AElectricCastleHUD::GetOverlayWidgetController() const
+void AElectricCastleHUD::Initialize()
 {
-	return OverlayWidgetController;
+	InitializePlayerStateViewModels();
+	InitializeOverlayWidget();
 }
 
 void AElectricCastleHUD::InitializeWidgets(
@@ -48,17 +38,8 @@ void AElectricCastleHUD::InitializeWidgets(
 	{
 		return;
 	}
-	OverlayWidget = CreateAuraWidget(
-		OverlayWidgetClass,
-		OverlayWidgetControllerClass,
-		InPlayer,
-		InPlayerController,
-		InPlayerState,
-		InAbilitySystemComponent,
-		InAttributeSet
-	);
-	OverlayWidget->OnOpenMenuDelegate.AddDynamic(this, &AElectricCastleHUD::OpenMenu);
 	InitializeInventoryViewModel();
+
 	MenuWidget = CreateWidget<UAuraMenuWidget>(GetWorld(), MenuWidgetClass, FName("MenuWidget"));
 	MenuWidget->InitializeDependencies(
 		GetOwningPawn()
@@ -73,7 +54,9 @@ void AElectricCastleHUD::InitializeWidgets(
 		// InitializeAttributeWidgetController(Params);
 		// InitializeSpellMenuWidgetController(Params);
 	};
-	if (UElectricCastleAbilitySystemComponent* AbilitySystemComponent = Cast<UElectricCastleAbilitySystemComponent>(InAbilitySystemComponent))
+	if (UElectricCastleAbilitySystemComponent* AbilitySystemComponent = Cast<UElectricCastleAbilitySystemComponent>(
+		InAbilitySystemComponent
+	))
 	{
 		if (AbilitySystemComponent->HasFiredOnAbilitiesGivenDelegate())
 		{
@@ -102,6 +85,11 @@ UMVVM_Inventory* AElectricCastleHUD::GetInventoryViewModel()
 	return InventoryViewModel;
 }
 
+TArray<UMVVM_PlayerState*> AElectricCastleHUD::GetPlayerStateViewModels() const
+{
+	return PlayerStateViewModels;
+}
+
 void AElectricCastleHUD::OpenMenu(const EAuraMenuTab& OpenTab)
 {
 	GetOwningPlayerController()->SetInputMode(FInputModeUIOnly());
@@ -115,27 +103,30 @@ void AElectricCastleHUD::OnMenuClosed()
 	GetOwningPlayerController()->SetInputMode(FInputModeGameAndUI());
 }
 
-UAuraOverlayWidget* AElectricCastleHUD::CreateAuraWidget(
-	const TSubclassOf<UAuraOverlayWidget>& WidgetClass,
-	const TSubclassOf<UElectricCastleWidgetController>& WidgetControllerClass,
-	AActor* InOwner,
-	APlayerController* InPlayerController,
-	AElectricCastlePlayerState* InPlayerState,
-	UElectricCastleAbilitySystemComponent* InAbilitySystemComponent,
-	UElectricCastleAttributeSet* InAttributeSet
-)
+void AElectricCastleHUD::InitializePlayerStateViewModels()
 {
-	checkf(WidgetClass, TEXT("Widget class uninitialized; please fill out BP_ElectricCastleHUD"));
-	checkf(
-		WidgetControllerClass,
-		TEXT("Widget controller class uninitialized; please fill out BP_ElectricCastleHUD")
-	);
-
-	UAuraOverlayWidget* Widget = CreateWidget<UAuraOverlayWidget>(GetWorld(), WidgetClass);
-	UOverlayWidgetController* WidgetController = GetOverlayWidgetController();
-	Widget->SetWidgetController(WidgetController);
-	Widget->AddToViewport();
-	return Widget;
+	if (!PlayerStateViewModelClass)
+	{
+		UE_LOG(LogElectricCastle, Error, TEXT("[%s] PlayerStateViewModelClass is null"), *GetName());
+		return;
+	}
+	if (const AGameStateBase* GameState = GetWorld()->GetGameState<AGameStateBase>())
+	{
+		// this should maybe be done on player state begin play?
+		for (int32 PlayerIdx = 0; PlayerIdx < GameState->PlayerArray.Num(); PlayerIdx++)
+		{
+			UMVVM_PlayerState* PlayerStateViewModel = NewObject<UMVVM_PlayerState>(this, PlayerStateViewModelClass);
+			PlayerStateViewModel->SetPlayerIndex(PlayerIdx);
+			PlayerStateViewModel->InitializeDependencies(
+				Cast<AElectricCastlePlayerState>(GameState->PlayerArray[PlayerIdx])
+			);
+			PlayerStateViewModels.Add(PlayerStateViewModel);
+		}
+	}
+	else
+	{
+		UE_LOG(LogElectricCastle, Error, TEXT("[%s] GameState is null"), *GetName());
+	}
 }
 
 void AElectricCastleHUD::InitializeInventoryViewModel()
@@ -145,22 +136,26 @@ void AElectricCastleHUD::InitializeInventoryViewModel()
 	InventoryViewModel->InitializeDependencies();
 }
 
-void AElectricCastleHUD::InitializeOverlayWidgetController(const FWidgetControllerParams& Params)
+void AElectricCastleHUD::InitializeOverlayWidget()
 {
-	if (!OverlayWidgetController)
+	if (!OverlayWidgetClass)
 	{
-		OverlayWidgetController = NewObject<UOverlayWidgetController>(this, OverlayWidgetControllerClass);
+		UE_LOG(LogElectricCastle, Error, TEXT("[%s] OverlayWidgetClass is null"), *GetName());
+		return;
 	}
-	OverlayWidgetController->SetWidgetControllerParams(Params);
-	OverlayWidgetController->BindCallbacksToDependencies();
-	OverlayWidgetController->BroadcastInitialValues();
+	OverlayWidget = CreateWidget<UOverlayWidget>(GetWorld(), OverlayWidgetClass, FName("OverlayWidget"));
+	OverlayWidget->BindViewModels(GetPlayerStateViewModels());
+	OverlayWidget->AddToViewport();
 }
 
 void AElectricCastleHUD::InitializeAttributeWidgetController(const FWidgetControllerParams& Params)
 {
 	if (!AttributeMenuWidgetController)
 	{
-		AttributeMenuWidgetController = NewObject<UAttributeMenuWidgetController>(this, AttributeMenuWidgetControllerClass);
+		AttributeMenuWidgetController = NewObject<UAttributeMenuWidgetController>(
+			this,
+			AttributeMenuWidgetControllerClass
+		);
 	}
 	AttributeMenuWidgetController->SetWidgetControllerParams(Params);
 	AttributeMenuWidgetController->BindCallbacksToDependencies();

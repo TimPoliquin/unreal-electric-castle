@@ -97,7 +97,6 @@ AElectricCastlePlayerCharacter::AElectricCastlePlayerCharacter()
 	FishingStatusEffectNiagaraComponent->SetAutoActivate(false);
 	MotionWarpingComponent = CreateDefaultSubobject<UMotionWarpingComponent>(TEXT("Motion Warping"));
 	FormChangeComponent = CreateDefaultSubobject<UPlayerFormChangeComponent>(TEXT("Form Change Component"));
-	FormChangeComponent->OnPlayerFormChange.AddDynamic(this, &AElectricCastlePlayerCharacter::OnFormChange);
 	MetaHumanComponent = CreateDefaultSubobject<UMetaHumanComponentUE>(TEXT("MetaHuman"));
 	LODSyncComponent = CreateDefaultSubobject<ULODSyncComponent>(TEXT("LODSync"));
 	LODSyncComponent->NumLODs = 8;
@@ -132,13 +131,14 @@ void AElectricCastlePlayerCharacter::BeginPlay()
 	{
 		AIDirectorSubsystem->RegisterActivePlayer(this);
 	}
-	FaceMesh->OnAnimInitialized.AddDynamic(this, &AElectricCastlePlayerCharacter::PrepareLiveLinkSetup);
+	FormChangeComponent->OnPlayerFormChange.AddUniqueDynamic(this, &AElectricCastlePlayerCharacter::OnFormChange);
+	FaceMesh->OnAnimInitialized.AddUniqueDynamic(this, &AElectricCastlePlayerCharacter::PrepareLiveLinkSetup);
 	OnCameraReturnDelegate.BindUObject(this, &AElectricCastlePlayerCharacter::OnCameraReturned);
-	FadeDetectionComponent->OnComponentBeginOverlap.AddDynamic(
+	FadeDetectionComponent->OnComponentBeginOverlap.AddUniqueDynamic(
 		this,
 		&AElectricCastlePlayerCharacter::OnFadeDetectionBeginOverlap
 	);
-	FadeDetectionComponent->OnComponentEndOverlap.AddDynamic(
+	FadeDetectionComponent->OnComponentEndOverlap.AddUniqueDynamic(
 		this,
 		&AElectricCastlePlayerCharacter::OnFadeDetectionEndOverlap
 	);
@@ -388,13 +388,14 @@ void AElectricCastlePlayerCharacter::InitializePlayerControllerHUD(
 {
 	if (AElectricCastleHUD* HUD = Cast<AElectricCastleHUD>(InPlayerController->GetHUD()))
 	{
-		HUD->InitializeWidgets(
-			this,
-			InPlayerController,
-			InPlayerState,
-			AbilitySystemComponent,
-			GetAttributeSet()
-		);
+		HUD->Initialize();
+		// HUD->InitializeWidgets(
+		// 	this,
+		// 	InPlayerController,
+		// 	InPlayerState,
+		// 	AbilitySystemComponent,
+		// 	GetAttributeSet()
+		// );
 	}
 }
 

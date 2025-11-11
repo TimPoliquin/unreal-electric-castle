@@ -7,6 +7,8 @@
 #include "UI/WidgetController/ElectricCastleWidgetController.h"
 #include "ElectricCastleHUD.generated.h"
 
+class UOverlayWidget;
+class UMVVM_PlayerState;
 class UAuraOverlayWidget;
 enum class EAuraMenuTab : uint8;
 class UAuraMenuWidget;
@@ -31,6 +33,7 @@ class ELECTRICCASTLE_API AElectricCastleHUD : public AHUD
 	GENERATED_BODY()
 
 public:
+	void Initialize();
 	void InitializeWidgets(
 		AActor* InPlayer,
 		APlayerController* InPlayerController,
@@ -39,13 +42,14 @@ public:
 		UElectricCastleAttributeSet* InAttributeSet
 	);
 
-	UOverlayWidgetController* GetOverlayWidgetController() const;
 	UAttributeMenuWidgetController* GetAttributeMenuWidgetController(
 	) const;
 	USpellMenuWidgetController* GetSpellMenuWidgetController(
 	) const;
 	UFUNCTION(BlueprintCallable)
 	UMVVM_Inventory* GetInventoryViewModel();
+	UFUNCTION(BlueprintCallable)
+	TArray<UMVVM_PlayerState*> GetPlayerStateViewModels() const;
 
 	UFUNCTION(BlueprintCallable)
 	void OpenMenu(const EAuraMenuTab& OpenTab);
@@ -55,8 +59,16 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	/** Player State View Model **/
+	UPROPERTY(EditDefaultsOnly, Category = "Properties")
+	TSubclassOf<UMVVM_PlayerState> PlayerStateViewModelClass;
+	UPROPERTY()
+	TArray<TObjectPtr<UMVVM_PlayerState>> PlayerStateViewModels;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Components")
+	TSubclassOf<UOverlayWidget> OverlayWidgetClass;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	TObjectPtr<UAuraOverlayWidget> OverlayWidget;
+	TObjectPtr<UOverlayWidget> OverlayWidget;
 
 	/** Menu Widget **/
 	UPROPERTY(EditDefaultsOnly, Category = "Menu")
@@ -65,29 +77,11 @@ protected:
 	TObjectPtr<UAuraMenuWidget> MenuWidget;
 
 private:
-	/** Overlay Widget Controller **/
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<UAuraOverlayWidget> OverlayWidgetClass;
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<UOverlayWidgetController> OverlayWidgetControllerClass;
-	UPROPERTY()
-	TObjectPtr<UOverlayWidgetController> OverlayWidgetController;
-
 	/** Attribute Menu Controller **/
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UAttributeMenuWidgetController> AttributeMenuWidgetControllerClass;
 	UPROPERTY()
 	TObjectPtr<UAttributeMenuWidgetController> AttributeMenuWidgetController;
-
-	UAuraOverlayWidget* CreateAuraWidget(
-		const TSubclassOf<UAuraOverlayWidget>& WidgetClass,
-		const TSubclassOf<UElectricCastleWidgetController>& WidgetControllerClass,
-		AActor* InOwner,
-		APlayerController* InPlayerController,
-		AElectricCastlePlayerState* InPlayerState,
-		UElectricCastleAbilitySystemComponent* InAbilitySystemComponent,
-		UElectricCastleAttributeSet* InAttributeSet
-	);
 
 	/** Spell Menu Widget Controller */
 	UPROPERTY(EditAnywhere)
@@ -106,11 +100,15 @@ private:
 	TSubclassOf<UMVVM_Inventory> InventoryViewModelClass;
 	UPROPERTY()
 	TObjectPtr<UMVVM_Inventory> InventoryViewModel;
+
+	void InitializePlayerStateViewModels();
 	void InitializeInventoryViewModel();
+
+	void InitializeOverlayWidget();
+
 
 	bool bInitialized = false;
 
-	void InitializeOverlayWidgetController(const FWidgetControllerParams& Params);
 	void InitializeAttributeWidgetController(const FWidgetControllerParams& Params);
 	void InitializeSpellMenuWidgetController(const FWidgetControllerParams& Params);
 };

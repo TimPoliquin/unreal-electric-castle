@@ -13,24 +13,12 @@
 #include "AbilitySystem/Data/CharacterClassInfo.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Character/ElectricCastleCharacter.h"
-#include "ElectricCastle/ElectricCastle.h"
 #include "Engine/OverlapResult.h"
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/ElectricCastlePlayerState.h"
 #include "Tags/ElectricCastleGameplayTags.h"
 #include "UI/HUD/ElectricCastleHUD.h"
-
-UOverlayWidgetController* UElectricCastleAbilitySystemLibrary::GetOverlayWidgetController(
-	const UObject* WorldContextObject
-)
-{
-	if (const AElectricCastleHUD* HUD = GetElectricCastleHUD(WorldContextObject))
-	{
-		return HUD->GetOverlayWidgetController();
-	}
-	return nullptr;
-}
 
 UAttributeMenuWidgetController* UElectricCastleAbilitySystemLibrary::GetAttributeMenuWidgetController(
 	const UObject* WorldContextObject

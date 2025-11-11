@@ -24,14 +24,21 @@ void USpellMenuWidgetController::BroadcastInitialValues()
 	}
 	else
 	{
-		GetAbilitySystemComponent()->OnAbilitiesGivenDelegate.AddLambda([this]()
-		{
-			BroadcastAbilityInfo();
-		});
+		GetAbilitySystemComponent()->OnAbilitiesGivenDelegate.AddLambda(
+			[this]()
+			{
+				BroadcastAbilityInfo();
+			}
+		);
 	}
 	if (const UProgressionComponent* ProgressionComponent = UProgressionComponent::Get(GetPlayerState()))
 	{
-		OnSpellPointsChanged(FAuraIntAttributeChangedPayload::CreateBroadcastPayload(FElectricCastleGameplayTags::Get().Attributes_Progression_SpellPoints, ProgressionComponent->GetSpellPoints()));
+		OnSpellPointsChanged(
+			FIntAttributeChangedPayload::CreateBroadcastPayload(
+				FElectricCastleGameplayTags::Get().Attributes_Progression_SpellPoints,
+				ProgressionComponent->GetSpellPoints()
+			)
+		);
 	}
 }
 
@@ -150,7 +157,7 @@ void USpellMenuWidgetController::UnbindAll_Implementation(const UObject* BoundOb
 }
 
 
-void USpellMenuWidgetController::OnSpellPointsChanged(const FAuraIntAttributeChangedPayload& Payload)
+void USpellMenuWidgetController::OnSpellPointsChanged(const FIntAttributeChangedPayload& Payload)
 {
 	OnSpellMenuSpellPointsChangedDelegate.Broadcast(Payload);
 }
@@ -169,7 +176,9 @@ void USpellMenuWidgetController::OnPlayerLevelChanged(
 			AbilityInfoDelegate.Broadcast(Info);
 		}
 	}
-	OnSpellMenuPlayerLevelChangedDelegate.Broadcast(FAuraIntAttributeChangedPayload(FElectricCastleGameplayTags::Get().Attributes_Progression_Level, Level, Level));
+	OnSpellMenuPlayerLevelChangedDelegate.Broadcast(
+		FIntAttributeChangedPayload(FElectricCastleGameplayTags::Get().Attributes_Progression_Level, Level, Level)
+	);
 }
 
 void USpellMenuWidgetController::OnAbilityEquipped(const FElectricCastleEquipAbilityPayload& EquipPayload)

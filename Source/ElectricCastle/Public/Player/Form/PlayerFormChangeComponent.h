@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "FormConfigLoadRequest.h"
 #include "GameplayEffect.h"
 #include "GameplayTagContainer.h"
 #include "PlayerFormConfig.h"
@@ -28,8 +29,6 @@ struct ELECTRICCASTLE_API FPlayerFormChangeEventPayload
 	TSubclassOf<UGameplayEffect> HealthChangeEffect;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<UGameplayEffect> ManaChangeEffect;
-	UPROPERTY(BlueprintAssignable)
-	FPlayerFormDataLoadedSignature OnPlayerFormDataLoaded;
 
 	bool IsValid() const
 	{
@@ -37,7 +36,11 @@ struct ELECTRICCASTLE_API FPlayerFormChangeEventPayload
 	}
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPlayerFormChangeEventSignature, const FPlayerFormChangeEventPayload&, Payload);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(
+	FPlayerFormChangeEventSignature,
+	const FPlayerFormChangeEventPayload&,
+	Payload
+);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class ELECTRICCASTLE_API UPlayerFormChangeComponent : public UActorComponent
@@ -63,6 +66,8 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FPlayerFormChangeEventSignature OnPlayerFormChange;
+	UPROPERTY(BlueprintAssignable)
+	FFormConfigLoadRequestSignature OnPlayerFormDataLoaded;
 
 protected:
 	virtual void BeginPlay() override;
@@ -71,7 +76,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Effect")
 	TObjectPtr<USoundBase> FormChangeSound;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Form", Replicated, ReplicatedUsing=OnRep_CurrentFormTag, meta=(Categories="Player.Form"))
+	UPROPERTY(
+		VisibleInstanceOnly,
+		BlueprintReadOnly,
+		Category="Form",
+		Replicated,
+		ReplicatedUsing=OnRep_CurrentFormTag,
+		meta=(Categories="Player.Form")
+	)
 	FGameplayTag CurrentFormTag = FGameplayTag::EmptyTag;
 	UFUNCTION()
 	void OnRep_CurrentFormTag(const FGameplayTag& OldValue) const;
@@ -79,6 +91,8 @@ protected:
 	FActiveGameplayEffectHandle CurrentFormEffectHandle;
 
 private:
+	UFUNCTION()
+	void OnFormDataLoaded_Broadcast(const FPlayerFormConfigRow& FormConfigRow);
 	UFUNCTION()
 	void OnFormDataLoaded(const FPlayerFormConfigRow& FormConfigRow);
 	UPlayerFormConfig* GetPlayerFormConfig() const;
