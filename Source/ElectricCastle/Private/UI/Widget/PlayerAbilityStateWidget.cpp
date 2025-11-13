@@ -13,7 +13,7 @@ void UPlayerAbilityStateWidget::BindViewModel_Implementation(UMVVM_AbilityState*
 void UPlayerAbilityStateWidget::NativeTick(const FGeometry& MyGeometry, const float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
-	if (ViewModel && ViewModel->GetIsCoolingDown())
+	if (ViewModel)
 	{
 		ViewModel->UpdateCooldown(InDeltaTime);
 	}

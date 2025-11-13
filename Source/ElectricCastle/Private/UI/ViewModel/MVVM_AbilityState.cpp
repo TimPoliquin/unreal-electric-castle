@@ -10,17 +10,28 @@
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "GameFramework/PlayerState.h"
+#include "Tags/ElectricCastleGameplayTags.h"
 
 void UMVVM_AbilityState::InitializeDependencies(APlayerState* PlayerState)
 {
-	if (UElectricCastleAbilitySystemComponent* AbilitySystemComponent = Cast<UElectricCastleAbilitySystemComponent>(
+	AbilitySystemComponent = Cast<UElectricCastleAbilitySystemComponent>(
 		UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(
 			PlayerState
 		)
-	))
+	);
+	if (AbilitySystemComponent)
 	{
 		AbilitySystemComponent->OnAbilityAdded.AddUniqueDynamic(this, &UMVVM_AbilityState::OnPlayerAbilityAdded);
 		AbilitySystemComponent->OnAbilityRemoved.AddUniqueDynamic(this, &UMVVM_AbilityState::OnPlayerAbilityRemoved);
+		AbilitySystemComponent->RegisterGameplayTagEvent(
+			FElectricCastleGameplayTags::Get().Player_Block_Ability_Offensive,
+			EGameplayTagEventType::NewOrRemoved
+		).AddLambda(
+			[this](const FGameplayTag& Tag, const int32 Count)
+			{
+				SetIsBlocked(Count > 0);
+			}
+		);
 	}
 }
 
@@ -88,6 +99,35 @@ void UMVVM_AbilityState::SetCooldown_TotalTime(const float InCooldown_TotalTime)
 	UE_MVVM_SET_PROPERTY_VALUE(Cooldown_TotalTime, InCooldown_TotalTime);
 }
 
+FGameplayTag UMVVM_AbilityState::GetCooldownTag() const
+{
+	return CooldownTag;
+}
+
+void UMVVM_AbilityState::SetCooldownTag(const FGameplayTag& InCooldownTag)
+{
+	const FGameplayTag& OldCooldownTag = CooldownTag;
+	UE_MVVM_SET_PROPERTY_VALUE(CooldownTag, InCooldownTag);
+
+	if (CooldownTag.IsValid())
+	{
+		CooldownDelegateHandle = AbilitySystemComponent->RegisterGameplayTagEvent(
+			AbilityInfo.CooldownTag,
+			EGameplayTagEventType::NewOrRemoved
+		).AddUObject(this, &UMVVM_AbilityState::OnCooldownTagChanged);
+		StartCooldown(FindActiveGameplayEffectWithCooldownTag(CooldownTag));
+	}
+	else if (CooldownDelegateHandle.IsValid())
+	{
+		AbilitySystemComponent->UnregisterGameplayTagEvent(
+			CooldownDelegateHandle,
+			OldCooldownTag,
+			EGameplayTagEventType::NewOrRemoved
+		);
+		ClearCooldown();
+	}
+}
+
 bool UMVVM_AbilityState::GetIsCoolingDown() const
 {
 	return IsCoolingDown;
@@ -96,13 +136,67 @@ bool UMVVM_AbilityState::GetIsCoolingDown() const
 void UMVVM_AbilityState::SetIsCoolingDown(const bool bIsCoolingDown)
 {
 	UE_MVVM_SET_PROPERTY_VALUE(IsCoolingDown, bIsCoolingDown);
+	UE_MVVM_BROADCAST_FIELD_VALUE_CHANGED(GetIsAbilityAvailable);
+}
+
+bool UMVVM_AbilityState::GetIsBlocked() const
+{
+	return IsBlocked;
+}
+
+void UMVVM_AbilityState::SetIsBlocked(const bool bIsBlocked)
+{
+	UE_MVVM_SET_PROPERTY_VALUE(IsBlocked, bIsBlocked);
+	UE_MVVM_BROADCAST_FIELD_VALUE_CHANGED(GetIsAbilityAvailable);
+}
+
+bool UMVVM_AbilityState::GetIsAbilityAvailable() const
+{
+	return !IsBlocked && !IsCoolingDown;
+}
+
+FElectricCastleAbilityInfo UMVVM_AbilityState::GetAbilityInfo() const
+{
+	return AbilityInfo;
+}
+
+void UMVVM_AbilityState::SetAbilityInfo(const FElectricCastleAbilityInfo& InAbilityInfo)
+{
+	AbilityInfo = InAbilityInfo;
+	if (AbilityInfo.IsValid())
+	{
+		SetAbilityTag(AbilityTag);
+		SetAbilityIcon(AbilityInfo.Icon);
+		SetAbilityBackground(AbilityInfo.BackgroundMaterial);
+		SetCooldownTag(AbilityInfo.CooldownTag);
+	}
+	else
+	{
+		SetAbilityTag(FGameplayTag::EmptyTag);
+		SetAbilityIcon(nullptr);
+		SetAbilityBackground(nullptr);
+		SetCooldownTag(FGameplayTag::EmptyTag);
+	}
 }
 
 void UMVVM_AbilityState::StartCooldown(float InDuration)
 {
-	UE_MVVM_SET_PROPERTY_VALUE(Cooldown_RemainingTime, InDuration);
-	UE_MVVM_SET_PROPERTY_VALUE(Cooldown_TotalTime, InDuration);
-	UE_MVVM_SET_PROPERTY_VALUE(IsCoolingDown, true);
+	SetCooldown_RemainingTime(InDuration);
+	SetCooldown_TotalTime(InDuration);
+	SetIsCoolingDown(true);
+}
+
+void UMVVM_AbilityState::StartCooldown(const FActiveGameplayEffectHandle& InCooldownEffectHandle)
+{
+	if (!InCooldownEffectHandle.IsValid())
+	{
+		return;
+	}
+	StartCooldown(
+		AbilitySystemComponent->GetActiveGameplayEffect(InCooldownEffectHandle)->GetTimeRemaining(
+			AbilitySystemComponent->GetWorld()->GetTimeSeconds()
+		)
+	);
 }
 
 void UMVVM_AbilityState::UpdateCooldown(const float DeltaTime)
@@ -145,33 +239,16 @@ void UMVVM_AbilityState::ClearCooldown()
 
 void UMVVM_AbilityState::OnPlayerAbilityAdded(const FOnAbilityChangedPayload& Payload)
 {
-	UE_LOG(
-		LogElectricCastle,
-		Warning,
-		TEXT("[%s][%s] Received ability added notice: %s|%s"),
-		Payload.Owner->HasAuthority() ? *FString("Server") : *FString("Client"),
-		*GetName(),
-		*Payload.InputTag.ToString(),
-		*Payload.AbilityTag.ToString()
-	)
 	if (Payload.InputTag.MatchesTagExact(InputTag))
 	{
-		UE_LOG(
-			LogElectricCastle,
-			Warning,
-			TEXT("[%s] Ability matches %s - updating UI"),
-			*GetName(),
-			*InputTag.ToString()
-		)
 		AbilityTag = Payload.AbilityTag;
 		if (const UElectricCastleGameDataSubsystem* GameData = UElectricCastleGameDataSubsystem::Get(Payload.Owner))
 		{
-			const FElectricCastleAbilityInfo& AbilityInfo = GameData->GetAbilityInfo()->FindAbilityInfoForTag(
-				AbilityTag
+			SetAbilityInfo(
+				GameData->GetAbilityInfo()->FindAbilityInfoForTag(
+					AbilityTag
+				)
 			);
-			SetAbilityTag(AbilityTag);
-			SetAbilityIcon(AbilityInfo.Icon);
-			SetAbilityBackground(AbilityInfo.BackgroundMaterial);
 		}
 		else
 		{
@@ -182,10 +259,55 @@ void UMVVM_AbilityState::OnPlayerAbilityAdded(const FOnAbilityChangedPayload& Pa
 
 void UMVVM_AbilityState::OnPlayerAbilityRemoved(const FOnAbilityChangedPayload& Payload)
 {
-	if (Payload.InputTag.MatchesTagExact(Payload.InputTag))
+	if (Payload.InputTag.MatchesTagExact(InputTag))
 	{
-		SetAbilityTag(FGameplayTag::EmptyTag);
-		SetAbilityIcon(nullptr);
-		SetAbilityBackground(nullptr);
+		SetAbilityInfo(FElectricCastleAbilityInfo());
+	}
+}
+
+FActiveGameplayEffectHandle UMVVM_AbilityState::FindActiveGameplayEffectWithCooldownTag(
+	const FGameplayTag InCooldownTag
+) const
+{
+	TArray<FActiveGameplayEffectHandle> ActiveEffects = AbilitySystemComponent->GetActiveEffectsWithAllTags(
+		InCooldownTag.GetSingleTagContainer()
+	);
+	for (const FActiveGameplayEffectHandle& Handle : ActiveEffects)
+	{
+		if (AbilitySystemComponent->GetActiveGameplayEffect(Handle))
+		{
+			return Handle;
+		}
+	}
+	return FActiveGameplayEffectHandle();
+}
+
+void UMVVM_AbilityState::OnCooldownTagChanged(
+	const FGameplayTag InCooldownTag,
+	const int NewCount
+)
+{
+	if (!AbilitySystemComponent)
+	{
+		UE_LOG(LogElectricCastle, Warning, TEXT("[%s] No AbilitySystemComponent set!"), *GetName())
+		return;
+	}
+
+	if (NewCount > 0)
+	{
+		// Cooldown applied: find the active GE with this tag
+		if (const FActiveGameplayEffectHandle& CooldownEffect = FindActiveGameplayEffectWithCooldownTag(InCooldownTag);
+			CooldownEffect.IsValid())
+		{
+			StartCooldown(CooldownEffect);
+		}
+		else
+		{
+			ClearCooldown();
+		}
+	}
+	else
+	{
+		ClearCooldown();
 	}
 }

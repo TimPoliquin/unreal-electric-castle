@@ -16,7 +16,7 @@ void IWeaponInterface::EffectAdd_Lightning(UObject* Weapon)
 	}
 	UE_LOG(
 		LogElectricCastle,
-		Warning,
+		Error,
 		TEXT("IWeaponInterface::EffectAdd_Lightning: Object is not valid or is not a weapon")
 	)
 }

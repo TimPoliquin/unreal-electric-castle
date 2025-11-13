@@ -8,6 +8,21 @@
 #include "ElectricCastleGameplayAbility.generated.h"
 
 USTRUCT(BlueprintType)
+struct ELECTRICCASTLE_API FAbilityCooldownConfig
+{
+	GENERATED_BODY()
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FScalableFloat Duration;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(Categories="Cooldown"))
+	FGameplayTag CooldownTag = FGameplayTag::EmptyTag;
+
+	bool IsValid() const
+	{
+		return CooldownTag.IsValid() && Duration.IsValid();
+	}
+};
+
+USTRUCT(BlueprintType)
 struct ELECTRICCASTLE_API FComboAbilityConfig
 {
 	GENERATED_BODY()
@@ -64,16 +79,21 @@ public:
 
 	float GetManaCost(const float InLevel = 1.f) const;
 	float GetCooldown(const float InLevel = 1.f) const;
-	virtual UGameplayEffect* GetCooldownGameplayEffect() const override;
+	UFUNCTION(BlueprintCallable)
+	void ApplyCustomCooldown() const;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties")
-	TSubclassOf<UGameplayEffect> CooldownEffectClass;
+	FAbilityCooldownConfig CooldownConfig;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties")
 	bool bAutoApplyCooldownOnAbilityEnd = true;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties")
 	bool bDebug = false;
-
+	virtual void CommitExecute(
+		const FGameplayAbilitySpecHandle Handle,
+		const FGameplayAbilityActorInfo* ActorInfo,
+		const FGameplayAbilityActivationInfo ActivationInfo
+	) override;
 	void ExecuteTask(UAbilityTask* Task) const;
 	virtual void EndAbility(
 		const FGameplayAbilitySpecHandle Handle,

@@ -347,24 +347,7 @@ void AElectricCastlePlayerCharacter::OnEffectAdd_LightningDamage_Implementation(
 {
 	if (EquipmentComponent && EquipmentComponent->IsUsingWeapon())
 	{
-		UE_LOG(
-			LogElectricCastle,
-			Warning,
-			TEXT("[%s][%s] Adding Lightning Damage Effect"),
-			HasAuthority() ? *FString("Server") : *FString("Client"),
-			*GetName()
-		)
 		IWeaponInterface::EffectAdd_Lightning(EquipmentComponent->GetWeapon());
-	}
-	else
-	{
-		UE_LOG(
-			LogElectricCastle,
-			Warning,
-			TEXT("[%s][%s] Misconfig! Will not apply lightning damage"),
-			HasAuthority() ? *FString("Server") : *FString("Client"),
-			*GetName()
-		)
 	}
 }
 
