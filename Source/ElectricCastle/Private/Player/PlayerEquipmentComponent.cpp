@@ -11,6 +11,7 @@
 #include "Item/ItemBlueprintLibrary.h"
 #include "Item/Equipment/EquipmentActor.h"
 #include "Item/Equipment/FishingRodActor.h"
+#include "Net/UnrealNetwork.h"
 #include "Tags/ElectricCastleGameplayTags.h"
 
 UPlayerEquipmentComponent::UPlayerEquipmentComponent()
@@ -18,6 +19,14 @@ UPlayerEquipmentComponent::UPlayerEquipmentComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 	SaveID = USaveGameBlueprintFunctionLibrary::GenerateSaveID(this);
 	SetIsReplicatedByDefault(true);
+}
+
+void UPlayerEquipmentComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(UPlayerEquipmentComponent, Weapon);
+	DOREPLIFETIME(UPlayerEquipmentComponent, Tool);
+	DOREPLIFETIME(UPlayerEquipmentComponent, EquipmentUseMode);
 }
 
 TArray<uint8> UPlayerEquipmentComponent::SaveData_Implementation()

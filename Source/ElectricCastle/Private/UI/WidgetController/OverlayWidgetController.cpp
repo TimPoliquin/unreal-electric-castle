@@ -26,15 +26,47 @@ void UOverlayWidgetController::BroadcastInitialValues()
 		return;
 	}
 	const FElectricCastleGameplayTags& AuraGameplayTags = FElectricCastleGameplayTags::Get();
-	OnHealthChanged.Broadcast(FAuraFloatAttributeChangedPayload::CreateBroadcastPayload(AuraGameplayTags.Attributes_Vital_Health, GetAttributeSet()->GetHealth()));
-	OnMaxMaxHealthChanged.Broadcast(FAuraFloatAttributeChangedPayload::CreateBroadcastPayload(AuraGameplayTags.Attributes_Primary_MaxHealth, GetAttributeSet()->GetMaxHealth()));
-	OnManaChanged.Broadcast(FAuraFloatAttributeChangedPayload::CreateBroadcastPayload(AuraGameplayTags.Attributes_Vital_Mana, GetAttributeSet()->GetMana()));
-	OnMaxManaChanged.Broadcast(FAuraFloatAttributeChangedPayload::CreateBroadcastPayload(AuraGameplayTags.Attributes_Primary_MaxMana, GetAttributeSet()->GetMaxMana()));
+	OnHealthChanged.Broadcast(
+		FFloatAttributeChangedPayload::CreateBroadcastPayload(
+			AuraGameplayTags.Attributes_Vital_Health,
+			GetAttributeSet()->GetHealth()
+		)
+	);
+	OnMaxMaxHealthChanged.Broadcast(
+		FFloatAttributeChangedPayload::CreateBroadcastPayload(
+			AuraGameplayTags.Attributes_Primary_MaxHealth,
+			GetAttributeSet()->GetMaxHealth()
+		)
+	);
+	OnManaChanged.Broadcast(
+		FFloatAttributeChangedPayload::CreateBroadcastPayload(
+			AuraGameplayTags.Attributes_Vital_Mana,
+			GetAttributeSet()->GetMana()
+		)
+	);
+	OnMaxManaChanged.Broadcast(
+		FFloatAttributeChangedPayload::CreateBroadcastPayload(
+			AuraGameplayTags.Attributes_Primary_MaxMana,
+			GetAttributeSet()->GetMaxMana()
+		)
+	);
 	if (const UProgressionComponent* ProgressionComponent = UProgressionComponent::Get(GetPlayerState()))
 	{
-		const float NewPercentage = UElectricCastleGameDataSubsystem::Get(GetPlayerState())->GetXPToNextLevelPercentage(ProgressionComponent->GetXP());
-		OnXPPercentageChanged.Broadcast(FAuraFloatAttributeChangedPayload::CreateBroadcastPayload(AuraGameplayTags.Attributes_Progression_XP, NewPercentage));
-		OnPlayerLevelChangedDelegate.Broadcast(FAuraIntAttributeChangedPayload::CreateBroadcastPayload(AuraGameplayTags.Attributes_Progression_Level, ProgressionComponent->GetCharacterLevel()));
+		const float NewPercentage = UElectricCastleGameDataSubsystem::Get(GetPlayerState())->GetXPToNextLevelPercentage(
+			ProgressionComponent->GetXP()
+		);
+		OnXPPercentageChanged.Broadcast(
+			FFloatAttributeChangedPayload::CreateBroadcastPayload(
+				AuraGameplayTags.Attributes_Progression_XP,
+				NewPercentage
+			)
+		);
+		OnPlayerLevelChangedDelegate.Broadcast(
+			FIntAttributeChangedPayload::CreateBroadcastPayload(
+				AuraGameplayTags.Attributes_Progression_Level,
+				ProgressionComponent->GetCharacterLevel()
+			)
+		);
 	}
 	if (GetAbilitySystemComponent()->HasFiredOnAbilitiesGivenDelegate())
 	{
@@ -42,14 +74,17 @@ void UOverlayWidgetController::BroadcastInitialValues()
 	}
 	else
 	{
-		GetAbilitySystemComponent()->OnAbilitiesGivenDelegate.AddUObject(this, &UOverlayWidgetController::BroadcastAbilityInfo);
+		GetAbilitySystemComponent()->OnAbilitiesGivenDelegate.AddUObject(
+			this,
+			&UOverlayWidgetController::BroadcastAbilityInfo
+		);
 	}
 }
 
 void UOverlayWidgetController::BindCallbacksToDependencies()
 {
 	Super::BindCallbacksToDependencies();
-	if (true)
+	if constexpr (true)
 	{
 		return;
 	}
@@ -63,7 +98,9 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 		);
 		ProgressionComponent->OnLevelChangeDelegate.AddDynamic(this, &UOverlayWidgetController::OnPlayerLevelChange);
 	}
-	if (UPlayerFormChangeComponent* FormChangeComponent = IFormChangeActorInterface::GetFormChangeComponent(GetAuraPlayerController()->GetPawn()))
+	if (UPlayerFormChangeComponent* FormChangeComponent = IFormChangeActorInterface::GetFormChangeComponent(
+		GetAuraPlayerController()->GetPawn()
+	))
 	{
 		FormChangeComponent->OnPlayerFormChange.AddDynamic(this, &UOverlayWidgetController::OnFormChange);
 	}
@@ -75,14 +112,26 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 			                      .AddLambda(
 				                      [&](const FOnAttributeChangeData& Data)
 				                      {
-					                      OnHealthChanged.Broadcast(FAuraFloatAttributeChangedPayload(GameplayTags.Attributes_Vital_Health, Data.OldValue, Data.NewValue));
+					                      OnHealthChanged.Broadcast(
+						                      FFloatAttributeChangedPayload(
+							                      GameplayTags.Attributes_Vital_Health,
+							                      Data.OldValue,
+							                      Data.NewValue
+						                      )
+					                      );
 				                      }
 			                      );
 			AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(GetAttributeSet()->GetMaxHealthAttribute())
 			                      .AddLambda(
 				                      [&](const FOnAttributeChangeData& Data)
 				                      {
-					                      OnMaxMaxHealthChanged.Broadcast(FAuraFloatAttributeChangedPayload(GameplayTags.Attributes_Primary_MaxHealth, Data.OldValue, Data.NewValue));
+					                      OnMaxMaxHealthChanged.Broadcast(
+						                      FFloatAttributeChangedPayload(
+							                      GameplayTags.Attributes_Primary_MaxHealth,
+							                      Data.OldValue,
+							                      Data.NewValue
+						                      )
+					                      );
 				                      }
 			                      );
 
@@ -90,14 +139,26 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 			                      .AddLambda(
 				                      [&](const FOnAttributeChangeData& Data)
 				                      {
-					                      OnManaChanged.Broadcast(FAuraFloatAttributeChangedPayload(GameplayTags.Attributes_Vital_Mana, Data.OldValue, Data.NewValue));
+					                      OnManaChanged.Broadcast(
+						                      FFloatAttributeChangedPayload(
+							                      GameplayTags.Attributes_Vital_Mana,
+							                      Data.OldValue,
+							                      Data.NewValue
+						                      )
+					                      );
 				                      }
 			                      );
 			AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(GetAttributeSet()->GetMaxManaAttribute())
 			                      .AddLambda(
 				                      [&](const FOnAttributeChangeData& Data)
 				                      {
-					                      OnMaxManaChanged.Broadcast(FAuraFloatAttributeChangedPayload(GameplayTags.Attributes_Primary_MaxMana, Data.OldValue, Data.NewValue));
+					                      OnMaxManaChanged.Broadcast(
+						                      FFloatAttributeChangedPayload(
+							                      GameplayTags.Attributes_Primary_MaxMana,
+							                      Data.OldValue,
+							                      Data.NewValue
+						                      )
+					                      );
 				                      }
 			                      );
 		}
@@ -119,7 +180,10 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 				}
 			}
 		);
-		AbilitySystemComponent->OnAbilityEquippedDelegate.AddDynamic(this, &UOverlayWidgetController::OnAbilityEquipped);
+		AbilitySystemComponent->OnAbilityEquippedDelegate.AddDynamic(
+			this,
+			&UOverlayWidgetController::OnAbilityEquipped
+		);
 		AbilitySystemComponent->RegisterGameplayTagEvent(
 			FElectricCastleGameplayTags::Get().Player_HUD_Hide,
 			EGameplayTagEventType::NewOrRemoved
@@ -127,29 +191,45 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 	}
 	if (UInventoryComponent* PlayerInventoryComponent = UInventoryComponent::Get(GetPlayerState()))
 	{
-		PlayerInventoryComponent->OnInventoryItemCountChangedDelegate.AddDynamic(this, &UOverlayWidgetController::OnPlayerInventoryChanged);
-		PlayerInventoryComponent->OnInventoryFullDelegate.AddDynamic(this, &UOverlayWidgetController::OnPlayerInventoryFull);
+		PlayerInventoryComponent->OnInventoryItemCountChangedDelegate.AddDynamic(
+			this,
+			&UOverlayWidgetController::OnPlayerInventoryChanged
+		);
+		PlayerInventoryComponent->OnInventoryFullDelegate.AddDynamic(
+			this,
+			&UOverlayWidgetController::OnPlayerInventoryFull
+		);
 	}
 }
 
-bool UOverlayWidgetController::IsBroadcastPayload(const FAuraIntAttributeChangedPayload& Payload)
+bool UOverlayWidgetController::IsBroadcastPayload(const FIntAttributeChangedPayload& Payload)
 {
 	return !Payload.IsChanged();
 }
 
-void UOverlayWidgetController::OnPlayerXPChange(const FAuraIntAttributeChangedPayload& Payload)
+void UOverlayWidgetController::OnPlayerXPChange(const FIntAttributeChangedPayload& Payload)
 {
-	const float OldPercentage = UElectricCastleGameDataSubsystem::Get(GetPlayerState())->GetXPToNextLevelPercentage(Payload.OldValue);
-	const float NewPercentage = UElectricCastleGameDataSubsystem::Get(GetPlayerState())->GetXPToNextLevelPercentage(Payload.NewValue);
-	OnXPPercentageChanged.Broadcast(FAuraFloatAttributeChangedPayload(FElectricCastleGameplayTags::Get().Attributes_Progression_XP, OldPercentage, NewPercentage));
+	const float OldPercentage = UElectricCastleGameDataSubsystem::Get(GetPlayerState())->GetXPToNextLevelPercentage(
+		Payload.OldValue
+	);
+	const float NewPercentage = UElectricCastleGameDataSubsystem::Get(GetPlayerState())->GetXPToNextLevelPercentage(
+		Payload.NewValue
+	);
+	OnXPPercentageChanged.Broadcast(
+		FFloatAttributeChangedPayload(
+			FElectricCastleGameplayTags::Get().Attributes_Progression_XP,
+			OldPercentage,
+			NewPercentage
+		)
+	);
 }
 
-void UOverlayWidgetController::OnPlayerLevelInitialized(const FAuraIntAttributeChangedPayload& Payload)
+void UOverlayWidgetController::OnPlayerLevelInitialized(const FIntAttributeChangedPayload& Payload)
 {
 	OnPlayerLevelInitializedDelegate.Broadcast(Payload);
 }
 
-void UOverlayWidgetController::OnPlayerLevelChange(const FAuraIntAttributeChangedPayload& Payload)
+void UOverlayWidgetController::OnPlayerLevelChange(const FIntAttributeChangedPayload& Payload)
 {
 	OnPlayerLevelChangedDelegate.Broadcast(Payload);
 }
@@ -176,7 +256,13 @@ void UOverlayWidgetController::OnPlayerInventoryChanged(const FOnInventoryItemCo
 	UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(Player);
 	if (!GameDataSubsystem)
 	{
-		UE_LOG(LogElectricCastle, Warning, TEXT("[%s] Could not get game data subsystem for Player [%s]"), *GetName(), *Player->GetName())
+		UE_LOG(
+			LogElectricCastle,
+			Warning,
+			TEXT("[%s] Could not get game data subsystem for Player [%s]"),
+			*GetName(),
+			*Player->GetName()
+		)
 		return;
 	}
 	const FItemDefinition ItemDefinition = GameDataSubsystem->FindItemDefinitionByItemTag(Payload.ItemType);
@@ -188,11 +274,15 @@ void UOverlayWidgetController::OnPlayerInventoryChanged(const FOnInventoryItemCo
 	}
 	if (Payload.IsItemAddedChange())
 	{
-		MessageTag = ItemDefinition.PickupMessageTag.IsValid() ? ItemDefinition.PickupMessageTag : GameDataSubsystem->GetDefaultItemPickupMessageTag();
+		MessageTag = ItemDefinition.PickupMessageTag.IsValid()
+			             ? ItemDefinition.PickupMessageTag
+			             : GameDataSubsystem->GetDefaultItemPickupMessageTag();
 	}
 	else if (Payload.IsItemUsedChange())
 	{
-		MessageTag = ItemDefinition.UseMessageTag.IsValid() ? ItemDefinition.UseMessageTag : GameDataSubsystem->GetDefaultItemUseMessageTag();
+		MessageTag = ItemDefinition.UseMessageTag.IsValid()
+			             ? ItemDefinition.UseMessageTag
+			             : GameDataSubsystem->GetDefaultItemUseMessageTag();
 	}
 	if (!MessageTag.IsValid())
 	{

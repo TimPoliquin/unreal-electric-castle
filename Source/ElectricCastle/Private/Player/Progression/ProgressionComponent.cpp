@@ -58,14 +58,25 @@ FString UProgressionComponent::GetSaveID_Implementation() const
 void UProgressionComponent::InitializeLevel(const int32 InLevel)
 {
 	Level = InLevel;
-	OnLevelInitializedDelegate.Broadcast(FAuraIntAttributeChangedPayload::CreateBroadcastPayload(FElectricCastleGameplayTags::Get().Attributes_Progression_Level, InLevel));
+	OnLevelInitializedDelegate.Broadcast(
+		FIntAttributeChangedPayload::CreateBroadcastPayload(
+			FElectricCastleGameplayTags::Get().Attributes_Progression_Level,
+			InLevel
+		)
+	);
 }
 
 void UProgressionComponent::SetLevel(const int32 NewLevel)
 {
 	const int PreviousLevel = Level;
 	Level = NewLevel;
-	OnLevelInitializedDelegate.Broadcast(FAuraIntAttributeChangedPayload(FElectricCastleGameplayTags::Get().Attributes_Progression_Level, PreviousLevel, NewLevel));
+	OnLevelInitializedDelegate.Broadcast(
+		FIntAttributeChangedPayload(
+			FElectricCastleGameplayTags::Get().Attributes_Progression_Level,
+			PreviousLevel,
+			NewLevel
+		)
+	);
 }
 
 void UProgressionComponent::AddToLevel(const int32 AddLevel)
@@ -115,29 +126,47 @@ void UProgressionComponent::SetSpellPoints(const int32 InSpellPoints)
 {
 	const int32 PreviousSpellPoints = SpellPoints;
 	SpellPoints = InSpellPoints;
-	OnSpellPointsChangeDelegate.Broadcast(FAuraIntAttributeChangedPayload(FElectricCastleGameplayTags::Get().Attributes_Progression_SpellPoints, PreviousSpellPoints, InSpellPoints));
+	OnSpellPointsChangeDelegate.Broadcast(
+		FIntAttributeChangedPayload(
+			FElectricCastleGameplayTags::Get().Attributes_Progression_SpellPoints,
+			PreviousSpellPoints,
+			InSpellPoints
+		)
+	);
 }
 
 void UProgressionComponent::SetXP(const int32 InXP)
 {
 	const int32 PreviousXP = XP;
 	XP = InXP;
-	OnXPChangeDelegate.Broadcast(FAuraIntAttributeChangedPayload(FElectricCastleGameplayTags::Get().Attributes_Progression_XP, PreviousXP, InXP));
+	OnXPChangeDelegate.Broadcast(
+		FIntAttributeChangedPayload(FElectricCastleGameplayTags::Get().Attributes_Progression_XP, PreviousXP, InXP)
+	);
 }
 
 void UProgressionComponent::OnRep_Level(int32 OldLevel) const
 {
-	OnLevelChangeDelegate.Broadcast(FAuraIntAttributeChangedPayload(FElectricCastleGameplayTags::Get().Attributes_Progression_Level, OldLevel, Level));
+	OnLevelChangeDelegate.Broadcast(
+		FIntAttributeChangedPayload(FElectricCastleGameplayTags::Get().Attributes_Progression_Level, OldLevel, Level)
+	);
 }
 
 void UProgressionComponent::OnRep_XP(int32 OldXP) const
 {
-	OnXPChangeDelegate.Broadcast(FAuraIntAttributeChangedPayload(FElectricCastleGameplayTags::Get().Attributes_Progression_XP, OldXP, XP));
+	OnXPChangeDelegate.Broadcast(
+		FIntAttributeChangedPayload(FElectricCastleGameplayTags::Get().Attributes_Progression_XP, OldXP, XP)
+	);
 }
 
 void UProgressionComponent::OnRep_SpellPoints(int32 InSpellPoints) const
 {
-	OnSpellPointsChangeDelegate.Broadcast(FAuraIntAttributeChangedPayload(FElectricCastleGameplayTags::Get().Attributes_Progression_SpellPoints, InSpellPoints, SpellPoints));
+	OnSpellPointsChangeDelegate.Broadcast(
+		FIntAttributeChangedPayload(
+			FElectricCastleGameplayTags::Get().Attributes_Progression_SpellPoints,
+			InSpellPoints,
+			SpellPoints
+		)
+	);
 }
 
 TArray<uint8> UProgressionComponent::SerializeActorComponent()
@@ -178,7 +207,13 @@ bool UProgressionComponent::DeserializeActorComponent(const TArray<uint8>& Data)
 	}
 	catch (...)
 	{
-		UE_LOG(LogTemp, Error, TEXT("[%s:%s] Failed to deserialize equipment data"), *GetOwner()->GetName(), *GetName());
+		UE_LOG(
+			LogTemp,
+			Error,
+			TEXT("[%s:%s] Failed to deserialize equipment data"),
+			*GetOwner()->GetName(),
+			*GetName()
+		);
 		return false;
 	}
 }

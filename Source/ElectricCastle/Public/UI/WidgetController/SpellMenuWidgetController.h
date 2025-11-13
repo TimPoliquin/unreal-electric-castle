@@ -67,7 +67,7 @@ public:
 
 private:
 	UFUNCTION()
-	void OnSpellPointsChanged(const FAuraIntAttributeChangedPayload& Payload);
+	void OnSpellPointsChanged(const FIntAttributeChangedPayload& Payload);
 	UFUNCTION()
 	void OnPlayerLevelChanged(const int32 Level, const TArray<FAbilityTagStatus>& AbilityStatuses);
 

@@ -24,7 +24,9 @@ class UAttributeSet;
 class UAbilitySystemComponent;
 
 UCLASS(Abstract, Blueprintable)
-class ELECTRICCASTLE_API AElectricCastleCharacter : public ACharacter, public IAbilitySystemInterface, public IElectricCastleAbilitySystemInterface, public ICombatInterface,
+class ELECTRICCASTLE_API AElectricCastleCharacter : public ACharacter, public IAbilitySystemInterface,
+                                                    public IElectricCastleAbilitySystemInterface,
+                                                    public ICombatInterface,
                                                     public ICollidableInterface
 {
 	GENERATED_BODY()
@@ -201,12 +203,13 @@ protected:
 
 	UFUNCTION(BlueprintNativeEvent)
 	void OnAbilitySystemReady(UElectricCastleAbilitySystemComponent* InAbilitySystemComponent);
-	UFUNCTION()
+	UFUNCTION(BlueprintNativeEvent)
 	void OnEffectChange_LightningDamage(FGameplayTag LightningDamageTag, int Count);
 	UFUNCTION(BlueprintNativeEvent)
 	void OnEffectAdd_LightningDamage();
 	UFUNCTION(BlueprintNativeEvent)
 	void OnEffectRemove_LightningDamage();
+
 private:
 	bool bDead = false;
 	UPROPERTY(EditAnywhere, Category = "Abilities")

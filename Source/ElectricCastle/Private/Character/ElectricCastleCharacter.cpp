@@ -301,7 +301,10 @@ void AElectricCastleCharacter::OnAbilitySystemReady_Implementation(
 	GetOnAbilitySystemRegisteredDelegate().Broadcast(InAbilitySystemComponent);
 }
 
-void AElectricCastleCharacter::OnEffectChange_LightningDamage(FGameplayTag LightningDamageTag, int Count)
+void AElectricCastleCharacter::OnEffectChange_LightningDamage_Implementation(
+	FGameplayTag LightningDamageTag,
+	const int Count
+)
 {
 	if (Count > 0)
 	{
@@ -383,7 +386,12 @@ void AElectricCastleCharacter::RegisterStatusEffectTags(UAbilitySystemComponent*
 	InAbilitySystemComponent->RegisterGameplayTagEvent(
 		FElectricCastleGameplayTags::Get().Effect_Damage_Magic_Lightning,
 		EGameplayTagEventType::NewOrRemoved
-	).AddUObject(this, &AElectricCastleCharacter::OnEffectChange_LightningDamage);
+	).AddLambda(
+		[this](const FGameplayTag& Tag, const int32 Count)
+		{
+			OnEffectChange_LightningDamage(Tag, Count);
+		}
+	);
 }
 
 void AElectricCastleCharacter::ApplyEffectToSelf(TSubclassOf<UGameplayEffect> Attributes, const float Level) const

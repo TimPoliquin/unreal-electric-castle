@@ -45,12 +45,6 @@ public:
 		Category= "ElectricCastleAbilitySystemLibrary|WidgetController",
 		meta = (DefaultToSelf = "WorldContextObject")
 	)
-	static UOverlayWidgetController* GetOverlayWidgetController(const UObject* WorldContextObject);
-	UFUNCTION(
-		BlueprintPure,
-		Category= "ElectricCastleAbilitySystemLibrary|WidgetController",
-		meta = (DefaultToSelf = "WorldContextObject")
-	)
 	static UAttributeMenuWidgetController* GetAttributeMenuWidgetController(const UObject* WorldContextObject);
 	UFUNCTION(
 		BlueprintPure,

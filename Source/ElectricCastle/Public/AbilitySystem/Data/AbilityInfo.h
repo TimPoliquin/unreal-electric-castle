@@ -22,15 +22,20 @@ struct FElectricCastleAbilityInfo
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(Categories="Abilities.Type"))
 	FGameplayTag AbilityType = FGameplayTag();
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TObjectPtr<const UTexture2D> Icon = nullptr;
+	TObjectPtr<UTexture2D> Icon = nullptr;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TObjectPtr<const UMaterialInterface> BackgroundMaterial = nullptr;
-	UPROPERTY(BlueprintReadOnly)
+	TObjectPtr<UMaterialInterface> BackgroundMaterial = nullptr;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(Categories="InputTag"))
 	FGameplayTag InputTag = FGameplayTag();
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 LevelRequirement = 1;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<UGameplayAbility> Ability;
+
+	bool IsValid() const
+	{
+		return AbilityTag.IsValid();
+	}
 };
 
 /**

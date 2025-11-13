@@ -52,7 +52,11 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOverlayClearSlotSignature, const FG
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOverlayVisibilityChangedSignature, const bool, bVisible);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOverlayPortraitChangedSignature, const FOverlayPortraitChangedPayload&, Payload);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(
+	FOverlayPortraitChangedSignature,
+	const FOverlayPortraitChangedPayload&,
+	Payload
+);
 
 /**
  * 
@@ -99,7 +103,7 @@ public:
 	FOverlayPortraitChangedSignature OnOverlayPortraitChangedDelegate;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	static bool IsBroadcastPayload(const FAuraIntAttributeChangedPayload& Payload);
+	static bool IsBroadcastPayload(const FIntAttributeChangedPayload& Payload);
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Widget Data")
@@ -110,11 +114,11 @@ protected:
 
 private:
 	UFUNCTION()
-	void OnPlayerXPChange(const FAuraIntAttributeChangedPayload& Payload);
+	void OnPlayerXPChange(const FIntAttributeChangedPayload& Payload);
 	UFUNCTION()
-	void OnPlayerLevelInitialized(const FAuraIntAttributeChangedPayload& Payload);
+	void OnPlayerLevelInitialized(const FIntAttributeChangedPayload& Payload);
 	UFUNCTION()
-	void OnPlayerLevelChange(const FAuraIntAttributeChangedPayload& Payload);
+	void OnPlayerLevelChange(const FIntAttributeChangedPayload& Payload);
 	UFUNCTION()
 	void OnAbilityEquipped(const FElectricCastleEquipAbilityPayload& EquipPayload);
 	UFUNCTION()

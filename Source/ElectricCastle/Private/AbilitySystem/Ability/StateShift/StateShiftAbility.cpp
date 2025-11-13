@@ -12,12 +12,6 @@
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 
 
-UStateShiftAbility::UStateShiftAbility()
-{
-	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
-	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
-}
-
 void UStateShiftAbility::ApplyStateShiftDetectionComponent_Implementation()
 {
 	if (!GetActorInfo().IsNetAuthority())

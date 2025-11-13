@@ -2,16 +2,37 @@
 
 
 #include "AbilitySystem/Ability/ElectricCastleGameplayAbility.h"
+
+#include "AbilitySystemBlueprintLibrary.h"
 #include "Abilities/Tasks/AbilityTask.h"
+#include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 #include "AbilitySystem/ElectricCastleAttributeSet.h"
+#include "AbilitySystem/Effect/CooldownGameplayEffect.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "GameFramework/Character.h"
 #include "Interaction/CombatInterface.h"
 #include "Player/ElectricCastlePlayerController.h"
 
+
+UElectricCastleGameplayAbility::UElectricCastleGameplayAbility()
+{
+	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
+	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
+}
+
 FString UElectricCastleGameplayAbility::GetDescription_Implementation(const int32 AbilityLevel) const
 {
 	return FString(TEXT(RICH_DEFAULT("Unimplemented")));
+}
+
+void UElectricCastleGameplayAbility::CommitExecute(
+	const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo
+)
+{
+	// Explicit override to remove cooldown application
+	ApplyCost(Handle, ActorInfo, ActivationInfo);
 }
 
 void UElectricCastleGameplayAbility::ExecuteTask(UAbilityTask* Task) const
@@ -23,6 +44,21 @@ void UElectricCastleGameplayAbility::ExecuteTask(UAbilityTask* Task) const
 			Task->SetAbilitySystemComponent(AbilitySystemComponent);
 			Task->ReadyForActivation();
 		}
+	}
+}
+
+void UElectricCastleGameplayAbility::EndAbility(
+	const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo,
+	const bool bReplicateEndAbility,
+	const bool bWasCancelled
+)
+{
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+	if (bAutoApplyCooldownOnAbilityEnd && GetActorInfo().IsNetAuthority())
+	{
+		ApplyCustomCooldown();
 	}
 }
 
@@ -63,7 +99,15 @@ void UElectricCastleGameplayAbility::DebugLog(
 {
 	if (bDebug)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, TimeToDisplay, Color, LogString);
+		const FString DebugString = FString::Printf(
+			TEXT("[%s][%s] %s"),
+			GetAvatarActorFromActorInfo()->HasAuthority()
+				? *FString("Server")
+				: *FString("Client"),
+			*GetName(),
+			*LogString
+		);
+		GEngine->AddOnScreenDebugMessage(-1, TimeToDisplay, Color, DebugString);
 	}
 }
 
@@ -135,11 +179,48 @@ float UElectricCastleGameplayAbility::GetManaCost(const float InLevel) const
 
 float UElectricCastleGameplayAbility::GetCooldown(const float InLevel) const
 {
-	if (const UGameplayEffect* CooldownEffect = GetCooldownGameplayEffect())
+	if (const UGameplayEffect* LocalCooldownEffect = GetCooldownGameplayEffect())
 	{
 		float Cooldown = 0.f;
-		CooldownEffect->DurationMagnitude.GetStaticMagnitudeIfPossible(InLevel, Cooldown);
+		LocalCooldownEffect->DurationMagnitude.GetStaticMagnitudeIfPossible(InLevel, Cooldown);
 		return Cooldown;
 	}
 	return 0.f;
+}
+
+void UElectricCastleGameplayAbility::ApplyCustomCooldown() const
+{
+	if (!CooldownConfig.IsValid())
+	{
+		UE_LOG(LogElectricCastle, Warning, TEXT("[%s] CooldownConfig is invalid."), *GetName());
+		return;
+	}
+	if (UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(
+		GetAvatarActorFromActorInfo()
+	))
+	{
+		// Build a GameplayEffectSpec on the fly
+		FGameplayEffectSpecHandle SpecHandle = ASC->MakeOutgoingSpec(
+			UCooldownGameplayEffect::StaticClass(),
+			// base GE class
+			GetAbilityLevel(),
+			// level
+			ASC->MakeEffectContext() // context
+		);
+
+		if (SpecHandle.IsValid())
+		{
+			if (FGameplayEffectSpec* Spec = SpecHandle.Data.Get())
+			{
+				// Set duration
+				Spec->SetDuration(CooldownConfig.Duration.GetValueAtLevel(GetAbilityLevel()), true);
+				// 1. Add as an asset tag (tag belongs to the GE itself)
+				Spec->AddDynamicAssetTag(CooldownConfig.CooldownTag);
+				// 2. Grant to the target actor (tag is applied to ASC while GE is active)
+				Spec->DynamicGrantedTags.AddTag(CooldownConfig.CooldownTag);
+				// Apply to self
+				ASC->ApplyGameplayEffectSpecToSelf(*Spec);
+			}
+		}
+	}
 }

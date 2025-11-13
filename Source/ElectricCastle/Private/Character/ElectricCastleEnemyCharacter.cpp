@@ -31,7 +31,9 @@ AElectricCastleEnemyCharacter::AElectricCastleEnemyCharacter()
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
 	bUseControllerRotationYaw = false;
-	AbilitySystemComponent = CreateDefaultSubobject<UElectricCastleAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	AbilitySystemComponent = CreateDefaultSubobject<UElectricCastleAbilitySystemComponent>(
+		TEXT("AbilitySystemComponent")
+	);
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
 	AbilitySystemComponent->bShouldSave = false;
@@ -59,25 +61,52 @@ void AElectricCastleEnemyCharacter::InitializeAttributeDelegates()
 	}
 	if (!AttributeSet)
 	{
-		UE_LOG(LogElectricCastle, Warning, TEXT("[%s] No Attribute set defined! Cannot initialize delegates"), *GetName())
+		UE_LOG(
+			LogElectricCastle,
+			Warning,
+			TEXT("[%s] No Attribute set defined! Cannot initialize delegates"),
+			*GetName()
+		)
 		return;
 	}
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetHealthAttribute()).
 	                        AddLambda(
 		                        [&](const FOnAttributeChangeData& Data)
 		                        {
-			                        OnHealthChanged.Broadcast(FAuraFloatAttributeChangedPayload(GameplayTags.Attributes_Vital_Health, Data.OldValue, Data.NewValue));
+			                        OnHealthChanged.Broadcast(
+				                        FFloatAttributeChangedPayload(
+					                        GameplayTags.Attributes_Vital_Health,
+					                        Data.OldValue,
+					                        Data.NewValue
+				                        )
+			                        );
 		                        }
 	                        );
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetMaxHealthAttribute()).
 	                        AddLambda(
 		                        [&](const FOnAttributeChangeData& Data)
 		                        {
-			                        OnMaxHealthChanged.Broadcast(FAuraFloatAttributeChangedPayload(GameplayTags.Attributes_Primary_MaxHealth, Data.OldValue, Data.NewValue));
+			                        OnMaxHealthChanged.Broadcast(
+				                        FFloatAttributeChangedPayload(
+					                        GameplayTags.Attributes_Primary_MaxHealth,
+					                        Data.OldValue,
+					                        Data.NewValue
+				                        )
+			                        );
 		                        }
 	                        );
-	OnHealthChanged.Broadcast(FAuraFloatAttributeChangedPayload::CreateBroadcastPayload(GameplayTags.Attributes_Vital_Health, AttributeSet->GetHealth()));
-	OnMaxHealthChanged.Broadcast(FAuraFloatAttributeChangedPayload::CreateBroadcastPayload(GameplayTags.Attributes_Primary_MaxHealth, AttributeSet->GetMaxHealth()));
+	OnHealthChanged.Broadcast(
+		FFloatAttributeChangedPayload::CreateBroadcastPayload(
+			GameplayTags.Attributes_Vital_Health,
+			AttributeSet->GetHealth()
+		)
+	);
+	OnMaxHealthChanged.Broadcast(
+		FFloatAttributeChangedPayload::CreateBroadcastPayload(
+			GameplayTags.Attributes_Primary_MaxHealth,
+			AttributeSet->GetMaxHealth()
+		)
+	);
 }
 
 void AElectricCastleEnemyCharacter::BeginPlay()
@@ -109,7 +138,12 @@ void AElectricCastleEnemyCharacter::InitializeDefaultAttributes()
 {
 	if (HasAuthority())
 	{
-		UElectricCastleAbilitySystemLibrary::InitializeDefaultAttributes(this, CharacterClass, Level, AbilitySystemComponent);
+		UElectricCastleAbilitySystemLibrary::InitializeDefaultAttributes(
+			this,
+			CharacterClass,
+			Level,
+			AbilitySystemComponent
+		);
 	}
 	OnAbilitySystemReady(Cast<UElectricCastleAbilitySystemComponent>(AbilitySystemComponent));
 }

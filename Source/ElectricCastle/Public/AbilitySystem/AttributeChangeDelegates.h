@@ -5,7 +5,7 @@
 #include "AttributeChangeDelegates.generated.h"
 
 USTRUCT(BlueprintType)
-struct FAuraFloatAttributeChangedPayload
+struct FFloatAttributeChangedPayload
 {
 	GENERATED_BODY()
 	UPROPERTY(BlueprintReadWrite)
@@ -20,9 +20,9 @@ struct FAuraFloatAttributeChangedPayload
 		return OldValue != NewValue;
 	}
 
-	static FAuraFloatAttributeChangedPayload CreateBroadcastPayload(const FGameplayTag& InAttributeTag, const float Value)
+	static FFloatAttributeChangedPayload CreateBroadcastPayload(const FGameplayTag& InAttributeTag, const float Value)
 	{
-		FAuraFloatAttributeChangedPayload Result;
+		FFloatAttributeChangedPayload Result;
 		Result.AttributeTag = InAttributeTag;
 		Result.OldValue = Value;
 		Result.NewValue = Value;
@@ -31,7 +31,7 @@ struct FAuraFloatAttributeChangedPayload
 };
 
 USTRUCT(BlueprintType)
-struct FAuraIntAttributeChangedPayload
+struct FIntAttributeChangedPayload
 {
 	GENERATED_BODY()
 	UPROPERTY(BlueprintReadWrite)
@@ -46,9 +46,9 @@ struct FAuraIntAttributeChangedPayload
 		return OldValue != NewValue;
 	}
 
-	static FAuraIntAttributeChangedPayload CreateBroadcastPayload(const FGameplayTag& InAttributeTag, const float Value)
+	static FIntAttributeChangedPayload CreateBroadcastPayload(const FGameplayTag& InAttributeTag, const float Value)
 	{
-		FAuraIntAttributeChangedPayload Result;
+		FIntAttributeChangedPayload Result;
 		Result.AttributeTag = InAttributeTag;
 		Result.OldValue = Value;
 		Result.NewValue = Value;
@@ -58,9 +58,13 @@ struct FAuraIntAttributeChangedPayload
 
 
 UDELEGATE()
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeChangedSignature, const FAuraFloatAttributeChangedPayload&, Payload);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(
+	FOnAttributeChangedSignature,
+	const FFloatAttributeChangedPayload&,
+	Payload
+);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerStatChangedSignature, const FAuraIntAttributeChangedPayload&, Payload);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerStatChangedSignature, const FIntAttributeChangedPayload&, Payload);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
 	FOnPlayerAbilityStatusChangedSignature,

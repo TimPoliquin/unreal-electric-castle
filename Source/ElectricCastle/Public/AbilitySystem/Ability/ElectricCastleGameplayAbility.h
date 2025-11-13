@@ -8,6 +8,21 @@
 #include "ElectricCastleGameplayAbility.generated.h"
 
 USTRUCT(BlueprintType)
+struct ELECTRICCASTLE_API FAbilityCooldownConfig
+{
+	GENERATED_BODY()
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FScalableFloat Duration;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(Categories="Cooldown"))
+	FGameplayTag CooldownTag = FGameplayTag::EmptyTag;
+
+	bool IsValid() const
+	{
+		return CooldownTag.IsValid() && Duration.IsValid();
+	}
+};
+
+USTRUCT(BlueprintType)
 struct ELECTRICCASTLE_API FComboAbilityConfig
 {
 	GENERATED_BODY()
@@ -38,6 +53,7 @@ class ELECTRICCASTLE_API UElectricCastleGameplayAbility : public UGameplayAbilit
 	GENERATED_BODY()
 
 public:
+	UElectricCastleGameplayAbility();
 	FORCEINLINE TArray<FGameplayTag> GetStartupInputTag() const
 	{
 		return StartupInputTags;
@@ -63,12 +79,29 @@ public:
 
 	float GetManaCost(const float InLevel = 1.f) const;
 	float GetCooldown(const float InLevel = 1.f) const;
+	UFUNCTION(BlueprintCallable)
+	void ApplyCustomCooldown() const;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties")
+	FAbilityCooldownConfig CooldownConfig;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties")
+	bool bAutoApplyCooldownOnAbilityEnd = true;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties")
 	bool bDebug = false;
-
+	virtual void CommitExecute(
+		const FGameplayAbilitySpecHandle Handle,
+		const FGameplayAbilityActorInfo* ActorInfo,
+		const FGameplayAbilityActivationInfo ActivationInfo
+	) override;
 	void ExecuteTask(UAbilityTask* Task) const;
+	virtual void EndAbility(
+		const FGameplayAbilitySpecHandle Handle,
+		const FGameplayAbilityActorInfo* ActorInfo,
+		const FGameplayAbilityActivationInfo ActivationInfo,
+		bool bReplicateEndAbility,
+		bool bWasCancelled
+	) override;
 	/**
 	 * Determines whether the ability should use motion warping. This is primarily true if the user is using keyboard & mouse input, and has a target selected.
 	 * @return 

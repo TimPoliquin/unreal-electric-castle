@@ -5,6 +5,7 @@
 
 #include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
 #include "AbilitySystem/ElectricCastleAttributeSet.h"
+#include "Character/ElectricCastleCharacter.h"
 #include "Player/Progression/ProgressionComponent.h"
 
 AElectricCastlePlayerState::AElectricCastlePlayerState()
@@ -77,6 +78,11 @@ bool AElectricCastlePlayerState::LoadData_Implementation(const TArray<uint8>& In
 		UE_LOG(LogTemp, Error, TEXT("[%s] Failed to deserialize attribute data"), *GetName());
 		return false;
 	}
+}
+
+UPlayerFormChangeComponent* AElectricCastlePlayerState::GetFormChangeComponent_Implementation() const
+{
+	return GetFormChangeComponent(GetPawn());
 }
 
 void AElectricCastlePlayerState::InitializeAbilityActorInfo()

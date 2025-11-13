@@ -10,6 +10,7 @@
 #include "AbilitySystem/Data/AbilityInfo.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Game/Save/SaveGameTypes.h"
+#include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "Interaction/CombatInterface.h"
 #include "Interaction/PlayerInterface.h"
 #include "Tags/ElectricCastleGameplayTags.h"
@@ -66,7 +67,12 @@ void UElectricCastleAbilitySystemComponent::ServerSpendSpellPoint_Implementation
 {
 	if (IPlayerInterface::GetSpellPoints(GetAvatarActor()) <= 0)
 	{
-		UE_LOG(LogElectricCastle, Warning, TEXT("No spell points to spend points on ability [%s]"), *AbilityTag.ToString())
+		UE_LOG(
+			LogElectricCastle,
+			Warning,
+			TEXT("No spell points to spend points on ability [%s]"),
+			*AbilityTag.ToString()
+		)
 		return;
 	}
 	if (FGameplayAbilitySpec* AbilitySpec = GetSpecFromAbilityTag(AbilityTag))
@@ -114,7 +120,9 @@ void UElectricCastleAbilitySystemComponent::ServerEquipAbility_Implementation(
 			if (FGameplayAbilitySpec* SpecWithSlot = GetAbilitySpecWithSlot(SlotTag))
 			{
 				// there is an ability in this slot already. Deactivate the ability and clear the slot.
-				if (AbilityTag.MatchesTagExact(UElectricCastleAbilitySystemLibrary::GetAbilityTagFromSpec(*SpecWithSlot)))
+				if (AbilityTag.MatchesTagExact(
+					UElectricCastleAbilitySystemLibrary::GetAbilityTagFromSpec(*SpecWithSlot)
+				))
 				{
 					// equipped the same ability in the same slot - early return.
 					ClientEquipAbility(
@@ -166,7 +174,9 @@ void UElectricCastleAbilitySystemComponent::ServerEquipAbility_Implementation(
 	}
 }
 
-void UElectricCastleAbilitySystemComponent::ClientEquipAbility_Implementation(const FElectricCastleEquipAbilityPayload& EquipPayload)
+void UElectricCastleAbilitySystemComponent::ClientEquipAbility_Implementation(
+	const FElectricCastleEquipAbilityPayload& EquipPayload
+)
 {
 	OnAbilityEquippedDelegate.Broadcast(EquipPayload);
 }
@@ -227,7 +237,12 @@ bool UElectricCastleAbilitySystemComponent::GetDescriptionsByAbilityTag(
 			OutDescription.NextLevelDescription = AuraAbility->GetDescription(AbilitySpec->Level + 1);
 			return true;
 		}
-		UE_LOG(LogElectricCastle, Error, TEXT("Ability not set for AbilitySpec assigned to [%s]"), *AbilityTag.ToString())
+		UE_LOG(
+			LogElectricCastle,
+			Error,
+			TEXT("Ability not set for AbilitySpec assigned to [%s]"),
+			*AbilityTag.ToString()
+		)
 	}
 	const UAbilityInfo* AbilityInfo = UElectricCastleAbilitySystemLibrary::GetAbilityInfo(GetAvatarActor());
 	OutDescription.Description = UElectricCastleGameplayAbility::GetLockedDescription(
@@ -259,6 +274,20 @@ void UElectricCastleAbilitySystemComponent::BeginPlay()
 		this,
 		&UElectricCastleAbilitySystemComponent::Client_EffectApplied
 	);
+}
+
+void UElectricCastleAbilitySystemComponent::Client_NotifyAbilityRemoved_Implementation(
+	const FOnAbilityChangedPayload& Payload
+) const
+{
+	OnAbilityRemoved.Broadcast(Payload);
+}
+
+void UElectricCastleAbilitySystemComponent::Client_NotifyAbilityAdded_Implementation(
+	const FOnAbilityChangedPayload& Payload
+) const
+{
+	OnAbilityAdded.Broadcast(Payload);
 }
 
 bool UElectricCastleAbilitySystemComponent::IsSlotEmpty(const FGameplayTag& SlotTag)
@@ -333,7 +362,12 @@ TArray<uint8> UElectricCastleAbilitySystemComponent::SerializeActorComponent()
 			}
 			else
 			{
-				UE_LOG(LogElectricCastle, Warning, TEXT("No ability tag for ability: [%s]"), *AbilitySpec.Ability.GetName());
+				UE_LOG(
+					LogElectricCastle,
+					Warning,
+					TEXT("No ability tag for ability: [%s]"),
+					*AbilitySpec.Ability.GetName()
+				);
 			}
 		}
 	);
@@ -400,6 +434,35 @@ bool UElectricCastleAbilitySystemComponent::DeserializeActorComponent(const TArr
 	}
 }
 
+FGameplayAbilitySpecHandle UElectricCastleAbilitySystemComponent::GiveActiveAbility(
+	const TSubclassOf<UGameplayAbility>& AbilityClass,
+	const int32 AbilityLevel
+)
+{
+	FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass, AbilityLevel);
+	if (const UElectricCastleGameplayAbility* AuraAbility = Cast<UElectricCastleGameplayAbility>(
+		AbilitySpec.Ability
+	))
+	{
+		for (FGameplayTag StartupTag : AuraAbility->GetStartupInputTag())
+		{
+			AbilitySpec.GetDynamicSpecSourceTags().AddTag(StartupTag);
+		}
+	}
+	const FGameplayTag EquippedTag = FElectricCastleGameplayTags::Get().Abilities_Status_Equipped;
+	AbilitySpec.GetDynamicSpecSourceTags().AddTag(EquippedTag);
+	return GiveAbility(AbilitySpec);
+}
+
+FGameplayAbilitySpecHandle UElectricCastleAbilitySystemComponent::GivePassiveAbility(
+	const TSubclassOf<UGameplayAbility>& AbilityClass
+)
+{
+	FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass, 1);
+	AbilitySpec.GetDynamicSpecSourceTags().AddTag(FElectricCastleGameplayTags::Get().Abilities_Status_Equipped);
+	return GiveAbilityAndActivateOnce(AbilitySpec);
+}
+
 void UElectricCastleAbilitySystemComponent::ClientUpdateAbilityStatus_Implementation(
 	const int32 PlayerLevel,
 	const TArray<FAbilityTagStatus>& AbilityStatuses
@@ -424,25 +487,13 @@ void UElectricCastleAbilitySystemComponent::AddCharacterAbilities(
 	const TArray<TSubclassOf<UGameplayAbility>>& StartupPassiveAbilities
 )
 {
-	for (const TSubclassOf AbilityClass : StartupAbilities)
+	for (TSubclassOf AbilityClass : StartupAbilities)
 	{
-		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass, 1);
-		if (const UElectricCastleGameplayAbility* AuraAbility = Cast<UElectricCastleGameplayAbility>(AbilitySpec.Ability))
-		{
-			for (FGameplayTag StartupTag : AuraAbility->GetStartupInputTag())
-			{
-				AbilitySpec.GetDynamicSpecSourceTags().AddTag(StartupTag);
-			}
-		}
-		FGameplayTag EquippedTag = FElectricCastleGameplayTags::Get().Abilities_Status_Equipped;
-		AbilitySpec.GetDynamicSpecSourceTags().AddTag(EquippedTag);
-		GiveAbility(AbilitySpec);
+		GiveActiveAbility(AbilityClass, 1);
 	}
 	for (const TSubclassOf PassiveAbilityClass : StartupPassiveAbilities)
 	{
-		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(PassiveAbilityClass, 1);
-		AbilitySpec.GetDynamicSpecSourceTags().AddTag(FElectricCastleGameplayTags::Get().Abilities_Status_Equipped);
-		GiveAbilityAndActivateOnce(AbilitySpec);
+		GivePassiveAbility(PassiveAbilityClass);
 	}
 	// NOTE: This is client-side only! OnRep_ActivateAbilities handles server-side.
 	bAbilitiesGiven = true;
@@ -531,5 +582,88 @@ void UElectricCastleAbilitySystemComponent::OnRep_ActivateAbilities()
 	{
 		bAbilitiesGiven = true;
 		OnAbilitiesGivenDelegate.Broadcast();
+	}
+}
+
+void UElectricCastleAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec)
+{
+	Super::OnGiveAbility(AbilitySpec);
+	if (const UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(
+		GetOwnerActor()
+	))
+	{
+		const UAbilityInfo* AbilityInfos = GameDataSubsystem->GetAbilityInfo();
+		for (const FGameplayTag& AbilityTag : AbilitySpec.Ability->AbilityTags)
+		{
+			if (const FElectricCastleAbilityInfo& AbilityInfo = AbilityInfos->FindAbilityInfoForTag(AbilityTag);
+				AbilityInfo.
+				IsValid())
+			{
+				Client_NotifyAbilityAdded(FOnAbilityChangedPayload(GetOwnerActor(), AbilityTag, AbilityInfo.InputTag));
+				break;
+			}
+		}
+	}
+}
+
+void UElectricCastleAbilitySystemComponent::OnRemoveAbility(FGameplayAbilitySpec& AbilitySpec)
+{
+	Super::OnRemoveAbility(AbilitySpec);
+	if (const UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(
+		GetOwnerActor()
+	))
+	{
+		const UAbilityInfo* AbilityInfos = GameDataSubsystem->GetAbilityInfo();
+		for (const FGameplayTag& AbilityTag : AbilitySpec.Ability->AbilityTags)
+		{
+			if (const FElectricCastleAbilityInfo& AbilityInfo = AbilityInfos->FindAbilityInfoForTag(AbilityTag);
+				AbilityInfo.
+				IsValid())
+			{
+				Client_NotifyAbilityRemoved(
+					FOnAbilityChangedPayload(GetOwnerActor(), AbilityTag, AbilityInfo.InputTag)
+				);
+				break;
+			}
+		}
+	}
+}
+
+void UElectricCastleAbilitySystemComponent::GrantAbilitiesWithTag(const FGameplayTag& AbilityTag)
+{
+	if (const UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(
+		GetOwnerActor()
+	))
+	{
+		const UAbilityInfo* AbilityInfos = GameDataSubsystem->GetAbilityInfo();
+		const FElectricCastleAbilityInfo& AbilityInfo = AbilityInfos->FindAbilityInfoForTag(AbilityTag);
+		if (AbilityInfo.IsValid())
+		{
+			GiveActiveAbility(AbilityInfo.Ability, 1);
+		}
+	}
+}
+
+void UElectricCastleAbilitySystemComponent::RemoveAbilitiesWithTag(const FGameplayTag& AbilityTag)
+{
+	TArray<FGameplayAbilitySpecHandle> HandlesToRemove;
+	FForEachAbility AbilityIterator;
+	AbilityIterator.BindLambda(
+		[&, this](const FGameplayAbilitySpec& Spec)
+		{
+			if (Spec.Ability && Spec.Ability->AbilityTags.HasTag(AbilityTag))
+			{
+				HandlesToRemove.Add(Spec.Handle);
+			}
+			else if (Spec.GetDynamicSpecSourceTags().HasTag(AbilityTag))
+			{
+				HandlesToRemove.Add(Spec.Handle);
+			}
+		}
+	);
+	ForEachAbility(AbilityIterator);
+	for (const FGameplayAbilitySpecHandle& Handle : HandlesToRemove)
+	{
+		ClearAbility(Handle);
 	}
 }
