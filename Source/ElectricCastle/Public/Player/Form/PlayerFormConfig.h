@@ -110,8 +110,8 @@ struct ELECTRICCASTLE_API FPlayerFormConfigRow
 	FGameplayTag WeaponTag = FGameplayTag::EmptyTag;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FName WeaponHandSocketName = FName("Socket_Hand_Right");
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TArray<TSubclassOf<UGameplayAbility>> Abilities;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(Categories="Abilities"))
+	TArray<FGameplayTag> Abilities;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<TSubclassOf<UGameplayAbility>> PassiveAbilities;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)

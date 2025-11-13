@@ -87,56 +87,144 @@ void UPlayerFormChangeComponent::OnRep_CurrentFormTag(const FGameplayTag& OldVal
 	const FPlayerFormConfigRow& Row = GetPlayerFormConfigRow(CurrentFormTag);
 	if (!Row.IsValid())
 	{
-		UE_LOG(LogElectricCastle, Warning, TEXT("[%s:%s] Failed to change form -- invalid game data or form config! %s"), *GetOwner()->GetName(), *GetName(), *CurrentFormTag.ToString());
+		UE_LOG(
+			LogElectricCastle,
+			Warning,
+			TEXT("[%s:%s] Failed to change form -- invalid game data or form config! %s"),
+			*GetOwner()->GetName(),
+			*GetName(),
+			*CurrentFormTag.ToString()
+		);
 		return;
 	}
 	FPlayerFormChangeEventPayload EventPayload;
 	EventPayload.OldFormTag = OldValue;
 	EventPayload.NewFormTag = CurrentFormTag;
 	EventPayload.FormAttributes = Row.FormAttributes;
-	if (const UPlayerFormConfig* FormConfig = GetPlayerFormConfig())
+	if (UPlayerFormConfig* FormConfig = GetPlayerFormConfig())
 	{
 		EventPayload.HealthChangeEffect = FormConfig->GetHealthChangeEffect();
 		EventPayload.ManaChangeEffect = FormConfig->GetManaChangeEffect();
+		UFormConfigLoadRequest* LoadRequest = FormConfig->GetOrCreateLoadRequest(EventPayload.NewFormTag);
+		LoadRequest->OnLoadComplete.AddUniqueDynamic(
+			this,
+			&UPlayerFormChangeComponent::OnFormDataLoaded_Broadcast
+		);
+		FormConfig->LoadAsync(LoadRequest);
 	}
 	OnPlayerFormChange.Broadcast(EventPayload);
 }
 
-void UPlayerFormChangeComponent::FormChange_UpdateAbilities(const FPlayerFormChangeEventPayload& Payload)
+void UPlayerFormChangeComponent::FormChange_UpdateAbilities_Implementation(const FPlayerFormChangeEventPayload& Payload)
 {
+	if (!GetOwner()->HasAuthority())
+	{
+		return;
+	}
+	const FPlayerFormConfigRow& OldFormConfig = GetPlayerFormConfigRow(Payload.OldFormTag);
+	const FPlayerFormConfigRow& CurrentFormConfig = GetPlayerFormConfigRow(Payload.NewFormTag);
+	if (UElectricCastleAbilitySystemComponent* AbilitySystemComponent = Cast<UElectricCastleAbilitySystemComponent>(
+		UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(
+			GetOwner()
+		)
+	))
+	{
+		for (const FGameplayTag& AbilityTag : OldFormConfig.Abilities)
+		{
+			UE_LOG(
+				LogElectricCastle,
+				Log,
+				TEXT("[%s:%s] Removing ability %s"),
+				*GetOwner()->GetName(),
+				*GetName(),
+				*AbilityTag.ToString()
+			);
+			AbilitySystemComponent->RemoveAbilitiesWithTag(AbilityTag);
+		}
+		for (const FGameplayTag& AbilityTag : CurrentFormConfig.Abilities)
+		{
+			UE_LOG(
+				LogElectricCastle,
+				Log,
+				TEXT("[%s:%s] Adding ability %s"),
+				*GetOwner()->GetName(),
+				*GetName(),
+				*AbilityTag.ToString()
+			);
+			AbilitySystemComponent->GrantAbilitiesWithTag(AbilityTag);
+		}
+	}
 }
 
-void UPlayerFormChangeComponent::FormChange_UpdateAttributes(const FPlayerFormChangeEventPayload& Payload)
+void UPlayerFormChangeComponent::FormChange_UpdateAttributes_Implementation(
+	const FPlayerFormChangeEventPayload& Payload
+)
 {
-	if (UElectricCastleAbilitySystemComponent* AbilitySystemComponent = Cast<UElectricCastleAbilitySystemComponent>(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetOwner())))
+	if (!GetOwner()->HasAuthority())
+	{
+		return;
+	}
+	if (UElectricCastleAbilitySystemComponent* AbilitySystemComponent = Cast<UElectricCastleAbilitySystemComponent>(
+		UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetOwner())
+	))
 	{
 		bool AttributeFound;
 		const int32 CharacterLevel = IElectricCastleAbilitySystemInterface::GetCharacterLevel(GetOwner());
-		const float OldMaxHealth = AbilitySystemComponent->GetGameplayAttributeValue(UElectricCastleAttributeSet::GetMaxHealthAttribute(), AttributeFound);
-		const float OldMaxMana = AbilitySystemComponent->GetGameplayAttributeValue(UElectricCastleAttributeSet::GetMaxManaAttribute(), AttributeFound);
+		const float OldMaxHealth = AbilitySystemComponent->GetGameplayAttributeValue(
+			UElectricCastleAttributeSet::GetMaxHealthAttribute(),
+			AttributeFound
+		);
+		const float OldMaxMana = AbilitySystemComponent->GetGameplayAttributeValue(
+			UElectricCastleAttributeSet::GetMaxManaAttribute(),
+			AttributeFound
+		);
 		if (CurrentFormEffectHandle.IsValid())
 		{
 			UElectricCastleAbilitySystemLibrary::RemoveGameplayEffect(GetOwner(), CurrentFormEffectHandle);
 		}
-		const float StandardMaxHealth = AbilitySystemComponent->GetGameplayAttributeValue(UElectricCastleAttributeSet::GetMaxHealthAttribute(), AttributeFound);
-		const float StandardMaxMana = AbilitySystemComponent->GetGameplayAttributeValue(UElectricCastleAttributeSet::GetMaxManaAttribute(), AttributeFound);
+		const float StandardMaxHealth = AbilitySystemComponent->GetGameplayAttributeValue(
+			UElectricCastleAttributeSet::GetMaxHealthAttribute(),
+			AttributeFound
+		);
+		const float StandardMaxMana = AbilitySystemComponent->GetGameplayAttributeValue(
+			UElectricCastleAttributeSet::GetMaxManaAttribute(),
+			AttributeFound
+		);
 
 		CurrentFormEffectHandle = UElectricCastleAbilitySystemLibrary::ApplyBasicGameplayEffect(
 			GetOwner(),
 			Payload.FormAttributes,
 			CharacterLevel
 		);
-		const float NewMaxHealth = AbilitySystemComponent->GetGameplayAttributeValue(UElectricCastleAttributeSet::GetMaxHealthAttribute(), AttributeFound);
-		const float NewMaxMana = AbilitySystemComponent->GetGameplayAttributeValue(UElectricCastleAttributeSet::GetMaxManaAttribute(), AttributeFound);
+		const float NewMaxHealth = AbilitySystemComponent->GetGameplayAttributeValue(
+			UElectricCastleAttributeSet::GetMaxHealthAttribute(),
+			AttributeFound
+		);
+		const float NewMaxMana = AbilitySystemComponent->GetGameplayAttributeValue(
+			UElectricCastleAttributeSet::GetMaxManaAttribute(),
+			AttributeFound
+		);
 		const float HealthModifier = (StandardMaxHealth / OldMaxHealth) * NewMaxHealth;
 		const float ManaModifier = (StandardMaxMana / OldMaxMana) * NewMaxMana;
 		if (Payload.HealthChangeEffect)
 		{
-			UElectricCastleAbilitySystemLibrary::ApplyBasicGameplayEffectWithMagnitude(GetOwner(), Payload.HealthChangeEffect, 1, FElectricCastleGameplayTags::Get().Effect_Magnitude, HealthModifier);
+			UElectricCastleAbilitySystemLibrary::ApplyBasicGameplayEffectWithMagnitude(
+				GetOwner(),
+				Payload.HealthChangeEffect,
+				1,
+				FElectricCastleGameplayTags::Get().Effect_Magnitude,
+				HealthModifier
+			);
 		}
 		if (Payload.ManaChangeEffect)
 		{
-			UElectricCastleAbilitySystemLibrary::ApplyBasicGameplayEffectWithMagnitude(GetOwner(), Payload.ManaChangeEffect, 1, FElectricCastleGameplayTags::Get().Effect_Magnitude, ManaModifier);
+			UElectricCastleAbilitySystemLibrary::ApplyBasicGameplayEffectWithMagnitude(
+				GetOwner(),
+				Payload.ManaChangeEffect,
+				1,
+				FElectricCastleGameplayTags::Get().Effect_Magnitude,
+				ManaModifier
+			);
 		}
 	}
 }
@@ -186,13 +274,20 @@ FPlayerFormConfigRow UPlayerFormChangeComponent::GetPlayerFormConfigRow(const FG
 }
 
 
+void UPlayerFormChangeComponent::OnFormDataLoaded_Broadcast(const FPlayerFormConfigRow& FormConfigRow)
+{
+	OnPlayerFormDataLoaded.Broadcast(FormConfigRow);
+}
+
 void UPlayerFormChangeComponent::OnFormDataLoaded(const FPlayerFormConfigRow& FormConfigRow)
 {
 	if (AElectricCastlePlayerCharacter* PlayerCharacter = Cast<AElectricCastlePlayerCharacter>(GetOwner()))
 	{
 		PlayerCharacter->SetFormMeshes(FormConfigRow.MeshConfig);
 		PlayerCharacter->SetAnimInstanceClass(FormConfigRow.AnimationBlueprint.Get());
-		if (UPlayerEquipmentComponent* EquipmentComponent = IEquipmentManagerInterface::GetEquipmentComponent(PlayerCharacter))
+		if (UPlayerEquipmentComponent* EquipmentComponent = IEquipmentManagerInterface::GetEquipmentComponent(
+			PlayerCharacter
+		))
 		{
 			EquipmentComponent->ChangeWeapon(FormConfigRow.WeaponTag, FormConfigRow.WeaponHandSocketName);
 		}

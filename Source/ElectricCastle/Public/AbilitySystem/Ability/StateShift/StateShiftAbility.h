@@ -18,8 +18,6 @@ class ELECTRICCASTLE_API UStateShiftAbility : public UElectricCastleGameplayAbil
 	GENERATED_BODY()
 
 public:
-	UStateShiftAbility();
-
 	virtual void EndAbility(
 		const FGameplayAbilitySpecHandle Handle,
 		const FGameplayAbilityActorInfo* ActorInfo,

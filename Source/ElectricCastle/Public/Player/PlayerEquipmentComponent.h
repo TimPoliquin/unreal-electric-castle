@@ -40,6 +40,7 @@ class ELECTRICCASTLE_API UPlayerEquipmentComponent : public UActorComponent, pub
 
 public:
 	UPlayerEquipmentComponent();
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	/** Start ISaveableInterface **/
 	virtual TArray<uint8> SaveData_Implementation() override;
@@ -94,7 +95,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Inventory|Equipment")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category="Inventory|Equipment")
 	EEquipmentUseMode EquipmentUseMode = EEquipmentUseMode::None;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Inventory|Equipment")
 	TMap<EEquipmentSlot, FGameplayTag> EquipmentSlots;
@@ -105,9 +106,9 @@ protected:
 
 private:
 	USkeletalMeshComponent* GetCharacterMesh() const;
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	TObjectPtr<AEquipmentActor> Weapon;
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	TObjectPtr<AEquipmentActor> Tool;
 
 	AEquipmentActor* SpawnEquipment(const EEquipmentSlot& Slot);
