@@ -38,6 +38,7 @@ class ELECTRICCASTLE_API UElectricCastleGameplayAbility : public UGameplayAbilit
 	GENERATED_BODY()
 
 public:
+	UElectricCastleGameplayAbility();
 	FORCEINLINE TArray<FGameplayTag> GetStartupInputTag() const
 	{
 		return StartupInputTags;
@@ -63,12 +64,24 @@ public:
 
 	float GetManaCost(const float InLevel = 1.f) const;
 	float GetCooldown(const float InLevel = 1.f) const;
+	virtual UGameplayEffect* GetCooldownGameplayEffect() const override;
 
 protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties")
+	TSubclassOf<UGameplayEffect> CooldownEffectClass;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties")
+	bool bAutoApplyCooldownOnAbilityEnd = true;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties")
 	bool bDebug = false;
 
 	void ExecuteTask(UAbilityTask* Task) const;
+	virtual void EndAbility(
+		const FGameplayAbilitySpecHandle Handle,
+		const FGameplayAbilityActorInfo* ActorInfo,
+		const FGameplayAbilityActivationInfo ActivationInfo,
+		bool bReplicateEndAbility,
+		bool bWasCancelled
+	) override;
 	/**
 	 * Determines whether the ability should use motion warping. This is primarily true if the user is using keyboard & mouse input, and has a target selected.
 	 * @return 

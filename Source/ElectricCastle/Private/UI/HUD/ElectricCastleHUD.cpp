@@ -10,6 +10,7 @@
 #include "Player/ElectricCastlePlayerState.h"
 #include "UI/HUD/OverlayWidget.h"
 #include "UI/ViewModel/MVVM_Inventory.h"
+#include "UI/ViewModel/MVVM_PlayerAbilityStates.h"
 #include "UI/ViewModel/MVVM_PlayerState.h"
 #include "UI/Widget/AuraMenuWidget.h"
 #include "UI/WidgetController/AttributeMenuWidgetController.h"
@@ -90,6 +91,11 @@ TArray<UMVVM_PlayerState*> AElectricCastleHUD::GetPlayerStateViewModels() const
 	return PlayerStateViewModels;
 }
 
+TArray<UMVVM_PlayerAbilityStates*> AElectricCastleHUD::GetPlayerAbilityStatesViewModels() const
+{
+	return PlayerAbilityStatesViewModels;
+}
+
 void AElectricCastleHUD::OpenMenu(const EAuraMenuTab& OpenTab)
 {
 	GetOwningPlayerController()->SetInputMode(FInputModeUIOnly());
@@ -115,12 +121,23 @@ void AElectricCastleHUD::InitializePlayerStateViewModels()
 		// this should maybe be done on player state begin play?
 		for (int32 PlayerIdx = 0; PlayerIdx < GameState->PlayerArray.Num(); PlayerIdx++)
 		{
-			UMVVM_PlayerState* PlayerStateViewModel = NewObject<UMVVM_PlayerState>(this, PlayerStateViewModelClass);
-			PlayerStateViewModel->SetPlayerIndex(PlayerIdx);
-			PlayerStateViewModel->InitializeDependencies(
-				Cast<AElectricCastlePlayerState>(GameState->PlayerArray[PlayerIdx])
-			);
-			PlayerStateViewModels.Add(PlayerStateViewModel);
+			if (AElectricCastlePlayerState* PlayerState = Cast<AElectricCastlePlayerState>(
+				GameState->PlayerArray[PlayerIdx]
+			))
+			{
+				UMVVM_PlayerState* PlayerStateViewModel = NewObject<UMVVM_PlayerState>(this, PlayerStateViewModelClass);
+				PlayerStateViewModel->SetPlayerIndex(PlayerIdx);
+				PlayerStateViewModel->InitializeDependencies(PlayerState);
+				PlayerStateViewModels.Add(PlayerStateViewModel);
+
+				UMVVM_PlayerAbilityStates* PlayerAbilityStatesViewModel = NewObject<UMVVM_PlayerAbilityStates>(
+					this,
+					PlayerAbilityStatesViewModelClass
+				);
+				PlayerAbilityStatesViewModel->SetPlayerIndex(PlayerIdx);
+				PlayerAbilityStatesViewModel->InitializeDependencies(PlayerState);
+				PlayerAbilityStatesViewModels.Add(PlayerAbilityStatesViewModel);
+			}
 		}
 	}
 	else
@@ -144,7 +161,7 @@ void AElectricCastleHUD::InitializeOverlayWidget()
 		return;
 	}
 	OverlayWidget = CreateWidget<UOverlayWidget>(GetWorld(), OverlayWidgetClass, FName("OverlayWidget"));
-	OverlayWidget->BindViewModels(GetPlayerStateViewModels());
+	OverlayWidget->BindViewModels(GetPlayerStateViewModels(), GetPlayerAbilityStatesViewModels());
 	OverlayWidget->AddToViewport();
 }
 

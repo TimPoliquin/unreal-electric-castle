@@ -115,12 +115,55 @@ void UPlayerFormChangeComponent::OnRep_CurrentFormTag(const FGameplayTag& OldVal
 	OnPlayerFormChange.Broadcast(EventPayload);
 }
 
-void UPlayerFormChangeComponent::FormChange_UpdateAbilities(const FPlayerFormChangeEventPayload& Payload)
+void UPlayerFormChangeComponent::FormChange_UpdateAbilities_Implementation(const FPlayerFormChangeEventPayload& Payload)
 {
+	if (!GetOwner()->HasAuthority())
+	{
+		return;
+	}
+	const FPlayerFormConfigRow& OldFormConfig = GetPlayerFormConfigRow(Payload.OldFormTag);
+	const FPlayerFormConfigRow& CurrentFormConfig = GetPlayerFormConfigRow(Payload.NewFormTag);
+	if (UElectricCastleAbilitySystemComponent* AbilitySystemComponent = Cast<UElectricCastleAbilitySystemComponent>(
+		UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(
+			GetOwner()
+		)
+	))
+	{
+		for (const FGameplayTag& AbilityTag : OldFormConfig.Abilities)
+		{
+			UE_LOG(
+				LogElectricCastle,
+				Log,
+				TEXT("[%s:%s] Removing ability %s"),
+				*GetOwner()->GetName(),
+				*GetName(),
+				*AbilityTag.ToString()
+			);
+			AbilitySystemComponent->RemoveAbilitiesWithTag(AbilityTag);
+		}
+		for (const FGameplayTag& AbilityTag : CurrentFormConfig.Abilities)
+		{
+			UE_LOG(
+				LogElectricCastle,
+				Log,
+				TEXT("[%s:%s] Adding ability %s"),
+				*GetOwner()->GetName(),
+				*GetName(),
+				*AbilityTag.ToString()
+			);
+			AbilitySystemComponent->GrantAbilitiesWithTag(AbilityTag);
+		}
+	}
 }
 
-void UPlayerFormChangeComponent::FormChange_UpdateAttributes(const FPlayerFormChangeEventPayload& Payload)
+void UPlayerFormChangeComponent::FormChange_UpdateAttributes_Implementation(
+	const FPlayerFormChangeEventPayload& Payload
+)
 {
+	if (!GetOwner()->HasAuthority())
+	{
+		return;
+	}
 	if (UElectricCastleAbilitySystemComponent* AbilitySystemComponent = Cast<UElectricCastleAbilitySystemComponent>(
 		UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetOwner())
 	))

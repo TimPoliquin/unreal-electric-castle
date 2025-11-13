@@ -3,11 +3,19 @@
 
 #include "AbilitySystem/Ability/ElectricCastleGameplayAbility.h"
 #include "Abilities/Tasks/AbilityTask.h"
+#include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 #include "AbilitySystem/ElectricCastleAttributeSet.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "GameFramework/Character.h"
 #include "Interaction/CombatInterface.h"
 #include "Player/ElectricCastlePlayerController.h"
+
+
+UElectricCastleGameplayAbility::UElectricCastleGameplayAbility()
+{
+	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
+	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
+}
 
 FString UElectricCastleGameplayAbility::GetDescription_Implementation(const int32 AbilityLevel) const
 {
@@ -23,6 +31,25 @@ void UElectricCastleGameplayAbility::ExecuteTask(UAbilityTask* Task) const
 			Task->SetAbilitySystemComponent(AbilitySystemComponent);
 			Task->ReadyForActivation();
 		}
+	}
+}
+
+void UElectricCastleGameplayAbility::EndAbility(
+	const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo,
+	bool bReplicateEndAbility,
+	bool bWasCancelled
+)
+{
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+	if (bAutoApplyCooldownOnAbilityEnd && CooldownEffectClass && GetActorInfo().IsNetAuthority())
+	{
+		UElectricCastleAbilitySystemLibrary::ApplyBasicGameplayEffect(
+			GetAvatarActorFromActorInfo(),
+			CooldownEffectClass,
+			GetAbilityLevel()
+		);
 	}
 }
 
@@ -63,7 +90,15 @@ void UElectricCastleGameplayAbility::DebugLog(
 {
 	if (bDebug)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, TimeToDisplay, Color, LogString);
+		const FString DebugString = FString::Printf(
+			TEXT("[%s][%s] %s"),
+			GetAvatarActorFromActorInfo()->HasAuthority()
+				? *FString("Server")
+				: *FString("Client"),
+			*GetName(),
+			*LogString
+		);
+		GEngine->AddOnScreenDebugMessage(-1, TimeToDisplay, Color, DebugString);
 	}
 }
 
@@ -135,11 +170,20 @@ float UElectricCastleGameplayAbility::GetManaCost(const float InLevel) const
 
 float UElectricCastleGameplayAbility::GetCooldown(const float InLevel) const
 {
-	if (const UGameplayEffect* CooldownEffect = GetCooldownGameplayEffect())
+	if (const UGameplayEffect* LocalCooldownEffect = GetCooldownGameplayEffect())
 	{
 		float Cooldown = 0.f;
-		CooldownEffect->DurationMagnitude.GetStaticMagnitudeIfPossible(InLevel, Cooldown);
+		LocalCooldownEffect->DurationMagnitude.GetStaticMagnitudeIfPossible(InLevel, Cooldown);
 		return Cooldown;
 	}
 	return 0.f;
+}
+
+UGameplayEffect* UElectricCastleGameplayAbility::GetCooldownGameplayEffect() const
+{
+	if (CooldownEffectClass)
+	{
+		return CooldownEffectClass->GetDefaultObject<UGameplayEffect>();
+	}
+	return Super::GetCooldownGameplayEffect();
 }

@@ -16,6 +16,7 @@
 #include "Player/Equipment/EquipmentManagerInterface.h"
 #include "ElectricCastlePlayerCharacter.generated.h"
 
+class AElectricCastlePlayerCharacter;
 class ULiveLinkRetargetAsset;
 struct FLODMappingData;
 class ULODSyncComponent;
@@ -150,8 +151,6 @@ public:
 	}
 
 	/** EquipmentManagerInterface End */
-
-
 protected:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void Construction_SetupMetaHuman();

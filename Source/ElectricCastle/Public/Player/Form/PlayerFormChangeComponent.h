@@ -57,9 +57,9 @@ public:
 	void FormChange_PlayEffect(const FPlayerFormChangeEventPayload& Payload);
 	UFUNCTION(BlueprintCallable)
 	void FormChange_UpdateCharacterMesh(const FPlayerFormChangeEventPayload& Payload);
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Server, Reliable)
 	void FormChange_UpdateAbilities(const FPlayerFormChangeEventPayload& Payload);
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Server, Reliable)
 	void FormChange_UpdateAttributes(const FPlayerFormChangeEventPayload& Payload);
 	UFUNCTION(BlueprintCallable)
 	FGameplayTag GetCurrentFormTag() const { return CurrentFormTag; }

@@ -11,7 +11,6 @@
 #include "Player/Form/FormChangeActorInterface.h"
 #include "Player/Form/FormConfigLoadRequest.h"
 #include "Player/Progression/ProgressionComponent.h"
-#include "UI/WidgetController/OverlayWidgetController.h"
 
 int32 UMVVM_PlayerState::GetPlayerIndex() const
 {

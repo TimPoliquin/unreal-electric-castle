@@ -15,7 +15,10 @@ TArray<UMVVM_PlayerState*> UOverlayWidget::GetPlayerStateViewModels() const
 	return TArray<UMVVM_PlayerState*>();
 }
 
-void UOverlayWidget::BindViewModels_Implementation(const TArray<UMVVM_PlayerState*>& ViewModels)
+void UOverlayWidget::BindViewModels_Implementation(
+	const TArray<UMVVM_PlayerState*>& ViewModels,
+	const TArray<UMVVM_PlayerAbilityStates*>& AbilityViewModels
+)
 {
 	// TODO
 }

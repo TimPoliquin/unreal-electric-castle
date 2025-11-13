@@ -7,6 +7,7 @@
 #include "UI/WidgetController/ElectricCastleWidgetController.h"
 #include "ElectricCastleHUD.generated.h"
 
+class UMVVM_PlayerAbilityStates;
 class UOverlayWidget;
 class UMVVM_PlayerState;
 class UAuraOverlayWidget;
@@ -27,7 +28,7 @@ class APlayerState;
 /**
  * 
  */
-UCLASS()
+UCLASS(Abstract)
 class ELECTRICCASTLE_API AElectricCastleHUD : public AHUD
 {
 	GENERATED_BODY()
@@ -50,6 +51,9 @@ public:
 	UMVVM_Inventory* GetInventoryViewModel();
 	UFUNCTION(BlueprintCallable)
 	TArray<UMVVM_PlayerState*> GetPlayerStateViewModels() const;
+	UFUNCTION(BlueprintCallable)
+	TArray<UMVVM_PlayerAbilityStates*> GetPlayerAbilityStatesViewModels() const;
+
 
 	UFUNCTION(BlueprintCallable)
 	void OpenMenu(const EAuraMenuTab& OpenTab);
@@ -64,6 +68,10 @@ protected:
 	TSubclassOf<UMVVM_PlayerState> PlayerStateViewModelClass;
 	UPROPERTY()
 	TArray<TObjectPtr<UMVVM_PlayerState>> PlayerStateViewModels;
+	UPROPERTY(EditDefaultsOnly, Category = "Properties")
+	TSubclassOf<UMVVM_PlayerAbilityStates> PlayerAbilityStatesViewModelClass;
+	UPROPERTY()
+	TArray<TObjectPtr<UMVVM_PlayerAbilityStates>> PlayerAbilityStatesViewModels;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
 	TSubclassOf<UOverlayWidget> OverlayWidgetClass;

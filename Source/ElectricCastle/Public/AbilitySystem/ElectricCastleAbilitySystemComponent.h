@@ -3,19 +3,24 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilityChangeDelegates.h"
 #include "AbilitySystemComponent.h"
 #include "AttributeChangeDelegates.h"
 #include "ElectricCastleAbilitySystemTypes.h"
 #include "Game/Save/SaveableInterface.h"
+#include "AbilityChangeDelegates.h"
 #include "ElectricCastleAbilitySystemComponent.generated.h"
 
-class UOLD_AuraSaveGame;
 class UElectricCastleAbilitySystemComponent;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FEffectAssetTags, const FGameplayTagContainer& /*Asset Tags*/)
 DECLARE_MULTICAST_DELEGATE(FAbilitiesGiven);
 DECLARE_DELEGATE_OneParam(FForEachAbility, FGameplayAbilitySpec&);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAbilityEquippedSignature, const FElectricCastleEquipAbilityPayload&, EquipPayload);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(
+	FAbilityEquippedSignature,
+	const FElectricCastleEquipAbilityPayload&,
+	EquipPayload
+);
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(
 	FActivatePassiveEffectSignature,
@@ -47,7 +52,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(
  * 
  */
 UCLASS()
-class ELECTRICCASTLE_API UElectricCastleAbilitySystemComponent : public UAbilitySystemComponent, public ISaveableInterface
+class ELECTRICCASTLE_API UElectricCastleAbilitySystemComponent : public UAbilitySystemComponent,
+                                                                 public ISaveableInterface
 {
 	GENERATED_BODY()
 
@@ -63,6 +69,10 @@ public:
 	void AbilityInputTagHeld(const FGameplayTag& InputTag);
 	void AbilityInputTagReleased(const FGameplayTag& InputTag);
 	virtual void OnRep_ActivateAbilities() override;
+	virtual void OnGiveAbility(FGameplayAbilitySpec& AbilitySpec) override;
+	virtual void OnRemoveAbility(FGameplayAbilitySpec& AbilitySpec) override;
+	void GrantAbilitiesWithTag(const FGameplayTag& AbilityTag);
+	void RemoveAbilitiesWithTag(const FGameplayTag& AbilityTag);
 	FAbilitiesGiven OnAbilitiesGivenDelegate;
 	FORCEINLINE bool HasFiredOnAbilitiesGivenDelegate() const
 	{
@@ -102,6 +112,11 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Save Game")
 	bool bShouldSave = false;
 
+	UPROPERTY(BlueprintAssignable)
+	FOnAbilityChangedSignature OnAbilityAdded;
+	UPROPERTY(BlueprintAssignable)
+	FOnAbilityChangedSignature OnAbilityRemoved;
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -111,6 +126,10 @@ protected:
 		const FGameplayEffectSpec& EffectSpec,
 		FActiveGameplayEffectHandle ActiveEffectHandle
 	);
+	UFUNCTION(NetMulticast, Reliable)
+	void Client_NotifyAbilityAdded(const FOnAbilityChangedPayload& Payload) const;
+	UFUNCTION(NetMulticast, Reliable)
+	void Client_NotifyAbilityRemoved(const FOnAbilityChangedPayload& Payload) const;
 
 private:
 	bool bAbilitiesGiven = false;
@@ -127,4 +146,10 @@ private:
 
 	TArray<uint8> SerializeActorComponent();
 	bool DeserializeActorComponent(const TArray<uint8>& Data);
+
+	FGameplayAbilitySpecHandle GiveActiveAbility(
+		const TSubclassOf<UGameplayAbility>& AbilityClass,
+		const int32 AbilityLevel = 1
+	);
+	FGameplayAbilitySpecHandle GivePassiveAbility(const TSubclassOf<UGameplayAbility>& AbilityClass);
 };
