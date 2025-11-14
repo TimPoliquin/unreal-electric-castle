@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
+#include "InputEvents.h"
 #include "GameFramework/PlayerController.h"
 #include "Interaction/HighlightInterface.h"
 #include "ElectricCastlePlayerController.generated.h"
@@ -148,6 +149,9 @@ public:
 	bool IsNotTargeting() const;
 	void SetupInputMode();
 
+	UPROPERTY(BlueprintAssignable)
+	FOnPlayerFormWheelVisibilityChangeSignature OnFormWheelVisibilityChange;
+
 protected:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputMappingContext> AuraContext;
@@ -155,6 +159,8 @@ protected:
 	TObjectPtr<UInputAction> MoveAction;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputAction> AimAction;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> FormWheelAction;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	float AimClampMin = -1.f;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
@@ -187,6 +193,10 @@ private:
 	void AbilityInputTagPressed(FGameplayTag InputTag);
 	void AbilityInputTagReleased(FGameplayTag InputTag);
 	void AbilityInputTagHeld(FGameplayTag InputTag);
+	UFUNCTION()
+	void ShowFormWheel(const FInputActionValue& InputActionValue);
+	UFUNCTION()
+	void HideFormWheel(const FInputActionValue& InputActionValue);
 	UFUNCTION()
 	void HandleFormChangeInputAction(const FInputActionValue& InputActionValue);
 	void UpdateMagicCircleLocation() const;

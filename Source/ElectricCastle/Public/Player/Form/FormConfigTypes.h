@@ -15,5 +15,7 @@ enum class EPlayerForm : uint8
 	Knight = 6,
 	Native = 7,
 	Roman = 8,
-	Invalid_Max = 9
+	Count = 9 UMETA(Hidden)
 };
+
+ENUM_RANGE_BY_FIRST_AND_LAST(EPlayerForm, EPlayerForm::Barbarian, EPlayerForm::Roman)

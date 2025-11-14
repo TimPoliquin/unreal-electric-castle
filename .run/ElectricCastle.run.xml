@@ -69,10 +69,10 @@
       <option name="CONFIGURATION" value="DebugGame Editor" />
       <option name="PLATFORM" value="Mac" />
       <option name="CURRENT_LAUNCH_PROFILE" value="Local" />
-      <option name="EXECUTABLE_PATH" value="$PROJECT_DIR$/../../Unreal Engine/UE_5.6/Engine/Binaries/Mac/UnrealEditor-Mac-DebugGame.app/Contents/MacOS/UnrealEditor-Mac-DebugGame" />
+      <option name="EXECUTABLE_PATH" value="$PROJECT_DIR$/../../Unreal Engine/UE_5.7/Engine/Binaries/Mac/UnrealEditor-Mac-DebugGame.app/Contents/MacOS/UnrealEditor-Mac-DebugGame" />
       <option name="MANDATORY_PROGRAM_PARAMETERS" value=" &quot;$PROJECT_DIR$/ElectricCastle.uproject&quot;" />
       <option name="CUSTOM_PROGRAM_PARAMETERS" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../../Unreal Engine/UE_5.6" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../../Unreal Engine/UE_5.7" />
       <option name="PASS_PARENT_ENVS" value="1" />
       <option name="USE_EXTERNAL_CONSOLE" value="0" />
       <option name="TERMINAL_INTERACTION_BEHAVIOR" value="FORCE_CONSOLE" />
@@ -85,7 +85,7 @@
       <option name="EXECUTABLE_PATH" value="$PROJECT_DIR$/Binaries/Mac/ElectricCastle-Mac-DebugGame.app/Contents/MacOS/ElectricCastle-Mac-DebugGame" />
       <option name="MANDATORY_PROGRAM_PARAMETERS" value="" />
       <option name="CUSTOM_PROGRAM_PARAMETERS" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../../Unreal Engine/UE_5.6" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../../Unreal Engine/UE_5.7" />
       <option name="PASS_PARENT_ENVS" value="1" />
       <option name="USE_EXTERNAL_CONSOLE" value="0" />
       <option name="TERMINAL_INTERACTION_BEHAVIOR" value="FORCE_CONSOLE" />
@@ -95,10 +95,10 @@
       <option name="CONFIGURATION" value="Development Editor" />
       <option name="PLATFORM" value="Mac" />
       <option name="CURRENT_LAUNCH_PROFILE" value="Local" />
-      <option name="EXECUTABLE_PATH" value="$PROJECT_DIR$/../../Unreal Engine/UE_5.6/Engine/Binaries/Mac/UnrealEditor.app/Contents/MacOS/UnrealEditor" />
+      <option name="EXECUTABLE_PATH" value="$PROJECT_DIR$/../../Unreal Engine/UE_5.7/Engine/Binaries/Mac/UnrealEditor.app/Contents/MacOS/UnrealEditor" />
       <option name="MANDATORY_PROGRAM_PARAMETERS" value=" &quot;$PROJECT_DIR$/ElectricCastle.uproject&quot;" />
       <option name="CUSTOM_PROGRAM_PARAMETERS" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../../Unreal Engine/UE_5.6" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../../Unreal Engine/UE_5.7" />
       <option name="PASS_PARENT_ENVS" value="1" />
       <option name="USE_EXTERNAL_CONSOLE" value="0" />
       <option name="TERMINAL_INTERACTION_BEHAVIOR" value="FORCE_CONSOLE" />
@@ -111,7 +111,7 @@
       <option name="EXECUTABLE_PATH" value="$PROJECT_DIR$/Binaries/Mac/ElectricCastle.app/Contents/MacOS/ElectricCastle" />
       <option name="MANDATORY_PROGRAM_PARAMETERS" value="" />
       <option name="CUSTOM_PROGRAM_PARAMETERS" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../../Unreal Engine/UE_5.6" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../../Unreal Engine/UE_5.7" />
       <option name="PASS_PARENT_ENVS" value="1" />
       <option name="USE_EXTERNAL_CONSOLE" value="0" />
       <option name="TERMINAL_INTERACTION_BEHAVIOR" value="FORCE_CONSOLE" />
@@ -124,7 +124,7 @@
       <option name="EXECUTABLE_PATH" value="$PROJECT_DIR$/Binaries/Mac/ElectricCastle-Mac-Shipping.app/Contents/MacOS/ElectricCastle-Mac-Shipping" />
       <option name="MANDATORY_PROGRAM_PARAMETERS" value="" />
       <option name="CUSTOM_PROGRAM_PARAMETERS" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../../Unreal Engine/UE_5.6" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../../Unreal Engine/UE_5.7" />
       <option name="PASS_PARENT_ENVS" value="1" />
       <option name="USE_EXTERNAL_CONSOLE" value="0" />
       <option name="TERMINAL_INTERACTION_BEHAVIOR" value="FORCE_CONSOLE" />

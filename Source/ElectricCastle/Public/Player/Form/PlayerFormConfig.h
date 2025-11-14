@@ -156,9 +156,10 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	FPlayerFormConfigRow GetPlayerFormConfigRowByTag(const FGameplayTag& FormTag) const;
+	FPlayerFormConfigRow GetPlayerFormConfigRowByFormId(const int32 FormId) const;
+	FPlayerFormConfigRow GetPlayerFormConfigRowByFormId(const EPlayerForm FormId) const;
 	UFUNCTION(BlueprintCallable)
 	UFormConfigLoadRequest* GetOrCreateLoadRequest(const FGameplayTag& FormTag);
-	FPlayerFormConfigRow GetPlayerFormConfigRowByFormId(const int32 FormId) const;
 	void LoadAsync(UFormConfigLoadRequest* LoadRequest);
 
 	UFUNCTION(BlueprintCallable)

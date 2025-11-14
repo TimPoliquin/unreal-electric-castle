@@ -18,7 +18,12 @@ FItemDefinition UItemBlueprintLibrary::GetItemDefinitionByItemType(
 	{
 		return GameDataSubsystem->FindItemDefinitionByItemTag(ItemType);
 	}
-	UE_LOG(LogElectricCastle, Error, TEXT("[%s] Attempted get item definition, but game mode was null!"), *FString("UItemBlueprintLibrary::GetItemDefinitionByItemType"));
+	UE_LOG(
+		LogElectricCastle,
+		Error,
+		TEXT("[%s] Attempted get item definition, but game mode was null!"),
+		*FString("UItemBlueprintLibrary::GetItemDefinitionByItemType")
+	);
 	return FItemDefinition();
 }
 
@@ -33,7 +38,7 @@ FString UItemBlueprintLibrary::GetItemNameByItemType(
 FString UItemBlueprintLibrary::Substitute(const FString& Message, const FMessageSubstitutions& MessageSubstitutions)
 {
 	FString Result = Message;
-	for (TPair Entry : MessageSubstitutions.Substitutions)
+	for (const TPair<FString, FString>& Entry : MessageSubstitutions.Substitutions)
 	{
 		const FString Key = "{" + Entry.Key + "}";
 		Result.ReplaceInline(*Key, *Entry.Value);
@@ -41,7 +46,10 @@ FString UItemBlueprintLibrary::Substitute(const FString& Message, const FMessage
 	return Result;
 }
 
-UTexture2D* UItemBlueprintLibrary::SubstituteMessageIcon(UTexture2D* MessageIcon, const FMessageSubstitutions& MessageSubstitutions)
+UTexture2D* UItemBlueprintLibrary::SubstituteMessageIcon(
+	UTexture2D* MessageIcon,
+	const FMessageSubstitutions& MessageSubstitutions
+)
 {
 	if (MessageSubstitutions.Icon != nullptr)
 	{

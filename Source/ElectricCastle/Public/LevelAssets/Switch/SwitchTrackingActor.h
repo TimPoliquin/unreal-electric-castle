@@ -39,6 +39,11 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<ULockComponent> LockComponent;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Properties", meta=(ObjectMustImplement="Script/Aura.AuraLockedInterface"))
+	UPROPERTY(
+		EditAnywhere,
+		BlueprintReadWrite,
+		Category="Properties",
+		meta=(ObjectMustImplement="/Script/ElectricCastle.LockedInterface")
+	)
 	TArray<AActor*> LockedActors;
 };
