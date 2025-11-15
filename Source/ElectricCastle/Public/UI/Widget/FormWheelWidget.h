@@ -25,6 +25,10 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void BindViewModel(UMVVM_PlayerForms* InPlayerFormsViewModel);
 
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties")
+	TSubclassOf<UUserWidget> FormWidgetClass;
+
 private:
 	TObjectPtr<UMVVM_PlayerForms> PlayerFormsViewModel;
 };
