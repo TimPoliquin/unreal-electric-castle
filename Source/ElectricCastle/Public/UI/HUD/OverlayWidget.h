@@ -24,8 +24,6 @@ class ELECTRICCASTLE_API UOverlayWidget : public UUserWidget
 public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	TArray<UMVVM_PlayerState*> GetPlayerStateViewModels() const;
-	UFUNCTION(BlueprintCallable)
-	void InitializeDependencies(AElectricCastlePlayerState* PlayerState) const;
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void Show();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
@@ -47,7 +45,7 @@ protected:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Components")
 	TArray<TObjectPtr<UFormWheelWidget>> FormWheelWidgets;
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void CreateFormWheelWidgets(TArray<UMVVM_PlayerForms*>& PlayerFormsViewModels, UPanelWidget* ParentWidget);
+	void CreateFormWheelWidgets(UPARAM(ref) const TArray<UMVVM_PlayerForms*>& PlayerFormsViewModels, UPanelWidget* ParentWidget);
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	UFormWheelWidget* CreateFormWheelWidget(UMVVM_PlayerForms* PlayerFormsViewModel);
 	UFUNCTION(BlueprintCallable)

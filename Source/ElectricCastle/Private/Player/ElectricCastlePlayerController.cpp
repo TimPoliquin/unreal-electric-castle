@@ -435,12 +435,17 @@ bool AElectricCastlePlayerController::IsNotTargeting() const
 
 void AElectricCastlePlayerController::SetupInputMode()
 {
-	FInputModeGameAndUI InputModeData;
 	bShowMouseCursor = IsInputTypeMouse();
 	DefaultMouseCursor = EMouseCursor::Default;
+	SetInputMode(BuildGameAndUIInputMode());
+}
+
+FInputModeGameAndUI AElectricCastlePlayerController::BuildGameAndUIInputMode() const
+{
+	FInputModeGameAndUI InputModeData;
 	InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 	InputModeData.SetHideCursorDuringCapture(!IsInputTypeMouse());
-	SetInputMode(InputModeData);
+	return InputModeData;
 }
 
 void AElectricCastlePlayerController::OnInputTypeChange(const ECommonInputType NewInputMode)

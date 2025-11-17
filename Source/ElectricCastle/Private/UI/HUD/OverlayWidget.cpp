@@ -24,22 +24,6 @@ TArray<UMVVM_PlayerState*> UOverlayWidget::GetPlayerStateViewModels() const
 	return TArray<UMVVM_PlayerState*>();
 }
 
-void UOverlayWidget::InitializeDependencies(AElectricCastlePlayerState* PlayerState) const
-{
-	if (AElectricCastlePlayerController* PlayerController = Cast<AElectricCastlePlayerController>(
-		PlayerState->GetPlayerController()
-	))
-	{
-		if (PlayerController->IsLocalController())
-		{
-			PlayerController->OnFormWheelVisibilityChange.AddUniqueDynamic(
-				this,
-				&UOverlayWidget::OnFormWheelVisibilityChange
-			);
-		}
-	}
-}
-
 
 void UOverlayWidget::OnFormWheelVisibilityChange(const FOnPlayerFormWheelVisibilityChangePayload& Payload)
 {
@@ -63,7 +47,7 @@ void UOverlayWidget::ShowFormWheel_Implementation()
 
 
 void UOverlayWidget::CreateFormWheelWidgets_Implementation(
-	TArray<UMVVM_PlayerForms*>& PlayerFormsViewModels,
+	const TArray<UMVVM_PlayerForms*>& PlayerFormsViewModels,
 	UPanelWidget* ParentWidget
 )
 {
@@ -83,14 +67,19 @@ UFormWheelWidget* UOverlayWidget::CreateFormWheelWidget_Implementation(
 	UMVVM_PlayerForms* PlayerFormsViewModel
 )
 {
-	UFormWheelWidget* FormWheelWidget = CreateWidget<UFormWheelWidget>(
-		UWidgetFunctionLibrary::GetPlayerController(GetOwningPlayer()),
+	if (UFormWheelWidget* FormWheelWidget = CreateWidget<UFormWheelWidget>(
+		this,
 		FormWheelWidgetClass,
 		PlayerFormsViewModel->CreateWidgetName(FString("FormWheel"))
-	);
-	FormWheelWidget->BindViewModel(PlayerFormsViewModel);
-	FormWheelWidgets.Add(FormWheelWidget);
-	return FormWheelWidget;
+	))
+	{
+		FormWheelWidget->BindViewModel(PlayerFormsViewModel);
+		FormWheelWidget->Hide(false);
+		FormWheelWidgets.Add(FormWheelWidget);
+		return FormWheelWidget;
+	}
+	UE_LOG(LogElectricCastle, Error, TEXT("[%s] Failed to create FormWheelWidget"), *GetName());
+	return nullptr;
 }
 
 UFormWheelWidget* UOverlayWidget::GetFormWheelWidgetByPlayerIndex(const int32 PlayerIndex) const

@@ -39,6 +39,8 @@ public:
 	/** Get the currently selected child widget */
 	UFUNCTION(BlueprintCallable, Category = "Radial Layout")
 	UWidget* GetSelectedChild() const;
+	virtual void SetKeyboardFocus();
+	void InitializeForInput(bool bSetFocus);
 
 	// UWidget interface
 	virtual TSharedRef<SWidget> RebuildWidget() override;

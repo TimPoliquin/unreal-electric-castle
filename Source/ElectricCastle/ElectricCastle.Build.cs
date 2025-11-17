@@ -10,13 +10,16 @@ public class ElectricCastle : ModuleRules
 		bEnableExceptions = true;
 		PublicDependencyModuleNames.AddRange(new[]
 		{
-			"Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "CommonInput", "GameplayAbilities", "UMG", "SlateCore",
-			"ModelViewViewModel", "CableComponent", "AIModule", "MotionWarping", "LiveLinkInterface"
+			"Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "CommonInput",
+			"GameplayAbilities", "UMG", "Slate", "SlateCore",
+			"ModelViewViewModel", "CableComponent", "AIModule", "MotionWarping",
+			"LiveLinkInterface", "ApplicationCore"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new[]
 		{
-			"GameplayTags", "GameplayTasks", "NavigationSystem", "Niagara", "AIModule", "HairStrandsCore", "MetaHumanSDKRuntime", "LiveLinkAnimationCore"
+			"GameplayTags", "GameplayTasks", "NavigationSystem", "Niagara", "AIModule",
+			"HairStrandsCore", "MetaHumanSDKRuntime", "LiveLinkAnimationCore"
 		});
 
 		// Uncomment if you are using Slate UI

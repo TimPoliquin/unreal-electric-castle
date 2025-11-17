@@ -9,6 +9,7 @@
 #include "GameFramework/GameStateBase.h"
 #include "Player/ElectricCastlePlayerState.h"
 #include "UI/HUD/OverlayWidget.h"
+#include "UI/Library/WidgetFunctionLibrary.h"
 #include "UI/ViewModel/MVVM_Inventory.h"
 #include "UI/ViewModel/MVVM_PlayerAbilityStates.h"
 #include "UI/ViewModel/MVVM_PlayerState.h"

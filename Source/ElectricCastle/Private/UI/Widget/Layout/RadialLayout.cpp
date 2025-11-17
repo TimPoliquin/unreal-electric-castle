@@ -3,6 +3,7 @@
 #include "UI/Widget/Layout/RadialLayoutSlot.h"
 #include "UI/Widget/Layout/SRadialLayout.h"
 #include "Blueprint/WidgetTree.h"
+#include "Framework/Application/SlateApplication.h"
 
 #define LOCTEXT_NAMESPACE "UMG"
 
@@ -12,8 +13,7 @@ URadialLayout::URadialLayout(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	bIsVariable = true;
-	//SetVisibilityInternal(ESlateVisibility::SelfHitTestInvisible); // OLD
-	SetVisibilityInternal(ESlateVisibility::Visible); // NEW - Must be visible to receive mouse events
+	SetVisibilityInternal(ESlateVisibility::Visible); // Must be visible to receive mouse events
 }
 
 void URadialLayout::UpdateHoveredChild(UWidget* NewHoveredChild)
@@ -75,6 +75,30 @@ UWidget* URadialLayout::GetSelectedChild() const
 	return nullptr;
 }
 
+void URadialLayout::SetKeyboardFocus()
+{
+	if (MyRadialLayout.IsValid())
+	{
+		FSlateApplication::Get().SetKeyboardFocus(MyRadialLayout.ToSharedRef());
+	}
+}
+
+void URadialLayout::InitializeForInput(bool bSetFocus)
+{
+	// Initialize selection if not already set
+	if (GetChildrenCount() > 0 && SelectedIndex < 0)
+	{
+		SelectedIndex = 0; // Don't call UpdateSelection to avoid firing event on open
+	}
+
+	// Optionally set focus
+	if (bSetFocus && MyRadialLayout.IsValid())
+	{
+		// Use a deferred focus to avoid interfering with animations
+		FSlateApplication::Get().SetKeyboardFocus(MyRadialLayout.ToSharedRef(), EFocusCause::SetDirectly);
+	}
+}
+
 void URadialLayout::UpdateSelection(int32 NewIndex)
 {
 	if (NewIndex == SelectedIndex || NewIndex < 0 || NewIndex >= GetChildrenCount())
@@ -133,16 +157,15 @@ FReply URadialLayout::HandleAnalogInput(const FGeometry& MyGeometry, const FAnal
 
 	FKey Key = InAnalogEvent.GetKey();
 
-	// Handle left stick or right stick
-	if (Key == EKeys::Gamepad_LeftX || Key == EKeys::Gamepad_LeftY ||
-		Key == EKeys::Gamepad_RightX || Key == EKeys::Gamepad_RightY)
+	// Only handle right stick (left stick is for player movement)
+	if (Key == EKeys::Gamepad_RightX || Key == EKeys::Gamepad_RightY)
 	{
 		// Build analog input vector
-		if (Key == EKeys::Gamepad_LeftX || Key == EKeys::Gamepad_RightX)
+		if (Key == EKeys::Gamepad_RightX)
 		{
 			LastAnalogInput.X = InAnalogEvent.GetAnalogValue();
 		}
-		else
+		else // Gamepad_RightY
 		{
 			LastAnalogInput.Y = InAnalogEvent.GetAnalogValue();
 		}

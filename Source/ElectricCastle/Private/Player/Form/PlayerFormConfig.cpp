@@ -229,7 +229,7 @@ FPlayerFormConfigRow UPlayerFormConfig::GetPlayerFormConfigRowByTag(const FGamep
 		*GetName(),
 		*FormTag.ToString()
 	)
-	return FPlayerFormConfigRow(EPlayerForm::None);
+	return FPlayerFormConfigRow(EPlayerForm::None, FString("INVALID"));
 }
 
 UFormConfigLoadRequest* UPlayerFormConfig::GetOrCreateLoadRequest(const FGameplayTag& FormTag)
@@ -259,7 +259,7 @@ FPlayerFormConfigRow UPlayerFormConfig::GetPlayerFormConfigRowByFormId(const int
 			*GetName(),
 			FormId
 		)
-		return FPlayerFormConfigRow(EPlayerForm::None);
+		return FPlayerFormConfigRow(EPlayerForm::None, FString("INVALID"));
 	}
 	return GetPlayerFormConfigRowByFormId(static_cast<EPlayerForm>(FormId));
 }
@@ -270,7 +270,7 @@ FPlayerFormConfigRow UPlayerFormConfig::GetPlayerFormConfigRowByFormId(const EPl
 	{
 		return PlayerFormConfigByEnum[FormId];
 	}
-	return FPlayerFormConfigRow(EPlayerForm::None);
+	return FPlayerFormConfigRow(EPlayerForm::None, FString("INVALID"));
 }
 
 void UPlayerFormConfig::LoadAsync(UFormConfigLoadRequest* LoadRequest)

@@ -148,6 +148,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool IsNotTargeting() const;
 	void SetupInputMode();
+	FInputModeGameAndUI BuildGameAndUIInputMode() const;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnPlayerFormWheelVisibilityChangeSignature OnFormWheelVisibilityChange;

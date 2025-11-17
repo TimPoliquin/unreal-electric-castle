@@ -96,6 +96,8 @@ struct ELECTRICCASTLE_API FPlayerFormConfigRow
 	GENERATED_BODY()
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	EPlayerForm FormId;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FString FormName = FString("");
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(Categories="Player.Form"))
 	FGameplayTag FormTag = FGameplayTag::EmptyTag;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(Categories="Abilities.Form"))
@@ -122,9 +124,10 @@ struct ELECTRICCASTLE_API FPlayerFormConfigRow
 		FormId = EPlayerForm::None;
 	}
 
-	explicit FPlayerFormConfigRow(const EPlayerForm InForm)
+	explicit FPlayerFormConfigRow(const EPlayerForm InForm, const FString& InFormName)
 	{
 		FormId = InForm;
+		FormName = InFormName;
 	}
 
 	bool IsLoaded() const;
@@ -174,21 +177,21 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Global Form Change Effects")
 	TSubclassOf<UGameplayEffect> ManaChangeEffect;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FPlayerFormConfigRow Barbarian = FPlayerFormConfigRow(EPlayerForm::Barbarian);
+	FPlayerFormConfigRow Barbarian = FPlayerFormConfigRow(EPlayerForm::Barbarian, TEXT("Barbarian"));
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FPlayerFormConfigRow Egyptian = FPlayerFormConfigRow(EPlayerForm::Egyptian);
+	FPlayerFormConfigRow Egyptian = FPlayerFormConfigRow(EPlayerForm::Egyptian, TEXT("Egyptian"));
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FPlayerFormConfigRow Futureman = FPlayerFormConfigRow(EPlayerForm::Futureman);
+	FPlayerFormConfigRow Futureman = FPlayerFormConfigRow(EPlayerForm::Futureman, TEXT("Futureman"));
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FPlayerFormConfigRow Highlander = FPlayerFormConfigRow(EPlayerForm::Highlander);
+	FPlayerFormConfigRow Highlander = FPlayerFormConfigRow(EPlayerForm::Highlander, TEXT("Highlander"));
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FPlayerFormConfigRow Hippie = FPlayerFormConfigRow(EPlayerForm::Hippie);
+	FPlayerFormConfigRow Hippie = FPlayerFormConfigRow(EPlayerForm::Hippie, TEXT("Hippie"));
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FPlayerFormConfigRow Knight = FPlayerFormConfigRow(EPlayerForm::Knight);
+	FPlayerFormConfigRow Knight = FPlayerFormConfigRow(EPlayerForm::Knight, TEXT("Knight"));
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FPlayerFormConfigRow Native = FPlayerFormConfigRow(EPlayerForm::Native);
+	FPlayerFormConfigRow Native = FPlayerFormConfigRow(EPlayerForm::Native, TEXT("Native"));
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FPlayerFormConfigRow Roman = FPlayerFormConfigRow(EPlayerForm::Roman);
+	FPlayerFormConfigRow Roman = FPlayerFormConfigRow(EPlayerForm::Roman, TEXT("Roman"));
 
 private:
 	UPROPERTY()
