@@ -1,3 +1,5 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:f6167be2e2cd22587c01cecba3f35c9e02e6a120a1fb9d55ac2b330aa43186f9
-size 248
+---,1.000000,5.000000,10.000000,15.000000,20.000000,40.000000
+Attributes.Primary.Strength,15,21,26,33,37,42
+Attributes.Primary.Intelligence,5,6.5,7.9,9,11,13
+Attributes.Primary.Resilience,15,17,21,25,27,31
+Attributes.Primary.Vigor,11,15,16,21,25,29

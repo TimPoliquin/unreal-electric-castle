@@ -210,10 +210,9 @@ int32 URadialLayout::FindNearestChildToAngle(float Angle) const
 			                                         : AngleStep * i);
 
 		// Add custom offset if slot has one
-		URadialLayoutSlot* Slot = Cast<URadialLayoutSlot>(GetSlots()[i]);
-		if (Slot)
+		if (const URadialLayoutSlot* CurrentSlot = Cast<URadialLayoutSlot>(GetSlots()[i]))
 		{
-			ChildAngle += Slot->AngleOffset;
+			ChildAngle += CurrentSlot->AngleOffset;
 		}
 
 		// Normalize child angle

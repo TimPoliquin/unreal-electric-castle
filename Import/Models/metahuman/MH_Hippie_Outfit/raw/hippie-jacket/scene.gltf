@@ -1,3 +1,248 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:09e53da7088711c9cfbfc793dfe9f22e6ceba1a9a8eca341b3cce90dbbf8a53e
-size 4305
+{
+  "accessors": [
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 27147,
+      "max": [
+        54.126251220703125,
+        156.103271484375,
+        14.681838989257813
+      ],
+      "min": [
+        -54.187477111816406,
+        86.86766815185547,
+        -16.687536239624023
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 325764,
+      "componentType": 5126,
+      "count": 27147,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 27147,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5125,
+      "count": 126252,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 651528,
+      "componentType": 5126,
+      "count": 3523,
+      "max": [
+        63.07624053955078,
+        179.05300903320313,
+        18.26639175415039
+      ],
+      "min": [
+        -63.07613754272461,
+        0.0010693400399759412,
+        -13.859633445739746
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 693804,
+      "componentType": 5126,
+      "count": 3523,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 505008,
+      "componentType": 5125,
+      "count": 20496,
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "generator": "fab-model-conversion",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 586992,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 217176,
+      "byteOffset": 586992,
+      "byteStride": 8,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 736080,
+      "byteOffset": 804168,
+      "byteStride": 12,
+      "target": 34962
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 1540248,
+      "uri": "scene.bin"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "name": "blinn12",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.5,
+          0.5,
+          0.5,
+          1.0
+        ],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.920747995
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "blinn11",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.5,
+          0.5,
+          0.5,
+          1.0
+        ],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.920747995
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Jeans_Denim_Jacket:Mesh_blinn11_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 1,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "G2M_LOW2:Group5956_blinn12_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 5,
+            "POSITION": 4
+          },
+          "indices": 6,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "children": [
+        1
+      ],
+      "matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.220446049250313e-16,
+        -1.0,
+        0.0,
+        0.0,
+        1.0,
+        2.220446049250313e-16,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "FAB converted model"
+    },
+    {
+      "children": [
+        2
+      ],
+      "matrix": [
+        0.009999999776482582,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.009999999776482582,
+        0.0,
+        0.0,
+        -0.009999999776482582,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Jeans_Denim_Jacket.fbx"
+    },
+    {
+      "children": [
+        3,
+        5
+      ],
+      "name": "RootNode"
+    },
+    {
+      "children": [
+        4
+      ],
+      "name": "Jeans_Denim_Jacket:Mesh"
+    },
+    {
+      "mesh": 0,
+      "name": "Jeans_Denim_Jacket:Mesh_blinn11_0"
+    },
+    {
+      "children": [
+        6
+      ],
+      "name": "G2M_LOW2:Group5956"
+    },
+    {
+      "mesh": 1,
+      "name": "G2M_LOW2:Group5956_blinn12_0"
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "FAB converted",
+      "nodes": [
+        0
+      ]
+    }
+  ]
+}
