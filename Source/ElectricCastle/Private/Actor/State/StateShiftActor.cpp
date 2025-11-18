@@ -157,12 +157,12 @@ void AStateShiftActor::StateShiftReaction_Visibility_FadeIn_Implementation()
 
 void AStateShiftActor::StateShiftReaction_Collision_Enable_Implementation()
 {
+	const FString Log = FString::Printf(TEXT("[%s] must implement StateShiftReaction_Collision_Enable!"), *GetName());
 	GEngine->AddOnScreenDebugMessage(
 		-1,
 		5.f,
 		FColor::Red,
-		TEXT("[%s] must implement StateShiftReaction_Collision_Enable!"),
-		*GetName()
+		*Log
 	);
 }
 
@@ -173,8 +173,9 @@ void AStateShiftActor::StateShiftReaction_Collision_Disable_Implementation()
 		-1,
 		5.f,
 		FColor::Red,
-		TEXT("[%s] must implement StateShiftReaction_Collision_Disable!"),
-		*GetName()
+		FString::Printf(
+			TEXT("[%s] must implement StateShiftReaction_Collision_Disable!"),
+			*GetName())
 	);
 }
 
@@ -184,7 +185,8 @@ void AStateShiftActor::StateShiftReaction_Custom_Implementation()
 		-1,
 		5.f,
 		FColor::Red,
-		TEXT("[%s] must implement StateShiftReaction_Custom!"),
-		*GetName()
+		FString::Printf(
+			TEXT("[%s] must implement StateShiftReaction_Custom!"),
+			*GetName())
 	);
 }

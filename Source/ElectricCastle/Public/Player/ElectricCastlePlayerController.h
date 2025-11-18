@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
+#include "InputEvents.h"
 #include "GameFramework/PlayerController.h"
 #include "Interaction/HighlightInterface.h"
 #include "ElectricCastlePlayerController.generated.h"
@@ -147,6 +148,12 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool IsNotTargeting() const;
 	void SetupInputMode();
+	FInputModeGameAndUI BuildGameAndUIInputMode() const;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnPlayerFormWheelVisibilityChangeSignature OnFormWheelVisibilityChange;
+	UPROPERTY(BLueprintAssignable)
+	FOnPlayerFormWheelHighlightChangedSignature OnFormWheelHighlightChange;
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Input")
@@ -160,9 +167,17 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	float AimClampMax = 1.f;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> FormWheelAction;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> FormWheelHighlightAction;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputConfiguration> InputConfig;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputAction> FormChangeAction;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	float AnalogDeadZone = 0.3f;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	float MouseSensitivity = 5.f;
 	UPROPERTY()
 	TObjectPtr<UElectricCastleAbilitySystemComponent> AbilitySystemComponent;
 	// UI
@@ -188,6 +203,12 @@ private:
 	void AbilityInputTagReleased(FGameplayTag InputTag);
 	void AbilityInputTagHeld(FGameplayTag InputTag);
 	UFUNCTION()
+	void ShowFormWheel(const FInputActionValue& InputActionValue);
+	UFUNCTION()
+	void HideFormWheel(const FInputActionValue& InputActionValue);
+	UFUNCTION()
+	void UpdateFormWheelHighlightAngle(const FInputActionValue& InputActionValue);
+	UFUNCTION()
 	void HandleFormChangeInputAction(const FInputActionValue& InputActionValue);
 	void UpdateMagicCircleLocation() const;
 	void OnInputTypeChange(ECommonInputType NewInputMode);
@@ -197,6 +218,8 @@ private:
 	void SetInputMode_KeyboardAndMouse_Server();
 	UFUNCTION()
 	void OnEffectStateChanged_Aiming(FGameplayTag AimingTag, int TagCount);
+	bool CalculateFormWheelAngle_Gamepad(const FVector2D& InputDirection, float& OutFormWheelAngle) const;
+	bool CalculateFormWheelAngle_Mouse(const FVector2D& InputDirection, float& OutFormWheelAngle) const;
 
 	bool IsAiming();
 
@@ -206,4 +229,8 @@ private:
 	FHitResult CursorHit;
 	UPROPERTY(Replicated)
 	EAuraInputMode InputType = EAuraInputMode::MouseAndKeyboard;
+	UPROPERTY(Replicated)
+	bool bShowFormWheel = false;
+	UPROPERTY(Replicated)
+	float FormWheelAngle = 0.f;
 };

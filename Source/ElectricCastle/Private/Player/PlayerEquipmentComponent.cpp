@@ -154,10 +154,10 @@ void UPlayerEquipmentComponent::UseNothing()
 		GetOwner()
 	))
 	{
-		AbilitySystemComponent->RemoveReplicatedLooseGameplayTag(
+		AbilitySystemComponent->RemoveLooseGameplayTag(
 			FElectricCastleGameplayTags::Get().Player_Equipped_Tool
 		);
-		AbilitySystemComponent->RemoveReplicatedLooseGameplayTag(
+		AbilitySystemComponent->RemoveLooseGameplayTag(
 			FElectricCastleGameplayTags::Get().Player_Equipped_Weapon
 		);
 	}

@@ -7,6 +7,8 @@
 #include "UI/WidgetController/ElectricCastleWidgetController.h"
 #include "ElectricCastleHUD.generated.h"
 
+class UMVVM_PlayerForms;
+class UFormWheelWidget;
 class UMVVM_PlayerAbilityStates;
 class UOverlayWidget;
 class UMVVM_PlayerState;
@@ -53,6 +55,8 @@ public:
 	TArray<UMVVM_PlayerState*> GetPlayerStateViewModels() const;
 	UFUNCTION(BlueprintCallable)
 	TArray<UMVVM_PlayerAbilityStates*> GetPlayerAbilityStatesViewModels() const;
+	UFUNCTION(BlueprintCallable)
+	TArray<UMVVM_PlayerForms*> GetPlayerFormsViewModels() const;
 
 
 	UFUNCTION(BlueprintCallable)
@@ -72,6 +76,10 @@ protected:
 	TSubclassOf<UMVVM_PlayerAbilityStates> PlayerAbilityStatesViewModelClass;
 	UPROPERTY()
 	TArray<TObjectPtr<UMVVM_PlayerAbilityStates>> PlayerAbilityStatesViewModels;
+	UPROPERTY(EditDefaultsOnly, Category = "Properties")
+	TSubclassOf<UMVVM_PlayerForms> PlayerFormsViewModelClass;
+	UPROPERTY()
+	TArray<TObjectPtr<UMVVM_PlayerForms>> PlayerFormsViewModels;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
 	TSubclassOf<UOverlayWidget> OverlayWidgetClass;
@@ -109,11 +117,16 @@ private:
 	UPROPERTY()
 	TObjectPtr<UMVVM_Inventory> InventoryViewModel;
 
-	void InitializePlayerStateViewModels();
+	void InitializePlayerViewModels();
 	void InitializeInventoryViewModel();
+	UMVVM_PlayerState* CreatePlayerStateViewModel(int32 PlayerIdx, AElectricCastlePlayerState* PlayerState);
+	UMVVM_PlayerAbilityStates* CreatePlayerAbilityStatesViewModel(
+		int32 PlayerIdx,
+		AElectricCastlePlayerState* PlayerState
+	);
+	UMVVM_PlayerForms* CreatePlayerFormsViewModel(const int32 PlayerIndex, AElectricCastlePlayerState* PlayerState);
 
 	void InitializeOverlayWidget();
-
 
 	bool bInitialized = false;
 

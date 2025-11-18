@@ -35,7 +35,8 @@ void FFormMaterialConfig::SetToComponent(UMeshComponent* MeshComponent, const in
 	if (MaterialSlotName.IsNone())
 	{
 		MeshComponent->SetMaterial(Idx, MaterialAsset.Get());
-	} else
+	}
+	else
 	{
 		MeshComponent->SetMaterialByName(MaterialSlotName, MaterialAsset.Get());
 	}
@@ -55,10 +56,12 @@ bool FFormMeshPartConfig::IsLoaded() const
 {
 	if (IsValid())
 	{
-		return !Materials.ContainsByPredicate([](const FFormMaterialConfig& Material)
-		{
-			return !Material.IsLoaded();
-		});
+		return !Materials.ContainsByPredicate(
+			[](const FFormMaterialConfig& Material)
+			{
+				return !Material.IsLoaded();
+			}
+		);
 	}
 	return false;
 }
@@ -176,7 +179,7 @@ bool FPlayerFormConfigRow::IsValid() const
 {
 	return
 		FormTag.IsValid() &&
-		FormId != EPlayerForm::None && FormId != EPlayerForm::Invalid_Max;
+		FormId != EPlayerForm::None && FormId != EPlayerForm::Count;
 }
 
 UPlayerFormConfig::UPlayerFormConfig()
@@ -219,8 +222,14 @@ FPlayerFormConfigRow UPlayerFormConfig::GetPlayerFormConfigRowByTag(const FGamep
 	{
 		return PlayerFormConfigByTag[FormTag];
 	}
-	UE_LOG(LogElectricCastle, Warning, TEXT("[%s] Unable to find player form with provided tag: %s"), *GetName(), *FormTag.ToString())
-	return FPlayerFormConfigRow(EPlayerForm::None);
+	UE_LOG(
+		LogElectricCastle,
+		Warning,
+		TEXT("[%s] Unable to find player form with provided tag: %s"),
+		*GetName(),
+		*FormTag.ToString()
+	)
+	return FPlayerFormConfigRow(EPlayerForm::None, FString("INVALID"));
 }
 
 UFormConfigLoadRequest* UPlayerFormConfig::GetOrCreateLoadRequest(const FGameplayTag& FormTag)
@@ -241,17 +250,27 @@ UFormConfigLoadRequest* UPlayerFormConfig::GetOrCreateLoadRequest(const FGamepla
 
 FPlayerFormConfigRow UPlayerFormConfig::GetPlayerFormConfigRowByFormId(const int32 FormId) const
 {
-	if (FormId <= 0 || FormId >= static_cast<int32>(EPlayerForm::Invalid_Max))
+	if (FormId <= 0 || FormId >= static_cast<int32>(EPlayerForm::Count))
 	{
-		UE_LOG(LogElectricCastle, Warning, TEXT("[%s] Requested form id is outside of known range. %d"), *GetName(), FormId)
-		return FPlayerFormConfigRow(EPlayerForm::None);
+		UE_LOG(
+			LogElectricCastle,
+			Warning,
+			TEXT("[%s] Requested form id is outside of known range. %d"),
+			*GetName(),
+			FormId
+		)
+		return FPlayerFormConfigRow(EPlayerForm::None, FString("INVALID"));
 	}
-	const EPlayerForm Form = static_cast<EPlayerForm>(FormId);
-	if (PlayerFormConfigByEnum.Contains(Form))
+	return GetPlayerFormConfigRowByFormId(static_cast<EPlayerForm>(FormId));
+}
+
+FPlayerFormConfigRow UPlayerFormConfig::GetPlayerFormConfigRowByFormId(const EPlayerForm FormId) const
+{
+	if (PlayerFormConfigByEnum.Contains(FormId))
 	{
-		return PlayerFormConfigByEnum[Form];
+		return PlayerFormConfigByEnum[FormId];
 	}
-	return FPlayerFormConfigRow(EPlayerForm::None);
+	return FPlayerFormConfigRow(EPlayerForm::None, FString("INVALID"));
 }
 
 void UPlayerFormConfig::LoadAsync(UFormConfigLoadRequest* LoadRequest)
