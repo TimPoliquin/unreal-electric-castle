@@ -7,6 +7,7 @@
 #include "Player/InputEvents.h"
 #include "Player/Form/FormConfigTypes.h"
 #include "Player/Form/PlayerFormDelegates.h"
+#include "UI/Widget/Form/FormWheelFormWidget.h"
 #include "MVVM_PlayerForms.generated.h"
 
 struct FGameplayTag;
@@ -25,9 +26,9 @@ class ELECTRICCASTLE_API UMVVM_PlayerForms : public UMVVMViewModelBase
 	GENERATED_BODY()
 
 public:
-	int32 GetPlayerIndex() const { return PlayerIndex; };
+	int32 GetPlayerIndex() const { return PlayerIndex; }
 	void SetPlayerIndex(const int32 InPlayerIndex) { PlayerIndex = InPlayerIndex; };
-	void InitializeDependencies(AElectricCastlePlayerState* PlayerState);
+	void InitializeDependencies(AElectricCastlePlayerState* InPlayerState);
 	FName CreateWidgetName(const FString& InWidgetName) const;
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	UMVVM_PlayerForm* GetPlayerFormViewModelById(const EPlayerForm Form) const;
@@ -37,10 +38,13 @@ public:
 	TArray<UMVVM_PlayerForm*> GetAvailablePlayerFormViewModels() const;
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	TArray<UMVVM_PlayerForm*> GetPlayerFormViewModels() const;
+	void ChangeForm(const FGameplayTag& FormTag);;
 	UPROPERTY(BlueprintAssignable)
 	FOnPlayerFormsVisiblityChangeSignature OnVisibilityChange;
 	UPROPERTY(BlueprintAssignable)
 	FOnPlayerAvailableFormsChangedSignature OnAvailableFormsChangedDelegate;
+	UPROPERTY(BlueprintAssignable)
+	FOnPlayerFormWheelHighlightChangedSignature OnFormWheelHighlightChangeDelegate;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties")
@@ -50,10 +54,12 @@ protected:
 
 private:
 	int32 PlayerIndex = 0;
+	UPROPERTY()
+	TObjectPtr<APlayerState> PlayerState;
 
-	void CreatePlayerFormViewModels(AElectricCastlePlayerState* PlayerState);
+	void CreatePlayerFormViewModels(AElectricCastlePlayerState* InPlayerState);
 	UMVVM_PlayerForm* CreatePlayerFormViewModel(
-		AElectricCastlePlayerState* PlayerState,
+		AElectricCastlePlayerState* InPlayerState,
 		const FPlayerFormConfigRow& FormConfigRow
 	);
 
@@ -61,4 +67,6 @@ private:
 	void OnFormWheelVisibilityChange(const FOnPlayerFormWheelVisibilityChangePayload& Payload);
 	UFUNCTION()
 	void OnAvailableFormsChanged(const FOnPlayerAvailableFormsChangedPayload& Payload);
+	UFUNCTION()
+	void OnFormWheelHighlightChange(const FOnPlayerFormWheelHighlightChangedPayload& Payload);
 };

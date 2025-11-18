@@ -5,9 +5,7 @@
 #include "Components/PanelWidget.h"
 #include "RadialLayout.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnChildSelected, UWidget*, SelectedChild);
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnChildHovered, UWidget*, HoveredChild);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnChildSelected, UWidget*, SelectededChild, UWidget*, PreviousSelectedChild);
 
 /**
  * A panel that arranges child widgets in a radial/circular layout
@@ -20,13 +18,9 @@ class ELECTRICCASTLE_API URadialLayout : public UPanelWidget
 public:
 	URadialLayout(const FObjectInitializer& ObjectInitializer);
 
-	/** Event dispatched when a child is selected via gamepad */
+	/** Event dispatched when a child is hovered */
 	UPROPERTY(BlueprintAssignable, Category = "Radial Layout|Events")
 	FOnChildSelected OnChildSelected;
-
-	/** Event dispatched when a child is hovered by mouse */
-	UPROPERTY(BlueprintAssignable, Category = "Radial Layout|Events")
-	FOnChildHovered OnChildHovered;
 
 	/** Get the currently selected child index */
 	UFUNCTION(BlueprintCallable, Category = "Radial Layout")
@@ -35,6 +29,9 @@ public:
 	/** Set the selected child by index */
 	UFUNCTION(BlueprintCallable, Category = "Radial Layout")
 	void SetSelectedIndex(int32 Index);
+
+	UFUNCTION(BlueprintCallable, Category = "Radial Layout")
+	float GetSelectedIndexAngle();
 
 	/** Get the currently selected child widget */
 	UFUNCTION(BlueprintCallable, Category = "Radial Layout")
@@ -49,11 +46,8 @@ public:
 
 	// Input handling (called from Slate widget)
 	FReply HandleKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent);
-	FReply HandleAnalogInput(const FGeometry& MyGeometry, const FAnalogInputEvent& InAnalogEvent);
-	void HandleMouseEnter(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent);
-	void HandleMouseLeave(const FPointerEvent& MouseEvent);
-	// Helper to update hover state and fire event
-	void UpdateHoveredChild(UWidget* NewHoveredChild);
+	UFUNCTION(BlueprintCallable)
+	bool UpdateSelectionFromAngle(const float Angle);
 
 	bool ShouldRotateChildrenToAngle() const { return bRotateChildrenToAngle; }
 	float GetStartAngle() const { return StartAngle; }
@@ -97,9 +91,6 @@ protected:
 	// Currently selected child index for gamepad navigation
 	int32 SelectedIndex = -1;
 
-	// Currently hovered child for mouse interaction
-	TWeakObjectPtr<UWidget> HoveredChild;
-
 	// Helper to update selection
 	void UpdateSelection(int32 NewIndex);
 
@@ -107,7 +98,6 @@ protected:
 	int32 FindNearestChildToAngle(float Angle) const;
 
 	// Last analog input for stick navigation
-	FVector2D LastAnalogInput;
 	float AnalogDeadzone = 0.3f;
 
 	// Allow slot to access slate widget for invalidation

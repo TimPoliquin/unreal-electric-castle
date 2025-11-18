@@ -16,17 +16,6 @@ URadialLayout::URadialLayout(const FObjectInitializer& ObjectInitializer)
 	SetVisibilityInternal(ESlateVisibility::Visible); // Must be visible to receive mouse events
 }
 
-void URadialLayout::UpdateHoveredChild(UWidget* NewHoveredChild)
-{
-	UWidget* OldHoveredChild = HoveredChild.Get();
-
-	if (OldHoveredChild != NewHoveredChild)
-	{
-		HoveredChild = NewHoveredChild;
-		OnChildHovered.Broadcast(NewHoveredChild);
-	}
-}
-
 UClass* URadialLayout::GetSlotClass() const
 {
 	return URadialLayoutSlot::StaticClass();
@@ -64,6 +53,15 @@ void URadialLayout::SetSelectedIndex(int32 Index)
 	// Clamp index to valid range
 	Index = FMath::Clamp(Index, 0, GetChildrenCount() - 1);
 	UpdateSelection(Index);
+}
+
+float URadialLayout::GetSelectedIndexAngle()
+{
+	if (SelectedIndex < 0 || SelectedIndex >= GetChildrenCount())
+	{
+		return 0.f;
+	}
+	return StartAngle + SelectedIndex * 360.f / GetChildrenCount();
 }
 
 UWidget* URadialLayout::GetSelectedChild() const
@@ -105,13 +103,12 @@ void URadialLayout::UpdateSelection(int32 NewIndex)
 	{
 		return;
 	}
-
+	UWidget* PreviousWidget = GetChildAt(SelectedIndex);
 	SelectedIndex = NewIndex;
-	UWidget* SelectedWidget = GetChildAt(SelectedIndex);
 
-	if (SelectedWidget)
+	if (UWidget* SelectedWidget = GetChildAt(SelectedIndex))
 	{
-		OnChildSelected.Broadcast(SelectedWidget);
+		OnChildSelected.Broadcast(SelectedWidget, PreviousWidget);
 	}
 }
 
@@ -148,60 +145,19 @@ FReply URadialLayout::HandleKeyDown(const FGeometry& InGeometry, const FKeyEvent
 	return FReply::Unhandled();
 }
 
-FReply URadialLayout::HandleAnalogInput(const FGeometry& MyGeometry, const FAnalogInputEvent& InAnalogEvent)
+bool URadialLayout::UpdateSelectionFromAngle(const float Angle)
 {
 	if (!bEnableGamepadNavigation || GetChildrenCount() == 0)
 	{
-		return FReply::Unhandled();
+		return false;
 	}
-
-	FKey Key = InAnalogEvent.GetKey();
-
-	// Only handle right stick (left stick is for player movement)
-	if (Key == EKeys::Gamepad_RightX || Key == EKeys::Gamepad_RightY)
+	// Find nearest child to stick direction
+	if (const int32 NearestIndex = FindNearestChildToAngle(Angle); NearestIndex != SelectedIndex)
 	{
-		// Build analog input vector
-		if (Key == EKeys::Gamepad_RightX)
-		{
-			LastAnalogInput.X = InAnalogEvent.GetAnalogValue();
-		}
-		else // Gamepad_RightY
-		{
-			LastAnalogInput.Y = InAnalogEvent.GetAnalogValue();
-		}
-
-		// Check if stick is pushed beyond deadzone
-		float Magnitude = LastAnalogInput.Size();
-		if (Magnitude > AnalogDeadzone)
-		{
-			// Calculate angle from stick input (Y is inverted in UE)
-			float StickAngle = FMath::Atan2(-LastAnalogInput.Y, LastAnalogInput.X);
-			StickAngle = FMath::RadiansToDegrees(StickAngle);
-
-			// Find nearest child to stick direction
-			int32 NearestIndex = FindNearestChildToAngle(StickAngle);
-			if (NearestIndex != SelectedIndex)
-			{
-				UpdateSelection(NearestIndex);
-				return FReply::Handled();
-			}
-		}
+		UpdateSelection(NearestIndex);
+		return true;
 	}
-
-	return FReply::Unhandled();
-}
-
-void URadialLayout::HandleMouseEnter(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
-{
-	// Mouse enter handling if needed
-}
-
-void URadialLayout::HandleMouseLeave(const FPointerEvent& MouseEvent)
-{
-	if (HoveredChild.IsValid())
-	{
-		HoveredChild.Reset();
-	}
+	return false;
 }
 
 int32 URadialLayout::FindNearestChildToAngle(float Angle) const
@@ -221,48 +177,8 @@ int32 URadialLayout::FindNearestChildToAngle(float Angle) const
 		Angle -= 360.0f;
 	}
 
-	int32 NearestIndex = 0;
-	float SmallestDifference = FLT_MAX;
-
-	// Calculate angle for each child and find nearest
-	for (int32 i = 0; i < GetChildrenCount(); ++i)
-	{
-		float AngleStep = 360.0f / GetChildrenCount();
-		float ChildAngle = StartAngle + 90.0f + (bClockwise
-			                                         ? -AngleStep * i
-			                                         : AngleStep * i);
-
-		// Add custom offset if slot has one
-		if (const URadialLayoutSlot* CurrentSlot = Cast<URadialLayoutSlot>(GetSlots()[i]))
-		{
-			ChildAngle += CurrentSlot->AngleOffset;
-		}
-
-		// Normalize child angle
-		while (ChildAngle < 0)
-		{
-			ChildAngle += 360.0f;
-		}
-		while (ChildAngle >= 360.0f)
-		{
-			ChildAngle -= 360.0f;
-		}
-
-		// Calculate angular difference (shortest path)
-		float Difference = FMath::Abs(Angle - ChildAngle);
-		if (Difference > 180.0f)
-		{
-			Difference = 360.0f - Difference;
-		}
-
-		if (Difference < SmallestDifference)
-		{
-			SmallestDifference = Difference;
-			NearestIndex = i;
-		}
-	}
-
-	return NearestIndex;
+	const float AngleStep = 360.0f / GetChildrenCount();
+	return FMath::FloorToInt((Angle - StartAngle + AngleStep / 2.f) / AngleStep) % GetChildrenCount();
 }
 
 TSharedRef<SWidget> URadialLayout::RebuildWidget()

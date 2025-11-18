@@ -97,7 +97,7 @@ protected:
 	FGameplayTag CurrentFormTag = FGameplayTag::EmptyTag;
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Form")
 	FActiveGameplayEffectHandle CurrentFormEffectHandle;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Form")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Form", meta=(Categories="Player.Form"))
 	FGameplayTagContainer AvailableForms;
 	UFUNCTION()
 	void OnRep_CurrentFormTag(const FGameplayTag& OldValue) const;

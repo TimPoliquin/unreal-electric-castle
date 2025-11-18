@@ -9,7 +9,7 @@
 
 FGameplayTag UFormWheelFormWidget::GetFormTag_Implementation() const
 {
-	return FGameplayTag::EmptyTag;
+	return PlayerFormViewModel->GetFormTag();
 }
 
 void UFormWheelFormWidget::BindViewModel_Implementation(UMVVM_PlayerForm* InViewModel)

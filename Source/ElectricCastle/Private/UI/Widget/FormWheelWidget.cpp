@@ -3,6 +3,7 @@
 
 #include "UI/Widget/FormWheelWidget.h"
 
+#include "Components/Image.h"
 #include "Components/PanelWidget.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "UI/ViewModel/Form/MVVM_PlayerForm.h"
@@ -13,10 +14,10 @@
 void UFormWheelWidget::Show_Implementation(const bool bAnimate)
 {
 	SetVisibility(ESlateVisibility::Visible);
-	if (URadialLayout* RadialLayout = Cast<URadialLayout>(GetFormsContainer()))
+	if (URadialLayout* RadialLayout = GetFormsContainer())
 	{
 		RadialLayout->SetSelectedIndex(GetSelectedIndex());
-		RadialLayout->InitializeForInput(true);
+		GetCursorWidget()->SetRenderTransformAngle(RadialLayout->GetSelectedIndexAngle());
 	}
 }
 
@@ -31,6 +32,7 @@ void UFormWheelWidget::BindViewModel_Implementation(UMVVM_PlayerForms* InPlayerF
 	CreateFormWidgets(InPlayerFormsViewModel);
 	PlayerFormsViewModel->OnVisibilityChange.AddUniqueDynamic(this, &UFormWheelWidget::OnFormWheelVisibilityChange);
 	PlayerFormsViewModel->OnAvailableFormsChangedDelegate.AddUniqueDynamic(this, &UFormWheelWidget::OnAvailableFormsChanged);
+	PlayerFormsViewModel->OnFormWheelHighlightChangeDelegate.AddUniqueDynamic(this, &UFormWheelWidget::OnFormWheelHighlightChange);
 }
 
 int32 UFormWheelWidget::GetPlayerIndex() const
@@ -42,9 +44,25 @@ int32 UFormWheelWidget::GetPlayerIndex() const
 	return -1;
 }
 
-UPanelWidget* UFormWheelWidget::GetFormsContainer_Implementation() const
+void UFormWheelWidget::CommitSelection_Implementation()
 {
-	return Cast<UPanelWidget>(GetRootWidget());
+	if (const URadialLayout* RadialLayout = GetFormsContainer())
+	{
+		const UFormWheelFormWidget* FormWidget = Cast<UFormWheelFormWidget>(RadialLayout->GetSelectedChild());
+		if (!FormWidget)
+		{
+			UE_LOG(LogElectricCastle, Warning, TEXT("[%s] Unexpected selected form widget: %s"), *GetName(), *RadialLayout->GetSelectedChild()->GetName());
+			return;
+		}
+		UE_LOG(LogElectricCastle, Log, TEXT("[%s] Selected form: %s"), *GetName(), *FormWidget->GetFormTag().ToString());
+		PlayerFormsViewModel->ChangeForm(FormWidget->GetFormTag());
+	}
+}
+
+URadialLayout* UFormWheelWidget::GetFormsContainer_Implementation() const
+{
+	UE_LOG(LogElectricCastle, Warning, TEXT("[%s] GetFormsContainer_Implementation is not implemented"), *GetName());
+	return nullptr;
 }
 
 void UFormWheelWidget::CreateFormWidgets_Implementation(UMVVM_PlayerForms* PlayerForms)
@@ -67,6 +85,12 @@ void UFormWheelWidget::CreateFormWidgets_Implementation(UMVVM_PlayerForms* Playe
 	}
 }
 
+UWidget* UFormWheelWidget::GetCursorWidget_Implementation() const
+{
+	UE_LOG(LogElectricCastle, Warning, TEXT("[%s] GetCursorWidget_Implementation is not implemented"), *GetName());
+	return nullptr;
+}
+
 int32 UFormWheelWidget::GetSelectedIndex() const
 {
 	for (int32 Index = 0; Index < FormWidgets.Num(); ++Index)
@@ -77,6 +101,18 @@ int32 UFormWheelWidget::GetSelectedIndex() const
 		}
 	}
 	return 0;
+}
+
+void UFormWheelWidget::UpdateSelectionAngle_Implementation(const float Angle)
+{
+	if (URadialLayout* RadialLayout = GetFormsContainer())
+	{
+		RadialLayout->UpdateSelectionFromAngle(Angle);
+	}
+	if (UWidget* CursorWidget = GetCursorWidget())
+	{
+		CursorWidget->SetRenderTransformAngle(Angle);
+	}
 }
 
 void UFormWheelWidget::OnFormWheelVisibilityChange(const bool bIsVisible)
@@ -113,4 +149,9 @@ void UFormWheelWidget::OnAvailableFormsChanged(const FOnPlayerAvailableFormsChan
 			Container->RemoveChild(FormWidget);
 		}
 	}
+}
+
+void UFormWheelWidget::OnFormWheelHighlightChange(const FOnPlayerFormWheelHighlightChangedPayload& Payload)
+{
+	UpdateSelectionAngle(Payload.InputAngle);
 }

@@ -22,10 +22,8 @@
 #include "Net/UnrealNetwork.h"
 #include "Player/Form/PlayerFormConfig.h"
 #include "Tags/ElectricCastleGameplayTags.h"
-#include "UI/HUD/ElectricCastleHUD.h"
 #include "UI/Widget/DamageTextComponent.h"
 #include "Player/ElectricCastlePlayerState.h"
-#include "Character/ElectricCastlePlayerCharacter.h"
 
 AElectricCastlePlayerController::AElectricCastlePlayerController()
 {
@@ -177,6 +175,7 @@ void AElectricCastlePlayerController::SetupInputComponent()
 		this,
 		&AElectricCastlePlayerController::HideFormWheel
 	);
+	ElectricCastleInputComponent->BindAction(FormWheelHighlightAction, ETriggerEvent::Triggered, this, &AElectricCastlePlayerController::UpdateFormWheelHighlightAngle);
 }
 
 void AElectricCastlePlayerController::Move(const FInputActionValue& Value)
@@ -360,6 +359,7 @@ void AElectricCastlePlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
 
 void AElectricCastlePlayerController::ShowFormWheel(const FInputActionValue& InputActionValue)
 {
+	bShowFormWheel = true;
 	OnFormWheelVisibilityChange.Broadcast(
 		FOnPlayerFormWheelVisibilityChangePayload(
 			this,
@@ -372,6 +372,7 @@ void AElectricCastlePlayerController::ShowFormWheel(const FInputActionValue& Inp
 
 void AElectricCastlePlayerController::HideFormWheel(const FInputActionValue& InputActionValue)
 {
+	bShowFormWheel = false;
 	OnFormWheelVisibilityChange.Broadcast(
 		FOnPlayerFormWheelVisibilityChangePayload(
 			this,
@@ -380,6 +381,25 @@ void AElectricCastlePlayerController::HideFormWheel(const FInputActionValue& Inp
 			false
 		)
 	);
+}
+
+void AElectricCastlePlayerController::UpdateFormWheelHighlightAngle(const FInputActionValue& InputActionValue)
+{
+	if (bShowFormWheel)
+	{
+		const FVector2D InputDirection = InputActionValue.Get<FVector2D>();
+		if (const float Magnitude = InputDirection.Size(); Magnitude > AnalogDeadZone)
+		{
+			const float StickAngle = FMath::RadiansToDegrees(FMath::Atan2(InputDirection.X, -InputDirection.Y));
+			OnFormWheelHighlightChange.Broadcast(FOnPlayerFormWheelHighlightChangedPayload(
+				this,
+				GetPlayerState<AElectricCastlePlayerState>(),
+				GetPawn<AElectricCastlePlayerCharacter>(),
+				InputDirection,
+				StickAngle
+			));
+		}
+	}
 }
 
 void AElectricCastlePlayerController::HandleFormChangeInputAction(const FInputActionValue& InputActionValue)

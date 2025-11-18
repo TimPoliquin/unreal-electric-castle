@@ -152,6 +152,8 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnPlayerFormWheelVisibilityChangeSignature OnFormWheelVisibilityChange;
+	UPROPERTY(BLueprintAssignable)
+	FOnPlayerFormWheelHighlightChangedSignature OnFormWheelHighlightChange;
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Input")
@@ -161,15 +163,19 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputAction> AimAction;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	TObjectPtr<UInputAction> FormWheelAction;
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	float AimClampMin = -1.f;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	float AimClampMax = 1.f;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> FormWheelAction;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> FormWheelHighlightAction;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputConfiguration> InputConfig;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputAction> FormChangeAction;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	float AnalogDeadZone = 0.3f;
 	UPROPERTY()
 	TObjectPtr<UElectricCastleAbilitySystemComponent> AbilitySystemComponent;
 	// UI
@@ -199,6 +205,8 @@ private:
 	UFUNCTION()
 	void HideFormWheel(const FInputActionValue& InputActionValue);
 	UFUNCTION()
+	void UpdateFormWheelHighlightAngle(const FInputActionValue& InputActionValue);
+	UFUNCTION()
 	void HandleFormChangeInputAction(const FInputActionValue& InputActionValue);
 	void UpdateMagicCircleLocation() const;
 	void OnInputTypeChange(ECommonInputType NewInputMode);
@@ -217,4 +225,6 @@ private:
 	FHitResult CursorHit;
 	UPROPERTY(Replicated)
 	EAuraInputMode InputType = EAuraInputMode::MouseAndKeyboard;
+	UPROPERTY(Replicated)
+	bool bShowFormWheel = false;
 };

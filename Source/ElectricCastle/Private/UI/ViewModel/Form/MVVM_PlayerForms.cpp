@@ -12,14 +12,16 @@
 
 #include "UI/ViewModel/Form/MVVM_PlayerForm.h"
 
-void UMVVM_PlayerForms::InitializeDependencies(AElectricCastlePlayerState* PlayerState)
+void UMVVM_PlayerForms::InitializeDependencies(AElectricCastlePlayerState* InPlayerState)
 {
-	CreatePlayerFormViewModels(PlayerState);
-	if (AElectricCastlePlayerController* PlayerController = Cast<AElectricCastlePlayerController>(PlayerState->GetPlayerController()))
+	PlayerState = InPlayerState;
+	CreatePlayerFormViewModels(InPlayerState);
+	if (AElectricCastlePlayerController* PlayerController = Cast<AElectricCastlePlayerController>(InPlayerState->GetPlayerController()))
 	{
 		PlayerController->OnFormWheelVisibilityChange.AddUniqueDynamic(this, &UMVVM_PlayerForms::OnFormWheelVisibilityChange);
+		PlayerController->OnFormWheelHighlightChange.AddUniqueDynamic(this, &UMVVM_PlayerForms::OnFormWheelHighlightChange);
 	}
-	if (UPlayerFormChangeComponent* FormChangeComponent = IFormChangeActorInterface::GetFormChangeComponent(PlayerState))
+	if (UPlayerFormChangeComponent* FormChangeComponent = IFormChangeActorInterface::GetFormChangeComponent(InPlayerState))
 	{
 		FormChangeComponent->OnAvailableFormsChanged.AddUniqueDynamic(this, &UMVVM_PlayerForms::OnAvailableFormsChanged);
 	}
@@ -70,19 +72,27 @@ TArray<UMVVM_PlayerForm*> UMVVM_PlayerForms::GetPlayerFormViewModels() const
 	return AllViewModels;
 }
 
-void UMVVM_PlayerForms::CreatePlayerFormViewModels(AElectricCastlePlayerState* PlayerState)
+void UMVVM_PlayerForms::ChangeForm(const FGameplayTag& FormTag)
+{
+	if (UPlayerFormChangeComponent* FormChangeComponent = IFormChangeActorInterface::GetFormChangeComponent(PlayerState))
+	{
+		FormChangeComponent->ChangeForm(FormTag);
+	}
+}
+
+void UMVVM_PlayerForms::CreatePlayerFormViewModels(AElectricCastlePlayerState* InPlayerState)
 {
 	if (PlayerFormViewModels.IsEmpty())
 	{
-		if (UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(PlayerState))
+		if (const UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(InPlayerState))
 		{
-			UPlayerFormConfig* FormConfig = GameDataSubsystem->GetPlayerFormConfig();
+			const UPlayerFormConfig* FormConfig = GameDataSubsystem->GetPlayerFormConfig();
 			for (const EPlayerForm& Form : TEnumRange<EPlayerForm>())
 			{
 				PlayerFormViewModels.Add(
 					Form,
 					CreatePlayerFormViewModel(
-						PlayerState,
+						InPlayerState,
 						FormConfig->GetPlayerFormConfigRowByFormId(Form)
 					)
 				);
@@ -92,7 +102,7 @@ void UMVVM_PlayerForms::CreatePlayerFormViewModels(AElectricCastlePlayerState* P
 }
 
 UMVVM_PlayerForm* UMVVM_PlayerForms::CreatePlayerFormViewModel(
-	AElectricCastlePlayerState* PlayerState,
+	AElectricCastlePlayerState* InPlayerState,
 	const FPlayerFormConfigRow& FormConfigRow
 )
 {
@@ -101,7 +111,7 @@ UMVVM_PlayerForm* UMVVM_PlayerForms::CreatePlayerFormViewModel(
 		*UEnum::GetValueAsString(FormConfigRow.FormId)
 	);
 	UMVVM_PlayerForm* ViewModel = NewObject<UMVVM_PlayerForm>(this, PlayerFormViewModelClass, FName(ViewModelName));
-	ViewModel->InitializeDependencies(PlayerState, FormConfigRow);
+	ViewModel->InitializeDependencies(InPlayerState, FormConfigRow);
 	return ViewModel;
 }
 
@@ -113,4 +123,9 @@ void UMVVM_PlayerForms::OnFormWheelVisibilityChange(const FOnPlayerFormWheelVisi
 void UMVVM_PlayerForms::OnAvailableFormsChanged(const FOnPlayerAvailableFormsChangedPayload& Payload)
 {
 	OnAvailableFormsChangedDelegate.Broadcast(Payload);
+}
+
+void UMVVM_PlayerForms::OnFormWheelHighlightChange(const FOnPlayerFormWheelHighlightChangedPayload& Payload)
+{
+	OnFormWheelHighlightChangeDelegate.Broadcast(Payload);
 }
