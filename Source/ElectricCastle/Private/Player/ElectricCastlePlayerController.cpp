@@ -360,6 +360,7 @@ void AElectricCastlePlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
 void AElectricCastlePlayerController::ShowFormWheel(const FInputActionValue& InputActionValue)
 {
 	bShowFormWheel = true;
+	SetupInputMode();
 	OnFormWheelVisibilityChange.Broadcast(
 		FOnPlayerFormWheelVisibilityChangePayload(
 			this,
@@ -373,6 +374,7 @@ void AElectricCastlePlayerController::ShowFormWheel(const FInputActionValue& Inp
 void AElectricCastlePlayerController::HideFormWheel(const FInputActionValue& InputActionValue)
 {
 	bShowFormWheel = false;
+	SetupInputMode();
 	OnFormWheelVisibilityChange.Broadcast(
 		FOnPlayerFormWheelVisibilityChangePayload(
 			this,
@@ -388,15 +390,23 @@ void AElectricCastlePlayerController::UpdateFormWheelHighlightAngle(const FInput
 	if (bShowFormWheel)
 	{
 		const FVector2D InputDirection = InputActionValue.Get<FVector2D>();
-		if (const float Magnitude = InputDirection.Size(); Magnitude > AnalogDeadZone)
+		bool bBroadcast;
+		if (IsInputTypeGamepad())
 		{
-			const float StickAngle = FMath::RadiansToDegrees(FMath::Atan2(InputDirection.X, -InputDirection.Y));
+			bBroadcast = CalculateFormWheelAngle_Gamepad(InputDirection, FormWheelAngle);
+		}
+		else
+		{
+			bBroadcast = CalculateFormWheelAngle_Mouse(InputDirection, FormWheelAngle);
+		}
+		if (bBroadcast)
+		{
 			OnFormWheelHighlightChange.Broadcast(FOnPlayerFormWheelHighlightChangedPayload(
 				this,
 				GetPlayerState<AElectricCastlePlayerState>(),
 				GetPawn<AElectricCastlePlayerCharacter>(),
 				InputDirection,
-				StickAngle
+				FormWheelAngle
 			));
 		}
 	}
@@ -455,16 +465,24 @@ bool AElectricCastlePlayerController::IsNotTargeting() const
 
 void AElectricCastlePlayerController::SetupInputMode()
 {
-	bShowMouseCursor = IsInputTypeMouse();
 	DefaultMouseCursor = EMouseCursor::Default;
-	SetInputMode(BuildGameAndUIInputMode());
+	if (!bShowFormWheel)
+	{
+		bShowMouseCursor = IsInputTypeMouse();
+		SetInputMode(BuildGameAndUIInputMode());
+	}
+	else
+	{
+		bShowMouseCursor = false;
+		SetInputMode(FInputModeGameOnly());
+	}
 }
 
 FInputModeGameAndUI AElectricCastlePlayerController::BuildGameAndUIInputMode() const
 {
 	FInputModeGameAndUI InputModeData;
-	InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-	InputModeData.SetHideCursorDuringCapture(!IsInputTypeMouse());
+	InputModeData.SetLockMouseToViewportBehavior(bShowFormWheel ? EMouseLockMode::LockAlways : EMouseLockMode::DoNotLock);
+	InputModeData.SetHideCursorDuringCapture(!IsInputTypeMouse() || bShowFormWheel);
 	return InputModeData;
 }
 
@@ -504,6 +522,31 @@ void AElectricCastlePlayerController::OnEffectStateChanged_Aiming(const FGamepla
 		bShowMouseCursor = IsInputTypeMouse();
 		SetupInputMode();
 	}
+}
+
+bool AElectricCastlePlayerController::CalculateFormWheelAngle_Gamepad(const FVector2D& InputDirection, float& OutFormWheelAngle) const
+{
+	if (const float Magnitude = InputDirection.Size(); Magnitude > AnalogDeadZone)
+	{
+		OutFormWheelAngle = FMath::RadiansToDegrees(FMath::Atan2(InputDirection.X, -InputDirection.Y));
+		return true;
+	}
+	return false;
+}
+
+bool AElectricCastlePlayerController::CalculateFormWheelAngle_Mouse(const FVector2D& InputDirection, float& OutFormWheelAngle) const
+{
+	const float AbsX = FMath::Abs(InputDirection.X);
+	const float AbsY = FMath::Abs(InputDirection.Y);
+	const float Value = AbsX > AbsY ? InputDirection.X : InputDirection.Y;
+	if (FMath::Abs(Value) > KINDA_SMALL_NUMBER)
+	{
+		OutFormWheelAngle += Value * MouseSensitivity;
+		// Normalize to [0,360)
+		OutFormWheelAngle = FMath::Fmod(OutFormWheelAngle + 360.0f, 360.0f);
+		return true;
+	}
+	return false;
 }
 
 bool AElectricCastlePlayerController::IsAiming()

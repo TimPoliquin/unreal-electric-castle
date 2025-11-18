@@ -176,6 +176,8 @@ protected:
 	TObjectPtr<UInputAction> FormChangeAction;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	float AnalogDeadZone = 0.3f;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	float MouseSensitivity = 5.f;
 	UPROPERTY()
 	TObjectPtr<UElectricCastleAbilitySystemComponent> AbilitySystemComponent;
 	// UI
@@ -216,6 +218,8 @@ private:
 	void SetInputMode_KeyboardAndMouse_Server();
 	UFUNCTION()
 	void OnEffectStateChanged_Aiming(FGameplayTag AimingTag, int TagCount);
+	bool CalculateFormWheelAngle_Gamepad(const FVector2D& InputDirection, float& OutFormWheelAngle) const;
+	bool CalculateFormWheelAngle_Mouse(const FVector2D& InputDirection, float& OutFormWheelAngle) const;
 
 	bool IsAiming();
 
@@ -227,4 +231,6 @@ private:
 	EAuraInputMode InputType = EAuraInputMode::MouseAndKeyboard;
 	UPROPERTY(Replicated)
 	bool bShowFormWheel = false;
+	UPROPERTY(Replicated)
+	float FormWheelAngle = 0.f;
 };
