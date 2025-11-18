@@ -10,8 +10,7 @@
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "Player/ElectricCastlePlayerState.h"
-#include "Player/InventoryComponent.h"
-#include "Player/Form/FormChangeActorInterface.h"
+#include "Player/InventoryEvents.h"
 #include "Player/Form/FormConfigLoadRequest.h"
 #include "Player/Form/PlayerFormChangeComponent.h"
 #include "Player/Form/PlayerFormConfig.h"
@@ -86,119 +85,6 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 	Super::BindCallbacksToDependencies();
 	if constexpr (true)
 	{
-		return;
-	}
-	const FElectricCastleGameplayTags& GameplayTags = FElectricCastleGameplayTags::Get();
-	if (UProgressionComponent* ProgressionComponent = UProgressionComponent::Get(GetPlayerState()))
-	{
-		ProgressionComponent->OnXPChangeDelegate.AddDynamic(this, &UOverlayWidgetController::OnPlayerXPChange);
-		ProgressionComponent->OnLevelInitializedDelegate.AddDynamic(
-			this,
-			&UOverlayWidgetController::OnPlayerLevelInitialized
-		);
-		ProgressionComponent->OnLevelChangeDelegate.AddDynamic(this, &UOverlayWidgetController::OnPlayerLevelChange);
-	}
-	if (UPlayerFormChangeComponent* FormChangeComponent = IFormChangeActorInterface::GetFormChangeComponent(
-		GetAuraPlayerController()->GetPawn()
-	))
-	{
-		FormChangeComponent->OnPlayerFormChange.AddDynamic(this, &UOverlayWidgetController::OnFormChange);
-	}
-	if (AbilitySystemComponent)
-	{
-		if (AttributeSet)
-		{
-			AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(GetAttributeSet()->GetHealthAttribute())
-			                      .AddLambda(
-				                      [&](const FOnAttributeChangeData& Data)
-				                      {
-					                      OnHealthChanged.Broadcast(
-						                      FFloatAttributeChangedPayload(
-							                      GameplayTags.Attributes_Vital_Health,
-							                      Data.OldValue,
-							                      Data.NewValue
-						                      )
-					                      );
-				                      }
-			                      );
-			AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(GetAttributeSet()->GetMaxHealthAttribute())
-			                      .AddLambda(
-				                      [&](const FOnAttributeChangeData& Data)
-				                      {
-					                      OnMaxMaxHealthChanged.Broadcast(
-						                      FFloatAttributeChangedPayload(
-							                      GameplayTags.Attributes_Primary_MaxHealth,
-							                      Data.OldValue,
-							                      Data.NewValue
-						                      )
-					                      );
-				                      }
-			                      );
-
-			AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(GetAttributeSet()->GetManaAttribute())
-			                      .AddLambda(
-				                      [&](const FOnAttributeChangeData& Data)
-				                      {
-					                      OnManaChanged.Broadcast(
-						                      FFloatAttributeChangedPayload(
-							                      GameplayTags.Attributes_Vital_Mana,
-							                      Data.OldValue,
-							                      Data.NewValue
-						                      )
-					                      );
-				                      }
-			                      );
-			AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(GetAttributeSet()->GetMaxManaAttribute())
-			                      .AddLambda(
-				                      [&](const FOnAttributeChangeData& Data)
-				                      {
-					                      OnMaxManaChanged.Broadcast(
-						                      FFloatAttributeChangedPayload(
-							                      GameplayTags.Attributes_Primary_MaxMana,
-							                      Data.OldValue,
-							                      Data.NewValue
-						                      )
-					                      );
-				                      }
-			                      );
-		}
-
-
-		AbilitySystemComponent->OnEffectAssetTagsDelegate.AddLambda(
-			[this](const FGameplayTagContainer& AssetTags)
-			{
-				for (const FGameplayTag& Tag : AssetTags)
-				{
-					FGameplayTag MessageTag = FGameplayTag::RequestGameplayTag(FName("Message"));
-					if (Tag.MatchesTag(MessageTag))
-					{
-						if (const FUIWidgetRow* Row = GetDataTableRowByTag<FUIWidgetRow>(MessageDataTable, Tag))
-						{
-							MessageWidgetRowDelegate.Broadcast(*Row, FMessageSubstitutions());
-						}
-					}
-				}
-			}
-		);
-		AbilitySystemComponent->OnAbilityEquippedDelegate.AddDynamic(
-			this,
-			&UOverlayWidgetController::OnAbilityEquipped
-		);
-		AbilitySystemComponent->RegisterGameplayTagEvent(
-			FElectricCastleGameplayTags::Get().Player_HUD_Hide,
-			EGameplayTagEventType::NewOrRemoved
-		).AddUObject(this, &UOverlayWidgetController::OnPlayerHideHUDTagChanged);
-	}
-	if (UInventoryComponent* PlayerInventoryComponent = UInventoryComponent::Get(GetPlayerState()))
-	{
-		PlayerInventoryComponent->OnInventoryItemCountChangedDelegate.AddDynamic(
-			this,
-			&UOverlayWidgetController::OnPlayerInventoryChanged
-		);
-		PlayerInventoryComponent->OnInventoryFullDelegate.AddDynamic(
-			this,
-			&UOverlayWidgetController::OnPlayerInventoryFull
-		);
 	}
 }
 

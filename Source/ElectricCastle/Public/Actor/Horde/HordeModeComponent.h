@@ -24,7 +24,11 @@ struct FOnHordeModeRoundCompletePayload
 	TArray<FHordeRoundRewards> Rewards;
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHordeModeRoundCompleteSignature, const FOnHordeModeRoundCompletePayload&, Payload);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(
+	FOnHordeModeRoundCompleteSignature,
+	const FOnHordeModeRoundCompletePayload&,
+	Payload
+);
 
 class UHordeModeConfig;
 
@@ -45,12 +49,16 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnHordeModeRoundCompleteSignature OnHordeModeRoundComplete;
 	UFUNCTION(BlueprintCallable)
-	TArray<FAuraSpawnParams> ConvertRewardsToSpawnParams(const FVector& Center, float Radius, const TArray<FHordeRoundRewards>& Rewards);
+	TArray<FAuraSpawnParams> ConvertRewardsToSpawnParams(
+		const FVector& Center,
+		float Radius,
+		const TArray<FHordeRoundRewards>& Rewards
+	);
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TObjectPtr<UHordeModeConfig> HordeModeConfig;
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, meta=(MustImplement="AuraSpawnInterface"))
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, meta=(MustImplement="/Script/ElectricCastle.SpawnInterface"))
 	TArray<AActor*> SpawnPoints;
 	UPROPERTY(BlueprintReadOnly)
 	int32 CurrentRound = 0;

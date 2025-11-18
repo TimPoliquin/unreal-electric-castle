@@ -29,7 +29,13 @@ void UApplyGameplayEffectComponent::OnOverlap(AActor* TargetActor)
 {
 	if (GameplayEffectConfigs.IsEmpty())
 	{
-		UE_LOG(LogElectricCastle, Warning, TEXT("[%s][%s] No overlap effect configured for effect component!"), *GetOwner()->GetName(), *GetName());
+		UE_LOG(
+			LogElectricCastle,
+			Warning,
+			TEXT("[%s][%s] No overlap effect configured for effect component!"),
+			*GetOwner()->GetName(),
+			*GetName()
+		);
 		return;
 	}
 	if (!CheckPreRequisites(TargetActor))
@@ -40,7 +46,13 @@ void UApplyGameplayEffectComponent::OnOverlap(AActor* TargetActor)
 	{
 		if (!GameplayEffectConfig.IsValid())
 		{
-			UE_LOG(LogElectricCastle, Warning, TEXT("[%s][%s] Invalid overlap effect configured for component"), *GetOwner()->GetName(), *GetName())
+			UE_LOG(
+				LogElectricCastle,
+				Warning,
+				TEXT("[%s][%s] Invalid overlap effect configured for component"),
+				*GetOwner()->GetName(),
+				*GetName()
+			)
 		}
 		if (GameplayEffectConfig.IsApplyOnOverlap())
 		{
@@ -84,9 +96,10 @@ void UApplyGameplayEffectComponent::SetDefaults(
 
 bool UApplyGameplayEffectComponent::IsAffectingActor(AActor* Actor) const
 {
-	if (const UAbilitySystemComponent* AbilitySystemComponent = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Actor))
+	if (const UAbilitySystemComponent* AbilitySystemComponent =
+		UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Actor))
 	{
-		for (const TPair HandlePair : ActiveEffectHandles)
+		for (const TPair<FActiveGameplayEffectHandle, UAbilitySystemComponent*>& HandlePair : ActiveEffectHandles)
 		{
 			if (HandlePair.Value == AbilitySystemComponent)
 			{
@@ -97,7 +110,10 @@ bool UApplyGameplayEffectComponent::IsAffectingActor(AActor* Actor) const
 	return false;
 }
 
-void UApplyGameplayEffectComponent::ApplyEffectToTarget(AActor* TargetActor, const FGameplayEffectConfig& GameplayEffectConfig)
+void UApplyGameplayEffectComponent::ApplyEffectToTarget(
+	AActor* TargetActor,
+	const FGameplayEffectConfig& GameplayEffectConfig
+)
 {
 	if (!GameplayEffectConfig.GameplayEffectClass)
 	{

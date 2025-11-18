@@ -9,12 +9,16 @@
 #include "GameFramework/GameStateBase.h"
 #include "Player/ElectricCastlePlayerState.h"
 #include "UI/HUD/OverlayWidget.h"
+#include "UI/Library/WidgetFunctionLibrary.h"
 #include "UI/ViewModel/MVVM_Inventory.h"
 #include "UI/ViewModel/MVVM_PlayerAbilityStates.h"
 #include "UI/ViewModel/MVVM_PlayerState.h"
+#include "UI/ViewModel/Form/MVVM_PlayerForms.h"
 #include "UI/Widget/AuraMenuWidget.h"
+#include "UI/Widget/FormWheelWidget.h"
 #include "UI/WidgetController/AttributeMenuWidgetController.h"
 #include "UI/WidgetController/SpellMenuWidgetController.h"
+
 
 void AElectricCastleHUD::BeginPlay()
 {
@@ -23,7 +27,7 @@ void AElectricCastleHUD::BeginPlay()
 
 void AElectricCastleHUD::Initialize()
 {
-	InitializePlayerStateViewModels();
+	InitializePlayerViewModels();
 	InitializeOverlayWidget();
 }
 
@@ -96,6 +100,11 @@ TArray<UMVVM_PlayerAbilityStates*> AElectricCastleHUD::GetPlayerAbilityStatesVie
 	return PlayerAbilityStatesViewModels;
 }
 
+TArray<UMVVM_PlayerForms*> AElectricCastleHUD::GetPlayerFormsViewModels() const
+{
+	return PlayerFormsViewModels;
+}
+
 void AElectricCastleHUD::OpenMenu(const EAuraMenuTab& OpenTab)
 {
 	GetOwningPlayerController()->SetInputMode(FInputModeUIOnly());
@@ -109,7 +118,52 @@ void AElectricCastleHUD::OnMenuClosed()
 	GetOwningPlayerController()->SetInputMode(FInputModeGameAndUI());
 }
 
-void AElectricCastleHUD::InitializePlayerStateViewModels()
+UMVVM_PlayerState* AElectricCastleHUD::CreatePlayerStateViewModel(
+	int32 PlayerIdx,
+	AElectricCastlePlayerState* PlayerState
+)
+{
+	UMVVM_PlayerState* PlayerStateViewModel = NewObject<UMVVM_PlayerState>(this, PlayerStateViewModelClass);
+	PlayerStateViewModel->SetPlayerIndex(PlayerIdx);
+	PlayerStateViewModel->InitializeDependencies(PlayerState);
+	return PlayerStateViewModel;
+}
+
+UMVVM_PlayerAbilityStates* AElectricCastleHUD::CreatePlayerAbilityStatesViewModel(
+	int32 PlayerIdx,
+	AElectricCastlePlayerState* PlayerState
+)
+{
+	UMVVM_PlayerAbilityStates* PlayerAbilityStatesViewModel = NewObject<UMVVM_PlayerAbilityStates>(
+		this,
+		PlayerAbilityStatesViewModelClass
+	);
+	PlayerAbilityStatesViewModel->SetPlayerIndex(PlayerIdx);
+	PlayerAbilityStatesViewModel->InitializeDependencies(PlayerState);
+	return PlayerAbilityStatesViewModel;
+}
+
+
+UMVVM_PlayerForms* AElectricCastleHUD::CreatePlayerFormsViewModel(
+	const int32 PlayerIndex,
+	AElectricCastlePlayerState* PlayerState
+)
+{
+	if (PlayerFormsViewModelClass == nullptr)
+	{
+		UE_LOG(LogElectricCastle, Error, TEXT("[%s] PlayerFormsViewModelClass is null"), *GetName());
+		return nullptr;
+	}
+	UMVVM_PlayerForms* PlayerFormsViewModel = NewObject<UMVVM_PlayerForms>(
+		this,
+		PlayerFormsViewModelClass
+	);
+	PlayerFormsViewModel->SetPlayerIndex(PlayerIndex);
+	PlayerFormsViewModel->InitializeDependencies(PlayerState);
+	return PlayerFormsViewModel;
+}
+
+void AElectricCastleHUD::InitializePlayerViewModels()
 {
 	if (!PlayerStateViewModelClass)
 	{
@@ -125,18 +179,9 @@ void AElectricCastleHUD::InitializePlayerStateViewModels()
 				GameState->PlayerArray[PlayerIdx]
 			))
 			{
-				UMVVM_PlayerState* PlayerStateViewModel = NewObject<UMVVM_PlayerState>(this, PlayerStateViewModelClass);
-				PlayerStateViewModel->SetPlayerIndex(PlayerIdx);
-				PlayerStateViewModel->InitializeDependencies(PlayerState);
-				PlayerStateViewModels.Add(PlayerStateViewModel);
-
-				UMVVM_PlayerAbilityStates* PlayerAbilityStatesViewModel = NewObject<UMVVM_PlayerAbilityStates>(
-					this,
-					PlayerAbilityStatesViewModelClass
-				);
-				PlayerAbilityStatesViewModel->SetPlayerIndex(PlayerIdx);
-				PlayerAbilityStatesViewModel->InitializeDependencies(PlayerState);
-				PlayerAbilityStatesViewModels.Add(PlayerAbilityStatesViewModel);
+				PlayerStateViewModels.Add(CreatePlayerStateViewModel(PlayerIdx, PlayerState));
+				PlayerAbilityStatesViewModels.Add(CreatePlayerAbilityStatesViewModel(PlayerIdx, PlayerState));
+				PlayerFormsViewModels.Add(CreatePlayerFormsViewModel(PlayerIdx, PlayerState));
 			}
 		}
 	}
@@ -161,7 +206,11 @@ void AElectricCastleHUD::InitializeOverlayWidget()
 		return;
 	}
 	OverlayWidget = CreateWidget<UOverlayWidget>(GetWorld(), OverlayWidgetClass, FName("OverlayWidget"));
-	OverlayWidget->BindViewModels(GetPlayerStateViewModels(), GetPlayerAbilityStatesViewModels());
+	OverlayWidget->BindViewModels(
+		GetPlayerStateViewModels(),
+		GetPlayerAbilityStatesViewModels(),
+		GetPlayerFormsViewModels()
+	);
 	OverlayWidget->AddToViewport();
 }
 

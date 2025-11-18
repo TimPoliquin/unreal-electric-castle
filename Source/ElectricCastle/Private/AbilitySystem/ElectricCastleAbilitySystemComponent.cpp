@@ -593,7 +593,7 @@ void UElectricCastleAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& 
 	))
 	{
 		const UAbilityInfo* AbilityInfos = GameDataSubsystem->GetAbilityInfo();
-		for (const FGameplayTag& AbilityTag : AbilitySpec.Ability->AbilityTags)
+		for (const FGameplayTag& AbilityTag : AbilitySpec.Ability->GetAssetTags())
 		{
 			if (const FElectricCastleAbilityInfo& AbilityInfo = AbilityInfos->FindAbilityInfoForTag(AbilityTag);
 				AbilityInfo.
@@ -614,7 +614,7 @@ void UElectricCastleAbilitySystemComponent::OnRemoveAbility(FGameplayAbilitySpec
 	))
 	{
 		const UAbilityInfo* AbilityInfos = GameDataSubsystem->GetAbilityInfo();
-		for (const FGameplayTag& AbilityTag : AbilitySpec.Ability->AbilityTags)
+		for (const FGameplayTag& AbilityTag : AbilitySpec.Ability->GetAssetTags())
 		{
 			if (const FElectricCastleAbilityInfo& AbilityInfo = AbilityInfos->FindAbilityInfoForTag(AbilityTag);
 				AbilityInfo.
@@ -651,7 +651,7 @@ void UElectricCastleAbilitySystemComponent::RemoveAbilitiesWithTag(const FGamepl
 	AbilityIterator.BindLambda(
 		[&, this](const FGameplayAbilitySpec& Spec)
 		{
-			if (Spec.Ability && Spec.Ability->AbilityTags.HasTag(AbilityTag))
+			if (Spec.Ability && Spec.Ability->GetAssetTags().HasTag(AbilityTag))
 			{
 				HandlesToRemove.Add(Spec.Handle);
 			}

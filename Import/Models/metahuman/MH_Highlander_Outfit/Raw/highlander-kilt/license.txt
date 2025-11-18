@@ -1,3 +1,11 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:01f577190b60289287d21f791b0b953ad6b6bc3d9e321e5f7b47b62d0829bfc4
-size 724
+Model Information:
+* title:	Plaid Gothic Mini Skirt
+* source:	https://sketchfab.com/3d-models/plaid-gothic-mini-skirt-7a1869479e58422b84ad18533b5b4439
+* author:	Yasmany Batista (https://sketchfab.com/Yazz_ll)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Plaid Gothic Mini Skirt" (https://sketchfab.com/3d-models/plaid-gothic-mini-skirt-7a1869479e58422b84ad18533b5b4439) by Yasmany Batista (https://sketchfab.com/Yazz_ll) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

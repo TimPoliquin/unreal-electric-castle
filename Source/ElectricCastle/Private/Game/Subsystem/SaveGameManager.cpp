@@ -81,14 +81,21 @@ FString USaveGameManager::AutoSave_LevelTransition(const FAuraSaveGameParams& Sa
 {
 	if (CurrentSaveSlotName.IsEmpty())
 	{
-		UE_LOG(LogElectricCastle, Error, TEXT("[%s] Attempted to save game, but CurrentSaveSlotName is empty!"), *GetName())
+		UE_LOG(
+			LogElectricCastle,
+			Error,
+			TEXT("[%s] Attempted to save game, but CurrentSaveSlotName is empty!"),
+			*GetName()
+		)
 		OnSaveCompleted.Broadcast(false);
 		return FString("");
 	}
 	UElectricCastleSaveGame* CurrentSaveData;
 	if (DoesSaveGameExist(CurrentSaveSlotName, AutoSaveSlotIndex))
 	{
-		CurrentSaveData = Cast<UElectricCastleSaveGame>(UGameplayStatics::LoadGameFromSlot(CurrentSaveSlotName, AutoSaveSlotIndex));
+		CurrentSaveData = Cast<UElectricCastleSaveGame>(
+			UGameplayStatics::LoadGameFromSlot(CurrentSaveSlotName, AutoSaveSlotIndex)
+		);
 	}
 	else
 	{
@@ -109,7 +116,9 @@ UElectricCastleSaveGame* USaveGameManager::CreateNewGame(const FString& PlayerNa
 		DeleteSaveGame(PlayerName);
 	}
 	const UElectricCastleLevelManager* LevelManager = UElectricCastleLevelManager::Get(this);
-	UElectricCastleSaveGame* NewGame = Cast<UElectricCastleSaveGame>(UGameplayStatics::CreateSaveGameObject(SaveGameClass));
+	UElectricCastleSaveGame* NewGame = Cast<UElectricCastleSaveGame>(
+		UGameplayStatics::CreateSaveGameObject(SaveGameClass)
+	);
 	NewGame->SaveSlotName = PlayerName;
 	NewGame->MetaData.PlayerName = PlayerName;
 	NewGame->MetaData.MapAssetName = LevelManager->GetDefaultMapAssetName();
@@ -127,7 +136,12 @@ void USaveGameManager::SaveGame(const FAuraSaveGameParams& SaveParams)
 {
 	if (CurrentSaveSlotName.IsEmpty())
 	{
-		UE_LOG(LogElectricCastle, Error, TEXT("[%s] Attempted to save game, but CurrentSaveSlotName is empty!"), *GetName())
+		UE_LOG(
+			LogElectricCastle,
+			Error,
+			TEXT("[%s] Attempted to save game, but CurrentSaveSlotName is empty!"),
+			*GetName()
+		)
 		OnSaveCompleted.Broadcast(false);
 		return;
 	}
@@ -144,7 +158,9 @@ void USaveGameManager::SaveGame(const FAuraSaveGameParams& SaveParams)
 	CurrentSaveData->MetaData.MapAssetName = SaveParams.DestinationMapName;
 	if (const UElectricCastleLevelManager* LevelManager = UElectricCastleLevelManager::Get(this))
 	{
-		CurrentSaveData->MetaData.MapDisplayName = LevelManager->GetMapNameFromMapAssetName(SaveParams.DestinationMapName);
+		CurrentSaveData->MetaData.MapDisplayName = LevelManager->GetMapNameFromMapAssetName(
+			SaveParams.DestinationMapName
+		);
 	}
 	CurrentSaveData->MetaData.PlayerStartTag = SaveParams.DestinationPlayerStartTag;
 	CurrentSaveData->SaveSlotName = CurrentSaveSlotName;
@@ -228,7 +244,13 @@ void USaveGameManager::ApplySaveGame(UElectricCastleSaveGame* LoadedData)
 	}
 	else
 	{
-		UE_LOG(LogElectricCastle, Log, TEXT("[%s] No world data found for %s - skipping world/actor data load"), *GetName(), *GetWorld()->GetPathName())
+		UE_LOG(
+			LogElectricCastle,
+			Log,
+			TEXT("[%s] No world data found for %s - skipping world/actor data load"),
+			*GetName(),
+			*GetWorld()->GetPathName()
+		)
 	}
 
 	// Broadcast completion event
@@ -278,7 +300,9 @@ UElectricCastleSaveGame* USaveGameManager::GetCurrentAutoSaveGame() const
 {
 	if (!CurrentSaveSlotName.IsEmpty() && DoesSaveGameExist(CurrentSaveSlotName, AutoSaveSlotIndex))
 	{
-		return Cast<UElectricCastleSaveGame>(UGameplayStatics::LoadGameFromSlot(CurrentSaveSlotName, AutoSaveSlotIndex));
+		return Cast<UElectricCastleSaveGame>(
+			UGameplayStatics::LoadGameFromSlot(CurrentSaveSlotName, AutoSaveSlotIndex)
+		);
 	}
 	return nullptr;
 }
@@ -297,7 +321,9 @@ void USaveGameManager::SaveGlobalData(UElectricCastleSaveGame* SaveGame)
 	SaveGame->GlobalData.GameStateSaveData = GameStateSaveData;
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 	{
-		if (const AElectricCastlePlayerController* PlayerController = Cast<AElectricCastlePlayerController>(Iterator->Get()))
+		if (const AElectricCastlePlayerController* PlayerController = Cast<AElectricCastlePlayerController>(
+			Iterator->Get()
+		))
 		{
 			FActorSaveData PlayerSaveData;
 			SaveActorData(PlayerController->GetPlayerState<AElectricCastlePlayerState>(), PlayerSaveData);
@@ -432,9 +458,12 @@ void USaveGameManager::LoadGlobalData(UElectricCastleSaveGame* SaveData)
 	}
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 	{
-		if (const AElectricCastlePlayerController* PlayerController = Cast<AElectricCastlePlayerController>(Iterator->Get()))
+		if (const AElectricCastlePlayerController* PlayerController = Cast<AElectricCastlePlayerController>(
+			Iterator->Get()
+		))
 		{
-			const AElectricCastlePlayerState* PlayerState = PlayerController->GetPlayerState<AElectricCastlePlayerState>();
+			const AElectricCastlePlayerState* PlayerState = PlayerController->GetPlayerState<
+				AElectricCastlePlayerState>();
 			const FActorSaveData& ActorSaveData = SaveData->GlobalData.GetPlayerSaveData(PlayerState);
 			if (ActorSaveData.IsValid())
 			{
@@ -442,7 +471,13 @@ void USaveGameManager::LoadGlobalData(UElectricCastleSaveGame* SaveData)
 			}
 			else
 			{
-				UE_LOG(LogElectricCastle, Warning, TEXT("[%s] No saved data for player: %s"), *GetName(), *PlayerState->GetName());
+				UE_LOG(
+					LogElectricCastle,
+					Warning,
+					TEXT("[%s] No saved data for player: %s"),
+					*GetName(),
+					*PlayerState->GetName()
+				);
 			}
 		}
 	}
@@ -510,7 +545,11 @@ AActor* USaveGameManager::LoadActorData(const FActorSaveData& ActorData)
 	// If actor doesn't exist, spawn it
 	if (!TargetActor && ActorData.bShouldAutoSpawn)
 	{
-		if (UClass* ActorClass = FindObject<UClass>(ANY_PACKAGE, *ActorData.ActorClass))
+		if (UClass* ActorClass = StaticLoadClass(
+			AActor::StaticClass(),
+			nullptr,
+			*ActorData.ActorClass
+		))
 		{
 			FActorSpawnParameters SpawnParams;
 			SpawnParams.Name = *ActorData.ActorName;
@@ -547,7 +586,13 @@ void USaveGameManager::LoadActor(AActor* TargetActor, const FActorSaveData& Acto
 			{
 				continue;
 			}
-			if (UActorComponent* Component = TargetActor->FindComponentByClass(FindObject<UClass>(ANY_PACKAGE, *ComponentData.ComponentClass)))
+			if (UActorComponent* Component = TargetActor->FindComponentByClass(
+				StaticLoadClass(
+					UActorComponent::StaticClass(),
+					nullptr,
+					*ComponentData.ComponentClass
+				)
+			))
 			{
 				LoadComponentData(Component, ComponentData);
 			}
@@ -582,7 +627,9 @@ UElectricCastleSaveGame* USaveGameManager::LoadSaveGameData(const FString& SlotN
 		return nullptr;
 	}
 
-	UElectricCastleSaveGame* LoadedData = Cast<UElectricCastleSaveGame>(UGameplayStatics::LoadGameFromSlot(SlotName, SlotIndex));
+	UElectricCastleSaveGame* LoadedData = Cast<UElectricCastleSaveGame>(
+		UGameplayStatics::LoadGameFromSlot(SlotName, SlotIndex)
+	);
 	if (!LoadedData)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to load game from slot: %s"), *SlotName);

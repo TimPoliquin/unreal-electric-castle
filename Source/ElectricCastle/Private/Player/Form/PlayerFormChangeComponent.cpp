@@ -230,6 +230,29 @@ void UPlayerFormChangeComponent::FormChange_UpdateAttributes_Implementation(
 }
 
 
+void UPlayerFormChangeComponent::AddAvailableForm(const FGameplayTag& FormTag)
+{
+	if (FormTag.IsValid() && !AvailableForms.HasTagExact(FormTag))
+	{
+		AvailableForms.AddTag(FormTag);
+		OnAvailableFormsChanged.Broadcast(FOnPlayerAvailableFormsChangedPayload(GetOwner(), AvailableForms));
+	}
+}
+
+void UPlayerFormChangeComponent::RemoveAvailableForm(const FGameplayTag& FormTag)
+{
+	if (FormTag.IsValid() && AvailableForms.HasTagExact(FormTag))
+	{
+		AvailableForms.RemoveTag(FormTag);
+		OnAvailableFormsChanged.Broadcast(FOnPlayerAvailableFormsChangedPayload(GetOwner(), AvailableForms));
+	}
+}
+
+bool UPlayerFormChangeComponent::IsFormAvailable(const FGameplayTag& FormTag) const
+{
+	return FormTag.IsValid() && AvailableForms.HasTagExact(FormTag);
+}
+
 // Called when the game starts
 void UPlayerFormChangeComponent::BeginPlay()
 {
@@ -270,7 +293,7 @@ FPlayerFormConfigRow UPlayerFormChangeComponent::GetPlayerFormConfigRow(const FG
 	{
 		return FormConfig->GetPlayerFormConfigRowByTag(FormTag);
 	}
-	return FPlayerFormConfigRow(EPlayerForm::None);
+	return FPlayerFormConfigRow(EPlayerForm::None, FString("INVALID"));
 }
 
 

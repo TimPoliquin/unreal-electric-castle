@@ -7,6 +7,7 @@
 #include "GameplayEffect.h"
 #include "GameplayTagContainer.h"
 #include "PlayerFormConfig.h"
+#include "PlayerFormDelegates.h"
 #include "Components/ActorComponent.h"
 #include "PlayerFormChangeComponent.generated.h"
 
@@ -64,10 +65,20 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FGameplayTag GetCurrentFormTag() const { return CurrentFormTag; }
 
+	UFUNCTION(BlueprintCallable)
+	void AddAvailableForm(const FGameplayTag& FormTag);
+	UFUNCTION(BlueprintCallable)
+	void RemoveAvailableForm(const FGameplayTag& FormTag);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsFormAvailable(const FGameplayTag& FormTag) const;
+
 	UPROPERTY(BlueprintAssignable)
 	FPlayerFormChangeEventSignature OnPlayerFormChange;
 	UPROPERTY(BlueprintAssignable)
 	FFormConfigLoadRequestSignature OnPlayerFormDataLoaded;
+	UPROPERTY(BlueprintAssignable)
+	FOnPlayerAvailableFormsChangedSignature OnAvailableFormsChanged;
 
 protected:
 	virtual void BeginPlay() override;
@@ -75,7 +86,6 @@ protected:
 	TObjectPtr<UNiagaraSystem> FormChangeEffect;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Effect")
 	TObjectPtr<USoundBase> FormChangeSound;
-
 	UPROPERTY(
 		VisibleInstanceOnly,
 		BlueprintReadOnly,
@@ -85,10 +95,12 @@ protected:
 		meta=(Categories="Player.Form")
 	)
 	FGameplayTag CurrentFormTag = FGameplayTag::EmptyTag;
-	UFUNCTION()
-	void OnRep_CurrentFormTag(const FGameplayTag& OldValue) const;
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Form")
 	FActiveGameplayEffectHandle CurrentFormEffectHandle;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Form", meta=(Categories="Player.Form"))
+	FGameplayTagContainer AvailableForms;
+	UFUNCTION()
+	void OnRep_CurrentFormTag(const FGameplayTag& OldValue) const;
 
 private:
 	UFUNCTION()

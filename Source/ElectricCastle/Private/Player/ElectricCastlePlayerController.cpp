@@ -23,6 +23,7 @@
 #include "Player/Form/PlayerFormConfig.h"
 #include "Tags/ElectricCastleGameplayTags.h"
 #include "UI/Widget/DamageTextComponent.h"
+#include "Player/ElectricCastlePlayerState.h"
 
 AElectricCastlePlayerController::AElectricCastlePlayerController()
 {
@@ -43,23 +44,38 @@ void AElectricCastlePlayerController::BeginPlay()
 	}
 	if (UCommonInputSubsystem* CommonSubsystem = UCommonInputSubsystem::Get(GetLocalPlayer()))
 	{
-		CommonSubsystem->OnInputMethodChangedNative.AddUObject(this, &AElectricCastlePlayerController::OnInputTypeChange);
+		CommonSubsystem->OnInputMethodChangedNative.AddUObject(
+			this,
+			&AElectricCastlePlayerController::OnInputTypeChange
+		);
 		OnInputTypeChange(CommonSubsystem->GetCurrentInputType());
 	}
 	if (IElectricCastleAbilitySystemInterface::IsAbilitySystemReady(GetPawn()))
 	{
-		GetAbilitySystemComponent()->RegisterGameplayTagEvent(FElectricCastleGameplayTags::Get().Effect_State_Aiming, EGameplayTagEventType::NewOrRemoved).AddUObject(
-			this, &AElectricCastlePlayerController::OnEffectStateChanged_Aiming);
+		GetAbilitySystemComponent()->RegisterGameplayTagEvent(
+			FElectricCastleGameplayTags::Get().Effect_State_Aiming,
+			EGameplayTagEventType::NewOrRemoved
+		).AddUObject(
+			this,
+			&AElectricCastlePlayerController::OnEffectStateChanged_Aiming
+		);
 	}
 	else
 	{
 		if (AElectricCastlePlayerCharacter* PlayerCharacter = Cast<AElectricCastlePlayerCharacter>(GetPawn()))
 		{
-			PlayerCharacter->GetOnAbilitySystemRegisteredDelegate().AddLambda([this](UAbilitySystemComponent* LocalAbilitySystem)
-			{
-				LocalAbilitySystem->RegisterGameplayTagEvent(FElectricCastleGameplayTags::Get().Effect_State_Aiming, EGameplayTagEventType::NewOrRemoved).AddUObject(
-					this, &AElectricCastlePlayerController::OnEffectStateChanged_Aiming);
-			});
+			PlayerCharacter->GetOnAbilitySystemRegisteredDelegate().AddLambda(
+				[this](UAbilitySystemComponent* LocalAbilitySystem)
+				{
+					LocalAbilitySystem->RegisterGameplayTagEvent(
+						FElectricCastleGameplayTags::Get().Effect_State_Aiming,
+						EGameplayTagEventType::NewOrRemoved
+					).AddUObject(
+						this,
+						&AElectricCastlePlayerController::OnEffectStateChanged_Aiming
+					);
+				}
+			);
 		}
 	}
 }
@@ -71,7 +87,9 @@ void AElectricCastlePlayerController::PlayerTick(float DeltaTime)
 	UpdateMagicCircleLocation();
 }
 
-void AElectricCastlePlayerController::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+void AElectricCastlePlayerController::GetLifetimeReplicatedProps(
+	TArray<class FLifetimeProperty>& OutLifetimeProps
+) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AElectricCastlePlayerController, InputType);
@@ -117,7 +135,9 @@ void AElectricCastlePlayerController::ShowDamageNumber_Implementation(
 void AElectricCastlePlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
-	UElectricCastleInputComponent* ElectricCastleInputComponent = CastChecked<UElectricCastleInputComponent>(InputComponent);
+	UElectricCastleInputComponent* ElectricCastleInputComponent = CastChecked<UElectricCastleInputComponent>(
+		InputComponent
+	);
 	ElectricCastleInputComponent->BindAbilityActions(
 		InputConfig,
 		this,
@@ -131,8 +151,31 @@ void AElectricCastlePlayerController::SetupInputComponent()
 		this,
 		&AElectricCastlePlayerController::Move
 	);
-	ElectricCastleInputComponent->BindAction(AimAction, ETriggerEvent::Triggered, this, &AElectricCastlePlayerController::Aim);
-	ElectricCastleInputComponent->BindAction(FormChangeAction, ETriggerEvent::Triggered, this, &AElectricCastlePlayerController::HandleFormChangeInputAction);
+	ElectricCastleInputComponent->BindAction(
+		AimAction,
+		ETriggerEvent::Triggered,
+		this,
+		&AElectricCastlePlayerController::Aim
+	);
+	ElectricCastleInputComponent->BindAction(
+		FormChangeAction,
+		ETriggerEvent::Triggered,
+		this,
+		&AElectricCastlePlayerController::HandleFormChangeInputAction
+	);
+	ElectricCastleInputComponent->BindAction(
+		FormWheelAction,
+		ETriggerEvent::Started,
+		this,
+		&AElectricCastlePlayerController::ShowFormWheel
+	);
+	ElectricCastleInputComponent->BindAction(
+		FormWheelAction,
+		ETriggerEvent::Completed,
+		this,
+		&AElectricCastlePlayerController::HideFormWheel
+	);
+	ElectricCastleInputComponent->BindAction(FormWheelHighlightAction, ETriggerEvent::Triggered, this, &AElectricCastlePlayerController::UpdateFormWheelHighlightAngle);
 }
 
 void AElectricCastlePlayerController::Move(const FInputActionValue& Value)
@@ -167,7 +210,11 @@ void AElectricCastlePlayerController::Move(const FInputActionValue& Value)
 			// Use horizontal input to rotate the pawn
 			if (!FMath::IsNearlyZero(InputAxisVector.X))
 			{
-				const float RotationAmount = FMath::Clamp(InputAxisVector.X * GetWorld()->GetDeltaSeconds() * 90.f, AimClampMin, AimClampMax);
+				const float RotationAmount = FMath::Clamp(
+					InputAxisVector.X * GetWorld()->GetDeltaSeconds() * 90.f,
+					AimClampMin,
+					AimClampMax
+				);
 				ControlledPawn->AddControllerYawInput(RotationAmount);
 			}
 		}
@@ -185,7 +232,9 @@ void AElectricCastlePlayerController::Aim(const FInputActionValue& InputActionVa
 	if (IsAiming() && !LocalAbilitySystemComponent->HasMatchingGameplayTag(GameplayTags.Player_Block_Rotation))
 	{
 		ACharacter* ControlledPawn = GetPawn<ACharacter>();
-		if (UCharacterMovementComponent* CharacterMovement = ControlledPawn ? ControlledPawn->GetCharacterMovement() : nullptr)
+		if (UCharacterMovementComponent* CharacterMovement = ControlledPawn
+			                                                     ? ControlledPawn->GetCharacterMovement()
+			                                                     : nullptr)
 		{
 			const FVector2D InputAxisVector = InputActionValue.Get<FVector2D>();
 			CharacterMovement->bOrientRotationToMovement = false;
@@ -193,7 +242,11 @@ void AElectricCastlePlayerController::Aim(const FInputActionValue& InputActionVa
 			// Use horizontal input to rotate the pawn
 			if (!FMath::IsNearlyZero(InputAxisVector.X))
 			{
-				const float RotationAmount = FMath::Clamp(InputAxisVector.X * GetWorld()->GetDeltaSeconds() * 90.f, AimClampMin, AimClampMax);
+				const float RotationAmount = FMath::Clamp(
+					InputAxisVector.X * GetWorld()->GetDeltaSeconds() * 90.f,
+					AimClampMin,
+					AimClampMax
+				);
 				ControlledPawn->AddControllerYawInput(RotationAmount);
 			}
 		}
@@ -251,7 +304,9 @@ void AElectricCastlePlayerController::CursorTrace_Mouse()
 void AElectricCastlePlayerController::CursorTrace_Gamepad()
 {
 	FLineTraceParams Params;
-	Params.TraceChannel = IsValid(MagicCircle) ? ECC_ExcludeCharacters : ECC_Target;
+	Params.TraceChannel = IsValid(MagicCircle)
+		                      ? ECC_ExcludeCharacters
+		                      : ECC_Target;
 	if (AActor* HitActor = UElectricCastleAbilitySystemLibrary::FindHitByLineTrace(GetPawn(), Params))
 	{
 		HighlightContext.Track(HitActor);
@@ -299,6 +354,61 @@ void AElectricCastlePlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
 	if (UElectricCastleAbilitySystemComponent* LocalAbilitySystem = GetAbilitySystemComponent())
 	{
 		LocalAbilitySystem->AbilityInputTagHeld(InputTag);
+	}
+}
+
+void AElectricCastlePlayerController::ShowFormWheel(const FInputActionValue& InputActionValue)
+{
+	bShowFormWheel = true;
+	SetupInputMode();
+	OnFormWheelVisibilityChange.Broadcast(
+		FOnPlayerFormWheelVisibilityChangePayload(
+			this,
+			GetPlayerState<AElectricCastlePlayerState>(),
+			GetPawn<AElectricCastlePlayerCharacter>(),
+			true
+		)
+	);
+}
+
+void AElectricCastlePlayerController::HideFormWheel(const FInputActionValue& InputActionValue)
+{
+	bShowFormWheel = false;
+	SetupInputMode();
+	OnFormWheelVisibilityChange.Broadcast(
+		FOnPlayerFormWheelVisibilityChangePayload(
+			this,
+			GetPlayerState<AElectricCastlePlayerState>(),
+			GetPawn<AElectricCastlePlayerCharacter>(),
+			false
+		)
+	);
+}
+
+void AElectricCastlePlayerController::UpdateFormWheelHighlightAngle(const FInputActionValue& InputActionValue)
+{
+	if (bShowFormWheel)
+	{
+		const FVector2D InputDirection = InputActionValue.Get<FVector2D>();
+		bool bBroadcast;
+		if (IsInputTypeGamepad())
+		{
+			bBroadcast = CalculateFormWheelAngle_Gamepad(InputDirection, FormWheelAngle);
+		}
+		else
+		{
+			bBroadcast = CalculateFormWheelAngle_Mouse(InputDirection, FormWheelAngle);
+		}
+		if (bBroadcast)
+		{
+			OnFormWheelHighlightChange.Broadcast(FOnPlayerFormWheelHighlightChangedPayload(
+				this,
+				GetPlayerState<AElectricCastlePlayerState>(),
+				GetPawn<AElectricCastlePlayerCharacter>(),
+				InputDirection,
+				FormWheelAngle
+			));
+		}
 	}
 }
 
@@ -355,17 +465,36 @@ bool AElectricCastlePlayerController::IsNotTargeting() const
 
 void AElectricCastlePlayerController::SetupInputMode()
 {
-	FInputModeGameAndUI InputModeData;
-	bShowMouseCursor = IsInputTypeMouse();
 	DefaultMouseCursor = EMouseCursor::Default;
-	InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-	InputModeData.SetHideCursorDuringCapture(!IsInputTypeMouse());
-	SetInputMode(InputModeData);
+	if (!bShowFormWheel)
+	{
+		bShowMouseCursor = IsInputTypeMouse();
+		SetInputMode(BuildGameAndUIInputMode());
+	}
+	else
+	{
+		bShowMouseCursor = false;
+		SetInputMode(FInputModeGameOnly());
+	}
+}
+
+FInputModeGameAndUI AElectricCastlePlayerController::BuildGameAndUIInputMode() const
+{
+	FInputModeGameAndUI InputModeData;
+	InputModeData.SetLockMouseToViewportBehavior(bShowFormWheel ? EMouseLockMode::LockAlways : EMouseLockMode::DoNotLock);
+	InputModeData.SetHideCursorDuringCapture(!IsInputTypeMouse() || bShowFormWheel);
+	return InputModeData;
 }
 
 void AElectricCastlePlayerController::OnInputTypeChange(const ECommonInputType NewInputMode)
 {
-	UE_LOG(LogElectricCastle, Warning, TEXT("[%s] Changing InputType: %s"), *GetName(), *UEnum::GetValueAsString(NewInputMode))
+	UE_LOG(
+		LogElectricCastle,
+		Warning,
+		TEXT("[%s] Changing InputType: %s"),
+		*GetName(),
+		*UEnum::GetValueAsString(NewInputMode)
+	)
 	switch (NewInputMode)
 	{
 	case ECommonInputType::MouseAndKeyboard:
@@ -395,11 +524,38 @@ void AElectricCastlePlayerController::OnEffectStateChanged_Aiming(const FGamepla
 	}
 }
 
+bool AElectricCastlePlayerController::CalculateFormWheelAngle_Gamepad(const FVector2D& InputDirection, float& OutFormWheelAngle) const
+{
+	if (const float Magnitude = InputDirection.Size(); Magnitude > AnalogDeadZone)
+	{
+		OutFormWheelAngle = FMath::RadiansToDegrees(FMath::Atan2(InputDirection.X, -InputDirection.Y));
+		return true;
+	}
+	return false;
+}
+
+bool AElectricCastlePlayerController::CalculateFormWheelAngle_Mouse(const FVector2D& InputDirection, float& OutFormWheelAngle) const
+{
+	const float AbsX = FMath::Abs(InputDirection.X);
+	const float AbsY = FMath::Abs(InputDirection.Y);
+	const float Value = AbsX > AbsY ? InputDirection.X : InputDirection.Y;
+	if (FMath::Abs(Value) > KINDA_SMALL_NUMBER)
+	{
+		OutFormWheelAngle += Value * MouseSensitivity;
+		// Normalize to [0,360)
+		OutFormWheelAngle = FMath::Fmod(OutFormWheelAngle + 360.0f, 360.0f);
+		return true;
+	}
+	return false;
+}
+
 bool AElectricCastlePlayerController::IsAiming()
 {
 	if (const UElectricCastleAbilitySystemComponent* LocalAbilitySystemComponent = GetAbilitySystemComponent())
 	{
-		return LocalAbilitySystemComponent->HasMatchingGameplayTag(FElectricCastleGameplayTags::Get().Effect_State_Aiming);
+		return LocalAbilitySystemComponent->HasMatchingGameplayTag(
+			FElectricCastleGameplayTags::Get().Effect_State_Aiming
+		);
 	}
 	return false;
 }

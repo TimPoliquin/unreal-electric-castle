@@ -1,3 +1,307 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:ba4b2e0878c7c6e78320f321b46160292fbfbd28114276e9bc0c8b9d32e7933a
-size 5577
+{
+  "accessors": [
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 12462,
+      "max": [
+        12.529550552368164,
+        15.538680076599121,
+        17.915836334228516
+      ],
+      "min": [
+        -12.208929061889648,
+        0.4794439971446991,
+        -0.08232700079679489
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 149544,
+      "componentType": 5126,
+      "count": 12462,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5126,
+      "count": 12462,
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 12462,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5125,
+      "count": 63864,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 299088,
+      "componentType": 5126,
+      "count": 13855,
+      "max": [
+        15.311217308044434,
+        14.007875442504883,
+        10.086359977722168
+      ],
+      "min": [
+        3.7131149768829346,
+        -14.076251983642578,
+        0.07797899842262268
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 465348,
+      "componentType": 5126,
+      "count": 13855,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 3,
+      "byteOffset": 199392,
+      "componentType": 5126,
+      "count": 13855,
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 99696,
+      "componentType": 5126,
+      "count": 13855,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 255456,
+      "componentType": 5125,
+      "count": 72102,
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "generator": "fab-model-conversion",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 543864,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 210536,
+      "byteOffset": 543864,
+      "byteStride": 8,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 631608,
+      "byteOffset": 754400,
+      "byteStride": 12,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 421072,
+      "byteOffset": 1386008,
+      "byteStride": 16,
+      "target": 34962
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 1807080,
+      "uri": "scene.bin"
+    }
+  ],
+  "images": [
+    {
+      "uri": "textures/ChaussureDroiteLOW_UVmaterial_0_baseColor.jpeg"
+    },
+    {
+      "uri": "textures/ChaussureDroiteLOW_UVmaterial_0_metallicRoughness.png"
+    },
+    {
+      "uri": "textures/ChaussureDroiteLOW_UVmaterial_0_normal.jpeg"
+    },
+    {
+      "uri": "textures/ChaussureGaucheLOW_UVmaterial_0_baseColor.jpeg"
+    },
+    {
+      "uri": "textures/ChaussureGaucheLOW_UVmaterial_0_metallicRoughness.png"
+    },
+    {
+      "uri": "textures/ChaussureGaucheLOW_UVmaterial_0_normal.jpeg"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "name": "ChaussureDroiteLOW_UVmaterial_0",
+      "normalTexture": {
+        "index": 2,
+        "scale": 0.5017149390243902
+      },
+      "occlusionTexture": {
+        "index": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicRoughnessTexture": {
+          "index": 1
+        }
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "ChaussureGaucheLOW_UVmaterial_0",
+      "normalTexture": {
+        "index": 5,
+        "scale": 0.3309832317073171
+      },
+      "occlusionTexture": {
+        "index": 4,
+        "strength": 0.45903201219512196
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 3
+        },
+        "metallicRoughnessTexture": {
+          "index": 4
+        }
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Object_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TANGENT": 2,
+            "TEXCOORD_0": 3
+          },
+          "indices": 4,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Object_1",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 6,
+            "POSITION": 5,
+            "TANGENT": 7,
+            "TEXCOORD_0": 8
+          },
+          "indices": 9,
+          "material": 1,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "children": [
+        1
+      ],
+      "matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.220446049250313e-16,
+        -1.0,
+        0.0,
+        0.0,
+        1.0,
+        2.220446049250313e-16,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Sketchfab_model"
+    },
+    {
+      "children": [
+        2,
+        3
+      ],
+      "name": "Chassures.obj.cleaner.materialmerger.gles"
+    },
+    {
+      "mesh": 0,
+      "name": "Object_2"
+    },
+    {
+      "mesh": 1,
+      "name": "Object_3"
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Sketchfab_Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "source": 0
+    },
+    {
+      "sampler": 0,
+      "source": 1
+    },
+    {
+      "sampler": 0,
+      "source": 2
+    },
+    {
+      "sampler": 0,
+      "source": 3
+    },
+    {
+      "sampler": 0,
+      "source": 4
+    },
+    {
+      "sampler": 0,
+      "source": 5
+    }
+  ]
+}
