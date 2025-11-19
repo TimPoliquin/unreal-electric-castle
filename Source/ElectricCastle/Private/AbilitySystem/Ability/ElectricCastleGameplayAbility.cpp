@@ -11,6 +11,7 @@
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "GameFramework/Character.h"
 #include "Interaction/CombatInterface.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Player/ElectricCastlePlayerController.h"
 
 
@@ -145,6 +146,30 @@ bool UElectricCastleGameplayAbility::GetComboMontageHitLocation(
 		return true;
 	}
 	return false;
+}
+
+FRotator UElectricCastleGameplayAbility::GetAvatarActorForwardRotator() const
+{
+	return UKismetMathLibrary::MakeRotFromX(GetAvatarActorFromActorInfo()->GetActorForwardVector());
+}
+
+FRotator UElectricCastleGameplayAbility::CalculateRotationToTarget(const AActor* Target, const FVector StartingLocation, const float ProjectileSpeed, const bool bAffectedByGravity) const
+{
+	if (!Target)
+	{
+		return GetAvatarActorForwardRotator();
+	}
+	FRotator Rotation = UKismetMathLibrary::FindLookAtRotation(StartingLocation, Target->GetActorLocation());
+	if (bAffectedByGravity)
+	{
+		if (float PitchOverride; UElectricCastleAbilitySystemLibrary::CalculatePitchToHitTarget(StartingLocation, Target->GetActorLocation(), ProjectileSpeed, PitchOverride))
+		{
+			Rotation.Pitch = PitchOverride;
+			return Rotation;
+		}
+		return GetAvatarActorForwardRotator();
+	}
+	return Rotation;
 }
 
 void UElectricCastleGameplayAbility::FaceHitTarget_Implementation(const FHitResult& HitResult)

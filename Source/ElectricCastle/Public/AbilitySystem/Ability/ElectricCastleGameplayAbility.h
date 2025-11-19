@@ -7,6 +7,8 @@
 #include "Utils/RichTextMacros.h"
 #include "ElectricCastleGameplayAbility.generated.h"
 
+struct FSphereTraceParams;
+
 USTRUCT(BlueprintType)
 struct ELECTRICCASTLE_API FAbilityCooldownConfig
 {
@@ -132,6 +134,11 @@ protected:
 		const FComboAbilityConfig& ComboConfigs,
 		FVector& ComboHitLocation
 	) const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FRotator CalculateRotationToTarget(const AActor* Target, FVector StartingLocation, float ProjectileSpeed = 0, bool bAffectedByGravity = false) const;
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FRotator GetAvatarActorForwardRotator() const;
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category="Properties")
