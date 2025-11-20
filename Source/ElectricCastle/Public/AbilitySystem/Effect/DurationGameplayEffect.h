@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameplayEffect.h"
-#include "CooldownGameplayEffect.generated.h"
+#include "DurationGameplayEffect.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class ELECTRICCASTLE_API UCooldownGameplayEffect : public UGameplayEffect
+class ELECTRICCASTLE_API UDurationGameplayEffect : public UGameplayEffect
 {
 	GENERATED_BODY()
 
 public:
-	UCooldownGameplayEffect();
+	UDurationGameplayEffect();
 };

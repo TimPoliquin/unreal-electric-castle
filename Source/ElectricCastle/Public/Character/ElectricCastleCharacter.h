@@ -8,6 +8,7 @@
 #include "AbilitySystem/AttributeChangeDelegates.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemInterface.h"
 #include "Actor/CollidableInterface.h"
+#include "Actor/Mesh/SocketManagerActor.h"
 #include "Interaction/CombatInterface.h"
 #include "ElectricCastleCharacter.generated.h"
 
@@ -27,7 +28,8 @@ UCLASS(Abstract, Blueprintable)
 class ELECTRICCASTLE_API AElectricCastleCharacter : public ACharacter, public IAbilitySystemInterface,
                                                     public IElectricCastleAbilitySystemInterface,
                                                     public ICombatInterface,
-                                                    public ICollidableInterface
+                                                    public ICollidableInterface,
+                                                    public ISocketManagerActor
 {
 	GENERATED_BODY()
 
@@ -56,6 +58,8 @@ public:
 	virtual bool IsDead_Implementation() const override;
 	virtual UNiagaraSystem* GetBloodEffect_Implementation() override;
 	virtual int32 GetXPReward_Implementation() const override;
+	virtual AActor* GetWeapon_Implementation() const override;
+
 
 	virtual FOnDeathSignature& GetOnDeathDelegate() override
 	{
@@ -80,11 +84,6 @@ public:
 	virtual void ChangeMinionCount_Implementation(const int32 Delta) override;
 	virtual void ApplyDeathImpulse(const FVector& DeathImpulse) override;
 
-	virtual USkeletalMeshComponent* GetWeapon_Implementation() const override
-	{
-		return nullptr;
-	}
-
 	virtual void SetActiveAbilityTag_Implementation(const FGameplayTag& InActiveAbilityTag) override
 	{
 		ActiveAbilityTag = InActiveAbilityTag;
@@ -103,6 +102,11 @@ public:
 	/** Start ICollidableInterface **/
 	virtual UShapeComponent* GetPrimaryCollisionComponent() const override;
 	/** End ICollidableInterface **/
+
+	/** Start ISocketManagerActor **/
+	virtual USocketManagerComponent* GetSocketManagerComponent_Implementation() const override;
+	/** End ISocketManagerActor **/
+
 
 	UFUNCTION(NetMulticast, Reliable)
 	virtual void MulticastHandleDeath();
@@ -134,8 +138,8 @@ protected:
 	/** Dissolve Effect */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UDissolveEffectComponent> CharacterDissolveComponent;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	TObjectPtr<UDissolveEffectComponent> WeaponDissolveComponent;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<USocketManagerComponent> SocketManagerComponent;
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Dissolve")
 	void Dissolve() const;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Combat")

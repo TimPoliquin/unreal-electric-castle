@@ -9,7 +9,7 @@
 #include "Engine/DataAsset.h"
 #include "PlayerFormConfig.generated.h"
 
-class AEquipmentActor;
+class ABasicEquipmentActor;
 class UGroomComponent;
 class UGroomBindingAsset;
 class UGroomAsset;
@@ -110,8 +110,6 @@ struct ELECTRICCASTLE_API FPlayerFormConfigRow
 	TSoftObjectPtr<UTexture2D> PortraitImage;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FGameplayTag WeaponTag = FGameplayTag::EmptyTag;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FName WeaponHandSocketName = FName("Socket_Hand_Right");
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(Categories="Abilities"))
 	TArray<FGameplayTag> Abilities;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)

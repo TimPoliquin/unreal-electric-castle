@@ -7,7 +7,9 @@
 #include "Abilities/Tasks/AbilityTask.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 #include "AbilitySystem/ElectricCastleAttributeSet.h"
-#include "AbilitySystem/Effect/CooldownGameplayEffect.h"
+#include "AbilitySystem/Effect/DurationGameplayEffect.h"
+#include "Actor/Mesh/SocketManagerActor.h"
+#include "Actor/Mesh/SocketManagerComponent.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "GameFramework/Character.h"
 #include "Interaction/CombatInterface.h"
@@ -131,18 +133,10 @@ bool UElectricCastleGameplayAbility::GetComboMontageHitLocation(
 	FVector& ComboHitLocation
 ) const
 {
-	const USkeletalMeshComponent* MeshComponent = nullptr;
-	if (ComboConfig.bIsWeaponAbility)
+	const AActor* AttackActor = ComboConfig.bIsWeaponAbility ? ICombatInterface::GetWeapon(GetAvatarActorFromActorInfo()) : GetAvatarActorFromActorInfo();
+	if (const USocketManagerComponent* SocketManagerComponent = ISocketManagerActor::GetSocketManagerComponent(AttackActor))
 	{
-		MeshComponent = ICombatInterface::GetWeapon(GetAvatarActorFromActorInfo());
-	}
-	else if (const ACharacter* Character = Cast<ACharacter>(GetAvatarActorFromActorInfo()))
-	{
-		MeshComponent = Character->GetMesh();
-	}
-	if (MeshComponent)
-	{
-		ComboHitLocation = MeshComponent->GetSocketLocation(ComboConfig.SocketName);
+		ComboHitLocation = SocketManagerComponent->GetSocketLocation(ComboConfig.SocketTag);
 		return true;
 	}
 	return false;
@@ -220,32 +214,9 @@ void UElectricCastleGameplayAbility::ApplyCustomCooldown() const
 		UE_LOG(LogElectricCastle, Warning, TEXT("[%s] CooldownConfig is invalid."), *GetName());
 		return;
 	}
-	if (UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(
-		GetAvatarActorFromActorInfo()
-	))
-	{
-		// Build a GameplayEffectSpec on the fly
-		FGameplayEffectSpecHandle SpecHandle = ASC->MakeOutgoingSpec(
-			UCooldownGameplayEffect::StaticClass(),
-			// base GE class
-			GetAbilityLevel(),
-			// level
-			ASC->MakeEffectContext() // context
-		);
-
-		if (SpecHandle.IsValid())
-		{
-			if (FGameplayEffectSpec* Spec = SpecHandle.Data.Get())
-			{
-				// Set duration
-				Spec->SetDuration(CooldownConfig.Duration.GetValueAtLevel(GetAbilityLevel()), true);
-				// 1. Add as an asset tag (tag belongs to the GE itself)
-				Spec->AddDynamicAssetTag(CooldownConfig.CooldownTag);
-				// 2. Grant to the target actor (tag is applied to ASC while GE is active)
-				Spec->DynamicGrantedTags.AddTag(CooldownConfig.CooldownTag);
-				// Apply to self
-				ASC->ApplyGameplayEffectSpecToSelf(*Spec);
-			}
-		}
-	}
+	UElectricCastleAbilitySystemLibrary::ApplyDurationEffectByTag(
+		GetAvatarActorFromActorInfo(),
+		CooldownConfig.CooldownTag,
+		CooldownConfig.Duration.GetValueAtLevel(GetAbilityLevel()),
+		GetAbilityLevel());
 }

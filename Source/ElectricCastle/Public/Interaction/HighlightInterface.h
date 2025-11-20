@@ -28,6 +28,8 @@ public:
 	void UnHighlightActor();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	bool SetMoveToLocation(FVector& OutDestination);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void SetStencilDepth(int32 StencilDepth);
 
 	static void HighlightActor(UObject* Actor);
 	static void UnHighlightActor(UObject* Actor);

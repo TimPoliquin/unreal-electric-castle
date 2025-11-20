@@ -93,7 +93,7 @@ FVector ICombatInterface::GetCombatSocketLocation(const UObject* Actor, const FG
 	return FVector::ZeroVector;
 }
 
-USkeletalMeshComponent* ICombatInterface::GetWeapon(const UObject* Actor)
+AActor* ICombatInterface::GetWeapon(const UObject* Actor)
 {
 	if (Actor && Actor->Implements<UCombatInterface>())
 	{

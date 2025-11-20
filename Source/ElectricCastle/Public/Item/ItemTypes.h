@@ -6,7 +6,7 @@
 #include "ItemTypes.generated.h"
 
 
-class AEquipmentActor;
+class ABasicEquipmentActor;
 
 UENUM(BlueprintType)
 enum class EItemCategory : uint8
@@ -67,8 +67,11 @@ struct FItemDefinition
 	FGameplayTag UseMessageTag = FGameplayTag::EmptyTag;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Item")
 	TSubclassOf<AActor> ItemClass;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Item", meta=(EditCondition="EquipmentCategory != EEquipmentCategory::None", EditConditionHides))
-	TSubclassOf<AEquipmentActor> EquipmentClass;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Item", meta=(
+		EditCondition="EquipmentCategory != EEquipmentCategory::None",
+		EditConditionHides
+	))
+	TSubclassOf<AActor> EquipmentClass;
 
 	bool IsValid() const
 	{

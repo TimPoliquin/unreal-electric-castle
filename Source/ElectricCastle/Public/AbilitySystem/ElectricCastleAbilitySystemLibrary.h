@@ -213,6 +213,11 @@ public:
 		const FVector& InKnockbackVector
 	);
 
+	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")
+	static FActiveGameplayEffectHandle ApplyDurationEffectByTag(AActor* Actor, const FGameplayTag DurationEffectTag, const float Duration, const int32 Level = 1);
+	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")
+	static FActiveGameplayEffectHandle ApplyInfiniteEffectByTag(AActor* Actor, const FGameplayTag DurationEffectTag, const int32 Level = 1);
+
 	static int GetCharacterLevel(UAbilitySystemComponent* AbilitySystemComponent);
 	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")
 	static FGameplayTag GetAbilityTagFromSpec(const FGameplayAbilitySpec& AbilitySpec);
@@ -377,10 +382,6 @@ public:
 	);
 
 private:
-	static bool GetWidgetControllerParams(
-		const UObject* WorldContextObject,
-		FWidgetControllerParams& FWidgetControllerParams
-	);
 	static AElectricCastleHUD* GetElectricCastleHUD(const UObject* WorldContextObject);
 
 	static void GrantAbilities(

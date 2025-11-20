@@ -312,7 +312,7 @@ void UPlayerFormChangeComponent::OnFormDataLoaded(const FPlayerFormConfigRow& Fo
 			PlayerCharacter
 		))
 		{
-			EquipmentComponent->ChangeWeapon(FormConfigRow.WeaponTag, FormConfigRow.WeaponHandSocketName);
+			EquipmentComponent->ChangeWeapon(FormConfigRow.WeaponTag);
 		}
 	}
 }

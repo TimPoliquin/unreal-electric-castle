@@ -176,6 +176,7 @@ struct FElectricCastleGameplayTags
 	FGameplayTag Combat_Socket_LeftHand;
 	FGameplayTag Combat_Socket_RightHand;
 	FGameplayTag Combat_Socket_Tail;
+	FGameplayTag Combat_Socket_Weapon_Tip;
 
 	/** Player Tags **/
 	FGameplayTag Player_Block_CursorTrace;
@@ -197,6 +198,7 @@ struct FElectricCastleGameplayTags
 	FGameplayTag Player_Equipped_Tool;
 	FGameplayTag Player_Equipped_Tool_FishingRod;
 	FGameplayTag Player_Equipped_Weapon;
+	FGameplayTag Player_Equipped_Weapon_Futureman_Blaster;
 	FGameplayTag Player_POI_Fishing;
 	FGameplayTag Player_POI_Fishing_CanReel;
 	FGameplayTag Player_HUD_Hide;
@@ -215,6 +217,7 @@ struct FElectricCastleGameplayTags
 	/* Equipment Tags */
 	FGameplayTag Item_Type_Equipment_Staff;
 	FGameplayTag Item_Type_Equipment_FishingRod;
+	FGameplayTag Item_Type_Equipment_Futureman_Blaster;
 
 	/* Equipment Tags */
 	FGameplayTag Equipment;

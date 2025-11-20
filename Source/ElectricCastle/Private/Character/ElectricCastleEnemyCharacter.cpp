@@ -41,13 +41,11 @@ AElectricCastleEnemyCharacter::AElectricCastleEnemyCharacter()
 	AttributeSet = CreateDefaultSubobject<UElectricCastleAttributeSet>(TEXT("Enemy Attributes"));
 	HealthWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthBar"));
 	HealthWidget->SetupAttachment(GetRootComponent());
-	Weapon = CreateDefaultSubobject<USkeletalMeshComponent>("Weapon");
-	Weapon->SetupAttachment(GetMesh(), FName("WeaponHandSocket"));
-	Weapon->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	WeaponChildActorComponent = CreateDefaultSubobject<UChildActorComponent>("Weapon");
+	WeaponChildActorComponent->SetupAttachment(GetMesh(), FName("WeaponHandSocket"));
 	OnSpawnTimelineTick.BindDynamic(this, &AElectricCastleEnemyCharacter::SpawnAnimation_Tick);
 	OnSpawnTimelineFinished.BindDynamic(this, &AElectricCastleEnemyCharacter::SpawnAnimation_Finalize);
 	CharacterDissolveComponent = CreateDefaultSubobject<UDissolveEffectComponent>(TEXT("Character Dissolve Component"));
-	WeaponDissolveComponent = CreateDefaultSubobject<UDissolveEffectComponent>(TEXT("Weapon Dissolve Component"));
 	LootSpawnComponent = CreateDefaultSubobject<ULootSpawnComponent>(TEXT("Loot Spawn Component"));
 	Tags.Add(TAG_ENEMY);
 }
@@ -118,9 +116,9 @@ void AElectricCastleEnemyCharacter::BeginPlay()
 	InitializeAttributeDelegates();
 	InitializeStartupAbilities();
 	GetMesh()->SetCustomDepthStencilValue(HighlightCustomDepthStencilValue);
-	if (Weapon)
+	if (AActor* WeaponActor = Execute_GetWeapon(this))
 	{
-		Weapon->SetCustomDepthStencilValue(HighlightCustomDepthStencilValue);
+		Execute_SetStencilDepth(WeaponActor, HighlightCustomDepthStencilValue);
 	}
 	if (bShouldAnimateSpawn)
 	{
@@ -280,19 +278,24 @@ void AElectricCastleEnemyCharacter::PossessedBy(AController* NewController)
 void AElectricCastleEnemyCharacter::HighlightActor_Implementation()
 {
 	GetMesh()->SetRenderCustomDepth(true);
-	if (Weapon)
+	if (AActor* Weapon = Execute_GetWeapon(this); IsValid(Weapon) && Weapon->Implements<UHighlightInterface>())
 	{
-		Weapon->SetRenderCustomDepth(true);
+		Execute_HighlightActor(Weapon);
 	}
 }
 
 void AElectricCastleEnemyCharacter::UnHighlightActor_Implementation()
 {
 	GetMesh()->SetRenderCustomDepth(false);
-	if (Weapon)
+	if (AActor* Weapon = Execute_GetWeapon(this); IsValid(Weapon) && Weapon->Implements<UHighlightInterface>())
 	{
-		Weapon->SetRenderCustomDepth(false);
+		Execute_UnHighlightActor(Weapon);
 	}
+}
+
+void AElectricCastleEnemyCharacter::SetStencilDepth_Implementation(int32 StencilDepth)
+{
+	GetMesh()->SetCustomDepthStencilValue(StencilDepth);
 }
 
 int32 AElectricCastleEnemyCharacter::GetXPReward_Implementation() const
@@ -300,9 +303,9 @@ int32 AElectricCastleEnemyCharacter::GetXPReward_Implementation() const
 	return UElectricCastleAbilitySystemLibrary::GetXPReward(this, CharacterClass, Level);
 }
 
-USkeletalMeshComponent* AElectricCastleEnemyCharacter::GetWeapon_Implementation() const
+AActor* AElectricCastleEnemyCharacter::GetWeapon_Implementation() const
 {
-	return Weapon;
+	return WeaponChildActorComponent->GetChildActor();
 }
 
 TArray<FName> AElectricCastleEnemyCharacter::GetTargetTagsToIgnore_Implementation() const

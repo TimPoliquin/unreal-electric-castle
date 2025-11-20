@@ -65,6 +65,7 @@ public:
 	TArray<FName> GetTargetTagsToIgnore() const;
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	TArray<FTaggedMontage> GetAttackMontages() const;
+	UE_DEPRECATED(5.7, "ICombatInterface::GetCombatSocketLocation is deprecated. Use ISocketManagerActor instead!")
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	FVector GetCombatSocketLocation(const FGameplayTag& MontageTag) const;
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
@@ -92,7 +93,7 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void ClearFacingTarget();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	USkeletalMeshComponent* GetWeapon() const;
+	AActor* GetWeapon() const;
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	FGameplayTag GetHitReactAbilityTagByDamageType(const FGameplayTag& DamageTypeTag) const;
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
@@ -120,8 +121,9 @@ public:
 	static void ClearActiveAbilityTag(UObject* Actor);
 	static void UpdateFacingTarget(UObject* Actor, const FVector& FacingTarget);
 	static void ClearFacingTarget(UObject* Actor);
+	UE_DEPRECATED(5.7, "ICombatInterface::GetCombatSocketLocation is deprecated. Use ISocketManagerActor instead!")
 	static FVector GetCombatSocketLocation(const UObject* Actor, const FGameplayTag& SocketTag);
-	static USkeletalMeshComponent* GetWeapon(const UObject* Actor);
+	static AActor* GetWeapon(const UObject* Actor);
 	static FGameplayTag GetHitReactAbilityTagByDamageType(const UObject* Actor, const FGameplayTag& DamageTypeTag);
 	static bool IsHitReacting(const UObject* Actor);
 };

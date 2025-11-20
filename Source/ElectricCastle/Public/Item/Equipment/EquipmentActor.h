@@ -3,38 +3,44 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ActiveGameplayEffectHandle.h"
-#include "Item/ItemTypes.h"
-#include "GameFramework/Actor.h"
+#include "GameplayTagContainer.h"
+#include "UObject/Interface.h"
 #include "EquipmentActor.generated.h"
 
-class UGameplayEffect;
+// This class does not need to be modified.
+UINTERFACE()
+class UEquipmentActor : public UInterface
+{
+	GENERATED_BODY()
+};
 
-UCLASS(Abstract, Blueprintable)
-class ELECTRICCASTLE_API AEquipmentActor : public AActor
+/**
+ * 
+ */
+class ELECTRICCASTLE_API IEquipmentActor
 {
 	GENERATED_BODY()
 
+	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	AEquipmentActor();
-
-	USkeletalMeshComponent* GetMesh() const;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	bool IsEquipped() const;
-	virtual void Equip(AActor* InOwner);
-	virtual void UnEquip(AActor* InOwner);
-	FGameplayTag GetItemType() const { return ItemType; }
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	FGameplayTag GetItemType() const;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void Equip(AActor* InOwner);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void Unequip(AActor* InOwner);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void Attach(AActor* InOwner);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void Detach();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void AddImpulse(const FVector Impulse);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void Show();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void Hide();
 
-protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Item", meta=(Categories="Item.Type"))
-	FGameplayTag ItemType;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Item")
-	TSubclassOf<UGameplayEffect> EquipGameplayEffect;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TObjectPtr<USkeletalMeshComponent> MeshComponent;
-
-private:
-	UPROPERTY()
-	FActiveGameplayEffectHandle EquippedHandle;
-	bool bIsEquipped;
+	static FGameplayTag GetItemType(const UObject* Object);
 };

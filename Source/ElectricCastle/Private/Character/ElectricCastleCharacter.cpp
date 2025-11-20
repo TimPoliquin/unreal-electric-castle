@@ -4,16 +4,17 @@
 #include "Character/ElectricCastleCharacter.h"
 
 #include "AbilitySystemComponent.h"
-#include "NiagaraFunctionLibrary.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
-#include "AbilitySystem/ElectricCastleAttributeSet.h"
 #include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
 #include "AbilitySystem/Passive/PassiveNiagaraComponent.h"
+#include "Actor/Effect/DissolvableActor.h"
 #include "Actor/Effect/DissolveEffectComponent.h"
+#include "Actor/Mesh/SocketManagerComponent.h"
 #include "ElectricCastle/ElectricCastle.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Item/Equipment/EquipmentActor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Tags/ElectricCastleGameplayTags.h"
@@ -39,6 +40,7 @@ AElectricCastleCharacter::AElectricCastleCharacter()
 	ShockDebuffComponent = CreateDefaultSubobject<UDebuffNiagaraComponent>(TEXT("Shock Debuff Niagara Component"));
 	ShockDebuffComponent->SetupAttachment(EffectAttachComponent);
 	ShockDebuffComponent->DebuffTag = FElectricCastleGameplayTags::Get().Effect_Debuff_Type_Shock;
+	SocketManagerComponent = CreateDefaultSubobject<USocketManagerComponent>(TEXT("Socket Manager Component"));
 	HaloOfProtectionNiagaraComponent = CreateDefaultSubobject<UPassiveNiagaraComponent>(
 		TEXT("Halo of Protection Niagara Component")
 	);
@@ -81,6 +83,11 @@ UShapeComponent* AElectricCastleCharacter::GetPrimaryCollisionComponent() const
 	return GetCapsuleComponent();
 }
 
+USocketManagerComponent* AElectricCastleCharacter::GetSocketManagerComponent_Implementation() const
+{
+	return SocketManagerComponent;
+}
+
 void AElectricCastleCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -106,10 +113,13 @@ FVector AElectricCastleCharacter::GetCombatSocketLocation_Implementation(const F
 	))
 	{
 		const FName& SocketName = ActiveMontageDef->SocketName;
-		USkeletalMeshComponent* Weapon = Execute_GetWeapon(this);
-		if (IsValid(Weapon) && Weapon->HasAnySockets() && Weapon->GetSocketByName(SocketName))
+		AActor* Weapon = Execute_GetWeapon(this);
+		if (USocketManagerComponent* WeaponSocketManagerComponent = GetSocketManagerComponent(Execute_GetWeapon(this)))
 		{
-			return Weapon->GetSocketLocation(SocketName);
+			if (WeaponSocketManagerComponent->HasSocket(ActiveMontageDef->SocketTag))
+			{
+				return WeaponSocketManagerComponent->GetSocketLocation(ActiveMontageDef->SocketTag);
+			}
 		}
 		if (GetMesh()->GetSocketByName(SocketName))
 		{
@@ -190,11 +200,7 @@ void AElectricCastleCharacter::Dissolve_Implementation() const
 		CharacterDissolveComponent->SetTargetMeshComponent(GetMesh());
 		CharacterDissolveComponent->PlayTimelineFromStart();
 	}
-	if (UMeshComponent* WeaponMesh = Execute_GetWeapon(this); WeaponDissolveComponent && WeaponMesh)
-	{
-		WeaponDissolveComponent->SetTargetMeshComponent(WeaponMesh);
-		WeaponDissolveComponent->PlayTimelineFromStart();
-	}
+	IDissolvableActor::Dissolve(Execute_GetWeapon(this));
 }
 
 AActor* AElectricCastleCharacter::GetAvatar_Implementation()
@@ -231,10 +237,6 @@ FTaggedMontage AElectricCastleCharacter::GetTagMontageByTag_Implementation(const
 
 void AElectricCastleCharacter::Die()
 {
-	if (USkeletalMeshComponent* Weapon = Execute_GetWeapon(this); IsValid(Weapon))
-	{
-		Weapon->DetachFromComponent(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
-	}
 	MulticastHandleDeath();
 }
 
@@ -253,6 +255,11 @@ int32 AElectricCastleCharacter::GetXPReward_Implementation() const
 	return 0;
 }
 
+AActor* AElectricCastleCharacter::GetWeapon_Implementation() const
+{
+	return nullptr;
+}
+
 int32 AElectricCastleCharacter::GetMinionCount_Implementation() const
 {
 	return MinionCount;
@@ -266,9 +273,9 @@ void AElectricCastleCharacter::ChangeMinionCount_Implementation(const int32 Delt
 void AElectricCastleCharacter::ApplyDeathImpulse(const FVector& DeathImpulse)
 {
 	GetMesh()->AddImpulse(DeathImpulse, NAME_None, true);
-	if (USkeletalMeshComponent* Weapon = Execute_GetWeapon(this))
+	if (AActor* Weapon = Execute_GetWeapon(this); IsValid(Weapon) && Weapon->Implements<UEquipmentActor>())
 	{
-		Weapon->AddImpulse(DeathImpulse, NAME_None, true);
+		IEquipmentActor::Execute_AddImpulse(Weapon, DeathImpulse);
 	}
 }
 
@@ -279,11 +286,10 @@ void AElectricCastleCharacter::MulticastHandleDeath_Implementation()
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, DeathSound, GetActorLocation(), GetActorRotation());
 	}
-	if (USkeletalMeshComponent* Weapon = Execute_GetWeapon(this))
+	if (AActor* Weapon = Execute_GetWeapon(this); IsValid(Weapon) && Weapon->Implements<UEquipmentActor>())
 	{
-		Weapon->SetSimulatePhysics(true);
-		Weapon->SetEnableGravity(true);
-		Weapon->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+		IEquipmentActor::Execute_Unequip(Weapon, this);
+		IEquipmentActor::Execute_Detach(Weapon);
 	}
 	GetMesh()->SetSimulatePhysics(true);
 	GetMesh()->SetEnableGravity(true);

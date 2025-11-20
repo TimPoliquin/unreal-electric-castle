@@ -34,8 +34,8 @@ struct ELECTRICCASTLE_API FComboAbilityConfig
 	FGameplayTag MontageEventTag = FGameplayTag::EmptyTag;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	bool bIsWeaponAbility = true;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	FName SocketName = NAME_None;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(Categories="Combat.Socket"))
+	FGameplayTag SocketTag = FGameplayTag::EmptyTag;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	bool bOverrideAbilityImpactRadius = false;
 	UPROPERTY(

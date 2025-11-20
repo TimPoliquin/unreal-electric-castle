@@ -13,6 +13,7 @@
 #include "Player/Form/FormChangeActorInterface.h"
 #include "Player/Form/PlayerFormChangeComponent.h"
 #include "LiveLinkTypes.h"
+#include "Actor/Mesh/SocketManagerTypes.h"
 #include "Player/Equipment/EquipmentManagerInterface.h"
 #include "ElectricCastlePlayerCharacter.generated.h"
 
@@ -73,6 +74,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void PostInitializeComponents() override;
 	virtual void FaceRotation(FRotator NewControlRotation, float DeltaTime = 0) override;
 	virtual UElectricCastleAttributeSet* GetAttributeSet() const override;
 
@@ -95,7 +97,7 @@ public:
 	// ICombatInterface
 	virtual TArray<FName> GetTargetTagsToIgnore_Implementation() const override;
 	virtual void Die() override;
-	virtual USkeletalMeshComponent* GetWeapon_Implementation() const override;
+	virtual AActor* GetWeapon_Implementation() const override;
 	virtual void UpdateFacingTarget_Implementation(const FVector& InFacingTarget) override;
 	virtual void ClearFacingTarget_Implementation() override;
 
@@ -218,6 +220,10 @@ protected:
 	FVector FacingTarget = FVector::ZeroVector;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="LiveLink")
 	FLiveLinkCharacterConfig LiveLinkConfig;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties|Socket")
+	FSocketConfig LeftHandConfig;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties|Socket")
+	FSocketConfig RightHandConfig;
 
 private:
 	UPROPERTY()

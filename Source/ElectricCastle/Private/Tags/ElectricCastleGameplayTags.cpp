@@ -486,6 +486,10 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FName("Combat.Socket.Tail"),
 		FString("Tail Socket")
 	);
+	Instance.Combat_Socket_Weapon_Tip = TagManager.AddNativeGameplayTag(
+		FName("Combat.Socket.Weapon.Tip"),
+		FString("Weapon Tip Socket")
+	);
 
 	/**
 	 *Montage Attack Tags
@@ -540,6 +544,10 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 	Instance.Player_Equipped_Weapon = TagManager.AddNativeGameplayTag(
 		FName("Player.Equipped.Weapon"),
 		FString("Player has a weapon equipped")
+	);
+	Instance.Player_Equipped_Weapon_Futureman_Blaster = TagManager.AddNativeGameplayTag(
+		FName("Player.Equipped.Weapon.Futureman.Blaster"),
+		FString("Player has the Futureman's Blaster weapon equipped")
 	);
 	Instance.Player_Form = TagManager.AddNativeGameplayTag(FName("Player.Form"), FString("Player form root tag"));
 	Instance.Player_Form_Barbarian = TagManager.AddNativeGameplayTag(
@@ -613,6 +621,11 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FName("Item.Type.Equipment.Staff"),
 		FString("Staff - used for magic!")
 	);
+	Instance.Item_Type_Equipment_Futureman_Blaster
+		= TagManager.AddNativeGameplayTag(
+			FName("Item.Type.Equipment.Futureman.Blaster"),
+			FString("Blaster - used by the Futureman")
+		);
 
 	Instance.Equipment = TagManager.AddNativeGameplayTag(FName("Equipment"), FString("Equipment root tag"));
 	Instance.Equipment_Type = TagManager.AddNativeGameplayTag(

@@ -1,9 +1,9 @@
 // Copyright Alien Shores
 
 
-#include "CooldownGameplayEffect.h"
+#include "AbilitySystem/Effect/DurationGameplayEffect.h"
 
-UCooldownGameplayEffect::UCooldownGameplayEffect()
+UDurationGameplayEffect::UDurationGameplayEffect()
 {
 	DurationPolicy = EGameplayEffectDurationType::HasDuration;
 	Period = NO_PERIOD;

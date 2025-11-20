@@ -11,6 +11,8 @@
 #include "AbilitySystem/ElectricCastleAttributeSet.h"
 #include "AbilitySystem/Data/AbilityInfo.h"
 #include "AbilitySystem/Data/CharacterClassInfo.h"
+#include "AbilitySystem/Effect/DurationGameplayEffect.h"
+#include "AbilitySystem/Effect/InfiniteGameplayEffect.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Character/ElectricCastleCharacter.h"
 #include "Engine/OverlapResult.h"
@@ -1291,4 +1293,60 @@ void UElectricCastleAbilitySystemLibrary::SetKnockbackVector(
 	{
 		AuraEffectContext->SetKnockbackVector(InKnockbackVector);
 	}
+}
+
+FActiveGameplayEffectHandle UElectricCastleAbilitySystemLibrary::ApplyDurationEffectByTag(AActor* Actor, const FGameplayTag DurationEffectTag, const float Duration, const int32 Level)
+{
+	if (UAbilitySystemComponent* AbilitySystemComponent = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Actor))
+	{
+		// Build a GameplayEffectSpec on the fly
+		const FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(
+			UDurationGameplayEffect::StaticClass(),
+			Level,
+			AbilitySystemComponent->MakeEffectContext()
+		);
+
+		if (SpecHandle.IsValid())
+		{
+			if (FGameplayEffectSpec* Spec = SpecHandle.Data.Get())
+			{
+				// Set duration
+				Spec->SetDuration(Duration, true);
+				// 1. Add as an asset tag (tag belongs to the GE itself)
+				Spec->AddDynamicAssetTag(DurationEffectTag);
+				// 2. Grant to the target actor (tag is applied to ASC while GE is active)
+				Spec->DynamicGrantedTags.AddTag(DurationEffectTag);
+				// Apply to self
+				return AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*Spec);
+			}
+		}
+	}
+	return FActiveGameplayEffectHandle();
+}
+
+FActiveGameplayEffectHandle UElectricCastleAbilitySystemLibrary::ApplyInfiniteEffectByTag(AActor* Actor, const FGameplayTag DurationEffectTag, const int32 Level)
+{
+	if (UAbilitySystemComponent* AbilitySystemComponent = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Actor))
+	{
+		// Build a GameplayEffectSpec on the fly
+		const FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(
+			UInfiniteGameplayEffect::StaticClass(),
+			Level,
+			AbilitySystemComponent->MakeEffectContext()
+		);
+
+		if (SpecHandle.IsValid())
+		{
+			if (FGameplayEffectSpec* Spec = SpecHandle.Data.Get())
+			{
+				// 1. Add as an asset tag (tag belongs to the GE itself)
+				Spec->AddDynamicAssetTag(DurationEffectTag);
+				// 2. Grant to the target actor (tag is applied to ASC while GE is active)
+				Spec->DynamicGrantedTags.AddTag(DurationEffectTag);
+				// Apply to self
+				return AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*Spec);
+			}
+		}
+	}
+	return FActiveGameplayEffectHandle();
 }
