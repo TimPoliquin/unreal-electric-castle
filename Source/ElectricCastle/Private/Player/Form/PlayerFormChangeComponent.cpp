@@ -164,7 +164,7 @@ void UPlayerFormChangeComponent::FormChange_UpdateAttributes_Implementation(
 	{
 		return;
 	}
-	if (UElectricCastleAbilitySystemComponent* AbilitySystemComponent = Cast<UElectricCastleAbilitySystemComponent>(
+	if (const UElectricCastleAbilitySystemComponent* AbilitySystemComponent = Cast<UElectricCastleAbilitySystemComponent>(
 		UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetOwner())
 	))
 	{
@@ -312,7 +312,7 @@ void UPlayerFormChangeComponent::OnFormDataLoaded(const FPlayerFormConfigRow& Fo
 			PlayerCharacter
 		))
 		{
-			EquipmentComponent->ChangeWeapon(FormConfigRow.WeaponTag, FormConfigRow.WeaponHandSocketName);
+			EquipmentComponent->ChangeWeapon(FormConfigRow.WeaponTag);
 		}
 	}
 }

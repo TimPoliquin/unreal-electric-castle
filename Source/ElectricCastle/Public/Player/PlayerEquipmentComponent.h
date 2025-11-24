@@ -10,7 +10,7 @@
 #include "PlayerEquipmentComponent.generated.h"
 
 class AFishingRodActor;
-class AEquipmentActor;
+class ABasicEquipmentActor;
 
 USTRUCT(BlueprintType)
 struct ELECTRICCASTLE_API FAuraPlayerEquipmentComponentSaveData
@@ -75,8 +75,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Item|Equipment")
 	void UseNothing();
 	void Equip(const EEquipmentSlot& Slot, const FGameplayTag& ItemType);
-	AEquipmentActor* GetWeapon() const;
-	USkeletalMeshComponent* GetWeaponMesh() const;
+	AActor* GetWeapon() const;
 	UFUNCTION(BlueprintCallable, Category="Item|Equipment")
 	FGameplayTag GetToolType() const;
 	UFUNCTION(BlueprintCallable, Category="Item|Equipment")
@@ -90,28 +89,23 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void EquipAnimationCompleted(const EEquipmentSlot Slot);
 	UFUNCTION(BlueprintCallable)
-	void ChangeWeapon(const FGameplayTag& WeaponTag, FName HandSocket);
+	void ChangeWeapon(const FGameplayTag& WeaponTag);
 
 protected:
-	virtual void BeginPlay() override;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category="Inventory|Equipment")
 	EEquipmentUseMode EquipmentUseMode = EEquipmentUseMode::None;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Inventory|Equipment")
 	TMap<EEquipmentSlot, FGameplayTag> EquipmentSlots;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Inventory|Equipment")
-	TMap<EEquipmentSlot, FName> EquipmentSocketNames;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Debug")
 	FString SaveID;
 
 private:
-	USkeletalMeshComponent* GetCharacterMesh() const;
 	UPROPERTY(Replicated)
-	TObjectPtr<AEquipmentActor> Weapon;
+	TObjectPtr<AActor> Weapon;
 	UPROPERTY(Replicated)
-	TObjectPtr<AEquipmentActor> Tool;
+	TObjectPtr<AActor> Tool;
 
-	AEquipmentActor* SpawnEquipment(const EEquipmentSlot& Slot);
+	AActor* SpawnEquipment(const EEquipmentSlot& Slot);
 
 	TArray<uint8> SerializeComponentData() const;
 	bool DeserializeComponentData(const TArray<uint8>& Data);

@@ -90,6 +90,15 @@ void FFormMeshPartConfig::SetToComponent(USkeletalMeshComponent* MeshComponent) 
 	MeshComponent->MarkRenderStateDirty();
 }
 
+void FFormMeshPartConfig::PostLoad() const
+{
+	MeshAsset->GetResourceForRendering(); // Force Initialization
+	for (const FFormMaterialConfig& Material : Materials)
+	{
+		Material.MaterialAsset->EnsureIsComplete();
+	}
+}
+
 bool FFormGroomConfig::IsNull() const
 {
 	return GroomAsset.IsNull() || GroomBindingAsset.IsNull();
@@ -112,6 +121,14 @@ void FFormGroomConfig::AddToLoad(UFormConfigLoadRequest* LoadRequest) const
 	for (const FFormMaterialConfig Material : Materials)
 	{
 		Material.AddToLoad(LoadRequest);
+	}
+}
+
+void FFormGroomConfig::PostLoad() const
+{
+	for (const FFormMaterialConfig& Material : Materials)
+	{
+		Material.MaterialAsset->EnsureIsComplete();
 	}
 }
 
@@ -167,6 +184,19 @@ void FFormMeshConfig::AddToLoad(UFormConfigLoadRequest* LoadRequest) const
 	Moustache.AddToLoad(LoadRequest);
 }
 
+void FFormMeshConfig::PostLoad() const
+{
+	Body.PostLoad();
+	Face.PostLoad();
+	Clothing.PostLoad();
+	Beard.PostLoad();
+	Fuzz.PostLoad();
+	Eyebrows.PostLoad();
+	Eyelashes.PostLoad();
+	Hair.PostLoad();
+	Moustache.PostLoad();
+}
+
 bool FPlayerFormConfigRow::IsLoaded() const
 {
 	return
@@ -180,6 +210,11 @@ bool FPlayerFormConfigRow::IsValid() const
 	return
 		FormTag.IsValid() &&
 		FormId != EPlayerForm::None && FormId != EPlayerForm::Count;
+}
+
+void FPlayerFormConfigRow::PostLoad() const
+{
+	MeshConfig.PostLoad();
 }
 
 UPlayerFormConfig::UPlayerFormConfig()
@@ -197,7 +232,7 @@ UPlayerFormConfig::UPlayerFormConfig()
 
 void UPlayerFormConfig::Initialize()
 {
-	FElectricCastleGameplayTags GameplayTags = FElectricCastleGameplayTags::Get();
+	const FElectricCastleGameplayTags GameplayTags = FElectricCastleGameplayTags::Get();
 	PlayerFormConfigByTag.Add(GameplayTags.Player_Form_Barbarian, Barbarian);
 	PlayerFormConfigByTag.Add(GameplayTags.Player_Form_Egyptian, Egyptian);
 	PlayerFormConfigByTag.Add(GameplayTags.Player_Form_Futureman, Futureman);
@@ -214,6 +249,10 @@ void UPlayerFormConfig::Initialize()
 	PlayerFormConfigByEnum.Add(EPlayerForm::Knight, Knight);
 	PlayerFormConfigByEnum.Add(EPlayerForm::Native, Native);
 	PlayerFormConfigByEnum.Add(EPlayerForm::Roman, Roman);
+	if (bPreload)
+	{
+		Preload();
+	}
 }
 
 FPlayerFormConfigRow UPlayerFormConfig::GetPlayerFormConfigRowByTag(const FGameplayTag& FormTag) const
@@ -273,7 +312,7 @@ FPlayerFormConfigRow UPlayerFormConfig::GetPlayerFormConfigRowByFormId(const EPl
 	return FPlayerFormConfigRow(EPlayerForm::None, FString("INVALID"));
 }
 
-void UPlayerFormConfig::LoadAsync(UFormConfigLoadRequest* LoadRequest)
+void UPlayerFormConfig::LoadAsync(UFormConfigLoadRequest* LoadRequest) const
 {
 	const FPlayerFormConfigRow& Row = GetPlayerFormConfigRowByTag(LoadRequest->FormTag);
 	if (!Row.IsValid())
@@ -288,8 +327,17 @@ void UPlayerFormConfig::LoadAsync(UFormConfigLoadRequest* LoadRequest)
 
 void UPlayerFormConfig::OnLoadComplete(const FPlayerFormConfigRow& Row)
 {
+	Row.PostLoad();
 	if (FormLoadRequests.Contains(Row.FormTag))
 	{
 		FormLoadRequests.Remove(Row.FormTag);
+	}
+}
+
+void UPlayerFormConfig::Preload()
+{
+	for (const auto& Pair : PlayerFormConfigByTag)
+	{
+		LoadAsync(GetOrCreateLoadRequest(Pair.Key));
 	}
 }

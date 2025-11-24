@@ -3,52 +3,13 @@
 
 #include "Item/Equipment/EquipmentActor.h"
 
-#include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 
-
-// Sets default values
-AEquipmentActor::AEquipmentActor()
+// Add default functionality here for any IEquipmentActor functions that are not pure virtual.
+FGameplayTag IEquipmentActor::GetItemType(const UObject* Object)
 {
-	PrimaryActorTick.bCanEverTick = false;
-	bReplicates = true;
-	SetRootComponent(CreateDefaultSubobject<USceneComponent>(TEXT("Root")));
-	MeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Mesh"));
-	MeshComponent->SetupAttachment(GetRootComponent());
-}
-
-USkeletalMeshComponent* AEquipmentActor::GetMesh() const
-{
-	return MeshComponent;
-}
-
-bool AEquipmentActor::IsEquipped() const
-{
-	return bIsEquipped;
-}
-
-void AEquipmentActor::Equip(AActor* InOwner)
-{
-	if (IsEquipped())
+	if (IsValid(Object) && Object->Implements<UEquipmentActor>())
 	{
-		return;
+		return Execute_GetItemType(Object);
 	}
-	bIsEquipped = true;
-	if (EquipGameplayEffect)
-	{
-		EquippedHandle = UElectricCastleAbilitySystemLibrary::ApplyBasicGameplayEffect(InOwner, EquipGameplayEffect);
-	}
-}
-
-void AEquipmentActor::UnEquip(AActor* InOwner)
-{
-	if (!IsEquipped())
-	{
-		return;
-	}
-	bIsEquipped = false;
-	if (EquippedHandle.IsValid())
-	{
-		UElectricCastleAbilitySystemLibrary::RemoveGameplayEffect(InOwner, EquippedHandle);
-		EquippedHandle.Invalidate();
-	}
+	return FGameplayTag::EmptyTag;
 }

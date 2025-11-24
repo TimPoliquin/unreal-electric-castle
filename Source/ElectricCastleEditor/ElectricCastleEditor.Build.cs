@@ -8,27 +8,29 @@ public class ElectricCastleEditor : ModuleRules
 
 		// Core dependencies
 		PublicDependencyModuleNames.AddRange(
-			new string[]
+			new[]
 			{
 				"Core",
 				"CoreUObject",
 				"Engine",
 				"InputCore",
-				"UnrealEd",          // editor utilities
+				"UnrealEd", // editor utilities
 				"AssetRegistry",
-				"HairStrandsCore",   // groom support
+				"HairStrandsCore", // groom support
 				"SkeletalMeshUtilitiesCommon",
 				"ToolMenus"
 			}
 		);
 
 		PrivateDependencyModuleNames.AddRange(
-			new string[]
+			new[]
 			{
 				"Slate",
 				"SlateCore",
 				"EditorFramework",
-				"UnrealEd"
+				"UnrealEd",
+				"BlueprintGraph",
+				"KismetCompiler", "ElectricCastle"
 			}
 		);
 	}

@@ -32,9 +32,10 @@
 #include "GroomComponent.h"
 #include "LiveLinkInstance.h"
 #include "MetaHumanComponentUE.h"
+#include "Actor/Mesh/SocketManagerComponent.h"
 #include "Components/LODSyncComponent.h"
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
-#include "Item/Equipment/EquipmentActor.h"
+#include "Item/Equipment/BasicEquipmentActor.h"
 #include "Materials/MaterialParameterCollectionInstance.h"
 #include "Player/Equipment/WeaponInterface.h"
 
@@ -121,6 +122,10 @@ AElectricCastlePlayerCharacter::AElectricCastlePlayerCharacter()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Target, ECR_Ignore);
 	GetMesh()->SetIsReplicated(true);
 	bReplicates = true;
+	LeftHandConfig.SocketTag = FElectricCastleGameplayTags::Get().Combat_Socket_LeftHand;
+	RightHandConfig.SocketTag = FElectricCastleGameplayTags::Get().Combat_Socket_RightHand;
+	LeftHandConfig.SocketName = TEXT("Socket_Hand_Left");
+	RightHandConfig.SocketName = TEXT("Socket_Hand_Right");
 }
 
 void AElectricCastlePlayerCharacter::BeginPlay()
@@ -236,6 +241,13 @@ void AElectricCastlePlayerCharacter::SetupPlayerInputComponent(UInputComponent* 
 void AElectricCastlePlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+}
+
+void AElectricCastlePlayerCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	SocketManagerComponent->RegisterSocket(GetMesh(), LeftHandConfig.SocketTag, LeftHandConfig.SocketName);
+	SocketManagerComponent->RegisterSocket(GetMesh(), RightHandConfig.SocketTag, RightHandConfig.SocketName);
 }
 
 void AElectricCastlePlayerCharacter::FaceRotation(const FRotator NewControlRotation, const float DeltaTime)
@@ -523,9 +535,9 @@ void AElectricCastlePlayerCharacter::Die()
 	CameraComponent->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 }
 
-USkeletalMeshComponent* AElectricCastlePlayerCharacter::GetWeapon_Implementation() const
+AActor* AElectricCastlePlayerCharacter::GetWeapon_Implementation() const
 {
-	return EquipmentComponent->GetWeaponMesh();
+	return EquipmentComponent->GetWeapon();
 }
 
 void AElectricCastlePlayerCharacter::UpdateFacingTarget_Implementation(const FVector& InFacingTarget)

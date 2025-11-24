@@ -198,37 +198,12 @@ void UMVVM_PlayerState::InitializeDependencies(const AElectricCastlePlayerState*
 		FormChangeComponent->OnPlayerFormDataLoaded.AddDynamic(this, &UMVVM_PlayerState::OnFormChange);
 	}
 	// Setup Vital Attribute Tracking (Health, Mana)
-	UElectricCastleAbilitySystemComponent* AbilitySystemComponent = PlayerState->
-		GetElectricCastleAbilitySystemComponent();
-	const UElectricCastleAttributeSet* AttributeSet = PlayerState->GetAttributeSet();
-	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetHealthAttribute())
-	                      .AddLambda(
-		                      [&](const FOnAttributeChangeData& Data)
-		                      {
-			                      SetHealth(Data.NewValue);
-		                      }
-	                      );
-	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetMaxHealthAttribute())
-	                      .AddLambda(
-		                      [&](const FOnAttributeChangeData& Data)
-		                      {
-			                      SetMaxHealth(Data.NewValue);
-		                      }
-	                      );
-	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetManaAttribute())
-	                      .AddLambda(
-		                      [&](const FOnAttributeChangeData& Data)
-		                      {
-			                      SetMana(Data.NewValue);
-		                      }
-	                      );
-	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetMaxManaAttribute())
-	                      .AddLambda(
-		                      [&](const FOnAttributeChangeData& Data)
-		                      {
-			                      SetMaxMana(Data.NewValue);
-		                      }
-	                      );
+	UElectricCastleAbilitySystemComponent* AbilitySystemComponent = PlayerState->GetElectricCastleAbilitySystemComponent();
+	AttributeSet = PlayerState->GetAttributeSet();
+	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetHealthAttribute()).AddUObject(this, &UMVVM_PlayerState::OnAttributeValueChanged);
+	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetMaxHealthAttribute()).AddUObject(this, &UMVVM_PlayerState::OnAttributeValueChanged);
+	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetManaAttribute()).AddUObject(this, &UMVVM_PlayerState::OnAttributeValueChanged);
+	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetMaxManaAttribute()).AddUObject(this, &UMVVM_PlayerState::OnAttributeValueChanged);
 }
 
 void UMVVM_PlayerState::OnPlayerXPChange(const FIntAttributeChangedPayload& Payload)
@@ -249,4 +224,29 @@ void UMVVM_PlayerState::OnPlayerLevelChange(const FIntAttributeChangedPayload& P
 void UMVVM_PlayerState::OnFormChange(const FPlayerFormConfigRow& Payload)
 {
 	SetPortraitIcon(Payload.PortraitImage.Get());
+}
+
+void UMVVM_PlayerState::OnAttributeValueChanged(const FOnAttributeChangeData& Payload)
+{
+	if (!AttributeSet)
+	{
+		UE_LOG(LogElectricCastle, Error, TEXT("[%s] AttributeSet is null"), *GetName());
+		return;
+	}
+	if (Payload.Attribute == AttributeSet->GetHealthAttribute())
+	{
+		SetHealth(Payload.NewValue);
+	}
+	else if (Payload.Attribute == AttributeSet->GetManaAttribute())
+	{
+		SetMana(Payload.NewValue);
+	}
+	else if (Payload.Attribute == AttributeSet->GetMaxHealthAttribute())
+	{
+		SetMaxHealth(Payload.NewValue);
+	}
+	else if (Payload.Attribute == AttributeSet->GetMaxManaAttribute())
+	{
+		SetMaxMana(Payload.NewValue);
+	}
 }

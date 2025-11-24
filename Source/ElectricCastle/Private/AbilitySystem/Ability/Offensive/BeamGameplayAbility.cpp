@@ -254,8 +254,11 @@ void UBeamGameplayAbility::SpawnBeam(FGameplayEventData Payload)
 	ICombatInterface::SetActiveAbilityTag(GetAvatarActorFromActorInfo(), GetDefaultAbilityTag());
 	AActor* ActorHit = TraceFirstTarget(HitLocation);
 	bool bIsEnemyHit = (IsValid(ActorHit) && ActorHit->Implements<UCombatInterface>());
+	AActor* WeaponActor = ICombatInterface::GetWeapon(GetAvatarActorFromActorInfo());
 	FGameplayCueParameters FirstTargetCueParams = FGameplayCueParameters();
-	FirstTargetCueParams.TargetAttachComponent = ICombatInterface::GetWeapon(GetAvatarActorFromActorInfo());
+	// TODO - This needs to be refactored to get an appropriate socket on the weapon actor.
+	// But that can be a problem for another day.
+	FirstTargetCueParams.TargetAttachComponent = WeaponActor->GetRootComponent();
 	FirstTargetCueParams.Location = bIsEnemyHit
 		                                ? ActorHit->GetActorLocation()
 		                                : HitLocation;
