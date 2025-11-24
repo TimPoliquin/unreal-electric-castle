@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EquipmentActor.h"
+#include "BasicEquipmentActor.h"
 #include "Item/Equipment/FishingBobActor.h"
 #include "FishingRodActor.generated.h"
 
@@ -13,7 +13,7 @@ class AFishingBobActor;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnFishingBobLandedSignature);
 
 UCLASS(Abstract, Blueprintable)
-class ELECTRICCASTLE_API AFishingRodActor : public AEquipmentActor
+class ELECTRICCASTLE_API AFishingRodActor : public ABasicEquipmentActor
 {
 	GENERATED_BODY()
 
@@ -29,7 +29,7 @@ public:
 	void Return();
 	UPROPERTY(BlueprintAssignable)
 	FOnFishingBobLandedSignature OnFishingBobLandedDelegate;
-	virtual void UnEquip(AActor* InOwner) override;
+	virtual void Unequip_Implementation(AActor* InOwner) override;
 	AFishingBobActor* GetFishingBob() const;
 
 protected:

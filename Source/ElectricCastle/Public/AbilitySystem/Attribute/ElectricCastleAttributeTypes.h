@@ -1,5 +1,8 @@
 ﻿#pragma once
 
+#include "CoreMinimal.h"
+#include "AbilitySystemComponent.h"
+#include "GameplayEffectTypes.h"
 #include "ElectricCastleAttributeTypes.generated.h"
 
 #define ATTRIBUTE_ACCESSORS(ClassName, PropertyName) \

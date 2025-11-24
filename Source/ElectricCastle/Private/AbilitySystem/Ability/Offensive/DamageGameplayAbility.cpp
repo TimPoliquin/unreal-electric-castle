@@ -156,11 +156,6 @@ FGameplayCueParameters UDamageGameplayAbility::MakeDefaultGameplayCueParams(cons
 	return CueParams;
 }
 
-FVector UDamageGameplayAbility::GetMontageDamageLocation(const FGameplayTag& MontageTag) const
-{
-	return ICombatInterface::GetCombatSocketLocation(GetAvatarActorFromActorInfo(), MontageTag);
-}
-
 FGameplayCueParameters UDamageGameplayAbility::MakeGameplayCueParamsFromMontageTag(
 	const FGameplayTag& MontageTag,
 	const FVector& ImpactLocation

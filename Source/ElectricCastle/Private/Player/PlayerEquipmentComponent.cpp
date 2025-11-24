@@ -7,9 +7,8 @@
 #include "AbilitySystemComponent.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Game/Save/SaveGameBlueprintFunctionLibrary.h"
-#include "GameFramework/Character.h"
 #include "Item/ItemBlueprintLibrary.h"
-#include "Item/Equipment/EquipmentActor.h"
+#include "Item/Equipment/BasicEquipmentActor.h"
 #include "Item/Equipment/FishingRodActor.h"
 #include "Net/UnrealNetwork.h"
 #include "Tags/ElectricCastleGameplayTags.h"
@@ -93,22 +92,21 @@ void UPlayerEquipmentComponent::UseEquipment_Implementation(const EEquipmentSlot
 
 void UPlayerEquipmentComponent::UseTool()
 {
-	if (IsValid(Weapon))
+	if (IsValid(Weapon) && Weapon->Implements<UEquipmentActor>())
 	{
-		Weapon->SetHidden(true);
-		Weapon->GetMesh()->SetVisibility(false);
-		Weapon->UnEquip(GetOwner());
+		IEquipmentActor::Execute_Hide(Weapon);
+		IEquipmentActor::Execute_Unequip(Weapon, GetOwner());
 	}
 	EquipmentUseMode = EEquipmentUseMode::Tool;
 	if (!IsValid(Tool))
 	{
 		Tool = SpawnEquipment(EEquipmentSlot::Tool);
 	}
-	if (Tool)
+	if (Tool && Tool->Implements<UEquipmentActor>())
 	{
-		Tool->SetHidden(false);
-		Tool->GetMesh()->SetVisibility(true);
-		Tool->Equip(GetOwner());
+		IEquipmentActor::Execute_Show(Tool);
+		IEquipmentActor::Execute_Attach(Tool, GetOwner());
+		IEquipmentActor::Execute_Equip(Tool, GetOwner());
 	}
 	OnUseTool.Broadcast();
 }
@@ -119,22 +117,32 @@ void UPlayerEquipmentComponent::UseWeapon()
 	{
 		return;
 	}
-	if (IsValid(Tool))
+	if (IsValid(Tool) && Tool->Implements<UEquipmentActor>())
 	{
-		Tool->SetHidden(true);
-		Tool->GetMesh()->SetVisibility(false);
-		Tool->UnEquip(GetOwner());
+		IEquipmentActor::Execute_Hide(Tool);
+		IEquipmentActor::Execute_Unequip(Tool, GetOwner());
 	}
 	EquipmentUseMode = EEquipmentUseMode::Weapon;
 	if (!IsValid(Weapon))
 	{
 		Weapon = SpawnEquipment(EEquipmentSlot::Weapon);
 	}
-	if (Weapon)
+	if (Weapon && Weapon->Implements<UEquipmentActor>())
 	{
-		Weapon->SetHidden(false);
-		Weapon->GetMesh()->SetVisibility(true);
-		Weapon->Equip(GetOwner());
+		IEquipmentActor::Execute_Show(Weapon);
+		IEquipmentActor::Execute_Attach(Weapon, GetOwner());
+		IEquipmentActor::Execute_Equip(Weapon, GetOwner());
+	}
+	else
+	{
+		UE_LOG(
+			LogElectricCastle,
+			Error,
+			TEXT("[%s][%s] Failed to spawn equipment for slot [%s]. Check item configuration."),
+			*GetOwner()->GetName(),
+			*GetName(),
+			*UEnum::GetValueAsString(EEquipmentSlot::Weapon)
+		);
 	}
 	OnUseWeapon.Broadcast();
 }
@@ -175,19 +183,9 @@ void UPlayerEquipmentComponent::Equip(const EEquipmentSlot& Slot, const FGamepla
 	}
 }
 
-AEquipmentActor* UPlayerEquipmentComponent::GetWeapon() const
+AActor* UPlayerEquipmentComponent::GetWeapon() const
 {
 	return Weapon;
-}
-
-USkeletalMeshComponent* UPlayerEquipmentComponent::GetWeaponMesh() const
-{
-	if (EquipmentUseMode == EEquipmentUseMode::Weapon && EquipmentSlots.Contains(EEquipmentSlot::Weapon) &&
-		IsValid(Weapon))
-	{
-		return Weapon->GetMesh();
-	}
-	return nullptr;
 }
 
 FGameplayTag UPlayerEquipmentComponent::GetToolType() const
@@ -210,7 +208,7 @@ FGameplayTag UPlayerEquipmentComponent::GetWeaponType() const
 
 AFishingRodActor* UPlayerEquipmentComponent::GetFishingRod() const
 {
-	if (IsValid(Tool) && Tool->GetItemType() == FElectricCastleGameplayTags::Get().Item_Type_Equipment_FishingRod)
+	if (IEquipmentActor::GetItemType(Tool).MatchesTagExact(FElectricCastleGameplayTags::Get().Item_Type_Equipment_FishingRod))
 	{
 		return Cast<AFishingRodActor>(Tool);
 	}
@@ -243,21 +241,17 @@ void UPlayerEquipmentComponent::EquipAnimationCompleted_Implementation(const EEq
 }
 
 
-void UPlayerEquipmentComponent::ChangeWeapon(const FGameplayTag& WeaponTag, const FName HandSocket)
+void UPlayerEquipmentComponent::ChangeWeapon(const FGameplayTag& WeaponTag)
 {
-	if (Weapon)
+	if (Weapon && Weapon->Implements<UEquipmentActor>())
 	{
-		Weapon->UnEquip(GetOwner());
+		IEquipmentActor::Execute_Unequip(Weapon, GetOwner());
 		GetWorld()->DestroyActor(Weapon);
 		Weapon = nullptr;
 	}
 	if (!WeaponTag.IsValid())
 	{
 		return;
-	}
-	if (!HandSocket.IsNone())
-	{
-		EquipmentSocketNames[EEquipmentSlot::Weapon] = HandSocket;
 	}
 	Equip(EEquipmentSlot::Weapon, WeaponTag);
 	if (IsUsingWeapon())
@@ -266,76 +260,23 @@ void UPlayerEquipmentComponent::ChangeWeapon(const FGameplayTag& WeaponTag, cons
 	}
 }
 
-void UPlayerEquipmentComponent::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
-USkeletalMeshComponent* UPlayerEquipmentComponent::GetCharacterMesh() const
-{
-	return Cast<ACharacter>(GetOwner())->GetMesh();
-}
-
-AEquipmentActor* UPlayerEquipmentComponent::SpawnEquipment(const EEquipmentSlot& Slot)
+AActor* UPlayerEquipmentComponent::SpawnEquipment(const EEquipmentSlot& Slot)
 {
 	if (!EquipmentSlots.Contains(Slot))
 	{
 		return nullptr;
 	}
-	USkeletalMeshComponent* CharacterMesh = GetCharacterMesh();
-	if (!IsValid(CharacterMesh))
-	{
-		UE_LOG(
-			LogElectricCastle,
-			Warning,
-			TEXT("[%s] No character mesh set for player %s"),
-			*GetName(),
-			*GetOwner()->GetName()
-		)
-		return nullptr;
-	}
-	const FName SocketName = EquipmentSocketNames[Slot];
-	const FVector SocketLocation = CharacterMesh->GetSocketLocation(SocketName);
-	const FRotator SocketRotation = CharacterMesh->GetSocketRotation(SocketName);
-
 	const FItemDefinition ItemDefinition = UItemBlueprintLibrary::GetItemDefinitionByItemType(
 		this,
 		EquipmentSlots[Slot]
 	);
 	FActorSpawnParameters SpawnParameters;
-	SpawnParameters.Owner = CharacterMesh->GetOwner();
+	SpawnParameters.Owner = GetOwner();
 	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	AEquipmentActor* Equipment = GetWorld()->SpawnActor<AEquipmentActor>(
+	AActor* Equipment = GetWorld()->SpawnActor<AActor>(
 		ItemDefinition.EquipmentClass,
-		SocketLocation,
-		SocketRotation,
 		SpawnParameters
 	);
-	if (!Equipment)
-	{
-		UE_LOG(
-			LogElectricCastle,
-			Error,
-			TEXT("[%s][%s] Failed to spawn equipment for slot [%s]. Check item configuration."),
-			*GetOwner()->GetName(),
-			*GetName(),
-			*ItemDefinition.ItemType.ToString()
-		);
-		return nullptr;
-	}
-	Equipment->AttachToComponent(
-		CharacterMesh,
-		FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-		SocketName
-	);
-	UE_LOG(
-		LogElectricCastle,
-		Warning,
-		TEXT("[%s] Spawned equipment [%s] at socket %s"),
-		GetOwner()->HasAuthority() ? *FString("Server") : *FString("Client"),
-		*Equipment->GetName(),
-		*SocketName.ToString()
-	)
 	return Equipment;
 }
 

@@ -75,9 +75,9 @@ void AFishingRodActor::Return()
 	}
 }
 
-void AFishingRodActor::UnEquip(AActor* InOwner)
+void AFishingRodActor::Unequip_Implementation(AActor* InOwner)
 {
-	Super::UnEquip(InOwner);
+	Super::Unequip_Implementation(InOwner);
 	if (IsValid(BobActor))
 	{
 		BobActor->AttachToActor(this, FAttachmentTransformRules::SnapToTargetNotIncludingScale, RodTipSocket);

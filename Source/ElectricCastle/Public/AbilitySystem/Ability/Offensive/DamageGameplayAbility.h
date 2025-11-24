@@ -66,9 +66,6 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FGameplayCueParameters MakeDefaultGameplayCueParams(const FVector& ImpactLocation) const;
 
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FVector GetMontageDamageLocation(const FGameplayTag& MontageTag) const;
-
 	UFUNCTION(BlueprintCallable)
 	FVector GetTargetsAtImpact(
 		const FGameplayTag& MontageTag,

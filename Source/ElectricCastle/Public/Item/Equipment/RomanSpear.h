@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EquipmentActor.h"
+#include "BasicEquipmentActor.h"
 #include "UObject/Object.h"
 #include "RomanSpear.generated.h"
 
@@ -11,7 +11,7 @@
  * 
  */
 UCLASS()
-class ELECTRICCASTLE_API ARomanSpear : public AEquipmentActor
+class ELECTRICCASTLE_API ARomanSpear : public ABasicEquipmentActor
 {
 	GENERATED_BODY()
 

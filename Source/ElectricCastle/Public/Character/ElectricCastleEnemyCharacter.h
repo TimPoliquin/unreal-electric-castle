@@ -37,6 +37,7 @@ public:
 	// IHighlightInterface
 	virtual void HighlightActor_Implementation() override;
 	virtual void UnHighlightActor_Implementation() override;
+	virtual void SetStencilDepth_Implementation(int32 StencilDepth) override;
 
 	virtual bool SetMoveToLocation_Implementation(FVector& OutDestination) override
 	{
@@ -55,7 +56,7 @@ public:
 
 	/** Start ICombatInterface **/
 	virtual int32 GetXPReward_Implementation() const override;
-	virtual USkeletalMeshComponent* GetWeapon_Implementation() const override;
+	virtual AActor* GetWeapon_Implementation() const override;
 	virtual TArray<FName> GetTargetTagsToIgnore_Implementation() const override;
 	virtual void UpdateFacingTarget_Implementation(const FVector& FacingTarget) override;
 	virtual void Die() override;
@@ -124,9 +125,7 @@ protected:
 	TObjectPtr<UElectricCastleAttributeSet> AttributeSet;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
 	TObjectPtr<UWidgetComponent> HealthWidget;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
-	TObjectPtr<USkeletalMeshComponent> Weapon;
+	TObjectPtr<UChildActorComponent> WeaponChildActorComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	float LifeSpan = 5.f;
