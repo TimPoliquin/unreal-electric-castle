@@ -43,6 +43,7 @@ struct ELECTRICCASTLE_API FFormMeshPartConfig
 	bool IsLoaded() const;
 	void AddToLoad(UFormConfigLoadRequest* LoadRequest) const;
 	void SetToComponent(USkeletalMeshComponent* MeshComponent) const;
+	void PostLoad() const;
 };
 
 USTRUCT(BlueprintType)
@@ -60,6 +61,7 @@ struct ELECTRICCASTLE_API FFormGroomConfig
 	bool IsValid() const;
 	bool IsLoaded() const;
 	void AddToLoad(UFormConfigLoadRequest* LoadRequest) const;
+	void PostLoad() const;
 	void SetToComponent(UGroomComponent* GroomComponent) const;
 };
 
@@ -88,6 +90,7 @@ struct ELECTRICCASTLE_API FFormMeshConfig
 
 	bool IsLoaded() const;
 	void AddToLoad(UFormConfigLoadRequest* LoadRequest) const;
+	void PostLoad() const;
 };
 
 USTRUCT(BlueprintType)
@@ -130,6 +133,7 @@ struct ELECTRICCASTLE_API FPlayerFormConfigRow
 
 	bool IsLoaded() const;
 	bool IsValid() const;
+	void PostLoad() const;
 
 	bool operator==(const FPlayerFormConfigRow& Other) const
 	{
@@ -161,7 +165,7 @@ public:
 	FPlayerFormConfigRow GetPlayerFormConfigRowByFormId(const EPlayerForm FormId) const;
 	UFUNCTION(BlueprintCallable)
 	UFormConfigLoadRequest* GetOrCreateLoadRequest(const FGameplayTag& FormTag);
-	void LoadAsync(UFormConfigLoadRequest* LoadRequest);
+	void LoadAsync(UFormConfigLoadRequest* LoadRequest) const;
 
 	UFUNCTION(BlueprintCallable)
 	TSubclassOf<UGameplayEffect> GetHealthChangeEffect() const { return HealthChangeEffect; }
@@ -190,6 +194,8 @@ protected:
 	FPlayerFormConfigRow Native = FPlayerFormConfigRow(EPlayerForm::Native, TEXT("Native"));
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FPlayerFormConfigRow Roman = FPlayerFormConfigRow(EPlayerForm::Roman, TEXT("Roman"));
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	bool bPreload = false;
 
 private:
 	UPROPERTY()
@@ -200,4 +206,5 @@ private:
 	TMap<FGameplayTag, UFormConfigLoadRequest*> FormLoadRequests;
 	UFUNCTION()
 	void OnLoadComplete(const FPlayerFormConfigRow& Row);
+	void Preload();
 };

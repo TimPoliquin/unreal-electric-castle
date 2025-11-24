@@ -9,7 +9,9 @@
 #include "UObject/Object.h"
 #include "MVVM_PlayerState.generated.h"
 
+class UElectricCastleAttributeSet;
 class AElectricCastlePlayerState;
+struct FOnAttributeChangeData;
 /**
  * 
  */
@@ -77,6 +79,8 @@ protected:
 	bool IsDead = false;
 
 private:
+	UPROPERTY()
+	TObjectPtr<UElectricCastleAttributeSet> AttributeSet;
 	UFUNCTION()
 	void OnPlayerXPChange(const FIntAttributeChangedPayload& Payload);
 	UFUNCTION()
@@ -85,4 +89,5 @@ private:
 	void OnPlayerLevelChange(const FIntAttributeChangedPayload& Payload);
 	UFUNCTION()
 	void OnFormChange(const FPlayerFormConfigRow& Payload);
+	void OnAttributeValueChanged(const FOnAttributeChangeData& Payload);
 };

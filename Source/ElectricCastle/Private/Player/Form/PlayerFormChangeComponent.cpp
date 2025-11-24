@@ -164,7 +164,7 @@ void UPlayerFormChangeComponent::FormChange_UpdateAttributes_Implementation(
 	{
 		return;
 	}
-	if (UElectricCastleAbilitySystemComponent* AbilitySystemComponent = Cast<UElectricCastleAbilitySystemComponent>(
+	if (const UElectricCastleAbilitySystemComponent* AbilitySystemComponent = Cast<UElectricCastleAbilitySystemComponent>(
 		UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetOwner())
 	))
 	{
