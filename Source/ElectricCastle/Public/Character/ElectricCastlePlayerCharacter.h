@@ -15,6 +15,7 @@
 #include "LiveLinkTypes.h"
 #include "Actor/Mesh/SocketManagerTypes.h"
 #include "Player/Equipment/EquipmentManagerInterface.h"
+#include "Player/Form/FormConfigTypes.h"
 #include "ElectricCastlePlayerCharacter.generated.h"
 
 class AElectricCastlePlayerCharacter;

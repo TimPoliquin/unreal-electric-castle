@@ -11,9 +11,8 @@
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "Player/ElectricCastlePlayerState.h"
 #include "Player/InventoryEvents.h"
-#include "Player/Form/FormConfigLoadRequest.h"
 #include "Player/Form/PlayerFormChangeComponent.h"
-#include "Player/Form/PlayerFormConfig.h"
+#include "Player/Form/PlayerFormPrimaryAsset.h"
 #include "Player/Progression/ProgressionComponent.h"
 #include "Tags/ElectricCastleGameplayTags.h"
 
@@ -188,20 +187,13 @@ void UOverlayWidgetController::OnPlayerInventoryFull(const FGameplayTag& ItemTyp
 {
 }
 
-void UOverlayWidgetController::OnPortraitLoaded(const FPlayerFormConfigRow& Row)
-{
-	OnOverlayPortraitChangedDelegate.Broadcast(FOverlayPortraitChangedPayload(Row.PortraitImage.Get()));
-}
-
 void UOverlayWidgetController::OnFormChange(const FPlayerFormChangeEventPayload& Payload)
 {
 	if (const UElectricCastleGameDataSubsystem* GameData = UElectricCastleGameDataSubsystem::Get(GetPlayerState()))
 	{
-		if (UPlayerFormConfig* FormConfig = GameData->GetPlayerFormConfig())
+		if (const UPlayerFormPrimaryAsset* FormAsset = GameData->GetPlayerFormConfigByTag(Payload.NewFormTag))
 		{
-			UFormConfigLoadRequest* LoadRequest = FormConfig->GetOrCreateLoadRequest(Payload.NewFormTag);
-			LoadRequest->OnLoadComplete.AddUniqueDynamic(this, &UOverlayWidgetController::OnPortraitLoaded);
-			FormConfig->LoadAsync(LoadRequest);
+			OnOverlayPortraitChangedDelegate.Broadcast(FOverlayPortraitChangedPayload(FormAsset->PortraitImage.Get()));
 		}
 	}
 }

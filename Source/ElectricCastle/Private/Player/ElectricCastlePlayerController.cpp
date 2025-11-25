@@ -20,10 +20,10 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Input/ElectricCastleInputComponent.h"
 #include "Net/UnrealNetwork.h"
-#include "Player/Form/PlayerFormConfig.h"
 #include "Tags/ElectricCastleGameplayTags.h"
 #include "UI/Widget/DamageTextComponent.h"
 #include "Player/ElectricCastlePlayerState.h"
+#include "Player/Form/PlayerFormPrimaryAsset.h"
 
 AElectricCastlePlayerController::AElectricCastlePlayerController()
 {
@@ -417,16 +417,15 @@ void AElectricCastlePlayerController::HandleFormChangeInputAction(const FInputAc
 	const int32 FormId = FMath::RoundToInt32(InputActionValue.Get<float>());
 	if (const UElectricCastleGameDataSubsystem* GameData = UElectricCastleGameDataSubsystem::Get(this))
 	{
-		if (const UPlayerFormConfig* FormConfig = GameData->GetPlayerFormConfig())
+		if (const UPlayerFormPrimaryAsset* FormConfig = GameData->GetPlayerFormConfigById(FormId))
 		{
-			const FPlayerFormConfigRow& FormRow = FormConfig->GetPlayerFormConfigRowByFormId(FormId);
-			if (!FormRow.IsValid())
+			if (!FormConfig->IsValid())
 			{
 				return;
 			}
 			if (UElectricCastleAbilitySystemComponent* LocalAbilitySystem = GetAbilitySystemComponent())
 			{
-				LocalAbilitySystem->TryActivateAbilitiesByTag(FormRow.FormAbilityTag.GetSingleTagContainer());
+				LocalAbilitySystem->TryActivateAbilitiesByTag(FormConfig->FormAbilityTag.GetSingleTagContainer());
 			}
 		}
 	}

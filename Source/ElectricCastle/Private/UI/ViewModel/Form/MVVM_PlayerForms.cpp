@@ -7,7 +7,7 @@
 #include "Player/ElectricCastlePlayerController.h"
 #include "Player/ElectricCastlePlayerState.h"
 #include "Player/Form/PlayerFormChangeComponent.h"
-#include "Player/Form/PlayerFormConfig.h"
+#include "Player/Form/PlayerFormPrimaryAsset.h"
 
 
 #include "UI/ViewModel/Form/MVVM_PlayerForm.h"
@@ -86,14 +86,13 @@ void UMVVM_PlayerForms::CreatePlayerFormViewModels(AElectricCastlePlayerState* I
 	{
 		if (const UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(InPlayerState))
 		{
-			const UPlayerFormConfig* FormConfig = GameDataSubsystem->GetPlayerFormConfig();
 			for (const EPlayerForm& Form : TEnumRange<EPlayerForm>())
 			{
 				PlayerFormViewModels.Add(
 					Form,
 					CreatePlayerFormViewModel(
 						InPlayerState,
-						FormConfig->GetPlayerFormConfigRowByFormId(Form)
+						GameDataSubsystem->GetPlayerFormConfigById(Form)
 					)
 				);
 			}
@@ -102,16 +101,16 @@ void UMVVM_PlayerForms::CreatePlayerFormViewModels(AElectricCastlePlayerState* I
 }
 
 UMVVM_PlayerForm* UMVVM_PlayerForms::CreatePlayerFormViewModel(
-	AElectricCastlePlayerState* InPlayerState,
-	const FPlayerFormConfigRow& FormConfigRow
+	const AElectricCastlePlayerState* InPlayerState,
+	const UPlayerFormPrimaryAsset* FormAsset
 )
 {
 	const FString ViewModelName = FString::Printf(
 		TEXT("FormViewModel_%s"),
-		*UEnum::GetValueAsString(FormConfigRow.FormId)
+		*UEnum::GetValueAsString(FormAsset->FormId)
 	);
 	UMVVM_PlayerForm* ViewModel = NewObject<UMVVM_PlayerForm>(this, PlayerFormViewModelClass, FName(ViewModelName));
-	ViewModel->InitializeDependencies(InPlayerState, FormConfigRow);
+	ViewModel->InitializeDependencies(InPlayerState, FormAsset);
 	return ViewModel;
 }
 

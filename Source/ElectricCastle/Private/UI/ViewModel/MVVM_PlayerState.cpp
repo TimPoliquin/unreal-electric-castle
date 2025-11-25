@@ -7,9 +7,9 @@
 #include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
 #include "AbilitySystem/ElectricCastleAttributeSet.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
+#include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "Player/ElectricCastlePlayerState.h"
 #include "Player/Form/FormChangeActorInterface.h"
-#include "Player/Form/FormConfigLoadRequest.h"
 #include "Player/Progression/ProgressionComponent.h"
 
 int32 UMVVM_PlayerState::GetPlayerIndex() const
@@ -195,7 +195,7 @@ void UMVVM_PlayerState::InitializeDependencies(const AElectricCastlePlayerState*
 		PlayerState->GetPawn()
 	))
 	{
-		FormChangeComponent->OnPlayerFormDataLoaded.AddDynamic(this, &UMVVM_PlayerState::OnFormChange);
+		FormChangeComponent->OnPlayerFormChange.AddDynamic(this, &UMVVM_PlayerState::OnFormChange);
 	}
 	// Setup Vital Attribute Tracking (Health, Mana)
 	UElectricCastleAbilitySystemComponent* AbilitySystemComponent = PlayerState->GetElectricCastleAbilitySystemComponent();
@@ -221,9 +221,12 @@ void UMVVM_PlayerState::OnPlayerLevelChange(const FIntAttributeChangedPayload& P
 	SetLevel(Payload.NewValue);
 }
 
-void UMVVM_PlayerState::OnFormChange(const FPlayerFormConfigRow& Payload)
+void UMVVM_PlayerState::OnFormChange(const FPlayerFormChangeEventPayload& Payload)
 {
-	SetPortraitIcon(Payload.PortraitImage.Get());
+	if (const UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(this))
+	{
+		SetPortraitIcon(GameDataSubsystem->GetPlayerFormConfigByTag(Payload.NewFormTag)->PortraitImage.Get());
+	}
 }
 
 void UMVVM_PlayerState::OnAttributeValueChanged(const FOnAttributeChangeData& Payload)

@@ -16,8 +16,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Player/PlayerEquipmentComponent.h"
-#include "Player/Form/FormConfigLoadRequest.h"
-#include "Player/Form/PlayerFormConfig.h"
+#include "Player/Form/PlayerFormPrimaryAsset.h"
 #include "Tags/ElectricCastleGameplayTags.h"
 
 UPlayerFormChangeComponent::UPlayerFormChangeComponent()
@@ -70,11 +69,12 @@ void UPlayerFormChangeComponent::FormChange_PlayEffect(const FPlayerFormChangeEv
 
 void UPlayerFormChangeComponent::FormChange_UpdateCharacterMesh(const FPlayerFormChangeEventPayload& Payload)
 {
-	if (UPlayerFormConfig* FormConfig = GetPlayerFormConfig())
+	if (const UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(this))
 	{
-		UFormConfigLoadRequest* LoadRequest = FormConfig->GetOrCreateLoadRequest(Payload.NewFormTag);
-		LoadRequest->OnLoadComplete.AddUniqueDynamic(this, &UPlayerFormChangeComponent::OnFormDataLoaded);
-		FormConfig->LoadAsync(LoadRequest);
+		if (const UPlayerFormPrimaryAsset* FormAsset = GameDataSubsystem->GetPlayerFormConfigByTag(Payload.NewFormTag))
+		{
+			OnFormDataLoaded(FormAsset);
+		}
 	}
 }
 
@@ -84,8 +84,9 @@ void UPlayerFormChangeComponent::OnRep_CurrentFormTag(const FGameplayTag& OldVal
 	{
 		return;
 	}
-	const FPlayerFormConfigRow& Row = GetPlayerFormConfigRow(CurrentFormTag);
-	if (!Row.IsValid())
+	const UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(this);
+	UPlayerFormPrimaryAsset* Row = GameDataSubsystem ? GetPlayerFormConfigRow(CurrentFormTag) : nullptr;
+	if (!Row)
 	{
 		UE_LOG(
 			LogElectricCastle,
@@ -100,18 +101,10 @@ void UPlayerFormChangeComponent::OnRep_CurrentFormTag(const FGameplayTag& OldVal
 	FPlayerFormChangeEventPayload EventPayload;
 	EventPayload.OldFormTag = OldValue;
 	EventPayload.NewFormTag = CurrentFormTag;
-	EventPayload.FormAttributes = Row.FormAttributes;
-	if (UPlayerFormConfig* FormConfig = GetPlayerFormConfig())
-	{
-		EventPayload.HealthChangeEffect = FormConfig->GetHealthChangeEffect();
-		EventPayload.ManaChangeEffect = FormConfig->GetManaChangeEffect();
-		UFormConfigLoadRequest* LoadRequest = FormConfig->GetOrCreateLoadRequest(EventPayload.NewFormTag);
-		LoadRequest->OnLoadComplete.AddUniqueDynamic(
-			this,
-			&UPlayerFormChangeComponent::OnFormDataLoaded_Broadcast
-		);
-		FormConfig->LoadAsync(LoadRequest);
-	}
+	EventPayload.FormAttributes = Row->FormAttributes;
+	EventPayload.HealthChangeEffect = GameDataSubsystem->GetFormChangeHealthEffectClass();
+	EventPayload.ManaChangeEffect = GameDataSubsystem->GetFormChangeManaEffectClass();
+	EventPayload.FormData = Row;
 	OnPlayerFormChange.Broadcast(EventPayload);
 }
 
@@ -121,15 +114,15 @@ void UPlayerFormChangeComponent::FormChange_UpdateAbilities_Implementation(const
 	{
 		return;
 	}
-	const FPlayerFormConfigRow& OldFormConfig = GetPlayerFormConfigRow(Payload.OldFormTag);
-	const FPlayerFormConfigRow& CurrentFormConfig = GetPlayerFormConfigRow(Payload.NewFormTag);
+	const UPlayerFormPrimaryAsset* OldFormConfig = GetPlayerFormConfigRow(Payload.OldFormTag);
+	const UPlayerFormPrimaryAsset* CurrentFormConfig = GetPlayerFormConfigRow(Payload.NewFormTag);
 	if (UElectricCastleAbilitySystemComponent* AbilitySystemComponent = Cast<UElectricCastleAbilitySystemComponent>(
 		UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(
 			GetOwner()
 		)
 	))
 	{
-		for (const FGameplayTag& AbilityTag : OldFormConfig.Abilities)
+		for (const FGameplayTag& AbilityTag : OldFormConfig->Abilities)
 		{
 			UE_LOG(
 				LogElectricCastle,
@@ -141,7 +134,7 @@ void UPlayerFormChangeComponent::FormChange_UpdateAbilities_Implementation(const
 			);
 			AbilitySystemComponent->RemoveAbilitiesWithTag(AbilityTag);
 		}
-		for (const FGameplayTag& AbilityTag : CurrentFormConfig.Abilities)
+		for (const FGameplayTag& AbilityTag : CurrentFormConfig->Abilities)
 		{
 			UE_LOG(
 				LogElectricCastle,
@@ -269,50 +262,26 @@ USkeletalMeshComponent* UPlayerFormChangeComponent::GetMesh() const
 	return nullptr;
 }
 
-bool UPlayerFormChangeComponent::IsFormLoaded(const FGameplayTag& FormTag) const
+UPlayerFormPrimaryAsset* UPlayerFormChangeComponent::GetPlayerFormConfigRow(const FGameplayTag& FormTag) const
 {
-	if (const FPlayerFormConfigRow& FormConfig = GetPlayerFormConfigRow(FormTag); FormConfig.IsValid())
+	if (const UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(this))
 	{
-		return FormConfig.IsLoaded();
-	}
-	return false;
-}
-
-UPlayerFormConfig* UPlayerFormChangeComponent::GetPlayerFormConfig() const
-{
-	if (const UElectricCastleGameDataSubsystem* GameData = UElectricCastleGameDataSubsystem::Get(this))
-	{
-		return GameData->GetPlayerFormConfig();
+		return GameDataSubsystem->GetPlayerFormConfigByTag(CurrentFormTag);
 	}
 	return nullptr;
 }
 
-FPlayerFormConfigRow UPlayerFormChangeComponent::GetPlayerFormConfigRow(const FGameplayTag& FormTag) const
-{
-	if (const UPlayerFormConfig* FormConfig = GetPlayerFormConfig())
-	{
-		return FormConfig->GetPlayerFormConfigRowByTag(FormTag);
-	}
-	return FPlayerFormConfigRow(EPlayerForm::None, FString("INVALID"));
-}
-
-
-void UPlayerFormChangeComponent::OnFormDataLoaded_Broadcast(const FPlayerFormConfigRow& FormConfigRow)
-{
-	OnPlayerFormDataLoaded.Broadcast(FormConfigRow);
-}
-
-void UPlayerFormChangeComponent::OnFormDataLoaded(const FPlayerFormConfigRow& FormConfigRow)
+void UPlayerFormChangeComponent::OnFormDataLoaded(const UPlayerFormPrimaryAsset* FormAsset)
 {
 	if (AElectricCastlePlayerCharacter* PlayerCharacter = Cast<AElectricCastlePlayerCharacter>(GetOwner()))
 	{
-		PlayerCharacter->SetFormMeshes(FormConfigRow.MeshConfig);
-		PlayerCharacter->SetAnimInstanceClass(FormConfigRow.AnimationBlueprint.Get());
+		PlayerCharacter->SetFormMeshes(FormAsset->MeshConfig);
+		PlayerCharacter->SetAnimInstanceClass(FormAsset->AnimationBlueprint.Get());
 		if (UPlayerEquipmentComponent* EquipmentComponent = IEquipmentManagerInterface::GetEquipmentComponent(
 			PlayerCharacter
 		))
 		{
-			EquipmentComponent->ChangeWeapon(FormConfigRow.WeaponTag);
+			EquipmentComponent->ChangeWeapon(FormAsset->WeaponTag);
 		}
 	}
 }

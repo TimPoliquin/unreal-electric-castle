@@ -5,8 +5,8 @@
 #include "CoreMinimal.h"
 #include "MVVMViewModelBase.h"
 #include "Player/Form/PlayerFormChangeComponent.h"
-#include "Player/Form/PlayerFormConfig.h"
 #include "Player/Form/PlayerFormDelegates.h"
+#include "Player/Form/PlayerFormPrimaryAsset.h"
 #include "MVVM_PlayerForm.generated.h"
 
 class AElectricCastlePlayerState;
@@ -19,7 +19,7 @@ class ELECTRICCASTLE_API UMVVM_PlayerForm : public UMVVMViewModelBase
 	GENERATED_BODY()
 
 public:
-	void InitializeDependencies(AElectricCastlePlayerState* PlayerState, const FPlayerFormConfigRow& FormConfigRow);
+	void InitializeDependencies(const AElectricCastlePlayerState* PlayerState, const UPlayerFormPrimaryAsset* FormConfigRow);
 
 	FGameplayTag GetFormTag() const;
 	void SetFormTag(const FGameplayTag& InFormTag);

@@ -7,6 +7,7 @@
 #include "Player/InputEvents.h"
 #include "Player/Form/FormConfigTypes.h"
 #include "Player/Form/PlayerFormDelegates.h"
+#include "Player/Form/PlayerFormPrimaryAsset.h"
 #include "UI/Widget/Form/FormWheelFormWidget.h"
 #include "MVVM_PlayerForms.generated.h"
 
@@ -59,8 +60,7 @@ private:
 
 	void CreatePlayerFormViewModels(AElectricCastlePlayerState* InPlayerState);
 	UMVVM_PlayerForm* CreatePlayerFormViewModel(
-		AElectricCastlePlayerState* InPlayerState,
-		const FPlayerFormConfigRow& FormConfigRow
+		const AElectricCastlePlayerState* InPlayerState, const UPlayerFormPrimaryAsset* FormAsset
 	);
 
 	UFUNCTION()

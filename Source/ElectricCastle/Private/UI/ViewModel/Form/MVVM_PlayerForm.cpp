@@ -5,28 +5,29 @@
 
 #include "Player/ElectricCastlePlayerState.h"
 #include "Player/Form/PlayerFormChangeComponent.h"
+#include "Player/Form/PlayerFormPrimaryAsset.h"
 
 void UMVVM_PlayerForm::InitializeDependencies(
-	AElectricCastlePlayerState* PlayerState,
-	const FPlayerFormConfigRow& FormConfigRow
+	const AElectricCastlePlayerState* PlayerState,
+	const UPlayerFormPrimaryAsset* FormConfigRow
 )
 {
 	// Set values based on current player state and form configuration
-	FormId = FormConfigRow.FormId;
-	SetFormTag(FormConfigRow.FormTag);
-	SetFormName(FormConfigRow.FormName);
-	if (FormConfigRow.PortraitImage.IsValid())
+	FormId = FormConfigRow->FormId;
+	SetFormTag(FormConfigRow->FormTag);
+	SetFormName(FormConfigRow->FormName);
+	if (FormConfigRow->PortraitImage.IsValid())
 	{
-		SetFormIcon(FormConfigRow.PortraitImage.Get());
+		SetFormIcon(FormConfigRow->PortraitImage.Get());
 	}
-	else if (!FormConfigRow.PortraitImage.IsNull())
+	else if (!FormConfigRow->PortraitImage.IsNull())
 	{
 		FLoadSoftObjectPathAsyncDelegate AsyncDelegate;
 		AsyncDelegate.BindLambda([this](FSoftObjectPath ObjectPath, UObject* Loaded)
 		{
 			SetFormIcon(CastChecked<UTexture2D>(Loaded));
 		});
-		FormConfigRow.PortraitImage.LoadAsync(AsyncDelegate);
+		FormConfigRow->PortraitImage.LoadAsync(AsyncDelegate);
 	}
 
 	if (UPlayerFormChangeComponent* FormChangeComponent = IFormChangeActorInterface::GetFormChangeComponent(PlayerState))
