@@ -35,11 +35,10 @@
 #include "Actor/Mesh/SocketManagerComponent.h"
 #include "Components/LODSyncComponent.h"
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
-#include "Item/Equipment/BasicEquipmentActor.h"
 #include "Materials/MaterialParameterCollectionInstance.h"
 #include "Player/Equipment/WeaponInterface.h"
+#include "Player/Form/FormConfigTypes.h"
 
-class UPlayerFormConfig;
 
 AElectricCastlePlayerCharacter::AElectricCastlePlayerCharacter()
 {

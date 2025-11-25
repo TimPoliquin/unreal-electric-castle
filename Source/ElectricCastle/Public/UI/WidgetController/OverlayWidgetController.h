@@ -128,8 +128,6 @@ private:
 	UFUNCTION()
 	void OnPlayerInventoryFull(const FGameplayTag& ItemType);
 	UFUNCTION()
-	void OnPortraitLoaded(const FPlayerFormConfigRow& Row);
-	UFUNCTION()
 	void OnFormChange(const FPlayerFormChangeEventPayload& Payload);
 };
 
