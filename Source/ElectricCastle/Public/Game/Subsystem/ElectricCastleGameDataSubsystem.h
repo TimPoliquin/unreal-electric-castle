@@ -7,9 +7,11 @@
 #include "GameplayTagContainer.h"
 #include "AbilitySystem/Data/LevelUpInfo.h"
 #include "Item/ItemTypes.h"
+#include "Player/Form/FormConfigTypes.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "ElectricCastleGameDataSubsystem.generated.h"
 
+class UPlayerFormPrimaryAsset;
 class UDebuffConfig;
 class UPlayerFormConfig;
 class ULevelUpInfo;
@@ -32,7 +34,15 @@ public:
 	static UElectricCastleGameDataSubsystem* Get(const UObject* WorldContextObject);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	UPlayerFormConfig* GetPlayerFormConfig() const { return PlayerFormConfig; }
+	UPlayerFormPrimaryAsset* GetPlayerFormConfigById(const EPlayerForm& FormId) const;
+	UPlayerFormPrimaryAsset* GetPlayerFormConfigById(const int32 FormId) const;
+	UPlayerFormPrimaryAsset* GetPlayerFormConfigByTag(const FGameplayTag& FormTag) const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	TSubclassOf<UGameplayEffect> GetFormChangeHealthEffectClass() const { return HealthChangeEffect; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	TSubclassOf<UGameplayEffect> GetFormChangeManaEffectClass() const { return ManaChangeEffect; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	UDebuffConfig* GetDebuffConfig() const { return DebuffConfig; }
@@ -68,11 +78,17 @@ public:
 
 	float GetXPToNextLevelPercentage(float XP) const;
 	int32 FindLevelByXP(const int32 InXP) const;
-	FLevelUpRewards GetLevelUpRewards(int32 int32) const;
+	FLevelUpRewards GetLevelUpRewards(const int32 InLevel) const;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Form Configuration")
-	TObjectPtr<UPlayerFormConfig> PlayerFormConfig;
+	TArray<TSoftObjectPtr<UPlayerFormPrimaryAsset>> PlayerFormPrimaryAssets;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Form Configuration")
+	TSubclassOf<UGameplayEffect> HealthChangeEffect;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Form Configuration")
+	TSubclassOf<UGameplayEffect> ManaChangeEffect;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Form Configuration")
+	bool bPreloadForms = false;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Gameplay Effects")
 	TObjectPtr<UDebuffConfig> DebuffConfig;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Character Class Defaults")
@@ -100,7 +116,8 @@ protected:
 
 private:
 	void InitializeItemDefinitions();
-
+	void OnFormDataInitialized();
+	bool ShouldPreloadForms(TArray<FPrimaryAssetId>& OutAssetIds) const;
 	UPROPERTY()
 	TMap<FGameplayTag, FItemDefinition> ItemDefinitions;
 };

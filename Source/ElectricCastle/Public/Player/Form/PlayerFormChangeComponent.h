@@ -3,11 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "FormConfigLoadRequest.h"
 #include "GameplayEffect.h"
 #include "GameplayTagContainer.h"
-#include "PlayerFormConfig.h"
 #include "PlayerFormDelegates.h"
+#include "PlayerFormPrimaryAsset.h"
 #include "Components/ActorComponent.h"
 #include "PlayerFormChangeComponent.generated.h"
 
@@ -30,10 +29,12 @@ struct ELECTRICCASTLE_API FPlayerFormChangeEventPayload
 	TSubclassOf<UGameplayEffect> HealthChangeEffect;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<UGameplayEffect> ManaChangeEffect;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<UPlayerFormPrimaryAsset> FormData;
 
 	bool IsValid() const
 	{
-		return OldFormTag.IsValid() && NewFormTag.IsValid();
+		return OldFormTag.IsValid() && NewFormTag.IsValid() && FormData;
 	}
 };
 
@@ -76,8 +77,6 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FPlayerFormChangeEventSignature OnPlayerFormChange;
 	UPROPERTY(BlueprintAssignable)
-	FFormConfigLoadRequestSignature OnPlayerFormDataLoaded;
-	UPROPERTY(BlueprintAssignable)
 	FOnPlayerAvailableFormsChangedSignature OnAvailableFormsChanged;
 
 protected:
@@ -104,13 +103,9 @@ protected:
 
 private:
 	UFUNCTION()
-	void OnFormDataLoaded_Broadcast(const FPlayerFormConfigRow& FormConfigRow);
-	UFUNCTION()
-	void OnFormDataLoaded(const FPlayerFormConfigRow& FormConfigRow);
-	UPlayerFormConfig* GetPlayerFormConfig() const;
-	FPlayerFormConfigRow GetPlayerFormConfigRow(const FGameplayTag& FormTag) const;
+	void OnFormDataLoaded(const UPlayerFormPrimaryAsset* FormAsset);
+	UPlayerFormPrimaryAsset* GetPlayerFormConfigRow(const FGameplayTag& FormTag) const;
 	USkeletalMeshComponent* GetMesh() const;
-	bool IsFormLoaded(const FGameplayTag& FormTag) const;
 
 	UPROPERTY()
 	TWeakObjectPtr<USkeletalMeshComponent> CharacterMeshComponent;

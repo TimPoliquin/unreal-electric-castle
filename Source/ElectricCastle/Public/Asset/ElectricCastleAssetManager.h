@@ -16,7 +16,15 @@ class ELECTRICCASTLE_API UElectricCastleAssetManager : public UAssetManager
 
 public:
 	static UElectricCastleAssetManager& Get();
+	static TSharedPtr<FStreamableHandle> LoadPlayerFormPrimaryAssets(const TArray<FPrimaryAssetId>& AssetIds, const FStreamableDelegate& OnLoaded);
 
 protected:
 	virtual void StartInitialLoading() override;
+
+private:
+	static TSharedPtr<FStreamableHandle> LoadPrimaryAssetsById(const TArray<FPrimaryAssetId>& AssetIds, const TArray<FName>& BundleNames, const FStreamableDelegate& OnLoaded);
+	static void DebugAssetRegistry();
+	static void ForceAssetManagerRescan();
+	static void TestDirectAssetLoad();
+	static void DebugAssetManagerConfig();
 };

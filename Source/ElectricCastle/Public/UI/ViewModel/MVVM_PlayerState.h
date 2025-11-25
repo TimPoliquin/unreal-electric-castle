@@ -88,6 +88,6 @@ private:
 	UFUNCTION()
 	void OnPlayerLevelChange(const FIntAttributeChangedPayload& Payload);
 	UFUNCTION()
-	void OnFormChange(const FPlayerFormConfigRow& Payload);
+	void OnFormChange(const FPlayerFormChangeEventPayload& Payload);
 	void OnAttributeValueChanged(const FOnAttributeChangeData& Payload);
 };
