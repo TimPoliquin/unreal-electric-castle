@@ -30,31 +30,31 @@ public:
 	) override;
 
 private:
-	UPROPERTY(EditDefaultsOnly, Category="Beam")
+	UPROPERTY(EditDefaultsOnly, Category="Properties|Beam")
 	TObjectPtr<UAnimMontage> AbilityMontage;
-	UPROPERTY(EditDefaultsOnly, Category="Beam", meta=(Categories = "Events.Montage"))
+	UPROPERTY(EditDefaultsOnly, Category="Properties|Beam", meta=(Categories = "Events.Montage"))
 	FGameplayTag EventTag;
-	UPROPERTY(EditDefaultsOnly, Category="Beam", meta=(Categories = "GameplayCue"))
+	UPROPERTY(EditDefaultsOnly, Category="Properties|Beam", meta=(Categories = "GameplayCue"))
 	FGameplayTag SoundCueTag;
-	UPROPERTY(EditDefaultsOnly, Category="Beam", meta=(Categories = "GameplayCue"))
+	UPROPERTY(EditDefaultsOnly, Category="Properties|Beam", meta=(Categories = "GameplayCue"))
 	FGameplayTag LoopCueTag;
-	UPROPERTY(EditDefaultsOnly, Category="Beam", meta=(Categories = "Combat.Socket"))
+	UPROPERTY(EditDefaultsOnly, Category="Properties|Beam", meta=(Categories = "Combat.Socket"))
 	FGameplayTag SocketTag;
-	UPROPERTY(EditDefaultsOnly, Category="Beam")
+	UPROPERTY(EditDefaultsOnly, Category="Properties|Beam")
 	float BeamTraceSize = 10.f;
-	UPROPERTY(EditDefaultsOnly, Category="Beam")
+	UPROPERTY(EditDefaultsOnly, Category="Properties|Beam")
 	float CascadeRadius = 100.f;
-	UPROPERTY(EditDefaultsOnly, Category="Beam")
+	UPROPERTY(EditDefaultsOnly, Category="Properties|Beam")
 	int32 MaxCascadeTargets = 5.f;
-	UPROPERTY(EditDefaultsOnly, Category="Beam")
+	UPROPERTY(EditDefaultsOnly, Category="Properties|Beam")
 	float DamageTick = .1f;
-	UPROPERTY(EditDefaultsOnly, Category="Beam|Debug")
+	UPROPERTY(EditDefaultsOnly, Category="Properties|Beam|Debug")
 	bool bForceCascadeMax = false;
 	UPROPERTY()
 	FTimerHandle TimerHandle;
 	UPROPERTY()
 	FTimerHandle DelayTimerHandle;
-	UPROPERTY(EditDefaultsOnly, Category="Beam")
+	UPROPERTY(EditDefaultsOnly, Category="Properties|Beam")
 	float MinimumSpellTime = .5f;
 
 	FVector HitLocation;

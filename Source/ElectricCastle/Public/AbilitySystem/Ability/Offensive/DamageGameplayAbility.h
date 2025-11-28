@@ -93,18 +93,18 @@ public:
 	void ApplyDefaultDamageConfig(AActor* DamageDealingActor) const;
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Properties|Damage")
 	TSubclassOf<UGameplayEffect> DamageEffectClass;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Damage")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Properties|Damage")
 	FElectricCastleDamageConfig DamageConfig;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Damage", meta=(Categories="GameplayCue"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Properties|Damage", meta=(Categories="GameplayCue"))
 	FGameplayTag ImpactCueTag = FGameplayTag::EmptyTag;
 
 	int32 GetDamageAtLevel(const int32 AbilityLevel) const;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Configuration")
+	UPROPERTY(EditDefaultsOnly, Category = "Properties")
 	bool bAutoActivateAbilityTag = true;
-	UPROPERTY(EditDefaultsOnly, Category = "Configuration")
+	UPROPERTY(EditDefaultsOnly, Category = "Properties")
 	bool bAutoDeactivateAbilityTag = true;
 
 	FGameplayTag GetDefaultAbilityTag() const;

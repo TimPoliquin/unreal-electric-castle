@@ -15,6 +15,8 @@
 #include "Interaction/CombatInterface.h"
 #include "GameplayCueFunctionLibrary.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
+#include "Actor/Mesh/SocketManagerActor.h"
+#include "Actor/Mesh/SocketManagerComponent.h"
 #include "ElectricCastle/ElectricCastle.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Utils/TagUtils.h"
@@ -256,9 +258,16 @@ void UBeamGameplayAbility::SpawnBeam(FGameplayEventData Payload)
 	bool bIsEnemyHit = (IsValid(ActorHit) && ActorHit->Implements<UCombatInterface>());
 	AActor* WeaponActor = ICombatInterface::GetWeapon(GetAvatarActorFromActorInfo());
 	FGameplayCueParameters FirstTargetCueParams = FGameplayCueParameters();
-	// TODO - This needs to be refactored to get an appropriate socket on the weapon actor.
-	// But that can be a problem for another day.
-	FirstTargetCueParams.TargetAttachComponent = WeaponActor->GetRootComponent();
+	if (const USocketManagerComponent* SocketManagerComponent = ISocketManagerActor::GetSocketManagerComponent(
+		WeaponActor
+	))
+	{
+		FirstTargetCueParams.TargetAttachComponent = SocketManagerComponent->GetMeshBySocketTag(Payload.EventTag);
+	}
+	else if (IsValid(WeaponActor))
+	{
+		FirstTargetCueParams.TargetAttachComponent = WeaponActor->GetRootComponent();
+	}
 	FirstTargetCueParams.Location = bIsEnemyHit
 		                                ? ActorHit->GetActorLocation()
 		                                : HitLocation;
@@ -295,7 +304,7 @@ void UBeamGameplayAbility::ExecuteAbility(const FHitResult& HitResult)
 	HitLocation = HitResult.ImpactPoint;
 	SetMouseCursorVisible(false);
 	ICombatInterface::UpdateFacingTarget(GetAvatarActorFromActorInfo(), HitResult.ImpactPoint);
-	FGameplayCueParameters CueParams = FGameplayCueParameters();
+	const FGameplayCueParameters CueParams = FGameplayCueParameters();
 	UGameplayCueFunctionLibrary::ExecuteGameplayCueOnActor(GetAvatarActorFromActorInfo(), SoundCueTag, CueParams);
 	if (UAbilityTask_PlayMontageAndWait* PlayMontageAndWait =
 		UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
