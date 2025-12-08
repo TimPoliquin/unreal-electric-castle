@@ -189,6 +189,8 @@ protected:
 	TObjectPtr<AMagicCircle> MagicCircle;
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
+	UFUNCTION(BlueprintNativeEvent)
+	void OnGameDataLoaded();
 
 private:
 	FHighlightContext HighlightContext;
