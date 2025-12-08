@@ -7,6 +7,7 @@
 #include "UI/WidgetController/ElectricCastleWidgetController.h"
 #include "ElectricCastleHUD.generated.h"
 
+class ULoadingScreenWidget;
 class UMVVM_PlayerForms;
 class UFormWheelWidget;
 class UMVVM_PlayerAbilityStates;
@@ -66,6 +67,8 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	UFUNCTION(BlueprintNativeEvent)
+	void OnGameDataLoaded();
 
 	/** Player State View Model **/
 	UPROPERTY(EditDefaultsOnly, Category = "Properties")
@@ -91,6 +94,12 @@ protected:
 	TSubclassOf<UAuraMenuWidget> MenuWidgetClass;
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Menu")
 	TObjectPtr<UAuraMenuWidget> MenuWidget;
+
+	/** Loading Screen Widget **/
+	UPROPERTY(EditDefaultsOnly, Category = "Loading Screen")
+	TSubclassOf<ULoadingScreenWidget> LoadingScreenWidgetClass;
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Loading Screen")
+	TObjectPtr<ULoadingScreenWidget> LoadingScreenWidget;
 
 private:
 	/** Attribute Menu Controller **/

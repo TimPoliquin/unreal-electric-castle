@@ -78,6 +78,14 @@ void AElectricCastlePlayerController::BeginPlay()
 			);
 		}
 	}
+	if (UElectricCastleGameDataSubsystem* GameData = UElectricCastleGameDataSubsystem::Get(this))
+	{
+		if (!GameData->IsGameDataLoaded())
+		{
+			DisableInput(this);
+			GameData->OnGameDataLoaded.AddUniqueDynamic(this, &AElectricCastlePlayerController::OnGameDataLoaded);
+		}
+	}
 }
 
 void AElectricCastlePlayerController::PlayerTick(float DeltaTime)
@@ -176,6 +184,11 @@ void AElectricCastlePlayerController::SetupInputComponent()
 		&AElectricCastlePlayerController::HideFormWheel
 	);
 	ElectricCastleInputComponent->BindAction(FormWheelHighlightAction, ETriggerEvent::Triggered, this, &AElectricCastlePlayerController::UpdateFormWheelHighlightAngle);
+}
+
+void AElectricCastlePlayerController::OnGameDataLoaded_Implementation()
+{
+	EnableInput(this);
 }
 
 void AElectricCastlePlayerController::Move(const FInputActionValue& Value)

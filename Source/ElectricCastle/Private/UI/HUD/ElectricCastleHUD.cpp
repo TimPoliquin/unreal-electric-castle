@@ -6,16 +6,16 @@
 #include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
+#include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "GameFramework/GameStateBase.h"
 #include "Player/ElectricCastlePlayerState.h"
 #include "UI/HUD/OverlayWidget.h"
-#include "UI/Library/WidgetFunctionLibrary.h"
 #include "UI/ViewModel/MVVM_Inventory.h"
 #include "UI/ViewModel/MVVM_PlayerAbilityStates.h"
 #include "UI/ViewModel/MVVM_PlayerState.h"
 #include "UI/ViewModel/Form/MVVM_PlayerForms.h"
 #include "UI/Widget/AuraMenuWidget.h"
-#include "UI/Widget/FormWheelWidget.h"
+#include "UI/Widget/Loading/LoadingScreenWidget.h"
 #include "UI/WidgetController/AttributeMenuWidgetController.h"
 #include "UI/WidgetController/SpellMenuWidgetController.h"
 
@@ -23,6 +23,33 @@
 void AElectricCastleHUD::BeginPlay()
 {
 	Super::BeginPlay();
+	if (LoadingScreenWidgetClass)
+	{
+		LoadingScreenWidget = CreateWidget<ULoadingScreenWidget>(GetWorld(), LoadingScreenWidgetClass, FName("LoadingScreenWidget"));
+	}
+	if (UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(GetWorld()))
+	{
+		if (!GameDataSubsystem->IsGameDataLoaded())
+		{
+			if (LoadingScreenWidget)
+			{
+				LoadingScreenWidget->Show();
+			}
+			GameDataSubsystem->OnGameDataLoaded.AddUniqueDynamic(this, &AElectricCastleHUD::OnGameDataLoaded);
+		}
+	}
+}
+
+void AElectricCastleHUD::OnGameDataLoaded_Implementation()
+{
+	if (LoadingScreenWidget)
+	{
+		LoadingScreenWidget->Hide();
+	}
+	if (OverlayWidget)
+	{
+		OverlayWidget->AddToViewport();
+	}
 }
 
 void AElectricCastleHUD::Initialize()
@@ -211,7 +238,13 @@ void AElectricCastleHUD::InitializeOverlayWidget()
 		GetPlayerAbilityStatesViewModels(),
 		GetPlayerFormsViewModels()
 	);
-	OverlayWidget->AddToViewport();
+	if (const UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(GetWorld()))
+	{
+		if (GameDataSubsystem->IsGameDataLoaded())
+		{
+			OverlayWidget->AddToViewport();
+		}
+	}
 }
 
 void AElectricCastleHUD::InitializeAttributeWidgetController(const FWidgetControllerParams& Params)

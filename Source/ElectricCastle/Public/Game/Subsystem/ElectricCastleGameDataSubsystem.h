@@ -21,6 +21,9 @@ class UItemDefinitions;
 class UGameplayEffect;
 class UAbilityInfo;
 class UCharacterClassInfo;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnGameDataLoaded);
+
 /**
  * 
  */
@@ -76,6 +79,12 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	UFishInfo* GetFishInfo() const { return FishInfo; }
 
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsGameDataLoaded() const { return bIsGameDataLoaded; }
+
+	UPROPERTY(BlueprintAssignable)
+	FOnGameDataLoaded OnGameDataLoaded;
+
 	float GetXPToNextLevelPercentage(float XP) const;
 	int32 FindLevelByXP(const int32 InXP) const;
 	FLevelUpRewards GetLevelUpRewards(const int32 InLevel) const;
@@ -120,4 +129,5 @@ private:
 	bool ShouldPreloadForms(TArray<FPrimaryAssetId>& OutAssetIds) const;
 	UPROPERTY()
 	TMap<FGameplayTag, FItemDefinition> ItemDefinitions;
+	bool bIsGameDataLoaded = false;
 };

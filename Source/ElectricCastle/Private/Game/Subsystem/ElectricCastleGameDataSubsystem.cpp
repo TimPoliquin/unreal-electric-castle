@@ -151,6 +151,8 @@ void UElectricCastleGameDataSubsystem::OnFormDataInitialized()
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("[%s] All player forms preloaded! Total: %d"), *GetName(), PlayerFormPrimaryAssets.Num());
+	bIsGameDataLoaded = true;
+	OnGameDataLoaded.Broadcast();
 }
 
 bool UElectricCastleGameDataSubsystem::ShouldPreloadForms(TArray<FPrimaryAssetId>& OutAssetIds) const
