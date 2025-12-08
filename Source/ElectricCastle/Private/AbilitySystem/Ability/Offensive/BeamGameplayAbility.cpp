@@ -5,7 +5,6 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
-#include "AbilitySystem/AbilityTask/TargetDataUnderMouse.h"
 #include "Abilities/Tasks/AbilityTask_WaitInputRelease.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
@@ -15,8 +14,9 @@
 #include "Interaction/CombatInterface.h"
 #include "GameplayCueFunctionLibrary.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
-#include "ElectricCastle/ElectricCastle.h"
-#include "Kismet/KismetSystemLibrary.h"
+#include "Actor/Mesh/SocketManagerActor.h"
+#include "Actor/Mesh/SocketManagerComponent.h"
+#include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Utils/TagUtils.h"
 
 void UBeamGameplayAbility::ActivateAbility(
@@ -37,13 +37,22 @@ void UBeamGameplayAbility::ActivateAbility(
 		WaitInputRelease->OnRelease.AddDynamic(this, &UBeamGameplayAbility::OnInputRelease);
 		ExecuteTask(WaitInputRelease);
 	}
-	if (UTargetDataUnderMouse* TargetDataUnderMouseTask = UTargetDataUnderMouse::CreateTargetDataUnderMouse(
-		this
-	))
+	if (UElectricCastleAbilitySystemLibrary::FindHitBySphereTrace(
+		GetAvatarActorFromActorInfo(),
+		FSphereTraceParams(
+			MaxBeamLength,
+			BeamTraceSize,
+			ECC_Visibility,
+			bDebug
+		),
+		TraceHitResult))
 	{
-		TargetDataUnderMouseTask->HasMouseTarget.AddDynamic(this, &UBeamGameplayAbility::OnReceiveMouseData);
-		TargetDataUnderMouseTask->HasNoTarget.AddDynamic(this, &UBeamGameplayAbility::OnRecieveNoTarget);
-		ExecuteTask(TargetDataUnderMouseTask);
+		ExecuteAbility(TraceHitResult);
+	}
+	else
+	{
+		UE_LOG(LogElectricCastle, Warning, TEXT("[%s] No end point for beam - terminating"), *GetName())
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 	}
 }
 
@@ -71,6 +80,36 @@ void UBeamGameplayAbility::EndAbility(
 	CueActors.Empty();
 	ActorGameplayCueParameters.Empty();
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+}
+
+void UBeamGameplayAbility::PlayAbilityMontage_Implementation()
+{
+	if (UAbilityTask_PlayMontageAndWait* PlayMontageAndWait =
+		UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
+			this,
+			NAME_None,
+			AbilityMontage
+		))
+	{
+		ExecuteTask(PlayMontageAndWait);
+	}
+	if (UAbilityTask_WaitGameplayEvent* WaitGameplayEvent = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
+		this,
+		EventTag,
+		nullptr,
+		true,
+		true
+	))
+	{
+		WaitGameplayEvent->EventReceived.AddDynamic(this, &UBeamGameplayAbility::SpawnBeam);
+		ExecuteTask(WaitGameplayEvent);
+	}
+}
+
+void UBeamGameplayAbility::PlayAbilitySoundCue_Implementation()
+{
+	const FGameplayCueParameters CueParams = FGameplayCueParameters();
+	UGameplayCueFunctionLibrary::ExecuteGameplayCueOnActor(GetAvatarActorFromActorInfo(), SoundCueTag, CueParams);
 }
 
 void UBeamGameplayAbility::SetMouseCursorVisible(const bool Visible) const
@@ -135,13 +174,13 @@ void UBeamGameplayAbility::DetermineCascadingTargets(AActor* CueTarget, TArray<A
 		GetAvatarActorFromActorInfo(),
 		ActorsToIgnore,
 		ICombatInterface::GetTargetTagsToIgnore(GetAvatarActorFromActorInfo()),
-		HitLocation,
+		TraceHitResult.ImpactPoint,
 		GetCascadeRadius(),
 		ActorsInRange
 	);
 	UElectricCastleAbilitySystemLibrary::GetClosestActors(
 		CascadingTargetCount,
-		HitLocation,
+		TraceHitResult.ImpactPoint,
 		ActorsInRange,
 		OutCascadedTargets
 	);
@@ -187,11 +226,13 @@ void UBeamGameplayAbility::ApplyDamage(AActor* DamageActor)
 		&CurrentActivationInfo
 	))
 	{
+		DebugLog(FString::Printf(TEXT("[%s] Invalid damage actor"), *GetName()));
 		return;
 	}
+	DebugLog(FString::Printf(TEXT("[%s] Applying damage to %s"), *GetName(), *DamageActor->GetName()));
 	FMakeEffectSpecSignature ApplyDamageDelegate;
 	ApplyDamageDelegate.BindLambda(
-		[this](FGameplayEffectSpecHandle& Spec)
+		[this](const FGameplayEffectSpecHandle& Spec)
 		{
 			UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(
 				Spec,
@@ -219,7 +260,7 @@ void UBeamGameplayAbility::OnTimerTick()
 		}
 		TArray ApplyDamageActors(CueActors);
 		ApplyDamageActors.RemoveAll(
-			[this](AActor* Actor)
+			[this](const AActor* Actor)
 			{
 				return Actor == GetAvatarActorFromActorInfo() || ICombatInterface::IsDead(Actor);
 			}
@@ -248,20 +289,35 @@ void UBeamGameplayAbility::OnReceiveMouseData(const FGameplayAbilityTargetDataHa
 	}
 }
 
-void UBeamGameplayAbility::SpawnBeam(FGameplayEventData Payload)
+void UBeamGameplayAbility::SpawnBeam_Implementation(FGameplayEventData Payload)
 {
 	SetMovementEnabled(false);
 	ICombatInterface::SetActiveAbilityTag(GetAvatarActorFromActorInfo(), GetDefaultAbilityTag());
-	AActor* ActorHit = TraceFirstTarget(HitLocation);
+	AActor* ActorHit = TraceHitResult.GetActor();
 	bool bIsEnemyHit = (IsValid(ActorHit) && ActorHit->Implements<UCombatInterface>());
 	AActor* WeaponActor = ICombatInterface::GetWeapon(GetAvatarActorFromActorInfo());
 	FGameplayCueParameters FirstTargetCueParams = FGameplayCueParameters();
-	// TODO - This needs to be refactored to get an appropriate socket on the weapon actor.
-	// But that can be a problem for another day.
-	FirstTargetCueParams.TargetAttachComponent = WeaponActor->GetRootComponent();
+	if (const USocketManagerComponent* SocketManagerComponent = ISocketManagerActor::GetSocketManagerComponent(
+		WeaponActor
+	))
+	{
+		FirstTargetCueParams.TargetAttachComponent = SocketManagerComponent->GetMeshBySocketTag(SocketTag);
+	}
+	else if (IsValid(WeaponActor))
+	{
+		FirstTargetCueParams.TargetAttachComponent = WeaponActor->GetRootComponent();
+	}
+	if (FirstTargetCueParams.TargetAttachComponent.IsValid())
+	{
+		UE_LOG(LogElectricCastle, Warning, TEXT("[%s] Attaching to weapon component: %s"), *GetName(), *FirstTargetCueParams.TargetAttachComponent->GetName())
+	}
+	else
+	{
+		UE_LOG(LogElectricCastle, Warning, TEXT("[%s] No weapon attach component"), *GetName())
+	}
 	FirstTargetCueParams.Location = bIsEnemyHit
 		                                ? ActorHit->GetActorLocation()
-		                                : HitLocation;
+		                                : TraceHitResult.ImpactPoint;
 	FirstTargetCueParams.SourceObject = ActorHit;
 	if (bIsEnemyHit)
 	{
@@ -290,59 +346,12 @@ void UBeamGameplayAbility::SpawnBeam(FGameplayEventData Payload)
 	}
 }
 
-void UBeamGameplayAbility::ExecuteAbility(const FHitResult& HitResult)
+void UBeamGameplayAbility::ExecuteAbility_Implementation(const FHitResult& HitResult)
 {
-	HitLocation = HitResult.ImpactPoint;
 	SetMouseCursorVisible(false);
 	ICombatInterface::UpdateFacingTarget(GetAvatarActorFromActorInfo(), HitResult.ImpactPoint);
-	FGameplayCueParameters CueParams = FGameplayCueParameters();
-	UGameplayCueFunctionLibrary::ExecuteGameplayCueOnActor(GetAvatarActorFromActorInfo(), SoundCueTag, CueParams);
-	if (UAbilityTask_PlayMontageAndWait* PlayMontageAndWait =
-		UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
-			this,
-			NAME_None,
-			AbilityMontage
-		))
-	{
-		ExecuteTask(PlayMontageAndWait);
-	}
-	if (UAbilityTask_WaitGameplayEvent* WaitGameplayEvent = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
-		this,
-		EventTag,
-		nullptr,
-		true,
-		true
-	))
-	{
-		WaitGameplayEvent->EventReceived.AddDynamic(this, &UBeamGameplayAbility::SpawnBeam);
-		ExecuteTask(WaitGameplayEvent);
-	}
-}
-
-AActor* UBeamGameplayAbility::TraceFirstTarget(const FVector& BeamTargetLocation)
-{
-	TArray<AActor*> ActorsToIgnore;
-	ActorsToIgnore.Add(GetAvatarActorFromActorInfo());
-	FHitResult HitResult;
-	const FVector SocketLocation = ICombatInterface::GetCombatSocketLocation(GetAvatarActorFromActorInfo(), SocketTag);
-	UKismetSystemLibrary::SphereTraceSingle(
-		GetAvatarActorFromActorInfo(),
-		SocketLocation,
-		BeamTargetLocation,
-		BeamTraceSize,
-		UEngineTypes::ConvertToTraceType(ECC_Projectile),
-		false,
-		ActorsToIgnore,
-		EDrawDebugTrace::None,
-		HitResult,
-		true
-	);
-	if (HitResult.bBlockingHit)
-	{
-		HitLocation = HitResult.ImpactPoint;
-		return HitResult.GetActor();
-	}
-	return nullptr;
+	PlayAbilitySoundCue();
+	PlayAbilityMontage();
 }
 
 void UBeamGameplayAbility::OnDelayedRelease()

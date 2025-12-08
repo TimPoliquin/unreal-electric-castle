@@ -6,6 +6,7 @@
 #include "UObject/Interface.h"
 #include "WeaponInterface.generated.h"
 
+struct FGameplayTag;
 // This class does not need to be modified.
 UINTERFACE(BlueprintType)
 class UWeaponInterface : public UInterface
