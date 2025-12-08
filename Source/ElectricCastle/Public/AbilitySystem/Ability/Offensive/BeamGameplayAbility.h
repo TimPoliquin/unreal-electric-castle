@@ -29,38 +29,55 @@ public:
 		bool bWasCancelled
 	) override;
 
-private:
-	UPROPERTY(EditDefaultsOnly, Category="Properties|Beam")
+protected:
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void ExecuteAbility(const FHitResult& HitResult);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void PlayAbilitySoundCue();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void PlayAbilityMontage();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void SpawnBeam(FGameplayEventData Payload);
+	UFUNCTION(BlueprintCallable)
+	void SetMouseCursorVisible(const bool Visible) const;
+	UFUNCTION(BlueprintCallable)
+	void SetMovementEnabled(const bool Enabled) const;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties|Beam")
 	TObjectPtr<UAnimMontage> AbilityMontage;
-	UPROPERTY(EditDefaultsOnly, Category="Properties|Beam", meta=(Categories = "Events.Montage"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties|Beam", meta=(Categories = "Events.Montage"))
 	FGameplayTag EventTag;
-	UPROPERTY(EditDefaultsOnly, Category="Properties|Beam", meta=(Categories = "GameplayCue"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties|Beam", meta=(Categories = "GameplayCue"))
 	FGameplayTag SoundCueTag;
-	UPROPERTY(EditDefaultsOnly, Category="Properties|Beam", meta=(Categories = "GameplayCue"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties|Beam", meta=(Categories = "GameplayCue"))
 	FGameplayTag LoopCueTag;
-	UPROPERTY(EditDefaultsOnly, Category="Properties|Beam", meta=(Categories = "Combat.Socket"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties|Beam", meta=(Categories = "Combat.Socket"))
 	FGameplayTag SocketTag;
-	UPROPERTY(EditDefaultsOnly, Category="Properties|Beam")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties|Beam")
+	float MaxBeamLength = 5000.f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties|Beam")
 	float BeamTraceSize = 10.f;
-	UPROPERTY(EditDefaultsOnly, Category="Properties|Beam")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties|Beam")
 	float CascadeRadius = 100.f;
-	UPROPERTY(EditDefaultsOnly, Category="Properties|Beam")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties|Beam")
 	int32 MaxCascadeTargets = 5.f;
-	UPROPERTY(EditDefaultsOnly, Category="Properties|Beam")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties|Beam")
 	float DamageTick = .1f;
-	UPROPERTY(EditDefaultsOnly, Category="Properties|Beam|Debug")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties|Beam|Debug")
 	bool bForceCascadeMax = false;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties|Beam")
+	float MinimumSpellTime = .5f;
+
+private:
 	UPROPERTY()
 	FTimerHandle TimerHandle;
 	UPROPERTY()
 	FTimerHandle DelayTimerHandle;
-	UPROPERTY(EditDefaultsOnly, Category="Properties|Beam")
-	float MinimumSpellTime = .5f;
 
-	FVector HitLocation;
+	UPROPERTY()
+	FHitResult TraceHitResult;
 	UPROPERTY()
 	TObjectPtr<AActor> PrimaryTarget;
-	AActor* TraceFirstTarget(const FVector& BeamTargetLocation);
 	UPROPERTY()
 	TMap<AActor*, FGameplayCueParameters> ActorGameplayCueParameters;
 	UPROPERTY()
@@ -74,11 +91,6 @@ private:
 	UFUNCTION()
 	void OnReceiveMouseData(const FGameplayAbilityTargetDataHandle& DataHandle);
 
-	UFUNCTION()
-	void SpawnBeam(FGameplayEventData Payload);
-	void ExecuteAbility(const FHitResult& HitResult);
-	void SetMouseCursorVisible(const bool Visible) const;
-	void SetMovementEnabled(const bool Enabled) const;
 	AActor* DetermineCueTarget(AActor* ActorHit) const;
 	void DetermineCascadingTargets(AActor* CueTarget, TArray<AActor*>& OutCascadedTargets);
 

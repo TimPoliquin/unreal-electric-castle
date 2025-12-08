@@ -4,10 +4,10 @@
 #include "Item/Component/ApplyGameplayEffectComponent.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystemComponent.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 #include "ElectricCastle/ElectricCastle.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
-#include "Kismet/GameplayStatics.h"
 #include "Utils/TagUtils.h"
 
 
