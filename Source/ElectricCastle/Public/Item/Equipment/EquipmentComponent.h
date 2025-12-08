@@ -35,7 +35,7 @@ public:
 	void Unequip(AActor* InOwner);
 
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Proeprties", meta=(Categories="Item.Type"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties", meta=(Categories="Item.Type"))
 	FGameplayTag ItemType;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties", meta=(Categories="Player.Equipped"))
 	FGameplayTag EquippedTag;

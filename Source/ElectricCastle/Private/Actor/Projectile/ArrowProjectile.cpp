@@ -49,11 +49,12 @@ void AArrowProjectile::Release_Implementation()
 {
 	FSphereTraceParams Params;
 	Params.TraceRadius = CollisionComponent->GetScaledCapsuleRadius();
-	const AActor* HitTarget = UElectricCastleAbilitySystemLibrary::FindHitBySphereTrace(bMatchOwnerForward ? GetOwner() : this, Params);
 	float ReleasePitch = Pitch;
-	if (IsValid(HitTarget))
+	FHitResult HitResult;
+	UElectricCastleAbilitySystemLibrary::FindHitBySphereTrace(bMatchOwnerForward ? GetOwner() : this, Params, HitResult);
+	if (IsValid(HitResult.GetActor()))
 	{
-		UElectricCastleAbilitySystemLibrary::CalculatePitchToHitTarget(GetActorLocation(), HitTarget->GetActorLocation(), ProjectileMovement->InitialSpeed, ReleasePitch);
+		UElectricCastleAbilitySystemLibrary::CalculatePitchToHitTarget(GetActorLocation(), HitResult.ImpactPoint, ProjectileMovement->InitialSpeed, ReleasePitch);
 	}
 	const FVector ForwardVector = bMatchOwnerForward ? GetOwner()->GetActorForwardVector() : GetActorForwardVector();
 	// Get the actor's right vector (axis to rotate around)

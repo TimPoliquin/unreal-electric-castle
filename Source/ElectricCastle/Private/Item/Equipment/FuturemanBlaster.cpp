@@ -22,20 +22,34 @@ AFuturemanBlaster::AFuturemanBlaster()
 	RightBlasterMeshComponent->SetIsReplicated(true);
 	RightBlasterMeshComponent->SetupAttachment(GetRootComponent());
 	EquipmentComponent = CreateDefaultSubobject<UEquipmentComponent>(TEXT("Equipment Component"));
-	EquipmentComponent->SetItemType(FElectricCastleGameplayTags::Get().Item_Type_Equipment_Futureman_Blaster);
+	EquipmentComponent->SetItemType(FElectricCastleGameplayTags::Get().Item_Type_Equipment_Weapon_Futureman_Blaster);
 	EquipmentComponent->SetEquippedTag(FElectricCastleGameplayTags::Get().Player_Equipped_Weapon_Futureman_Blaster);
 	SocketManagerComponent = CreateDefaultSubobject<USocketManagerComponent>(TEXT("Socket Manager Component"));
 	LeftBlasterConfig.ParentAttachSocketTag = FElectricCastleGameplayTags::Get().Combat_Socket_LeftHand;
-	LeftBlasterConfig.TipSocketConfig = FSocketConfig(FElectricCastleGameplayTags::Get().Combat_Socket_Weapon_Tip, FName("TipSocket"));
+	LeftBlasterConfig.TipSocketConfig = FSocketConfig(
+		FElectricCastleGameplayTags::Get().Combat_Socket_Weapon_Tip,
+		FName("TipSocket")
+	);
 	RightBlasterConfig.ParentAttachSocketTag = FElectricCastleGameplayTags::Get().Combat_Socket_RightHand;
-	RightBlasterConfig.TipSocketConfig = FSocketConfig(FElectricCastleGameplayTags::Get().Combat_Socket_Weapon_Tip, FName("TipSocket"));
+	RightBlasterConfig.TipSocketConfig = FSocketConfig(
+		FElectricCastleGameplayTags::Get().Combat_Socket_Weapon_Tip,
+		FName("TipSocket")
+	);
 }
 
 void AFuturemanBlaster::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-	SocketManagerComponent->RegisterSocket(LeftBlasterMeshComponent, LeftBlasterConfig.TipSocketConfig.SocketTag, LeftBlasterConfig.TipSocketConfig.SocketName);
-	SocketManagerComponent->RegisterSocket(RightBlasterMeshComponent, RightBlasterConfig.TipSocketConfig.SocketTag, RightBlasterConfig.TipSocketConfig.SocketName);
+	SocketManagerComponent->RegisterSocket(
+		LeftBlasterMeshComponent,
+		LeftBlasterConfig.TipSocketConfig.SocketTag,
+		LeftBlasterConfig.TipSocketConfig.SocketName
+	);
+	SocketManagerComponent->RegisterSocket(
+		RightBlasterMeshComponent,
+		RightBlasterConfig.TipSocketConfig.SocketTag,
+		RightBlasterConfig.TipSocketConfig.SocketName
+	);
 }
 
 bool AFuturemanBlaster::IsEquipped_Implementation() const
@@ -87,7 +101,13 @@ void AFuturemanBlaster::Attach_Implementation(AActor* InOwner)
 	}
 	else
 	{
-		UE_LOG(LogElectricCastle, Error, TEXT("[%s] Cannot equip to owner %s - it must implement ISocketManagerActor!"), *GetName(), *InOwner->GetName());
+		UE_LOG(
+			LogElectricCastle,
+			Error,
+			TEXT("[%s] Cannot equip to owner %s - it must implement ISocketManagerActor!"),
+			*GetName(),
+			*InOwner->GetName()
+		);
 	}
 }
 

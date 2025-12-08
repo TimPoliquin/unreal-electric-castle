@@ -824,7 +824,8 @@ int32 UElectricCastleAbilitySystemLibrary::GetAbilityLevelByAbilityTag(
 
 AActor* UElectricCastleAbilitySystemLibrary::FindHitBySphereTrace(
 	const AActor* Player,
-	const FSphereTraceParams& TraceParams
+	const FSphereTraceParams& TraceParams,
+	FHitResult& OutHitResult
 )
 {
 	if (!IsValid(Player))
@@ -839,12 +840,11 @@ AActor* UElectricCastleAbilitySystemLibrary::FindHitBySphereTrace(
 	const FVector Start = Player->GetActorLocation();
 	const FVector End = Start + Player->GetActorForwardVector() * TraceParams.TraceDistance;
 
-	FHitResult HitResult;
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(Player); // Don’t hit yourself
 
 	if (World->SweepSingleByChannel(
-		HitResult,
+		OutHitResult,
 		Start,
 		End,
 		FQuat::Identity,
@@ -853,7 +853,7 @@ AActor* UElectricCastleAbilitySystemLibrary::FindHitBySphereTrace(
 		Params
 	))
 	{
-		return HitResult.GetActor(); // The first actor hit in front
+		return OutHitResult.GetActor(); // The first actor hit in front
 	}
 
 	return nullptr;

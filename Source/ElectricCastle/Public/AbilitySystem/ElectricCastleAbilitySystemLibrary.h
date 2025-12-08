@@ -7,7 +7,6 @@
 #include "GameplayAbilitySpec.h"
 #include "GameplayTagContainer.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
-#include "AbilitySystemComponent.h"
 #include "Interaction/CombatInterface.h"
 #include "Utils/TagUtils.h"
 #include "Utils/TraceParams.h"
@@ -370,7 +369,7 @@ public:
 	static int32 GetAbilityLevelByAbilityTag(AActor* Actor, const FGameplayTag& AbilityTag);
 
 	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayMechanics")
-	static AActor* FindHitBySphereTrace(const AActor* Player, const FSphereTraceParams& TraceParams);
+	static AActor* FindHitBySphereTrace(const AActor* Player, const FSphereTraceParams& TraceParams, FHitResult& OutHitResult);
 	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayMechanics")
 	static AActor* FindHitByLineTrace(const AActor* Player, const FLineTraceParams& TraceParams);
 	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayMechanics")

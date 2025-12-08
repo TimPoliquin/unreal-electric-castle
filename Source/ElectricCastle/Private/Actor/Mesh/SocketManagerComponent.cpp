@@ -65,6 +65,7 @@ USkeletalMeshComponent* USocketManagerComponent::GetMeshBySocketTag(const FGamep
 	{
 		return SocketConfig.MeshComponent.Get();
 	}
+	UE_LOG(LogElectricCastle, Warning, TEXT("[%s:%s] No socket registered with tag %s"), *GetOwner()->GetName(), *GetName(), *SocketTag.ToString())
 	return nullptr;
 }
 
@@ -111,7 +112,7 @@ FSocketMeshConfig USocketManagerComponent::GetSocketMeshConfig(const FGameplayTa
 {
 	const FSocketMeshConfig* SocketConfig = SocketConfigs.FindByPredicate([SocketTag](const FSocketMeshConfig& Config)
 	{
-		return Config.SocketTag == SocketTag;
+		return Config.SocketTag.MatchesTagExact(SocketTag);
 	});
 	return SocketConfig ? *SocketConfig : FSocketMeshConfig();
 }
