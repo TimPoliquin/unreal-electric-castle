@@ -40,4 +40,5 @@ private:
 	TArray<FSocketMeshConfig> SocketConfigs;
 
 	FSocketMeshConfig GetSocketMeshConfig(const FGameplayTag& SocketTag) const;
+	const USkeletalMeshSocket* GetSocket(const FGameplayTag& SocketTag) const;
 };

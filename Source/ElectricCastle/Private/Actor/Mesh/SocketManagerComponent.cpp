@@ -6,6 +6,7 @@
 #include "Actor/Mesh/SocketManagerActor.h"
 #include "Actor/Mesh/SocketManagerTypes.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
+#include "Engine/SkeletalMeshSocket.h"
 #include "Net/UnrealNetwork.h"
 
 
@@ -115,4 +116,13 @@ FSocketMeshConfig USocketManagerComponent::GetSocketMeshConfig(const FGameplayTa
 		return Config.SocketTag.MatchesTagExact(SocketTag);
 	});
 	return SocketConfig ? *SocketConfig : FSocketMeshConfig();
+}
+
+const USkeletalMeshSocket* USocketManagerComponent::GetSocket(const FGameplayTag& SocketTag) const
+{
+	if (const FSocketMeshConfig& SocketConfig = GetSocketMeshConfig(SocketTag); SocketConfig.IsValid())
+	{
+		return SocketConfig.MeshComponent.Get()->GetSocketByName(SocketConfig.SocketName);
+	}
+	return nullptr;
 }

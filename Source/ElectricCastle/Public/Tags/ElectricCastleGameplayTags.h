@@ -217,7 +217,9 @@ struct FElectricCastleGameplayTags
 	/* Equipment Tags */
 	FGameplayTag Item_Type_Equipment_Staff;
 	FGameplayTag Item_Type_Equipment_FishingRod;
+	FGameplayTag Item_Type_Equipment_Weapon;
 	FGameplayTag Item_Type_Equipment_Weapon_Futureman_Blaster;
+
 
 	/* Equipment Tags */
 	FGameplayTag Equipment;
