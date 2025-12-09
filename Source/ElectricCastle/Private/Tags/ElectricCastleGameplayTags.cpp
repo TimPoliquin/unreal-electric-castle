@@ -621,6 +621,11 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FName("Item.Type.Equipment.Staff"),
 		FString("Staff - used for magic!")
 	);
+	Instance.Item_Type_Equipment_Weapon
+		= TagManager.AddNativeGameplayTag(
+			FName("Item.Type.Equipment.Weapon"),
+			FString("Weapon root tag")
+		);
 	Instance.Item_Type_Equipment_Weapon_Futureman_Blaster
 		= TagManager.AddNativeGameplayTag(
 			FName("Item.Type.Equipment.Weapon.Futureman.Blaster"),
