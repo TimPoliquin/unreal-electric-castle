@@ -34,3 +34,13 @@ struct ELECTRICCASTLE_API FSocketMeshConfig
 		return MeshComponent.IsValid() && SocketTag.IsValid() && !SocketName.IsNone();
 	}
 };
+
+USTRUCT(BlueprintType)
+struct ELECTRICCASTLE_API FSocketAttachConfig
+{
+	GENERATED_BODY()
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FGameplayTag ParentAttachSocketTag = FGameplayTag::EmptyTag;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FSocketConfig TipSocketConfig;
+};
