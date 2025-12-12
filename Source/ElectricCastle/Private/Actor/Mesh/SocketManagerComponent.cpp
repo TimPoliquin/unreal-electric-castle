@@ -80,7 +80,7 @@ void USocketManagerComponent::RegisterSocketConfig(const FSocketMeshConfig& Sock
 	SocketConfigs.Add(SocketConfig);
 }
 
-void USocketManagerComponent::AttachByTag(USkeletalMeshComponent* InSkeletalMesh, const FGameplayTag SocketTag) const
+void USocketManagerComponent::AttachByTag(USceneComponent* InSkeletalMesh, const FGameplayTag SocketTag) const
 {
 	if (!GetOwner()->HasAuthority())
 	{
