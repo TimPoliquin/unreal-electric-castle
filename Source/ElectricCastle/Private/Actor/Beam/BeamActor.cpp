@@ -41,7 +41,7 @@ void ABeamActor::Update_Implementation()
 
 void ABeamActor::TraceDestination_Implementation(FHitResult& HitResult)
 {
-	UElectricCastleAbilitySystemLibrary::FindHitBySphereTrace(this, FSphereTraceParams(TraceDistance, TraceRadius, TraceChannel, bDebug), HitResult);
+	UElectricCastleAbilitySystemLibrary::FindHitBySphereTrace(TraceOrigin ? TraceOrigin : this, FSphereTraceParams(TraceDistance, TraceRadius, TraceChannel, bDebug), HitResult);
 }
 
 void ABeamActor::UpdateBeamDestination_Implementation(const FHitResult& HitResult)
@@ -87,6 +87,11 @@ void ABeamActor::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& Out
 	DOREPLIFETIME(ABeamActor, WebCascadeParams);
 	DOREPLIFETIME(ABeamActor, ApplyEffectToTarget);
 	DOREPLIFETIME(ABeamActor, EffectLevel);
+	DOREPLIFETIME(ABeamActor, TraceDistance);
+	DOREPLIFETIME(ABeamActor, TraceRadius);
+	DOREPLIFETIME(ABeamActor, TraceChannel);
+	DOREPLIFETIME(ABeamActor, ChildBeams);
+	DOREPLIFETIME(ABeamActor, TraceOrigin);
 }
 
 void ABeamActor::SetLinearCascadeParams(const FBeamCascadeLinearParams& InParams)
@@ -112,6 +117,11 @@ void ABeamActor::SetTraceParams(const float InTraceDistance, const float InTrace
 	TraceRadius = InTraceRadius;
 	TraceChannel = InTraceChannel;
 	bDebug = bInDebug;
+}
+
+void ABeamActor::SetTraceOrigin(AActor* InTraceOrigin)
+{
+	TraceOrigin = InTraceOrigin;
 }
 
 void ABeamActor::Terminate_Implementation()

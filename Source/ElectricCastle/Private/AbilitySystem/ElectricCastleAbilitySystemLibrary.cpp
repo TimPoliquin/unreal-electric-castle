@@ -841,6 +841,7 @@ AActor* UElectricCastleAbilitySystemLibrary::FindHitBySphereTrace(
 	const FVector End = Start + Player->GetActorForwardVector() * TraceParams.TraceDistance;
 
 	FCollisionQueryParams Params;
+	Params.bDebugQuery = TraceParams.bDebug;
 	Params.AddIgnoredActor(Player); // Don’t hit yourself
 
 	if (World->SweepSingleByChannel(

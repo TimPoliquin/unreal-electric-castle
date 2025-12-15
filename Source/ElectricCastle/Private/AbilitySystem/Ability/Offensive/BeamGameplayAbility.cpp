@@ -91,6 +91,7 @@ void UBeamGameplayAbility::SpawnBeam_Implementation()
 			break;
 		}
 		BeamActor->SetTraceParams(MaxBeamLength.GetValueAtLevel(GetAbilityLevel()), BeamRadius.GetValueAtLevel(GetAbilityLevel()), BeamTraceChannel, bDebug);
+		BeamActor->SetTraceOrigin(GetAvatarActorFromActorInfo());
 	}
 	BeamActor->FinishSpawning(SourceObject->GetActorTransform());
 	if (const USocketManagerComponent* SocketManagerComponent = ISocketManagerActor::GetSocketManagerComponent(SourceObject))
