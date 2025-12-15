@@ -12,11 +12,12 @@
 ABeamActor::ABeamActor()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	SetRootComponent(CreateDefaultSubobject<USceneComponent>(TEXT("Root")));
 	BeamComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Beam Component"));
 	BeamComponent->SetupAttachment(GetRootComponent());
 	SFXComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("SFX Component"));
 	SFXComponent->SetupAttachment(GetRootComponent());
-	SetReplicates(true);
+	bReplicates = true;
 }
 
 // Called when the game starts or when spawned
