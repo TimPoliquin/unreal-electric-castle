@@ -22,7 +22,6 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	void SetLinearCascadeParams(const FBeamCascadeLinearParams& InParams);
-	void SetWebCascadeParams(const FBeamCascadeWebParams& InParams);
 	void SetNoCascadeParams();
 	void SetTraceParams(const float InTraceDistance, const float InTraceRadius, const ECollisionChannel InTraceChannel, const bool bInDebug);
 	void SetTraceOrigin(AActor* InTraceOrigin);
@@ -47,8 +46,6 @@ protected:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void SpawnChildBeams_Linear(const FHitResult& HitResult);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void SpawnChildBeams_Web(const FHitResult& HitResult);
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void SpawnChildBeam(const FHitResult& OriginHit, const FVector& DestinationHit);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void InitializeChildBeamProperties(ABeamActor* ChildBeam, const FHitResult& HitResult);
@@ -59,7 +56,6 @@ protected:
 
 	// Helper functions
 	void UpdateChildBeam_Linear(ABeamActor* ChildBeam, const FHitResult& ParentHitResult);
-	void UpdateChildBeam_Web(ABeamActor* ChildBeam, const FHitResult& HitResult);
 	FVector CalculateReflectedDirection(const FHitResult& HitResult) const;
 	void DrawReflectionDebug(const FHitResult& HitResult, const FVector& ReflectedDir) const;
 
@@ -71,8 +67,6 @@ protected:
 	EBeamCascadeType CascadeType = EBeamCascadeType::None;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated, Category="Properties", meta=(ClampMin = "0", UIMin = "0", EditCondition="CascadeType == EBeamCascadeType::Linear", EditConditionHides))
 	FBeamCascadeLinearParams LinearCascadeParams;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated, Category="Properties", meta=(ClampMin = "0", UIMin = "0", EditCondition="CascadeType == EBeamCascadeType::Web", EditConditionHides))
-	FBeamCascadeWebParams WebCascadeParams;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated, Category="Properties")
 	TSubclassOf<UGameplayEffect> ApplyEffectToTarget;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category="Properties", meta=(EditCondition="ApplyEffectToTarget != nullptr", EditConditionHides))
@@ -88,7 +82,7 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Replicated)
 	TObjectPtr<AActor> TraceOrigin;
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	TArray<AActor*> IgnoreActors;
 	UPROPERTY(BlueprintReadOnly, Replicated)
 	TArray<TObjectPtr<ABeamActor>> ChildBeams;

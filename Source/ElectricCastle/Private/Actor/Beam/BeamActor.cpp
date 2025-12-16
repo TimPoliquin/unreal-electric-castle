@@ -78,6 +78,10 @@ void ABeamActor::UpdateBeamDestination_Implementation(const FHitResult& HitResul
 
 void ABeamActor::UpdateBeamTargetEffect_Implementation(const FHitResult& HitResult)
 {
+	if (!HasAuthority())
+	{
+		return;
+	}
 	if (HitResult.GetActor() == LastTraceHitResult.GetActor())
 	{
 		// Same target - just update child beam positions
@@ -126,9 +130,6 @@ void ABeamActor::SpawnChildBeams_Implementation(const FHitResult& HitResult)
 		case EBeamCascadeType::Linear:
 			SpawnChildBeams_Linear(HitResult);
 			break;
-		case EBeamCascadeType::Web:
-			SpawnChildBeams_Web(HitResult);
-			break;
 		default:
 			break;
 		}
@@ -145,11 +146,6 @@ void ABeamActor::SpawnChildBeams_Linear_Implementation(const FHitResult& HitResu
 	}
 
 	SpawnChildBeam(HitResult, ReflectedDir);
-}
-
-void ABeamActor::SpawnChildBeams_Web_Implementation(const FHitResult& HitResult)
-{
-	// TODO: Implement web cascade
 }
 
 void ABeamActor::SpawnChildBeam_Implementation(const FHitResult& OriginHit, const FVector& ChildBeamDirection)
@@ -222,15 +218,19 @@ void ABeamActor::UpdateChildBeams_Implementation(const FHitResult& HitResult)
 	{
 		for (ABeamActor* ChildBeam : ChildBeams)
 		{
+			if (!IsValid(ChildBeam))
+			{
+				return;
+			}
 			switch (CascadeType)
 			{
+			case EBeamCascadeType::None:
+				break;
 			case EBeamCascadeType::Linear:
 				UpdateChildBeam_Linear(ChildBeam, HitResult);
 				break;
-			case EBeamCascadeType::Web:
-				UpdateChildBeam_Web(ChildBeam, HitResult);
-				break;
 			default:
+				UE_LOG(LogElectricCastle, Warning, TEXT("[%s] Unhandled cascade type: %s"), *GetName(), *UEnum::GetValueAsString(CascadeType))
 				break;
 			}
 		}
@@ -244,21 +244,17 @@ void ABeamActor::UpdateChildBeams_Implementation(const FHitResult& HitResult)
 void ABeamActor::UpdateChildBeam_Linear(ABeamActor* ChildBeam, const FHitResult& ParentHitResult)
 {
 	const FVector ReflectedDir = CalculateReflectedDirection(ParentHitResult);
-
 	// Update child beam transform
 	ChildBeam->SetActorLocationAndRotation(ParentHitResult.ImpactPoint, ReflectedDir.ToOrientationQuat());
 	ChildBeam->Update();
 }
 
-void ABeamActor::UpdateChildBeam_Web(ABeamActor* ChildBeam, const FHitResult& HitResult)
-{
-	// TODO - actually implement these details!
-	ChildBeam->SetActorLocation(HitResult.ImpactPoint);
-	ChildBeam->Update();
-}
-
 void ABeamActor::TerminateChildBeams_Implementation()
 {
+	if (!HasAuthority())
+	{
+		return;
+	}
 	UE_LOG(LogElectricCastle, Warning, TEXT("[%s] Terminating child beams: %d"), *GetName(), ChildBeams.Num())
 	if (ChildBeams.IsEmpty())
 	{
@@ -305,7 +301,6 @@ void ABeamActor::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& Out
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ABeamActor, CascadeType);
 	DOREPLIFETIME(ABeamActor, LinearCascadeParams);
-	DOREPLIFETIME(ABeamActor, WebCascadeParams);
 	DOREPLIFETIME(ABeamActor, ApplyEffectToTarget);
 	DOREPLIFETIME(ABeamActor, EffectLevel);
 	DOREPLIFETIME(ABeamActor, TraceDistance);
@@ -319,12 +314,6 @@ void ABeamActor::SetLinearCascadeParams(const FBeamCascadeLinearParams& InParams
 {
 	CascadeType = EBeamCascadeType::Linear;
 	LinearCascadeParams = InParams;
-}
-
-void ABeamActor::SetWebCascadeParams(const FBeamCascadeWebParams& InParams)
-{
-	CascadeType = EBeamCascadeType::Web;
-	WebCascadeParams = InParams;
 }
 
 void ABeamActor::SetNoCascadeParams()
@@ -372,8 +361,9 @@ bool ABeamActor::ShouldSpawnChildBeamsFromTarget(const AActor* Target) const
 			return false;
 		case EBeamCascadeType::Linear:
 			return LinearCascadeParams.MaxCascades > 0;
-		case EBeamCascadeType::Web:
-			return WebCascadeParams.MaxCascades > 0;
+		default:
+			UE_LOG(LogElectricCastle, Warning, TEXT("[%s] Unhandled cascade type: %s"), *GetName(), *UEnum::GetValueAsString(CascadeType))
+			return false;
 		}
 	}
 	return false;

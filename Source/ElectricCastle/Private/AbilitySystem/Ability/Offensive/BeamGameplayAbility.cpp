@@ -87,8 +87,8 @@ void UBeamGameplayAbility::SpawnBeam_Implementation()
 		case EBeamCascadeType::Linear:
 			BeamActor->SetLinearCascadeParams(FBeamCascadeLinearParams(CascadeDistance.GetValueAtLevel(GetAbilityLevel()), MaxCascades.GetValueAtLevel(GetAbilityLevel())));
 			break;
-		case EBeamCascadeType::Web:
-			BeamActor->SetWebCascadeParams(FBeamCascadeWebParams(CascadeDistance.GetValueAtLevel(GetAbilityLevel()), MaxCascades.GetValueAtLevel(GetAbilityLevel())));
+		default:
+			UE_LOG(LogElectricCastle, Warning, TEXT("[%s] Unhandled cascade type: %s"), *GetName(), *UEnum::GetValueAsString(BeamCascadeType))
 			break;
 		}
 		BeamActor->SetTraceParams(MaxBeamLength.GetValueAtLevel(GetAbilityLevel()), BeamRadius.GetValueAtLevel(GetAbilityLevel()), BeamTraceChannel, bDebug);
