@@ -16,7 +16,6 @@ class ELECTRICCASTLE_API UArrayUtils : public UBlueprintFunctionLibrary
 
 public:
 	template <typename T>
-	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static T GetRandomElement(const TArray<T>& Array);
 	/**
 	 *Returns <code>true</code> if Source contains all elements in the Elements list

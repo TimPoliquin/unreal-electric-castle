@@ -32,7 +32,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void RegisterSocketConfig(const FSocketMeshConfig& SocketConfig);
 	UFUNCTION(BlueprintCallable)
-	void AttachByTag(USkeletalMeshComponent* InSkeletalMesh, const FGameplayTag SocketTag) const;
+	void AttachByTag(USceneComponent* InSkeletalMesh, FGameplayTag SocketTag) const;
 	static USocketManagerComponent* GetSocketManagerComponent(const UObject* Actor);
 
 private:
