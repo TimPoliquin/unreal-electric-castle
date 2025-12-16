@@ -7,6 +7,7 @@
 #include "AbilitySystemComponent.h"
 #include "Interaction/CombatInterface.h"
 #include "Actor/Beam/BeamActor.h"
+#include "Actor/Beam/DamageBeamActor.h"
 #include "Actor/Mesh/SocketManagerActor.h"
 #include "Actor/Mesh/SocketManagerComponent.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
@@ -92,6 +93,10 @@ void UBeamGameplayAbility::SpawnBeam_Implementation()
 		}
 		BeamActor->SetTraceParams(MaxBeamLength.GetValueAtLevel(GetAbilityLevel()), BeamRadius.GetValueAtLevel(GetAbilityLevel()), BeamTraceChannel, bDebug);
 		BeamActor->SetTraceOrigin(GetAvatarActorFromActorInfo());
+		if (ADamageBeamActor* DamageBeamActor = Cast<ADamageBeamActor>(BeamActor))
+		{
+			DamageBeamActor->SetDamageEffectParams(MakeDamageEffectParamsFromClassDefaults(nullptr));
+		}
 	}
 	BeamActor->FinishSpawning(SourceObject->GetActorTransform());
 	if (const USocketManagerComponent* SocketManagerComponent = ISocketManagerActor::GetSocketManagerComponent(SourceObject))
