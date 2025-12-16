@@ -245,6 +245,15 @@ public:
 		TArray<HitResult> Overlaps
 	);
 
+	static void TraceForActorsInRadius(
+		const UObject* WorldContextObject,
+		const TArray<AActor*>& ActorsToIgnore,
+		const FVector& SphereOrigin,
+		float Radius,
+		TArray<AActor*>& OutOverlappingActors,
+		bool bDebug = false
+	);
+
 	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayMechanics")
 	static void GetLiveActorsWithinRadius(
 		const UObject* WorldContextObject,
@@ -284,7 +293,7 @@ public:
 	static bool AbilityHasAnySlot(const FGameplayAbilitySpec& AbilitySpec);
 
 	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")
-	static FGameplayEffectContextHandle ApplyDamageEffect(const FDamageEffectParams& DamageEffectParams);
+	static FActiveGameplayEffectHandle ApplyDamageEffect(const FDamageEffectParams& DamageEffectParams);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="ElectricCastleAbilitySystemLibrary|GameplayMechanics")
 	static TArray<FRotator> EvenlySpacedRotators(

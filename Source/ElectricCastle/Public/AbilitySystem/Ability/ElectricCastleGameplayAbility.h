@@ -7,8 +7,6 @@
 #include "Utils/RichTextMacros.h"
 #include "ElectricCastleGameplayAbility.generated.h"
 
-struct FSphereTraceParams;
-
 USTRUCT(BlueprintType)
 struct ELECTRICCASTLE_API FAbilityCooldownConfig
 {

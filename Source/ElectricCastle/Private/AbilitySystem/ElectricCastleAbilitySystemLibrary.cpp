@@ -234,6 +234,55 @@ int32 UElectricCastleAbilitySystemLibrary::GetXPReward(
 	return 0;
 }
 
+void UElectricCastleAbilitySystemLibrary::TraceForActorsInRadius(
+	const UObject* WorldContextObject,
+	const TArray<AActor*>& ActorsToIgnore,
+	const FVector& SphereOrigin,
+	const float Radius,
+	TArray<AActor*>& OutOverlappingActors,
+	const bool bDebug
+)
+{
+	FCollisionQueryParams SphereParams;
+	SphereParams.AddIgnoredActors(ActorsToIgnore);
+	if (const UWorld* World = GEngine->GetWorldFromContextObject(
+		WorldContextObject,
+		EGetWorldErrorMode::LogAndReturnNull
+	))
+	{
+		TArray<FOverlapResult> Overlaps;
+		World->OverlapMultiByObjectType(
+			Overlaps,
+			SphereOrigin,
+			FQuat::Identity,
+			FCollisionObjectQueryParams(FCollisionObjectQueryParams::InitType::AllObjects),
+			FCollisionShape::MakeSphere(Radius),
+			SphereParams
+		);
+		if (bDebug)
+		{
+			DrawDebugSphere(World, SphereOrigin, Radius, 10, FColor::Red, false, 1.f, 0, 1.f);
+		}
+		for (const FOverlapResult& Overlap : Overlaps)
+		{
+			if (IsValid(Overlap.GetActor()))
+			{
+				OutOverlappingActors.Add(Overlap.GetActor());
+			}
+		}
+	}
+	else
+	{
+		UE_LOG(
+			LogElectricCastle,
+			Warning,
+			TEXT("[%s] No world found for context object %s!"),
+			*FString("ElectricCastleAbilitySystemLibrary::GetLivePlayersWithinRadius"),
+			*WorldContextObject->GetName()
+		)
+	}
+}
+
 void UElectricCastleAbilitySystemLibrary::GetLiveActorsWithinRadius(
 	const UObject* WorldContextObject,
 	const TArray<AActor*>& ActorsToIgnore,
@@ -403,7 +452,7 @@ bool UElectricCastleAbilitySystemLibrary::AbilityHasAnySlot(const FGameplayAbili
 	return AbilitySpec.GetDynamicSpecSourceTags().HasTag(FElectricCastleGameplayTags::Get().InputTag);
 }
 
-FGameplayEffectContextHandle UElectricCastleAbilitySystemLibrary::ApplyDamageEffect(
+FActiveGameplayEffectHandle UElectricCastleAbilitySystemLibrary::ApplyDamageEffect(
 	const FDamageEffectParams& DamageEffectParams
 )
 {
@@ -457,8 +506,7 @@ FGameplayEffectContextHandle UElectricCastleAbilitySystemLibrary::ApplyDamageEff
 		GameplayTags.Effect_Debuff_Stat_Frequency,
 		DamageEffectParams.DebuffFrequency
 	);
-	DamageEffectParams.TargetAbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data);
-	return EffectContextHandle;
+	return DamageEffectParams.TargetAbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data);
 }
 
 TArray<FRotator> UElectricCastleAbilitySystemLibrary::EvenlySpacedRotators(
@@ -832,7 +880,7 @@ AActor* UElectricCastleAbilitySystemLibrary::FindHitBySphereTrace(
 	{
 		return nullptr;
 	}
-	UWorld* World = Player->GetWorld();
+	const UWorld* World = Player->GetWorld();
 	if (!IsValid(World))
 	{
 		return nullptr;
@@ -842,7 +890,11 @@ AActor* UElectricCastleAbilitySystemLibrary::FindHitBySphereTrace(
 
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(Player); // Don’t hit yourself
-
+	Params.AddIgnoredActors(TraceParams.ActorsToIgnore);
+	if (TraceParams.bDebug)
+	{
+		DrawDebugSweptSphere(World, Start, End, TraceParams.TraceRadius, FColor::Yellow, false, 5);
+	}
 	if (World->SweepSingleByChannel(
 		OutHitResult,
 		Start,

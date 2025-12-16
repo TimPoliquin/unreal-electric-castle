@@ -27,6 +27,8 @@ struct ELECTRICCASTLE_API FSphereTraceParams
 	float TraceRadius = 1.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TEnumAsByte<ECollisionChannel> TraceChannel = ECC_Pawn;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<AActor*> ActorsToIgnore;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bDebug = false;
 };
