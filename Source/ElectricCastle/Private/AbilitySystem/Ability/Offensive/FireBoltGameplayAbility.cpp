@@ -12,7 +12,7 @@ FString UFireBoltGameplayAbility::GetDescription_Implementation(const int32 Abil
 {
 	const float ManaCost = GetManaCost(AbilityLevel);
 	const float Cooldown = GetCooldown(AbilityLevel);
-	const int32 Damage = GetDamageAtLevel(AbilityLevel);
+	const int32 Damage = GetDamageMagnitudeAtLevel(AbilityLevel);
 	const FString Bolts = AbilityLevel == 1
 		                      ? FString::Printf(TEXT("a bolt"))
 		                      : FString::Printf(

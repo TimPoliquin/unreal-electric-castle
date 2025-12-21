@@ -7,6 +7,8 @@
 #include "DamageTextComponent.generated.h"
 
 
+enum class EAttackMessageType : uint8;
+
 UCLASS(BlueprintType, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class ELECTRICCASTLE_API UDamageTextComponent : public UWidgetComponent
 {
@@ -14,5 +16,5 @@ class ELECTRICCASTLE_API UDamageTextComponent : public UWidgetComponent
 
 public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-	void SetDamageText(const float Damage, const bool IsBlockedHit, const bool IsCriticalHit);
+	void SetDamageText(const float Damage, const EAttackMessageType AttackMessageType);
 };

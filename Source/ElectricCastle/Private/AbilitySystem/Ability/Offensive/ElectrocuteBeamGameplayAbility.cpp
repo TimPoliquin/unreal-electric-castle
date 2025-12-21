@@ -7,7 +7,7 @@ FString UElectrocuteBeamGameplayAbility::GetDescription_Implementation(const int
 {
 	const float ManaCost = GetManaCost(AbilityLevel);
 	const float Cooldown = GetCooldown(AbilityLevel);
-	const int32 Damage = GetDamageAtLevel(AbilityLevel);
+	const int32 Damage = GetDamageMagnitudeAtLevel(AbilityLevel);
 	return FString::Printf(
 		TEXT(
 			// Title

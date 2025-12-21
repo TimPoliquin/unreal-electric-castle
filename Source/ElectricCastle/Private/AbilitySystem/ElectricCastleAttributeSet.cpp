@@ -197,47 +197,54 @@ void UElectricCastleAttributeSet::HandleIncomingDamage(const FEffectProperties& 
 {
 	const float IncomingDamage = GetMeta_IncomingDamage();
 	SetMeta_IncomingDamage(0.f);
-	if (IncomingDamage > 0.f)
+	HandleOutgoingDamage(Props, IncomingDamage);
+	const bool bIsCriticalHit = UElectricCastleAbilitySystemLibrary::IsCriticalHit(Props.EffectContextHandle);
+	const bool bIsMiss = UElectricCastleAbilitySystemLibrary::IsEvadedAttack(Props.EffectContextHandle);
+	const float NewHealth = GetHealth() - IncomingDamage;
+	const bool bFatal = NewHealth <= 0.f;
+	SetHealth(FMath::Clamp(NewHealth, 0.f, GetMaxHealth()));
+	if (!bFatal)
 	{
-		HandleOutgoingDamage(Props, IncomingDamage);
-		const float NewHealth = GetHealth() - IncomingDamage;
-		const bool bFatal = NewHealth <= 0.f;
-		SetHealth(FMath::Clamp(NewHealth, 0.f, GetMaxHealth()));
-		if (!bFatal)
+		// only hit react on critical hits
+		if (bIsCriticalHit)
 		{
-			if (UElectricCastleAbilitySystemLibrary::IsCriticalHit(Props.EffectContextHandle))
-			{
-				FGameplayTagContainer TagContainer;
-				TagContainer.AddTag(
-					ICombatInterface::GetHitReactAbilityTagByDamageType(
-						Props.Target.AvatarActor,
-						UElectricCastleAbilitySystemLibrary::GetDamageTypeTag(Props.EffectContextHandle)
-					)
-				);
-				Props.Target.AbilitySystemComponent->TryActivateAbilitiesByTag(
-					TagContainer
-				);
-			}
-			if (const FVector KnockbackForce = UElectricCastleAbilitySystemLibrary::GetKnockbackVector(Props.EffectContextHandle);
-				!
-				KnockbackForce.IsNearlyZero(1.f))
-			{
-				Props.Target.Character->LaunchCharacter(KnockbackForce, true, true);
-			}
+			FGameplayTagContainer TagContainer;
+			TagContainer.AddTag(
+				ICombatInterface::GetHitReactAbilityTagByDamageType(
+					Props.Target.AvatarActor,
+					UElectricCastleAbilitySystemLibrary::GetDamageTypeTag(Props.EffectContextHandle)
+				)
+			);
+			Props.Target.AbilitySystemComponent->TryActivateAbilitiesByTag(
+				TagContainer
+			);
 		}
-		else
+		// TODO - play an evasion animation if the enemy evades the attack?
+		if (bIsMiss)
 		{
-			if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(Props.Target.AvatarActor))
-			{
-				CombatInterface->Die();
-				CombatInterface->ApplyDeathImpulse(
-					UElectricCastleAbilitySystemLibrary::GetDeathImpulse(Props.EffectContextHandle)
-				);
-			}
-			SendXPEvent(Props);
+			// TODO - play evade/dodge animation?
 		}
-		ShowDamageText(Props, IncomingDamage);
+		if (const FVector KnockbackForce = UElectricCastleAbilitySystemLibrary::GetKnockbackVector(Props.EffectContextHandle);
+			!KnockbackForce.IsNearlyZero(1.f))
+		{
+			Props.Target.Character->LaunchCharacter(KnockbackForce, true, true);
+		}
 	}
+	else
+	{
+		// target received lethal damage - perform the death action
+		if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(Props.Target.AvatarActor))
+		{
+			CombatInterface->Die();
+			CombatInterface->ApplyDeathImpulse(
+				UElectricCastleAbilitySystemLibrary::GetDeathImpulse(Props.EffectContextHandle)
+			);
+		}
+		// grant xp on death
+		SendXPEvent(Props);
+	}
+	// show damage results
+	ShowDamageText(Props, IncomingDamage);
 }
 
 void UElectricCastleAttributeSet::HandleIncomingXP(const FEffectProperties& Props)
@@ -341,8 +348,11 @@ void UElectricCastleAttributeSet::ShowDamageText(const FEffectProperties& Props,
 			PlayerController->ShowDamageNumber(
 				Props.Target.Character,
 				IncomingDamage,
-				UElectricCastleAbilitySystemLibrary::IsBlockedHit(Props.EffectContextHandle),
-				UElectricCastleAbilitySystemLibrary::IsCriticalHit(Props.EffectContextHandle)
+				UElectricCastleAbilitySystemLibrary::IsEvadedAttack(Props.EffectContextHandle)
+					? EAttackMessageType::Miss
+					: UElectricCastleAbilitySystemLibrary::IsCriticalHit(Props.EffectContextHandle)
+					? EAttackMessageType::Critical
+					: EAttackMessageType::Normal
 			);
 		}
 		else if (AElectricCastlePlayerController* TargetPlayerController = Cast<AElectricCastlePlayerController>(
@@ -353,8 +363,11 @@ void UElectricCastleAttributeSet::ShowDamageText(const FEffectProperties& Props,
 			TargetPlayerController->ShowDamageNumber(
 				Props.Target.Character,
 				IncomingDamage,
-				UElectricCastleAbilitySystemLibrary::IsBlockedHit(Props.EffectContextHandle),
-				UElectricCastleAbilitySystemLibrary::IsCriticalHit(Props.EffectContextHandle)
+				UElectricCastleAbilitySystemLibrary::IsEvadedAttack(Props.EffectContextHandle)
+					? EAttackMessageType::Miss
+					: UElectricCastleAbilitySystemLibrary::IsCriticalHit(Props.EffectContextHandle)
+					? EAttackMessageType::Critical
+					: EAttackMessageType::Normal
 			);
 		}
 	}

@@ -42,22 +42,6 @@ void UDamageGameplayAbility::EndAbility(
 	}
 }
 
-
-void UDamageGameplayAbility::DealDamage(AActor* TargetActor)
-{
-	const FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(DamageEffectClass, 1);
-	const int32 Level = GetAbilityLevel();
-	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(
-		SpecHandle,
-		DamageConfig.DamageTypeTag,
-		DamageConfig.Amount.GetValueAtLevel(Level)
-	);
-	GetAbilitySystemComponentFromActorInfo()->ApplyGameplayEffectSpecToTarget(
-		*SpecHandle.Data.Get(),
-		UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor)
-	);
-}
-
 void UDamageGameplayAbility::DamageTargets_Implementation(
 	const TArray<AActor*>& Targets,
 	const FVector& ImpactLocation,
@@ -93,13 +77,13 @@ FTaggedMontage UDamageGameplayAbility::GetRandomAttackMontage() const
 
 FDamageEffectParams UDamageGameplayAbility::MakeDamageEffectParamsFromClassDefaults(
 	AActor* TargetActor,
-	FVector RadialDamageOrigin,
-	bool bOverrideKnockbackDirection,
-	FVector InKnockbackDirectionOverride,
-	bool bOverrideDeathImpulse,
-	FVector InDeathImpulseDirectionOverride,
-	bool bOverridePitch,
-	float PitchOverride
+	const FVector RadialDamageOrigin,
+	const bool bOverrideKnockbackDirection,
+	const FVector InKnockbackDirectionOverride,
+	const bool bOverrideDeathImpulse,
+	const FVector InDeathImpulseDirectionOverride,
+	const bool bOverridePitch,
+	const float PitchOverride
 ) const
 {
 	FGameplayTagContainer AssetTags;
@@ -143,6 +127,16 @@ FVector UDamageGameplayAbility::GetFaceTargetLocation() const
 	return GetAvatarActorFromActorInfo()->GetActorLocation();
 }
 
+FGameplayCueParameters UDamageGameplayAbility::MakeGameplayCueParamsFromMontageTag(
+	const FGameplayTag& MontageTag,
+	const FVector& ImpactLocation
+) const
+{
+	FGameplayCueParameters CueParams = MakeDefaultGameplayCueParams(ImpactLocation);
+	CueParams.AggregatedSourceTags.AddTag(MontageTag);
+	return CueParams;
+}
+
 FGameplayCueParameters UDamageGameplayAbility::MakeDefaultGameplayCueParams(const FVector& ImpactLocation) const
 {
 	FGameplayCueParameters CueParams;
@@ -153,16 +147,6 @@ FGameplayCueParameters UDamageGameplayAbility::MakeDefaultGameplayCueParams(cons
 	CueParams.SourceObject = IEnemyInterface::GetCombatTarget(GetAvatarActorFromActorInfo());
 	CueParams.Location = ImpactLocation;
 	CueParams.AggregatedSourceTags.AddTagFast(GetDefaultAbilityTag());
-	return CueParams;
-}
-
-FGameplayCueParameters UDamageGameplayAbility::MakeGameplayCueParamsFromMontageTag(
-	const FGameplayTag& MontageTag,
-	const FVector& ImpactLocation
-) const
-{
-	FGameplayCueParameters CueParams = MakeDefaultGameplayCueParams(ImpactLocation);
-	CueParams.AggregatedSourceTags.AddTag(MontageTag);
 	return CueParams;
 }
 
@@ -259,11 +243,11 @@ void UDamageGameplayAbility::FaceTarget_Implementation()
 	}
 }
 
-int32 UDamageGameplayAbility::GetDamageAtLevel(
+float UDamageGameplayAbility::GetDamageMagnitudeAtLevel(
 	const int32 AbilityLevel
 ) const
 {
-	return DamageConfig.GetDamageAtLevel(AbilityLevel);
+	return DamageConfig.GetDamageMagnitudeAtLevel(AbilityLevel);
 }
 
 FGameplayTag UDamageGameplayAbility::GetDefaultAbilityTag() const
