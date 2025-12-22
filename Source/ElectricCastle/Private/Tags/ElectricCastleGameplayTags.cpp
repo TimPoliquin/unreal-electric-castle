@@ -162,6 +162,7 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 	);
 
 	// Effect Tags
+	Instance.Effect_Block_Damage = TagManager.AddNativeGameplayTag(FName("Effect.Block.Damage"), FString("When this tag is active, the character will not receive any damage"));
 	Instance.Effect_Damage = TagManager.AddNativeGameplayTag(
 		FName("Effect.Damage"),
 		FString("Damage gameplay effect")

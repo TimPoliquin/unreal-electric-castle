@@ -124,7 +124,7 @@ public:
 		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, AttackPower, OldValue);
 	}
 
-	// Magic Power - Strength + Weapon Magic Power
+	// Magic Power - Intelligence + Weapon Magic Power
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_MagicPower, Category="Secondary Attributes")
 	FGameplayAttributeData MagicPower;
 	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, MagicPower);
