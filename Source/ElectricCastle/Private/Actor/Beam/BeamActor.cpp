@@ -90,15 +90,7 @@ void ABeamActor::UpdateBeamTargetEffect_Implementation(const FHitResult& HitResu
 	}
 
 	// Target changed - clean up old effects
-	if (TargetEffectHandle.IsValid())
-	{
-		UElectricCastleAbilitySystemLibrary::RemoveGameplayEffect(
-			LastTraceHitResult.GetActor(),
-			TargetEffectHandle,
-			false
-		);
-		TargetEffectHandle = FActiveGameplayEffectHandle();
-	}
+	RemoveBeamTargetEffect(LastTraceHitResult.GetActor(), TargetEffectHandle);
 
 	if (HitResult.IsValidBlockingHit() && IsValid(HitResult.GetActor()))
 	{
@@ -114,6 +106,19 @@ FActiveGameplayEffectHandle ABeamActor::ApplyBeamTargetEffect_Implementation(AAc
 		return UElectricCastleAbilitySystemLibrary::ApplyBasicGameplayEffect(Target, ApplyEffectToTarget, EffectLevel);
 	}
 	return FActiveGameplayEffectHandle();
+}
+
+void ABeamActor::RemoveBeamTargetEffect_Implementation(AActor* Target, FActiveGameplayEffectHandle& Handle)
+{
+	if (TargetEffectHandle.IsValid())
+	{
+		UElectricCastleAbilitySystemLibrary::RemoveGameplayEffect(
+			Target,
+			Handle,
+			false
+		);
+		Handle.Invalidate();
+	}
 }
 
 void ABeamActor::SpawnChildBeams_Implementation(const FHitResult& HitResult)
@@ -272,6 +277,19 @@ void ABeamActor::TerminateChildBeams_Implementation()
 
 void ABeamActor::Terminate_Implementation()
 {
+	if (!HasAuthority())
+	{
+		return;
+	}
+	if (TargetEffectHandle.IsValid())
+	{
+		UElectricCastleAbilitySystemLibrary::RemoveGameplayEffect(
+			LastTraceHitResult.GetActor(),
+			TargetEffectHandle,
+			false
+		);
+		TargetEffectHandle.Invalidate();
+	}
 	TerminateChildBeams();
 	Destroy();
 }

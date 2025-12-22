@@ -33,12 +33,22 @@ struct FElectricCastleGameplayEffectContext : public FGameplayEffectContext
 		return bIsBlockedHit;
 	}
 
+	bool IsEvadedAttack() const
+	{
+		return bIsEvadedAttack;
+	}
+
+	void SetIsEvadedAttack(const bool bInIsEvaded)
+	{
+		bIsEvadedAttack = bInIsEvaded;
+	}
+
 	void SetIsBlockedHit(const bool bIn)
 	{
 		this->bIsBlockedHit = bIn;
 	}
 
-	bool IsSuccessfullDebuff() const
+	bool IsSuccessfulDebuff() const
 	{
 		return bIsSuccessfulDebuff;
 	}
@@ -191,6 +201,8 @@ protected:
 	UPROPERTY()
 	bool bIsBlockedHit = false;
 	UPROPERTY()
+	bool bIsEvadedAttack = false;
+	UPROPERTY()
 	bool bIsCriticalHit = false;
 	UPROPERTY()
 	bool bIsSuccessfulDebuff = false;
@@ -335,7 +347,7 @@ struct FElectricCastleDamageConfig
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (Categories = "Damage"))
 	FGameplayTag DamageTypeTag;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	FScalableFloat Amount;
+	FScalableFloat DamageMagnitude;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float DebuffChance = 20.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
@@ -369,9 +381,9 @@ struct FElectricCastleDamageConfig
 		return DamageParams;
 	}
 
-	int32 GetDamageAtLevel(const int32 AbilityLevel) const
+	float GetDamageMagnitudeAtLevel(const int32 AbilityLevel) const
 	{
-		return Amount.GetValueAtLevel(AbilityLevel);
+		return DamageMagnitude.GetValueAtLevel(AbilityLevel);
 	}
 };
 
@@ -392,7 +404,7 @@ struct FDamageEffectParams
 	UPROPERTY(BlueprintReadWrite)
 	TObjectPtr<UAbilitySystemComponent> TargetAbilitySystemComponent = nullptr;
 	UPROPERTY(BlueprintReadWrite)
-	float BaseDamage = 0.f;
+	float DamageMagnitude;
 	UPROPERTY(BlueprintReadWrite)
 	float AbilityLevel = 1.f;
 	UPROPERTY(BlueprintReadWrite)

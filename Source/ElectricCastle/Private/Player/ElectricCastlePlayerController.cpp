@@ -126,8 +126,7 @@ void AElectricCastlePlayerController::HideMagicCircle()
 void AElectricCastlePlayerController::ShowDamageNumber_Implementation(
 	AActor* Target,
 	const float DamageAmount,
-	const bool IsBlockedHit,
-	const bool IsCriticalHit
+	const EAttackMessageType AttackMessageType
 )
 {
 	if (IsValid(Target) && DamageTextComponentClass && IsLocalController())
@@ -136,7 +135,7 @@ void AElectricCastlePlayerController::ShowDamageNumber_Implementation(
 		DamageText->RegisterComponent();
 		DamageText->AttachToComponent(Target->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 		DamageText->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
-		DamageText->SetDamageText(DamageAmount, IsBlockedHit, IsCriticalHit);
+		DamageText->SetDamageText(DamageAmount, AttackMessageType);
 	}
 }
 

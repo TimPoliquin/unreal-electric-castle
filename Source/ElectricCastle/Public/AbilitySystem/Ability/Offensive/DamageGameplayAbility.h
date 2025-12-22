@@ -33,8 +33,6 @@ public:
 		bool bWasCancelled
 	) override;
 
-	UFUNCTION(BlueprintCallable)
-	void DealDamage(AActor* TargetActor);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void DamageTargets(const TArray<AActor*>& Targets, const FVector& ImpactLocation, const FGameplayTag& MontageTag);
 
@@ -100,7 +98,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Properties|Damage", meta=(Categories="GameplayCue"))
 	FGameplayTag ImpactCueTag = FGameplayTag::EmptyTag;
 
-	int32 GetDamageAtLevel(const int32 AbilityLevel) const;
+	float GetDamageMagnitudeAtLevel(const int32 AbilityLevel) const;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Properties")
 	bool bAutoActivateAbilityTag = true;

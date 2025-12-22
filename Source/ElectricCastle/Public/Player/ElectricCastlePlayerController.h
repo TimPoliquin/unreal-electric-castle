@@ -35,6 +35,14 @@ enum class ETargetingStatus
 	TargetingOther,
 };
 
+UENUM(BlueprintType)
+enum class EAttackMessageType : uint8
+{
+	Normal,
+	Critical,
+	Miss
+};
+
 USTRUCT()
 struct FHighlightContext
 {
@@ -127,8 +135,7 @@ public:
 	virtual void ShowDamageNumber(
 		AActor* Target,
 		float DamageAmount,
-		const bool IsBlockedHit,
-		const bool IsCriticalHit
+		const EAttackMessageType InAttackMessageType
 	);
 
 	UFUNCTION(BlueprintCallable)

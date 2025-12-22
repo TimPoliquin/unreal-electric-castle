@@ -22,6 +22,11 @@ public:
 		FGameplayEffectCustomExecutionOutput& OutExecutionOutput
 	) const override;
 
+protected:
+	/** The Armor amount required to halve incoming damage */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float DefenseRatioConstant = 10.f;
+
 private:
 	static float CalculateBaseDamage(
 		const FGameplayEffectCustomExecutionParameters& ExecutionParams,
