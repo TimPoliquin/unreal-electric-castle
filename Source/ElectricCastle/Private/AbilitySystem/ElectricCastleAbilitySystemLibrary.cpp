@@ -1120,7 +1120,7 @@ bool UElectricCastleAbilitySystemLibrary::IsSuccessfulDebuff(const FGameplayEffe
 		FElectricCastleGameplayEffectContext*>(
 		EffectContextHandle.Get()))
 	{
-		return AuraEffectContext->IsSuccessfullDebuff();
+		return AuraEffectContext->IsSuccessfulDebuff();
 	}
 	return false;
 }
@@ -1240,7 +1240,7 @@ void UElectricCastleAbilitySystemLibrary::SetIsEvadedAttack(FGameplayEffectConte
 
 void UElectricCastleAbilitySystemLibrary::SetIsCriticalHit(
 	FGameplayEffectContextHandle& EffectContextHandle,
-	bool InIsCriticalHit
+	const bool InIsCriticalHit
 )
 {
 	if (FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<FElectricCastleGameplayEffectContext*>(

@@ -48,7 +48,7 @@ struct FElectricCastleGameplayEffectContext : public FGameplayEffectContext
 		this->bIsBlockedHit = bIn;
 	}
 
-	bool IsSuccessfullDebuff() const
+	bool IsSuccessfulDebuff() const
 	{
 		return bIsSuccessfulDebuff;
 	}

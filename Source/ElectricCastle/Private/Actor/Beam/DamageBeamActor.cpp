@@ -4,6 +4,7 @@
 #include "Actor/Beam/DamageBeamActor.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystemComponent.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 #include "Net/UnrealNetwork.h"
 
@@ -25,15 +26,55 @@ void ADamageBeamActor::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty
 	DOREPLIFETIME(ADamageBeamActor, DamageEffectParams)
 }
 
+void ADamageBeamActor::Terminate_Implementation()
+{
+	for (TTuple<TObjectPtr<AActor>, FTimerHandle>& HandlePair : DamageEffectTimerHandles)
+	{
+		GetWorldTimerManager().ClearTimer(HandlePair.Value);
+	}
+	DamageEffectTimerHandles.Empty();
+	Super::Terminate_Implementation();
+}
+
 FActiveGameplayEffectHandle ADamageBeamActor::ApplyBeamTargetEffect_Implementation(AActor* Target)
 {
-	if (UAbilitySystemComponent* TargetAbilitySystem = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Target))
+	if (!HasAuthority())
 	{
-		FDamageEffectParams BeamEffectParams = DamageEffectParams;
-		BeamEffectParams.TargetAbilitySystemComponent = TargetAbilitySystem;
-		return UElectricCastleAbilitySystemLibrary::ApplyDamageEffect(BeamEffectParams);
+		return FActiveGameplayEffectHandle();
+	}
+	if (DealDamagePeriodically)
+	{
+		FTimerHandle& TimerHandle = DamageEffectTimerHandles.Add(Target);
+
+		GetWorldTimerManager().SetTimer(TimerHandle, [this, Target]()
+		{
+			if (ICombatInterface::IsAlive(Target))
+			{
+				ApplyDamageEffect(Target);
+			}
+			else
+			{
+				FActiveGameplayEffectHandle PlaceholderHandle;
+				RemoveBeamTargetEffect(Target, PlaceholderHandle);
+			}
+		}, DamagePeriod, true);
+	}
+	else
+	{
+		ApplyDamageEffect(Target);
 	}
 	return FActiveGameplayEffectHandle();
+}
+
+void ADamageBeamActor::RemoveBeamTargetEffect_Implementation(AActor* Target, FActiveGameplayEffectHandle& Handle)
+{
+	Super::RemoveBeamTargetEffect_Implementation(Target, Handle);
+
+	if (FTimerHandle* TimerHandle = DamageEffectTimerHandles.Find(Target))
+	{
+		GetWorldTimerManager().ClearTimer(*TimerHandle);
+		DamageEffectTimerHandles.Remove(Target);
+	}
 }
 
 void ADamageBeamActor::InitializeChildBeamProperties_Implementation(ABeamActor* ChildBeam, const FHitResult& HitResult)
@@ -42,5 +83,19 @@ void ADamageBeamActor::InitializeChildBeamProperties_Implementation(ABeamActor* 
 	if (ADamageBeamActor* DamageBeam = Cast<ADamageBeamActor>(ChildBeam))
 	{
 		DamageBeam->SetDamageEffectParams(DamageEffectParams);
+	}
+}
+
+void ADamageBeamActor::ApplyDamageEffect(AActor* Target) const
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+	if (UAbilitySystemComponent* TargetAbilitySystemComponent = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Target))
+	{
+		FDamageEffectParams BeamEffectParams = DamageEffectParams;
+		BeamEffectParams.TargetAbilitySystemComponent = TargetAbilitySystemComponent;
+		UElectricCastleAbilitySystemLibrary::ApplyDamageEffect(BeamEffectParams);
 	}
 }

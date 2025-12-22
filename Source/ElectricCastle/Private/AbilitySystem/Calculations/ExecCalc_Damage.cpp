@@ -100,42 +100,50 @@ void UExecCalc_Damage::Execute_Implementation(
 	FGameplayEffectCustomExecutionOutput& OutExecutionOutput
 ) const
 {
+	// Note: As implemented, this exec-calc is not safe for use as a duration-based effect. It should only be used on Instant effects.
+	// This is because the GameplayEffectContext used is shared and persisted across the lifetime of the effect,
+	// which can cause values to bleed across multiple executions if they are not properly reset/overridden each execution.
 	const FGameplayEffectSpec& Spec = ExecutionParams.GetOwningSpec();
 	FGameplayEffectContextHandle EffectContextHandle = Spec.GetContext();
 	FAggregatorEvaluateParameters EvaluateParameters;
 	EvaluateParameters.SourceTags = Spec.CapturedSourceTags.GetAggregatedTags();
 	EvaluateParameters.TargetTags = Spec.CapturedTargetTags.GetAggregatedTags();
 
-	// Get Damage Set by Caller Magnitude
-	float Damage = CalculateBaseDamage(ExecutionParams, EvaluateParameters);
-
 	// If the attack was blocked (based on BlockChance), cut the damage in half.
 	if (IsAttackEvadedByTarget(ExecutionParams, EvaluateParameters))
 	{
-		Damage = 0.f;
-		UE_LOG(LogElectricCastle, Log, TEXT("[ExecCalc_Damage]: Evaded!"))
 		UElectricCastleAbilitySystemLibrary::SetIsEvadedAttack(EffectContextHandle, true);
+		UElectricCastleAbilitySystemLibrary::SetIsCriticalHit(EffectContextHandle, false);
+		const FGameplayModifierEvaluatedData EvaluatedData(
+			UElectricCastleAttributeSet::GetMeta_IncomingDamageAttribute(),
+			EGameplayModOp::Additive,
+			0.f
+		);
+		OutExecutionOutput.AddOutputModifier(EvaluatedData);
+		return;
+	}
+	UElectricCastleAbilitySystemLibrary::SetIsEvadedAttack(EffectContextHandle, false);
+	// Get Damage Set by Caller Magnitude
+	float Damage = CalculateBaseDamage(ExecutionParams, EvaluateParameters);
+	// Debuff
+	DetermineDebuff(ExecutionParams, EvaluateParameters);
+	if (IsRadialDamage(ExecutionParams))
+	{
+		ApplyRadialDamage(ExecutionParams, Damage);
+	}
+	// Reduce damage by a percentage based on target's effective armor and level of protection
+	const float TargetEffectiveArmor = GetTargetEffectiveArmor(ExecutionParams, EvaluateParameters);
+	Damage = FMath::Clamp(Damage * (DefenseRatioConstant / (DefenseRatioConstant + TargetEffectiveArmor)), 0.f, Damage);
+	// if the attack is a critical hit, increase the damage by the critical hit damage
+	if (IsCriticalHitOnTarget(ExecutionParams, EvaluateParameters))
+	{
+		Damage *= 2.f;
+		UElectricCastleAbilitySystemLibrary::SetIsCriticalHit(EffectContextHandle, true);
 	}
 	else
 	{
-		// Debuff
-		DetermineDebuff(ExecutionParams, EvaluateParameters);
-		if (IsRadialDamage(ExecutionParams))
-		{
-			ApplyRadialDamage(ExecutionParams, Damage);
-		}
-		// Reduce damage by a percentage based on target's effective armor and level of protection
-		const float TargetEffectiveArmor = GetTargetEffectiveArmor(ExecutionParams, EvaluateParameters);
-		UE_LOG(LogElectricCastle, Log, TEXT("[ExecCalc_Damage]: Damage - TargetEffectiveArmor: %f - %f = %f"), Damage, TargetEffectiveArmor, Damage - TargetEffectiveArmor)
-		Damage = FMath::Clamp(Damage - TargetEffectiveArmor, 0.f, Damage);
-		// if the attack is a critical hit, increase the damage by the critical hit damage
-		if (IsCriticalHitOnTarget(ExecutionParams, EvaluateParameters))
-		{
-			Damage *= 2.f;
-			UElectricCastleAbilitySystemLibrary::SetIsCriticalHit(EffectContextHandle, true);
-		}
+		UElectricCastleAbilitySystemLibrary::SetIsCriticalHit(EffectContextHandle, false);
 	}
-
 	const FGameplayModifierEvaluatedData EvaluatedData(
 		UElectricCastleAttributeSet::GetMeta_IncomingDamageAttribute(),
 		EGameplayModOp::Additive,
@@ -161,9 +169,10 @@ bool UExecCalc_Damage::IsAttackEvadedByTarget(
 		EvaluateParameters,
 		HitChance
 	);
-	const float EvadeCalc = FMath::RandRange(1, 100);
-	UE_LOG(LogElectricCastle, Log, TEXT("[ExecCalc_Damage]: EvadeCalc: %f | HitChance: %f | EvadeChance: %f"), EvadeCalc, HitChance, EvadeChance)
-	return EvadeCalc >= (HitChance - EvadeChance);
+	const float EvadeCalc = (HitChance / (HitChance + EvadeChance)) * 100.f;
+	const float EvadeRoll = FMath::RandRange(1, 100);
+	UE_LOG(LogElectricCastle, Log, TEXT("[ExecCalc_Damage]: EvadeRoll: %f | EvadeCalc: %f"), EvadeRoll, EvadeCalc);
+	return EvadeRoll > EvadeCalc;
 }
 
 float UExecCalc_Damage::GetTargetEffectiveArmor(

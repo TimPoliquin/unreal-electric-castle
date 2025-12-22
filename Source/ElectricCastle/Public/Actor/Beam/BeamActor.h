@@ -42,6 +42,8 @@ protected:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	FActiveGameplayEffectHandle ApplyBeamTargetEffect(AActor* Target);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void RemoveBeamTargetEffect(AActor* Target, FActiveGameplayEffectHandle& Handle);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void SpawnChildBeams(const FHitResult& HitResult);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void SpawnChildBeams_Linear(const FHitResult& HitResult);
