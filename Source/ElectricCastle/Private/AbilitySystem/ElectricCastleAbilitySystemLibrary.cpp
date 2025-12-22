@@ -483,8 +483,8 @@ FActiveGameplayEffectHandle UElectricCastleAbilitySystemLibrary::ApplyDamageEffe
 	SpecHandle.Data->AppendDynamicAssetTags(DamageEffectParams.AbilityAssetTags);
 	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(
 		SpecHandle,
-		DamageEffectParams.DamageType,
-		DamageEffectParams.BaseDamage
+		GameplayTags.Effect_Magnitude,
+		DamageEffectParams.DamageMagnitude
 	);
 	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(
 		SpecHandle,
@@ -719,7 +719,7 @@ FDamageEffectParams UElectricCastleAbilitySystemLibrary::MakeCustomDamageEffectP
 		TargetActor
 	);
 	DamageEffectParams.AbilityLevel = AbilityLevel;
-	DamageEffectParams.BaseDamage = InDamageConfig.GetDamageAtLevel(AbilityLevel);
+	DamageEffectParams.DamageMagnitude = InDamageConfig.GetDamageMagnitudeAtLevel(AbilityLevel);
 	DamageEffectParams.AbilityAssetTags = InAbilityAssetTags;
 	DamageEffectParams.IgnoreTags = ICombatInterface::GetTargetTagsToIgnore(SourceActor);
 	if (IsValid(TargetActor))
@@ -994,6 +994,17 @@ bool UElectricCastleAbilitySystemLibrary::IsBlockedHit(const FGameplayEffectCont
 	return false;
 }
 
+bool UElectricCastleAbilitySystemLibrary::IsEvadedAttack(const FGameplayEffectContextHandle& EffectContextHandle)
+{
+	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const
+		FElectricCastleGameplayEffectContext*>(
+		EffectContextHandle.Get()))
+	{
+		return AuraEffectContext->IsEvadedAttack();
+	}
+	return false;
+}
+
 bool UElectricCastleAbilitySystemLibrary::IsCriticalHit(const FGameplayEffectContextHandle& EffectContextHandle)
 {
 	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const
@@ -1109,7 +1120,7 @@ bool UElectricCastleAbilitySystemLibrary::IsSuccessfulDebuff(const FGameplayEffe
 		FElectricCastleGameplayEffectContext*>(
 		EffectContextHandle.Get()))
 	{
-		return AuraEffectContext->IsSuccessfullDebuff();
+		return AuraEffectContext->IsSuccessfulDebuff();
 	}
 	return false;
 }
@@ -1208,19 +1219,28 @@ FVector UElectricCastleAbilitySystemLibrary::GetKnockbackVector(const FGameplayE
 
 void UElectricCastleAbilitySystemLibrary::SetIsBlockedHit(
 	FGameplayEffectContextHandle& EffectContextHandle,
-	const bool InIsBlocked
+	const bool bInIsBlocked
 )
 {
 	if (FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<FElectricCastleGameplayEffectContext*>(
 		EffectContextHandle.Get()))
 	{
-		AuraEffectContext->SetIsBlockedHit(InIsBlocked);
+		AuraEffectContext->SetIsBlockedHit(bInIsBlocked);
+	}
+}
+
+void UElectricCastleAbilitySystemLibrary::SetIsEvadedAttack(FGameplayEffectContextHandle& EffectContextHandle, bool bInIsEvaded)
+{
+	if (FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<FElectricCastleGameplayEffectContext*>(
+		EffectContextHandle.Get()))
+	{
+		AuraEffectContext->SetIsEvadedAttack(bInIsEvaded);
 	}
 }
 
 void UElectricCastleAbilitySystemLibrary::SetIsCriticalHit(
 	FGameplayEffectContextHandle& EffectContextHandle,
-	bool InIsCriticalHit
+	const bool InIsCriticalHit
 )
 {
 	if (FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<FElectricCastleGameplayEffectContext*>(

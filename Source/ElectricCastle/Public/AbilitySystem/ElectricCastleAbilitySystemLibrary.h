@@ -92,6 +92,8 @@ public:
 
 	UFUNCTION(BlueprintPure, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")
 	static bool IsBlockedHit(const FGameplayEffectContextHandle& EffectContextHandle);
+	UFUNCTION(BlueprintPure, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")
+	static bool IsEvadedAttack(const FGameplayEffectContextHandle& EffectContextHandle);
 
 	UFUNCTION(BlueprintPure, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")
 	static bool IsCriticalHit(const FGameplayEffectContextHandle& EffectContextHandle);
@@ -146,7 +148,13 @@ public:
 	static void SetIsBlockedHit(
 		UPARAM(ref)
 		FGameplayEffectContextHandle& EffectContextHandle,
-		bool InIsBlocked
+		bool bInIsBlocked
+	);
+	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")
+	static void SetIsEvadedAttack(
+		UPARAM(ref)
+		FGameplayEffectContextHandle& EffectContextHandle,
+		bool bInIsEvaded
 	);
 	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")
 	static void SetIsCriticalHit(
