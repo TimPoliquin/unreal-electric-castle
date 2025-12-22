@@ -90,7 +90,6 @@ float UExecCalc_Damage::CalculateBaseDamage(
 			MagicalDamage
 		);
 	}
-	UE_LOG(LogElectricCastle, Log, TEXT("[ExecCalc_Damage]: Magnitude: %f | PhysicalDamage: %f | MagicalDamage: %f"), Magnitude, PhysicalDamage, MagicalDamage)
 	const float Damage = (PhysicalDamage + MagicalDamage) * Magnitude;
 	return Damage;
 }
@@ -171,7 +170,6 @@ bool UExecCalc_Damage::IsAttackEvadedByTarget(
 	);
 	const float EvadeCalc = (HitChance / (HitChance + EvadeChance)) * 100.f;
 	const float EvadeRoll = FMath::RandRange(1, 100);
-	UE_LOG(LogElectricCastle, Log, TEXT("[ExecCalc_Damage]: EvadeRoll: %f | EvadeCalc: %f"), EvadeRoll, EvadeCalc);
 	return EvadeRoll > EvadeCalc;
 }
 
