@@ -206,7 +206,7 @@ void UElectricCastleAttributeSet::HandleIncomingDamage(const FEffectProperties& 
 	if (!bFatal)
 	{
 		// only hit react on critical hits
-		if (bIsCriticalHit)
+		if (bIsCriticalHit && IncomingDamage > 0.f)
 		{
 			FGameplayTagContainer TagContainer;
 			TagContainer.AddTag(

@@ -132,7 +132,7 @@ void UExecCalc_Damage::Execute_Implementation(
 	}
 	// Reduce damage by a percentage based on target's effective armor and level of protection
 	const float TargetEffectiveArmor = GetTargetEffectiveArmor(ExecutionParams, EvaluateParameters);
-	Damage = FMath::Clamp(Damage * (DefenseRatioConstant / (DefenseRatioConstant + TargetEffectiveArmor)), 0.f, Damage);
+	Damage *= (DefenseRatioConstant / (DefenseRatioConstant + TargetEffectiveArmor));
 	// if the attack is a critical hit, increase the damage by the critical hit damage
 	if (IsCriticalHitOnTarget(ExecutionParams, EvaluateParameters))
 	{
