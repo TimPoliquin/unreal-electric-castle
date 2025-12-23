@@ -50,16 +50,26 @@ void UDamageGameplayAbility::DamageTargets_Implementation(
 {
 	for (AActor* Target : Targets)
 	{
-		const FDamageEffectParams DamageEffectParams = MakeDamageEffectParamsFromClassDefaults(Target, ImpactLocation);
-		UElectricCastleAbilitySystemLibrary::ApplyDamageEffect(DamageEffectParams);
-		if (ImpactCueTag.IsValid())
-		{
-			const FGameplayCueParameters ImpactCueParams = MakeGameplayCueParamsFromMontageTag(
-				MontageTag,
-				ImpactLocation
-			);
-			K2_ExecuteGameplayCueWithParams(ImpactCueTag, ImpactCueParams);
-		}
+		DamageTarget(Target, ImpactLocation, MontageTag);
+	}
+}
+
+void UDamageGameplayAbility::DamageTarget_Implementation(AActor* Target, const FVector& ImpactLocation, const FGameplayTag& MontageTag)
+{
+	if (!DamageEffectClass)
+	{
+		UE_LOG(LogElectricCastle, Error, TEXT("[%s] DamageEffectClass not set!"), *GetName())
+		return;
+	}
+	const FDamageEffectParams DamageEffectParams = MakeDamageEffectParamsFromClassDefaults(Target, ImpactLocation);
+	UElectricCastleAbilitySystemLibrary::ApplyDamageEffect(DamageEffectParams);
+	if (ImpactCueTag.IsValid())
+	{
+		const FGameplayCueParameters ImpactCueParams = MakeGameplayCueParamsFromMontageTag(
+			MontageTag,
+			ImpactLocation
+		);
+		K2_ExecuteGameplayCueWithParams(ImpactCueTag, ImpactCueParams);
 	}
 }
 

@@ -69,6 +69,7 @@ struct FElectricCastleGameplayTags
 	FGameplayTag InputTag_Cancel;
 
 	/** Effect Tags **/
+	FGameplayTag Effect_Block_Damage;
 	FGameplayTag Effect_Damage;
 	FGameplayTag Effect_Damage_Magic;
 	FGameplayTag Effect_Damage_Magic_Arcane;
