@@ -75,3 +75,4 @@ Plugins/**/Intermediate/*
 DerivedDataCache/*
 /.idea
 .DS_Store
+/.migration-logs
