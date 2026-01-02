@@ -17,7 +17,7 @@ for ($i = 0; $i -lt $Total; $i += $BatchSize) {
     
     try {
         # 1. Run the migration
-        & git lfs migrate export --include="$IncludeArg" --everything --yes
+        & git lfs migrate export --include="$IncludeArg" --yes
 
         # 2. Add changes and commit
         & git add .
@@ -25,7 +25,7 @@ for ($i = 0; $i -lt $Total; $i += $BatchSize) {
 
         # 3. FORCE Push to overwrite the remote history with our rewritten version
         Write-Host "Force-pushing batch to GitHub..." -ForegroundColor Yellow
-        & git push origin $CurrentBranch --force
+        & git push origin master~1:master --force
         
         if ($LASTEXITCODE -ne 0) {
             throw "Git push failed with exit code $LASTEXITCODE"
