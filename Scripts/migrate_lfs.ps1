@@ -1,5 +1,5 @@
 # surgical_migrate.ps1
-$BatchSize = 10
+$BatchSize = 100
 $AllFiles = Get-Content "migrate_targets.txt"
 $Total = $AllFiles.Count
 
