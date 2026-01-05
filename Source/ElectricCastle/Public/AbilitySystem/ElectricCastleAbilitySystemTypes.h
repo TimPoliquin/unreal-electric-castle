@@ -404,7 +404,7 @@ struct FDamageEffectParams
 	UPROPERTY(BlueprintReadWrite)
 	TObjectPtr<UAbilitySystemComponent> TargetAbilitySystemComponent = nullptr;
 	UPROPERTY(BlueprintReadWrite)
-	float DamageMagnitude;
+	float DamageMagnitude = 1.0f;
 	UPROPERTY(BlueprintReadWrite)
 	float AbilityLevel = 1.f;
 	UPROPERTY(BlueprintReadWrite)
