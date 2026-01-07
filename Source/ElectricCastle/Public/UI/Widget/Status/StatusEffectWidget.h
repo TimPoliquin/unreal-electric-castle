@@ -18,6 +18,9 @@ class ELECTRICCASTLE_API UStatusEffectWidget : public UUserWidget
 	
 public:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+	FGameplayTag GetStatusEffectTag() const;
+	void SetStatusEffectTag(const FGameplayTag& InStatusEffectTag);
+	void SetDuration(const float InDuration);
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(ExposeOnSpawn))
 	FGameplayTag StatusEffectTag;

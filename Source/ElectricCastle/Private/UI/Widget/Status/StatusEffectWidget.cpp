@@ -23,6 +23,21 @@ void UStatusEffectWidget::NativeTick(const FGeometry& MyGeometry, const float In
 	}
 }
 
+FGameplayTag UStatusEffectWidget::GetStatusEffectTag() const
+{
+	return StatusEffectTag;
+}
+
+void UStatusEffectWidget::SetStatusEffectTag(const FGameplayTag& InStatusEffectTag)
+{
+	StatusEffectTag = InStatusEffectTag;
+}
+
+void UStatusEffectWidget::SetDuration(const float InDuration)
+{
+	Duration = InDuration;
+}
+
 UMaterialInstanceDynamic* UStatusEffectWidget::CreateDynamicMaterial(UImage* Image)
 {
 	if (!Image)

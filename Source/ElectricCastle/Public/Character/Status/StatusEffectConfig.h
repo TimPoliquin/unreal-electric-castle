@@ -22,7 +22,7 @@ struct ELECTRICCASTLE_API FStatusEffectRow
 /**
  * 
  */
-UCLASS(Abstract, BlueprintType)
+UCLASS(BlueprintType)
 class ELECTRICCASTLE_API UStatusEffectConfig : public UDataAsset
 {
 	GENERATED_BODY()

@@ -35,14 +35,14 @@ void UStatusEffectManagerComponent::AddStatusEffectListeners(UAbilitySystemCompo
 
 void UStatusEffectManagerComponent::OnEffectAdded(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayEffectSpec& Spec, FActiveGameplayEffectHandle Handle) const
 {
-	const UGameplayEffect* GameplayEffect = Spec.Def;
 	const UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(GetOwner());
 	const UStatusEffectConfig* StatusEffectConfig = GameDataSubsystem ? GameDataSubsystem->GetStatusEffectConfig() : nullptr;
-	if (!GameplayEffect) return;
 	if (!StatusEffectConfig) return;
 
 	// Extract tags
-	const FGameplayTagContainer StatusEffectTags = StatusEffectConfig->GetMatchingStatusEffectTags(GameplayEffect->GetGrantedTags());
+	FGameplayTagContainer SpecTags;
+	Spec.GetAllGrantedTags(SpecTags);
+	const FGameplayTagContainer StatusEffectTags = StatusEffectConfig->GetMatchingStatusEffectTags(SpecTags);
 	if (StatusEffectTags.IsValid())
 	{
 		// Duration vs Infinite
@@ -67,14 +67,13 @@ void UStatusEffectManagerComponent::OnEffectAdded(UAbilitySystemComponent* Abili
 
 void UStatusEffectManagerComponent::OnEffectRemoved(const FActiveGameplayEffect& ActiveGameplayEffect) const
 {
-	const UGameplayEffect* GameplayEffect = ActiveGameplayEffect.Spec.Def;
 	const UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(GetOwner());
 	const UStatusEffectConfig* StatusEffectConfig = GameDataSubsystem ? GameDataSubsystem->GetStatusEffectConfig() : nullptr;
-	if (!GameplayEffect) return;
 	if (!StatusEffectConfig) return;
-
+	FGameplayTagContainer SpecTags;
+	ActiveGameplayEffect.Spec.GetAllGrantedTags(SpecTags);
 	// Extract tags
-	const FGameplayTagContainer StatusEffectTags = StatusEffectConfig->GetMatchingStatusEffectTags(GameplayEffect->GetGrantedTags());
+	const FGameplayTagContainer StatusEffectTags = StatusEffectConfig->GetMatchingStatusEffectTags(SpecTags);
 	if (StatusEffectTags.IsValid())
 	{
 		OnStatusEffectRemovedDelegate.Broadcast(FOnStatusEffectRemovedPayload(

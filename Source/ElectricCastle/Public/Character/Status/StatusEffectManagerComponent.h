@@ -26,8 +26,8 @@ public:
 	FOnStatusEffectRemovedSignature OnStatusEffectRemovedDelegate;
 
 protected:
-	// Called when the game starts
 	virtual void BeginPlay() override;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties")
 	bool bDebug = false;
 	
