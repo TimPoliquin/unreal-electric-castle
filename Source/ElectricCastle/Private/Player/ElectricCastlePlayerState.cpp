@@ -49,6 +49,13 @@ int32 AElectricCastlePlayerState::GetCharacterLevel_Implementation() const
 	return -1;
 }
 
+FOnAbilitySystemComponentRegisteredSignature& AElectricCastlePlayerState::GetOnAbilitySystemRegisteredDelegate()
+{
+	AElectricCastleCharacter* ElectricCastleCharacter = Cast<AElectricCastleCharacter>(GetPawn());
+	checkf(ElectricCastleCharacter, TEXT("[%s] Pawn is not an ElectricCastleCharacter!"), *GetName());
+	return ElectricCastleCharacter->GetOnAbilitySystemRegisteredDelegate();
+}
+
 TArray<uint8> AElectricCastlePlayerState::SaveData_Implementation()
 {
 	TArray<uint8> SaveData;

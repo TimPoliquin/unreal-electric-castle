@@ -38,10 +38,11 @@ UPlayerFormPrimaryAsset* UElectricCastleGameDataSubsystem::GetPlayerFormConfigBy
 	{
 		return Config.Get()->FormId == FormId;
 	});
-	if (FormAsset->IsValid())
+	if (FormAsset && FormAsset->IsValid())
 	{
 		return FormAsset->Get();
 	}
+	UE_LOG(LogElectricCastle, Error, TEXT("[%s] Requested form id %s is not valid"), *GetName(), *UEnum::GetValueAsString(FormId));
 	return nullptr;
 }
 

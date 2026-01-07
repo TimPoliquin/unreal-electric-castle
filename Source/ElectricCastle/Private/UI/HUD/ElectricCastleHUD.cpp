@@ -42,6 +42,7 @@ void AElectricCastleHUD::BeginPlay()
 
 void AElectricCastleHUD::OnGameDataLoaded_Implementation()
 {
+	Initialize();
 	if (LoadingScreenWidget)
 	{
 		LoadingScreenWidget->Hide();

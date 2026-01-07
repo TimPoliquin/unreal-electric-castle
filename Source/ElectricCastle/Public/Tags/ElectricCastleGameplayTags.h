@@ -69,6 +69,7 @@ struct FElectricCastleGameplayTags
 	FGameplayTag InputTag_Cancel;
 
 	/** Effect Tags **/
+	FGameplayTag Effect;
 	FGameplayTag Effect_Block_Damage;
 	FGameplayTag Effect_Damage;
 	FGameplayTag Effect_Damage_Magic;
@@ -86,7 +87,9 @@ struct FElectricCastleGameplayTags
 	FGameplayTag Effect_HitReact_Default;
 	FGameplayTag Effect_HitReact_Shock;
 	FGameplayTag Effect_Magnitude;
+	FGameplayTag Effect_State;
 	FGameplayTag Effect_State_Aiming;
+	FGameplayTag Effect_State_ChronoShift;
 	FGameplayTag Effect_State_PsychedelicVision;
 
 	FGameplayTag Effect_Resist;

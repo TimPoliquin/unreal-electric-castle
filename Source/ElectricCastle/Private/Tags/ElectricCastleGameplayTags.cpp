@@ -162,6 +162,7 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 	);
 
 	// Effect Tags
+	Instance.Effect = TagManager.AddNativeGameplayTag(FName("Effect"), FString("Root effect tag"));
 	Instance.Effect_Block_Damage = TagManager.AddNativeGameplayTag(FName("Effect.Block.Damage"), FString("When this tag is active, the character will not receive any damage"));
 	Instance.Effect_Damage = TagManager.AddNativeGameplayTag(
 		FName("Effect.Damage"),
@@ -223,9 +224,17 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FName("Effect.Magnitude"),
 		FString("Generic tag for specifying magnitude of effect across multiple effects")
 	);
+	Instance.Effect_State = TagManager.AddNativeGameplayTag(
+		FName("Effect.State"),
+		FString("Root effect state tag")
+	);
 	Instance.Effect_State_Aiming = TagManager.AddNativeGameplayTag(
 		FName("Effect.State.Aiming"),
 		FString("Indicates that the character is aiming")
+	);
+	Instance.Effect_State_ChronoShift = TagManager.AddNativeGameplayTag(
+		FName("Effect.State.ChronoShift"),
+		FString("Indicates that the character is in the chrono shift state")
 	);
 	Instance.Effect_State_PsychedelicVision = TagManager.AddNativeGameplayTag(
 		FName("Effect.State.PsychedelicVision"),

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ElectricCastleAbilitySystemTypes.h"
 #include "UObject/Interface.h"
 #include "ElectricCastleAbilitySystemInterface.generated.h"
 
@@ -24,6 +25,8 @@ class ELECTRICCASTLE_API IElectricCastleAbilitySystemInterface
 public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	int32 GetCharacterLevel() const;
+	virtual FOnAbilitySystemComponentRegisteredSignature& GetOnAbilitySystemRegisteredDelegate() = 0;
+	
 	static int32 GetCharacterLevel(const UObject* Character);
 	static bool IsAbilitySystemReady(AActor* Actor);
 };
