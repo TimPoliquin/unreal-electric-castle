@@ -11,6 +11,7 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "ElectricCastleGameDataSubsystem.generated.h"
 
+class UStatusEffectConfig;
 class UPlayerFormPrimaryAsset;
 class UDebuffConfig;
 class UPlayerFormConfig;
@@ -49,6 +50,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	UDebuffConfig* GetDebuffConfig() const { return DebuffConfig; }
+	
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	UStatusEffectConfig* GetStatusEffectConfig() const { return StatusEffectConfig; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	UAbilityInfo* GetAbilityInfo() const { return AbilityInfo; }
@@ -70,7 +74,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FItemDefinition FindItemDefinitionByItemTag(const FGameplayTag& ItemTag);
-
+	
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FGameplayTag GetDefaultItemPickupMessageTag() const;
 
@@ -100,6 +104,8 @@ protected:
 	bool bPreloadForms = false;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Gameplay Effects")
 	TObjectPtr<UDebuffConfig> DebuffConfig;
+	UPROPERTY(EditDefaultsOnly, Category="Gameplay Effects")
+	TObjectPtr<UStatusEffectConfig> StatusEffectConfig;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Character Class Defaults")
 	TObjectPtr<UCharacterClassInfo> CharacterClassInfo;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Character Class Defaults")
@@ -122,6 +128,7 @@ protected:
 	FGameplayTag DefaultItemPickupMessageTag = FGameplayTag::EmptyTag;
 	UPROPERTY(EditDefaultsOnly, Category="Items|Messages", meta=(Categories="Message"))
 	FGameplayTag DefaultItemUsedMessageTag = FGameplayTag::EmptyTag;
+	
 
 private:
 	void InitializeItemDefinitions();

@@ -5,6 +5,7 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
+#include "AbilitySystem/ElectricCastleAbilitySystemInterface.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 #include "Interaction/CombatInterface.h"
 
@@ -34,13 +35,13 @@ void UPassiveNiagaraComponent::BeginPlay()
 		);
 		ActivateIfAbilityIsAlreadyActive(AbilitySystemComponent);
 	}
-	else if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(GetOwner()))
+	else if (IElectricCastleAbilitySystemInterface* AbilitySystemInterface = Cast<IElectricCastleAbilitySystemInterface>(GetOwner()))
 	{
-		CombatInterface->GetOnAbilitySystemRegisteredDelegate().AddLambda(
-			[this](UAbilitySystemComponent* AbilitySystemComponent)
+		AbilitySystemInterface->GetOnAbilitySystemRegisteredDelegate().AddLambda(
+			[this](UAbilitySystemComponent* LocalAbilitySystemComponent)
 			{
 				if (UElectricCastleAbilitySystemComponent* AwaitedComponent = Cast<UElectricCastleAbilitySystemComponent>(
-					AbilitySystemComponent
+					LocalAbilitySystemComponent
 				))
 				{
 					AwaitedComponent->OnActivatePassiveEffectDelegate.AddUObject(

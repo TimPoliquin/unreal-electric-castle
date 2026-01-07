@@ -5,7 +5,6 @@
 
 #include "Tags/ElectricCastleGameplayTags.h"
 #include "AbilitySystemGlobals.h"
-#include "Player/Form/PlayerFormPrimaryAsset.h"
 #include "Engine/AssetManager.h"
 
 UElectricCastleAssetManager& UElectricCastleAssetManager::Get()
@@ -15,12 +14,6 @@ UElectricCastleAssetManager& UElectricCastleAssetManager::Get()
 
 TSharedPtr<FStreamableHandle> UElectricCastleAssetManager::LoadPlayerFormPrimaryAssets(const TArray<FPrimaryAssetId>& AssetIds, const FStreamableDelegate& OnLoaded)
 {
-	UAssetManager::Get().ScanPathsForPrimaryAssets(
-		FPrimaryAssetType("PlayerForm"),
-		{TEXT("/Game/Blueprints/Player/Data")},
-		UPlayerFormPrimaryAsset::StaticClass(),
-		false
-	);
 	return LoadPrimaryAssetsById(AssetIds, {"FormsBundle"}, OnLoaded);
 }
 

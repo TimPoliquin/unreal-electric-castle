@@ -5,13 +5,13 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "AbilitySystemInterface.h"
-#include "AbilitySystem/AttributeChangeDelegates.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemInterface.h"
 #include "Actor/CollidableInterface.h"
 #include "Actor/Mesh/SocketManagerActor.h"
 #include "Interaction/CombatInterface.h"
 #include "ElectricCastleCharacter.generated.h"
 
+class UStatusEffectManagerComponent;
 class UDissolveEffectComponent;
 class UElectricCastleAttributeSet;
 class UElectricCastleAbilitySystemComponent;
@@ -140,6 +140,8 @@ protected:
 	TObjectPtr<UDissolveEffectComponent> CharacterDissolveComponent;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<USocketManagerComponent> SocketManagerComponent;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UStatusEffectManagerComponent> StatusEffectManagerComponent;
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Dissolve")
 	void Dissolve() const;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Combat")

@@ -6,6 +6,8 @@
 
 struct FRadialDamageParams;
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnAbilitySystemComponentRegisteredSignature, UAbilitySystemComponent*);
+
 USTRUCT(BlueprintType)
 struct FElectricCastleGameplayEffectContext : public FGameplayEffectContext
 {

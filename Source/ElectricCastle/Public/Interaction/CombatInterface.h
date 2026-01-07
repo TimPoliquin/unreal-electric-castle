@@ -9,7 +9,6 @@
 #include "CombatInterface.generated.h"
 
 class UAbilitySystemComponent;
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnAbilitySystemComponentRegisteredSignature, UAbilitySystemComponent*);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeathSignature, AActor*, DeadActor);
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnDamageSignature, float /* Damage Amount */);
@@ -80,7 +79,6 @@ public:
 	void ChangeMinionCount(const int32 Delta);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	int32 GetXPReward() const;
-	virtual FOnAbilitySystemComponentRegisteredSignature& GetOnAbilitySystemRegisteredDelegate() = 0;
 	virtual FOnDeathSignature& GetOnDeathDelegate() = 0;
 	virtual FOnDamageSignature& GetOnDamageDelegate() = 0;
 	virtual void ApplyDeathImpulse(const FVector& DeathImpulse) = 0;

@@ -38,6 +38,7 @@ public:
 
 	/** Start IElectricCastleAbilitySystemInterface **/
 	virtual int32 GetCharacterLevel_Implementation() const override;
+	virtual FOnAbilitySystemComponentRegisteredSignature& GetOnAbilitySystemRegisteredDelegate() override;
 	/** End IElectricCastleAbilitySystemInterface **/
 
 	/** Start ISaveableInterface **/

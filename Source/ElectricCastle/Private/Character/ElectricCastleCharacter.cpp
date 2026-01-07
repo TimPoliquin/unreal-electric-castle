@@ -10,6 +10,7 @@
 #include "Actor/Effect/DissolvableActor.h"
 #include "Actor/Effect/DissolveEffectComponent.h"
 #include "Actor/Mesh/SocketManagerComponent.h"
+#include "Character/Status/StatusEffectManagerComponent.h"
 #include "ElectricCastle/ElectricCastle.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Components/CapsuleComponent.h"
@@ -41,6 +42,7 @@ AElectricCastleCharacter::AElectricCastleCharacter()
 	ShockDebuffComponent->SetupAttachment(EffectAttachComponent);
 	ShockDebuffComponent->DebuffTag = FElectricCastleGameplayTags::Get().Effect_Debuff_Type_Shock;
 	SocketManagerComponent = CreateDefaultSubobject<USocketManagerComponent>(TEXT("Socket Manager Component"));
+	StatusEffectManagerComponent = CreateDefaultSubobject<UStatusEffectManagerComponent>(TEXT("Status Effect Manager Component"));
 	HaloOfProtectionNiagaraComponent = CreateDefaultSubobject<UPassiveNiagaraComponent>(
 		TEXT("Halo of Protection Niagara Component")
 	);
@@ -113,8 +115,7 @@ FVector AElectricCastleCharacter::GetCombatSocketLocation_Implementation(const F
 	))
 	{
 		const FName& SocketName = ActiveMontageDef->SocketName;
-		AActor* Weapon = Execute_GetWeapon(this);
-		if (USocketManagerComponent* WeaponSocketManagerComponent = GetSocketManagerComponent(Execute_GetWeapon(this)))
+		if (const USocketManagerComponent* WeaponSocketManagerComponent = GetSocketManagerComponent(Execute_GetWeapon(this)))
 		{
 			if (WeaponSocketManagerComponent->HasSocket(ActiveMontageDef->SocketTag))
 			{

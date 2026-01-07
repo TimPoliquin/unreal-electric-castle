@@ -5,6 +5,7 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
+#include "AbilitySystem/ElectricCastleAbilitySystemInterface.h"
 #include "Interaction/CombatInterface.h"
 
 
@@ -27,9 +28,9 @@ void UDebuffNiagaraComponent::BeginPlay()
 			&UDebuffNiagaraComponent::OnDebuffTagChanged
 		);
 	}
-	else if (CombatInterface)
+	else if (IElectricCastleAbilitySystemInterface* AbilitySystemInterface = Cast<IElectricCastleAbilitySystemInterface>(GetOwner()))
 	{
-		CombatInterface->GetOnAbilitySystemRegisteredDelegate().AddWeakLambda(
+		AbilitySystemInterface->GetOnAbilitySystemRegisteredDelegate().AddWeakLambda(
 			this,
 			[this](UAbilitySystemComponent* InAbilitySystemComponent)
 			{

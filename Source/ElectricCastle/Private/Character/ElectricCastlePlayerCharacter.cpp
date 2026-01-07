@@ -21,7 +21,6 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Tags/ElectricCastleGameplayTags.h"
-#include "UI/HUD/ElectricCastleHUD.h"
 #include "Interaction/PlayerInterface.h"
 #include "Player/PlayerEquipmentComponent.h"
 #include "Player/Progression/ProgressionComponent.h"
@@ -294,10 +293,6 @@ void AElectricCastlePlayerCharacter::OnRep_PlayerState()
 	Super::OnRep_PlayerState();
 	// Init ability actor info for the client
 	InitializeAbilityActorInfo();
-	if (APlayerController* PlayerController = Cast<AElectricCastlePlayerController>(GetController()))
-	{
-		InitializePlayerControllerHUD(PlayerController, GetElectricCastlePlayerState());
-	}
 }
 
 void AElectricCastlePlayerCharacter::OnRep_ActiveAbilityTag()
@@ -392,23 +387,6 @@ void AElectricCastlePlayerCharacter::InitializeAbilityActorInfo()
 	OnAbilitySystemReady(GetElectricCastleAbilitySystemComponent());
 }
 
-void AElectricCastlePlayerCharacter::InitializePlayerControllerHUD(
-	APlayerController* InPlayerController,
-	AElectricCastlePlayerState* InPlayerState
-)
-{
-	if (AElectricCastleHUD* HUD = Cast<AElectricCastleHUD>(InPlayerController->GetHUD()))
-	{
-		HUD->Initialize();
-		// HUD->InitializeWidgets(
-		// 	this,
-		// 	InPlayerController,
-		// 	InPlayerState,
-		// 	AbilitySystemComponent,
-		// 	GetAttributeSet()
-		// );
-	}
-}
 
 void AElectricCastlePlayerCharacter::Server_UpdateFacingRotation_Implementation(FRotator NewControlRotation)
 {
@@ -425,10 +403,6 @@ void AElectricCastlePlayerCharacter::OnLevelLoaded()
 	if (UElectricCastleLevelManager* LevelManager = UElectricCastleLevelManager::Get(this))
 	{
 		LevelManager->OnLevelTransitionComplete.RemoveAll(this);
-	}
-	if (APlayerController* PlayerController = Cast<AElectricCastlePlayerController>(GetController()))
-	{
-		InitializePlayerControllerHUD(PlayerController, GetElectricCastlePlayerState());
 	}
 	AddCharacterAbilities();
 }

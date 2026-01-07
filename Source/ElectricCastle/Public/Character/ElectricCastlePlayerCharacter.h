@@ -232,10 +232,6 @@ private:
 	FOnCameraMoveFinishedSignature OnCameraReturnDelegate;
 
 	virtual void InitializeAbilityActorInfo() override;
-	void InitializePlayerControllerHUD(
-		APlayerController* InPlayerController,
-		AElectricCastlePlayerState* InPlayerState
-	);
 
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_LevelUpParticles() const;
