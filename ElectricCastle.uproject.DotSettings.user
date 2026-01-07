@@ -50,4 +50,5 @@
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=F363F493_002DF175_002DDCB2_002D7706_002D1FD35316ECB3_002Fd_003APrivate_002Fd_003AUObject_002Ff_003APropertyDelegate_002Ecpp/@EntryIndexedValue">ForceIncluded</s:String>
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=F70285F6_002D1050_002D3270_002D9CEC_002DEDDE3426166E_002Fd_003APrivate_002Fd_003AChaos_002Ff_003AAABB_002Ecpp/@EntryIndexedValue">ForceIncluded</s:String>
 	<s:String x:Key="/Default/CodeInspection/Highlighting/AnalysisEnabled/@EntryValue">SOLUTION</s:String>
+	<s:Boolean x:Key="/Default/UserDictionary/Words/=Chrono/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Futureman/@EntryIndexedValue">True</s:Boolean></wpf:ResourceDictionary>

@@ -232,6 +232,10 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FName("Effect.State.Aiming"),
 		FString("Indicates that the character is aiming")
 	);
+	Instance.Effect_State_ChronoShift = TagManager.AddNativeGameplayTag(
+		FName("Effect.State.ChronoShift"),
+		FString("Indicates that the character is in the chrono shift state")
+	);
 	Instance.Effect_State_PsychedelicVision = TagManager.AddNativeGameplayTag(
 		FName("Effect.State.PsychedelicVision"),
 		FString("Indicates that the character is experience psychedelic visions")

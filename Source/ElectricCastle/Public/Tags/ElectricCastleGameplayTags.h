@@ -89,6 +89,7 @@ struct FElectricCastleGameplayTags
 	FGameplayTag Effect_Magnitude;
 	FGameplayTag Effect_State;
 	FGameplayTag Effect_State_Aiming;
+	FGameplayTag Effect_State_ChronoShift;
 	FGameplayTag Effect_State_PsychedelicVision;
 
 	FGameplayTag Effect_Resist;
