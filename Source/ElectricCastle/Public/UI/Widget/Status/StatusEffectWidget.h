@@ -28,10 +28,17 @@ protected:
 	float Duration = 0.f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(ExposeOnSpawn))
 	FName MaterialProgressParameter = FName("Alpha");
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(ExposeOnSpawn))
+	FName MaterialColorParameter = FName("Color");
 	UFUNCTION(BlueprintCallable)
 	UMaterialInstanceDynamic* CreateDynamicMaterial(UImage* Image);
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetIcon(FSlateBrush IconBrush);
+	UFUNCTION(BlueprintNativeEvent)
+	void SetBackgroundColor(FLinearColor InBackgroundColor);
 private:
 	float Runtime = 0.f;
 	UPROPERTY()
 	TObjectPtr<UMaterialInstanceDynamic> ProgressMaterialDynamic;
+	FLinearColor BackgroundColor = FLinearColor::White;
 };
