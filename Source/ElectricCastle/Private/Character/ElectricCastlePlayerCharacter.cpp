@@ -34,6 +34,8 @@
 #include "Actor/Mesh/SocketManagerComponent.h"
 #include "Components/LODSyncComponent.h"
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
+#include "Game/Subsystem/PlayerManager.h"
+
 #include "Materials/MaterialParameterCollectionInstance.h"
 #include "Player/Equipment/WeaponInterface.h"
 #include "Player/Form/FormConfigTypes.h"
@@ -270,6 +272,10 @@ void AElectricCastlePlayerCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 	// Init ability actor info for the server
+	if (UPlayerManager* PlayerManager = UPlayerManager::Get(this))
+	{
+		PlayerManager->RegisterPlayer(Cast<AElectricCastlePlayerController>(NewController), this);
+	}
 	InitializeAbilityActorInfo();
 	if (UElectricCastleLevelManager* LevelManager = UElectricCastleLevelManager::Get(this); LevelManager->
 		IsTransitioningLevels())
@@ -373,6 +379,11 @@ AElectricCastlePlayerState* AElectricCastlePlayerCharacter::GetElectricCastlePla
 UElectricCastleAbilitySystemComponent* AElectricCastlePlayerCharacter::GetElectricCastleAbilitySystemComponent() const
 {
 	return Cast<UElectricCastleAbilitySystemComponent>(GetAbilitySystemComponent());
+}
+
+void AElectricCastlePlayerCharacter::Multicast_SetTimeDilation_Implementation(const float Magnitude)
+{
+	CustomTimeDilation = Magnitude;
 }
 
 void AElectricCastlePlayerCharacter::InitializeAbilityActorInfo()

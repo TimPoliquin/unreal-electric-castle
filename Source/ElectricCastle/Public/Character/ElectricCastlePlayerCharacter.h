@@ -92,6 +92,8 @@ public:
 	AElectricCastlePlayerState* GetElectricCastlePlayerState() const;
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	UElectricCastleAbilitySystemComponent* GetElectricCastleAbilitySystemComponent() const;
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_SetTimeDilation(const float Magnitude);
 	/** Start IElectricCastleAbilitySystemInterface **/
 	virtual int32 GetCharacterLevel_Implementation() const override;
 	/** End IElectricCastleAbilitySystemInterface **/
