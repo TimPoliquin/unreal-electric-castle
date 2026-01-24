@@ -20,6 +20,8 @@ public:
 	/** Public API for abilities to attach a target */
 	UFUNCTION(BlueprintCallable, Category="Tether")
 	void AttachTarget(AActor* NewTarget);
+	UFUNCTION(BlueprintCallable, Category="Tether")
+	void SnapTargetToForwardStart();
 
 	/** Public API for abilities to detach */
 	UFUNCTION(BlueprintCallable, Category="Tether")
@@ -81,9 +83,17 @@ private:
 	UPROPERTY(EditAnywhere, Category="Tether")
 	float MaxTetherLength = 800.f;
 	UPROPERTY(EditAnywhere, Category="Tether")
-	float MinTetherLength = 200.f; // or whatever feels right
+	float MinTetherLength = 200.f;
 	UPROPERTY(EditAnywhere, Category="Tether")
-	float MinTetherBufferLength = 10.f;
+	bool bPushOut = true;
+	UPROPERTY(EditAnywhere, Category="Tether", meta=(EditCondition="bPushOut", EditConditionHides))
+	float PushStrength = 100.f;
+	UPROPERTY(EditAnywhere, Category="Tether")
+	bool bUseSoftZone = true;
+	UPROPERTY(EditAnywhere, Category="Tether", meta=(EditCondition="bUseSoftZone", EditConditionHides))
+	float SoftZoneWidth = 200.f;
+	UPROPERTY(EditAnywhere, Category="Tether")
+	int32 RecalcMaxIterations = 3;
 
 	// -------------------------
 	// Internal Logic

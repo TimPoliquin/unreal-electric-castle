@@ -40,20 +40,22 @@ bool UTetherAbilityComponent::ModifyInputMovementByTetherLimits(
 
 	const float DeltaTime = GetWorld()->GetDeltaSeconds();
 	const FVector DirNorm = InDirection.GetSafeNormal();
-	FVector MovementDelta = DirNorm * InScale * DeltaTime;
-
 	const FVector TetherDir = (TargetLoc - CurrentLoc).GetSafeNormal();
-	const float MoveAlongTether = FVector::DotProduct(MovementDelta, TetherDir);
 
+	// --- Decompose movement ---
+	FVector MovementDelta = DirNorm * InScale * DeltaTime;
+	const float MoveAlong = FVector::DotProduct(MovementDelta, TetherDir);
+	FVector RadialDelta = TetherDir * MoveAlong;
+	const FVector TangentialDelta = FVector::VectorPlaneProject(MovementDelta, TetherDir);
+
+	float ScaleFactor = 1.f;
 	const float ProposedDist = FVector::Distance(CurrentLoc + MovementDelta, TargetLoc);
 
-	float ScaleFactor = 1.0f;
-
-	// --- MAX DISTANCE CLAMP ---
-	if (MoveAlongTether < 0.f && ProposedDist > MaxTetherLength)
+	// --- MAX DISTANCE CLAMP (moving away) ---
+	if (MoveAlong < 0.f && ProposedDist > MaxTetherLength)
 	{
 		const float DistToMax = MaxTetherLength - CurrentDist;
-		const float MoveAway = -MoveAlongTether;
+		const float MoveAway = -MoveAlong;
 
 		if (MoveAway > KINDA_SMALL_NUMBER)
 		{
@@ -61,27 +63,34 @@ bool UTetherAbilityComponent::ModifyInputMovementByTetherLimits(
 		}
 	}
 
-	// --- MIN DISTANCE CLAMP ---
-	// Only block inward movement if the target was blocked last frame.
-	if (bTargetWasBlockedLastFrame && MoveAlongTether > 0.f)
+	// --- SOFT INNER RADIUS (scale inward radial only) ---
+	if (MoveAlong > 0.f && bUseSoftZone)
 	{
-		if (CurrentDist <= MinTetherLength + KINDA_SMALL_NUMBER)
+		const float SoftRadius = MinTetherLength + SoftZoneWidth;
+
+		if (CurrentDist < SoftRadius)
 		{
-			OutDirection = FVector::ZeroVector;
-			OutScale = 0.f;
-			return true;
+			const float DistIntoSoft = SoftRadius - CurrentDist;
+			const float Alpha = 1.f - FMath::Clamp(DistIntoSoft / SoftZoneWidth, 0.f, 1.f);
+			RadialDelta *= Alpha;
 		}
 	}
 
-	// No clamp needed
-	if (FMath::IsNearlyEqual(ScaleFactor, 1.0f))
+	// --- HARD MIN CLAMP (only when pinned, near Min) ---
+	if (bTargetWasBlockedLastFrame && MoveAlong > 0.f)
 	{
-		OutDirection = InDirection;
-		OutScale = InScale;
-		return false;
+		constexpr float ClampEpsilon = 5.f; // small band near Min
+
+		if (CurrentDist <= MinTetherLength + ClampEpsilon)
+		{
+			RadialDelta = FVector::ZeroVector;
+		}
 	}
 
-	// Apply clamp
+	// --- Recompose movement ---
+	MovementDelta = TangentialDelta + RadialDelta;
+
+	// --- Apply max-distance scaling ---
 	MovementDelta *= ScaleFactor;
 
 	const float NewScale = MovementDelta.Size() / DeltaTime;
@@ -134,6 +143,52 @@ void UTetherAbilityComponent::AttachTarget(AActor* NewTarget)
 	}
 }
 
+void UTetherAbilityComponent::SnapTargetToForwardStart()
+{
+	if (!OwnerActor || !TargetActor.IsValid())
+	{
+		return;
+	}
+
+	const FVector OwnerLoc = OwnerActor->GetActorLocation();
+	const FVector Forward = OwnerActor->GetActorForwardVector().GetSafeNormal();
+
+	// Distance you want the object to start at.
+	// Usually MinTetherLength, but you can expose this as a variable.
+	const float StartDistance = FVector::Distance(OwnerLoc, TargetActor->GetActorLocation());
+
+	const FVector DesiredLoc = OwnerLoc + Forward * StartDistance + FVector::UpVector * 20.f;
+
+	// Sweep the target to the desired location
+	FHitResult Hit;
+	TargetActor->SetActorLocation(DesiredLoc, true, &Hit);
+
+	FVector FinalLoc = TargetActor->GetActorLocation();
+
+	// If sweep hit something, slide along the surface
+	if (Hit.bBlockingHit)
+	{
+		const FVector Normal = Hit.Normal.GetSafeNormal();
+		FVector SlideDelta = FVector::VectorPlaneProject(DesiredLoc - FinalLoc, Normal);
+		SlideDelta.Z = 0.f;
+		if (!SlideDelta.IsNearlyZero())
+		{
+			FHitResult SlideHit;
+			TargetActor->SetActorLocation(FinalLoc + SlideDelta, true, &SlideHit);
+			FinalLoc = TargetActor->GetActorLocation();
+		}
+	}
+
+	// Update tether length
+	CurrentTetherLength = FVector::Distance(OwnerLoc, FinalLoc);
+
+	// Important: first frame should not be considered "blocked"
+	bTargetWasBlockedLastFrame = false;
+
+	// Also update previous owner location so the first UpdateTether() doesn't think we moved
+	PreviousOwnerLocation = OwnerLoc;
+}
+
 void UTetherAbilityComponent::ServerAttachTarget_Implementation(AActor* NewTarget)
 {
 	AttachTarget(NewTarget);
@@ -180,132 +235,117 @@ void UTetherAbilityComponent::UpdateTether(float DeltaTime)
 	}
 
 	const FVector OwnerLoc = OwnerActor->GetActorLocation();
+	FVector CurrentLoc = TargetActor->GetActorLocation();
 	const FVector OwnerDelta = OwnerLoc - PreviousOwnerLocation;
 
-	// If the owner didn't move, preserve blocked state
-	if (OwnerDelta.IsNearlyZero())
-	{
-		return;
-	}
-
-	const FVector StartObjLoc = TargetActor->GetActorLocation();
-	FVector RemainingDelta = OwnerDelta;
-	FVector CurrentLoc = StartObjLoc;
-
-	// Max tether length check BEFORE movement
-	const FVector FirstTargetLoc = StartObjLoc + OwnerDelta;
-	const float ProposedDist = FVector::Distance(OwnerLoc, FirstTargetLoc);
-	if (ProposedDist > MaxTetherLength + KINDA_SMALL_NUMBER)
-	{
-		OnTetherLimitExceeded.Broadcast(
-			FTetherLimitExceededPayload(OwnerActor, TargetActor.Get(), this, ProposedDist, MaxTetherLength)
-		);
-		return;
-	}
-
-	constexpr int32 MaxIterations = 3;
+	// If the owner didn't move, preserve blocked state and just do push-out
+	const bool bOwnerMoved = !OwnerDelta.IsNearlyZero();
 	bool bBlockedThisFrame = false;
 
-	for (int32 Iter = 0; Iter < MaxIterations && !RemainingDelta.IsNearlyZero(); ++Iter)
+	if (bOwnerMoved)
 	{
-		const FVector AttemptLoc = CurrentLoc + RemainingDelta;
+		FVector RemainingDelta = OwnerDelta;
 
-		FHitResult Hit;
-		TargetActor->SetActorLocation(AttemptLoc, true, &Hit);
-
-		const FVector NewLoc = TargetActor->GetActorLocation();
-		const FVector MovedDelta = NewLoc - CurrentLoc;
-		const bool bMoved = !NewLoc.Equals(CurrentLoc, 0.01f);
-
-		// Sweep-blocked only if sweep hit AND no movement occurred
-		const bool bSweepBlocked = Hit.bBlockingHit && !bMoved;
-
-		if (!Hit.bBlockingHit && bMoved)
+		// Max tether length check BEFORE movement
+		const FVector FirstTargetLoc = CurrentLoc + OwnerDelta;
+		const float ProposedDist = FVector::Distance(OwnerLoc, FirstTargetLoc);
+		if (ProposedDist > MaxTetherLength + KINDA_SMALL_NUMBER)
 		{
-			CurrentLoc = NewLoc;
-			break;
+			OnTetherLimitExceeded.Broadcast(
+				FTetherLimitExceededPayload(OwnerActor, TargetActor.Get(), this, ProposedDist, MaxTetherLength)
+			);
+			return;
 		}
 
-		RemainingDelta -= MovedDelta;
-
-		if (RemainingDelta.IsNearlyZero())
+		for (int32 Iter = 0; Iter < RecalcMaxIterations && !RemainingDelta.IsNearlyZero(); ++Iter)
 		{
-			CurrentLoc = NewLoc;
-			break;
+			const FVector AttemptLoc = CurrentLoc + RemainingDelta;
+
+			FHitResult Hit;
+			TargetActor->SetActorLocation(AttemptLoc, true, &Hit);
+
+			const FVector NewLoc = TargetActor->GetActorLocation();
+			const FVector MovedDelta = NewLoc - CurrentLoc;
+			const bool bMoved = !NewLoc.Equals(CurrentLoc, 0.01f);
+			const bool bSweepBlocked = Hit.bBlockingHit && !bMoved;
+
+			if (!Hit.bBlockingHit && bMoved)
+			{
+				CurrentLoc = NewLoc;
+				break;
+			}
+
+			RemainingDelta -= MovedDelta;
+
+			if (RemainingDelta.IsNearlyZero())
+			{
+				CurrentLoc = NewLoc;
+				break;
+			}
+
+			// Slide
+			const FVector Normal = Hit.Normal.GetSafeNormal();
+			const FVector SlideDelta = FVector::VectorPlaneProject(RemainingDelta, Normal);
+
+			if (SlideDelta.IsNearlyZero())
+			{
+				CurrentLoc = NewLoc;
+				break;
+			}
+
+			const FVector SlideStart = NewLoc;
+			const FVector SlideTarget = SlideStart + SlideDelta;
+
+			FHitResult SlideHit;
+			TargetActor->SetActorLocation(SlideTarget, true, &SlideHit);
+
+			const FVector AfterSlideLoc = TargetActor->GetActorLocation();
+			const bool bSlideMoved = !AfterSlideLoc.Equals(NewLoc, 0.01f);
+			const bool bSlideBlocked = SlideHit.bBlockingHit && !bSlideMoved;
+
+			if (bSweepBlocked || bSlideBlocked)
+			{
+				bBlockedThisFrame = true;
+			}
+
+			CurrentLoc = AfterSlideLoc;
+			RemainingDelta -= SlideDelta;
 		}
-
-		// Slide
-		const FVector Normal = Hit.Normal.GetSafeNormal();
-		const FVector SlideDelta = FVector::VectorPlaneProject(RemainingDelta, Normal);
-
-		if (SlideDelta.IsNearlyZero())
-		{
-			CurrentLoc = NewLoc;
-			break;
-		}
-
-		const FVector SlideStart = NewLoc;
-		const FVector SlideTarget = SlideStart + SlideDelta;
-
-		FHitResult SlideHit;
-		TargetActor->SetActorLocation(SlideTarget, true, &SlideHit);
-
-		const FVector AfterSlideLoc = TargetActor->GetActorLocation();
-		const bool bSlideMoved = !AfterSlideLoc.Equals(NewLoc, 0.01f);
-
-		// Slide-blocked only if slide hit AND no movement occurred
-		const bool bSlideBlocked = SlideHit.bBlockingHit && !bSlideMoved;
-
-		if (bSweepBlocked || bSlideBlocked)
-		{
-			bBlockedThisFrame = true;
-		}
-
-		CurrentLoc = AfterSlideLoc;
-		RemainingDelta -= SlideDelta;
 	}
 
-	// --- NEW: Push-out if inside minimum radius ---
-
-	if (const float CurrentDist = FVector::Distance(OwnerLoc, CurrentLoc); CurrentDist < MinTetherLength)
+	// --- Push-out if inside minimum radius ---
+	if (bPushOut && !(bBlockedThisFrame || bTargetWasBlockedLastFrame))
 	{
-		const float DistInside = MinTetherLength - CurrentDist;
-
-		// Tunable push strength (units per second)
-		constexpr float PushStrength = 50.f;
-
-		const float PushAmount = FMath::Min(DistInside + MinTetherBufferLength, PushStrength * DeltaTime);
-		const FVector OutwardDir = (CurrentLoc - OwnerLoc).GetSafeNormal();
-		FVector PushDelta = OutwardDir * PushAmount;
-
-		// Sweep the push
-		FHitResult PushHit;
-		const FVector PushTarget = CurrentLoc + PushDelta;
-		TargetActor->SetActorLocation(PushTarget, true, &PushHit);
-
-		FVector AfterPushLoc = TargetActor->GetActorLocation();
-
-		// Slide if needed
-		if (PushHit.bBlockingHit)
+		if (float CurrentDist = FVector::Distance(OwnerLoc, CurrentLoc); CurrentDist < MinTetherLength + SoftZoneWidth)
 		{
-			const FVector Normal = PushHit.Normal.GetSafeNormal();
-			const FVector SlideDelta = FVector::VectorPlaneProject(PushDelta, Normal);
+			const float DistInside = (MinTetherLength + SoftZoneWidth) - CurrentDist;
 
-			if (!SlideDelta.IsNearlyZero())
+			// Tunable push strength (units per second)
+			const float PushAmount = FMath::Min(DistInside, PushStrength * DeltaTime);
+
+			FVector OutwardDir = (CurrentLoc - OwnerLoc).GetSafeNormal();
+			OutwardDir.Z = 0.f;
+			const FVector PushDelta = OutwardDir * PushAmount;
+			FHitResult PushHit;
+			const FVector PushTarget = CurrentLoc + PushDelta;
+			TargetActor->SetActorLocation(PushTarget, true, &PushHit);
+
+			FVector AfterPushLoc = TargetActor->GetActorLocation();
+
+			if (PushHit.bBlockingHit)
 			{
-				FHitResult SlideHit;
-				TargetActor->SetActorLocation(AfterPushLoc + SlideDelta, true, &SlideHit);
-				AfterPushLoc = TargetActor->GetActorLocation();
+				TargetActor->SetActorLocation(CurrentLoc, false, &PushHit);
 			}
-		}
 
-		CurrentLoc = AfterPushLoc;
+			CurrentLoc = AfterPushLoc;
+			CurrentDist = FVector::Distance(OwnerLoc, CurrentLoc);
+		}
 	}
 
 	CurrentTetherLength = FVector::Distance(OwnerLoc, CurrentLoc);
 
-	// Update blocked state for next frame
 	bTargetWasBlockedLastFrame = bBlockedThisFrame;
+	PreviousOwnerLocation = OwnerLoc;
 }
 
 void UTetherAbilityComponent::OnRep_TargetActor()
