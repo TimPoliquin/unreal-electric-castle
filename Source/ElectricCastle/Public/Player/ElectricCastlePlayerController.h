@@ -161,6 +161,9 @@ public:
 	FOnPlayerFormWheelVisibilityChangeSignature OnFormWheelVisibilityChange;
 	UPROPERTY(BLueprintAssignable)
 	FOnPlayerFormWheelHighlightChangedSignature OnFormWheelHighlightChange;
+	
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static void GetMovementVectors(const AController* Controller, FVector& OutForward, FVector& OutRight);
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Input")
