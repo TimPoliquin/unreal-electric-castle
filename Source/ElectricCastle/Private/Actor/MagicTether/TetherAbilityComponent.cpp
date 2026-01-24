@@ -168,7 +168,7 @@ void UTetherAbilityComponent::SnapTargetToForwardStart()
 	// Usually MinTetherLength, but you can expose this as a variable.
 	const float StartDistance = FVector::Distance(OwnerLoc, TargetActor->GetActorLocation());
 
-	const FVector DesiredLoc = OwnerLoc + Forward * StartDistance + FVector::UpVector * 20.f;
+	const FVector DesiredLoc = OwnerLoc + Forward * StartDistance + PickupOffset;
 
 	// Sweep the target to the desired location
 	FHitResult Hit;

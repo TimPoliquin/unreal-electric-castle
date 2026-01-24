@@ -79,7 +79,8 @@ private:
 	// -------------------------
 	// Config
 	// -------------------------
-
+	UPROPERTY(EditAnywhere, Category="Tether")
+	FVector PickupOffset = FVector::UpVector * 20.f;
 	UPROPERTY(EditAnywhere, Category="Tether")
 	float MaxTetherLength = 800.f;
 	UPROPERTY(EditAnywhere, Category="Tether")
