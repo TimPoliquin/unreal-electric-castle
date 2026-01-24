@@ -20,7 +20,8 @@ bool UTetherAbilityComponent::ModifyInputMovementByTetherLimits(
 	FVector& OutDirection,
 	float& OutScale) const
 {
-	if (!IsTethered() || !OwnerActor || !TargetActor.IsValid())
+	// 1. Fast Fail: Basic pointer and zero checks
+	if (!IsTethered() || !OwnerActor || FMath::IsNearlyZero(InScale) || InDirection.IsNearlyZero())
 	{
 		OutDirection = InDirection;
 		OutScale = InScale;
@@ -29,37 +30,47 @@ bool UTetherAbilityComponent::ModifyInputMovementByTetherLimits(
 
 	const FVector CurrentLoc = OwnerActor->GetActorLocation();
 	const FVector TargetLoc = TargetActor->GetActorLocation();
-	const float CurrentDist = FVector::Distance(CurrentLoc, TargetLoc);
 
-	if (FMath::IsNearlyZero(InScale) || InDirection.IsNearlyZero())
-	{
-		OutDirection = InDirection;
-		OutScale = InScale;
-		return false;
-	}
+	// 2. Reuse vectors. Calculate TetherDir once.
+	const FVector TetherVec = TargetLoc - CurrentLoc;
+	float CurrentDist;
+	FVector TetherDir;
+
+	// Optimization: Get Distance and Normalized Dir in one step to reuse the Sqrt result
+	TetherVec.ToDirectionAndLength(TetherDir, CurrentDist);
 
 	const float DeltaTime = GetWorld()->GetDeltaSeconds();
-	const FVector DirNorm = InDirection.GetSafeNormal();
-	const FVector TetherDir = (TargetLoc - CurrentLoc).GetSafeNormal();
 
 	// --- Decompose movement ---
-	FVector MovementDelta = DirNorm * InScale * DeltaTime;
+	// We assume InDirection is normalized or close to it, but standardizing it is safer.
+	const FVector MovementDelta = InDirection.GetSafeNormal() * (InScale * DeltaTime);
+
 	const float MoveAlong = FVector::DotProduct(MovementDelta, TetherDir);
+
+	// Optimization A: Don't use VectorPlaneProject. Tangential is just Total - Radial.
 	FVector RadialDelta = TetherDir * MoveAlong;
-	const FVector TangentialDelta = FVector::VectorPlaneProject(MovementDelta, TetherDir);
+	const FVector TangentialDelta = MovementDelta - RadialDelta;
 
 	float ScaleFactor = 1.f;
-	const float ProposedDist = FVector::Distance(CurrentLoc + MovementDelta, TargetLoc);
 
 	// --- MAX DISTANCE CLAMP (moving away) ---
-	if (MoveAlong < 0.f && ProposedDist > MaxTetherLength)
+	// Optimization B: Only calc proposed distance if we are actually moving away
+	if (MoveAlong < 0.f)
 	{
-		const float DistToMax = MaxTetherLength - CurrentDist;
-		const float MoveAway = -MoveAlong;
+		// Use squared distance first to avoid Sqrt if not needed (optional, but good for tight loops)
+		// Here we need the exact distance for the ratio, so we calculate it.
+		const float ProposedDist = FVector::Dist(CurrentLoc + MovementDelta, TargetLoc);
 
-		if (MoveAway > KINDA_SMALL_NUMBER)
+		if (ProposedDist > MaxTetherLength)
 		{
-			ScaleFactor = FMath::Clamp(DistToMax / MoveAway, 0.f, 1.f);
+			const float DistToMax = MaxTetherLength - CurrentDist;
+			const float MoveAway = -MoveAlong; // Convert to positive magnitude
+
+			// Protect against divide by zero
+			if (MoveAway > KINDA_SMALL_NUMBER)
+			{
+				ScaleFactor = FMath::Clamp(DistToMax / MoveAway, 0.f, 1.f);
+			}
 		}
 	}
 
@@ -70,30 +81,30 @@ bool UTetherAbilityComponent::ModifyInputMovementByTetherLimits(
 
 		if (CurrentDist < SoftRadius)
 		{
-			const float DistIntoSoft = SoftRadius - CurrentDist;
-			const float Alpha = 1.f - FMath::Clamp(DistIntoSoft / SoftZoneWidth, 0.f, 1.f);
+			// Optimization C: Simplified Alpha Math
+			// Maps 0.0 (at MinLength) to 1.0 (at SoftRadius)
+			const float Alpha = FMath::Clamp((CurrentDist - MinTetherLength) / SoftZoneWidth, 0.f, 1.f);
 			RadialDelta *= Alpha;
 		}
 	}
 
-	// --- HARD MIN CLAMP (only when pinned, near Min) ---
+	// --- HARD MIN CLAMP ---
 	if (bTargetWasBlockedLastFrame && MoveAlong > 0.f)
 	{
-		constexpr float ClampEpsilon = 5.f; // small band near Min
-
+		constexpr float ClampEpsilon = 5.f;
 		if (CurrentDist <= MinTetherLength + ClampEpsilon)
 		{
 			RadialDelta = FVector::ZeroVector;
 		}
 	}
 
-	// --- Recompose movement ---
-	MovementDelta = TangentialDelta + RadialDelta;
+	// --- Recompose ---
+	FVector FinalMovement = TangentialDelta + RadialDelta;
 
-	// --- Apply max-distance scaling ---
-	MovementDelta *= ScaleFactor;
+	// Apply the Max Distance Scale Factor (affects the whole vector to prevent "sliding" out of range)
+	FinalMovement *= ScaleFactor;
 
-	const float NewScale = MovementDelta.Size() / DeltaTime;
+	const float NewScale = FinalMovement.Size() / DeltaTime;
 
 	if (NewScale < KINDA_SMALL_NUMBER)
 	{
@@ -102,7 +113,7 @@ bool UTetherAbilityComponent::ModifyInputMovementByTetherLimits(
 	}
 	else
 	{
-		OutDirection = MovementDelta / (NewScale * DeltaTime);
+		OutDirection = FinalMovement / (NewScale * DeltaTime);
 		OutScale = NewScale;
 	}
 
@@ -132,7 +143,7 @@ void UTetherAbilityComponent::AttachTarget(AActor* NewTarget)
 
 	TargetActor = NewTarget;
 
-	if (TargetActor.IsValid() && OwnerActor)
+	if (TargetActor && OwnerActor)
 	{
 		TargetActor->AddActorWorldOffset(FVector::UpVector * 20.f);
 		CurrentTetherLength = FVector::Distance(
@@ -145,7 +156,7 @@ void UTetherAbilityComponent::AttachTarget(AActor* NewTarget)
 
 void UTetherAbilityComponent::SnapTargetToForwardStart()
 {
-	if (!OwnerActor || !TargetActor.IsValid())
+	if (!OwnerActor || !TargetActor)
 	{
 		return;
 	}
@@ -217,7 +228,7 @@ void UTetherAbilityComponent::TickComponent(float DeltaTime, ELevelTick TickType
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// Only the server runs the tether logic
-	if (GetOwner()->HasAuthority() && TargetActor.IsValid())
+	if (GetOwner()->HasAuthority() && TargetActor)
 	{
 		UpdateTether(DeltaTime);
 	}
@@ -229,7 +240,7 @@ void UTetherAbilityComponent::TickComponent(float DeltaTime, ELevelTick TickType
 
 void UTetherAbilityComponent::UpdateTether(float DeltaTime)
 {
-	if (!OwnerActor || !TargetActor.IsValid())
+	if (!OwnerActor || !TargetActor)
 	{
 		return;
 	}

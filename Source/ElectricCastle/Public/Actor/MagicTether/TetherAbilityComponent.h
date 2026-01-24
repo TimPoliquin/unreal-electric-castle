@@ -55,7 +55,7 @@ private:
 
 	/** The actor being tethered */
 	UPROPERTY(ReplicatedUsing=OnRep_TargetActor)
-	TWeakObjectPtr<AActor> TargetActor;
+	TObjectPtr<AActor> TargetActor;
 
 	/** Current tether length (expands but never contracts) */
 	UPROPERTY(Replicated)
