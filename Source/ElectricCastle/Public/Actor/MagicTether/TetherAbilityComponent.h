@@ -86,6 +86,8 @@ private:
 	UPROPERTY(EditAnywhere, Category="Tether")
 	float MinTetherLength = 200.f;
 	UPROPERTY(EditAnywhere, Category="Tether")
+	float Lift = 20.f;
+	UPROPERTY(EditAnywhere, Category="Tether")
 	bool bPushOut = true;
 	UPROPERTY(EditAnywhere, Category="Tether", meta=(EditCondition="bPushOut", EditConditionHides))
 	float PushStrength = 100.f;

@@ -130,6 +130,12 @@ AElectricCastlePlayerCharacter::AElectricCastlePlayerCharacter()
 	RightHandConfig.SocketName = TEXT("Socket_Hand_Right");
 }
 
+USceneComponent* AElectricCastlePlayerCharacter::GetMagicHandAttachComponent_Implementation(FName& AttachBoneName)
+{
+	AttachBoneName = LeftHandConfig.SocketName;
+	return GetMesh();
+}
+
 void AElectricCastlePlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();

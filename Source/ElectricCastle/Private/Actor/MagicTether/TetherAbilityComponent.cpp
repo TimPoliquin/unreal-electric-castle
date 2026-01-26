@@ -145,7 +145,7 @@ void UTetherAbilityComponent::AttachTarget(AActor* NewTarget)
 
 	if (TargetActor && OwnerActor)
 	{
-		TargetActor->AddActorWorldOffset(FVector::UpVector * 20.f);
+		TargetActor->AddActorWorldOffset(FVector::UpVector * Lift);
 		CurrentTetherLength = FVector::Distance(
 			OwnerActor->GetActorLocation(),
 			TargetActor->GetActorLocation()
@@ -210,9 +210,11 @@ void UTetherAbilityComponent::DetachTarget()
 	if (!GetOwner()->HasAuthority())
 	{
 		ServerDetachTarget();
-		return;
 	}
-
+	if (TargetActor)
+	{
+		TargetActor->AddActorWorldOffset(FVector::UpVector * Lift);
+	}
 	TargetActor = nullptr;
 	CurrentTetherLength = 0.f;
 }

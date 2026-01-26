@@ -13,6 +13,7 @@
 #include "Player/Form/FormChangeActorInterface.h"
 #include "Player/Form/PlayerFormChangeComponent.h"
 #include "LiveLinkTypes.h"
+#include "Actor/MagicHand/MagicHandPossessorInterface.h"
 #include "Actor/MagicTether/TetherAbilityActorInterface.h"
 #include "Actor/Mesh/SocketManagerTypes.h"
 #include "Player/Equipment/EquipmentManagerInterface.h"
@@ -69,7 +70,8 @@ class ELECTRICCASTLE_API AElectricCastlePlayerCharacter : public AElectricCastle
                                                           public IFishingActorInterface,
                                                           public IFormChangeActorInterface,
                                                           public IEquipmentManagerInterface,
-                                                          public ITetherAbilityActorInterface
+                                                          public ITetherAbilityActorInterface,
+                                                          public IMagicHandPossessorInterface
 {
 	GENERATED_BODY()
 
@@ -163,6 +165,9 @@ public:
 	/** Start Tether Ability Actor Interface **/
 	virtual UTetherAbilityComponent* GetTetherAbilityComponent_Implementation() const override { return TetherComponent; };
 	/** End Tether Ability Actor Interface **/
+	/** Start Magic Hand Possessor Interface **/
+	virtual USceneComponent* GetMagicHandAttachComponent_Implementation(FName& AttachBoneName) override;
+	/** End Magic Hand Possessor Interface **/
 protected:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void Construction_SetupMetaHuman();
