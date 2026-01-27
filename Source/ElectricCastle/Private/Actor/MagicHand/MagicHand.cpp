@@ -47,6 +47,7 @@ void AMagicHand::BeginPlay()
 {
 	Super::BeginPlay();
 	GrabCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AMagicHand::OnGrabCollisionBeginOverlap);
+	PreviousLocation = GetActorLocation();
 }
 
 void AMagicHand::UpdateTetherFXBeamEnd_Implementation()
@@ -82,7 +83,22 @@ void AMagicHand::PossessTarget_Implementation(AActor* InTarget)
 	GrabCollisionComponent->Deactivate();
 	if (FName AttachBoneName; USceneComponent* AttachComponent = IMagicHandPossessableInterface::GetMagicHandAttachComponent(InTarget, AttachBoneName))
 	{
-		AttachToComponent(AttachComponent, FAttachmentTransformRules::SnapToTargetIncludingScale, AttachBoneName);
+		if (!AttachBoneName.IsNone())
+		{
+			AttachToComponent(AttachComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale, AttachBoneName);
+		}
+		else
+		{
+			AttachToComponent(AttachComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+			FHitResult HitResult;
+			FCollisionQueryParams QueryParams;
+			QueryParams.AddIgnoredActor(this);
+			QueryParams.AddIgnoredActor(Possessor.Get());
+			if (GetWorld()->LineTraceSingleByChannel(HitResult, PreviousLocation, InTarget->GetActorLocation(), ECC_Visibility, QueryParams))
+			{
+				SetActorLocation(HitResult.ImpactPoint);
+			}
+		}
 	}
 	OnPossess.Broadcast(FMagicHandPossessPayload(this, Possessor.Get(), Target.Get()));
 }
@@ -101,6 +117,7 @@ void AMagicHand::Tick(const float DeltaTime)
 	default:
 		break;
 	}
+	PreviousLocation = GetActorLocation();
 }
 
 void AMagicHand::Launch_Implementation(AActor* InPossessor, const float InSpeed, const float InRange)
@@ -113,6 +130,7 @@ void AMagicHand::Launch_Implementation(AActor* InPossessor, const float InSpeed,
 	ProjectileMovementComponent->MaxSpeed = InSpeed;
 	ProjectileMovementComponent->Velocity = InPossessor->GetActorForwardVector() * InSpeed;
 	ProjectileMovementComponent->Activate();
+	UpdateTetherFXBeamEnd();
 }
 
 
