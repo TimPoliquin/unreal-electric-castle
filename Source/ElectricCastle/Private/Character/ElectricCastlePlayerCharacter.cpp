@@ -31,6 +31,7 @@
 #include "GroomComponent.h"
 #include "LiveLinkInstance.h"
 #include "MetaHumanComponentUE.h"
+#include "Actor/MagicTether/TetherAbilityComponent.h"
 #include "Actor/Mesh/SocketManagerComponent.h"
 #include "Components/LODSyncComponent.h"
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
@@ -98,6 +99,7 @@ AElectricCastlePlayerCharacter::AElectricCastlePlayerCharacter()
 	FishingStatusEffectNiagaraComponent->SetAutoActivate(false);
 	MotionWarpingComponent = CreateDefaultSubobject<UMotionWarpingComponent>(TEXT("Motion Warping"));
 	FormChangeComponent = CreateDefaultSubobject<UPlayerFormChangeComponent>(TEXT("Form Change Component"));
+	TetherComponent = CreateDefaultSubobject<UTetherAbilityComponent>(TEXT("Tether Component"));
 	MetaHumanComponent = CreateDefaultSubobject<UMetaHumanComponentUE>(TEXT("MetaHuman"));
 	LODSyncComponent = CreateDefaultSubobject<ULODSyncComponent>(TEXT("LODSync"));
 	LODSyncComponent->NumLODs = 8;
@@ -126,6 +128,12 @@ AElectricCastlePlayerCharacter::AElectricCastlePlayerCharacter()
 	RightHandConfig.SocketTag = FElectricCastleGameplayTags::Get().Combat_Socket_RightHand;
 	LeftHandConfig.SocketName = TEXT("Socket_Hand_Left");
 	RightHandConfig.SocketName = TEXT("Socket_Hand_Right");
+}
+
+USceneComponent* AElectricCastlePlayerCharacter::GetMagicHandAttachComponent_Implementation(FName& AttachBoneName)
+{
+	AttachBoneName = LeftHandConfig.SocketName;
+	return GetMesh();
 }
 
 void AElectricCastlePlayerCharacter::BeginPlay()
@@ -292,6 +300,15 @@ void AElectricCastlePlayerCharacter::PossessedBy(AController* NewController)
 	{
 		OnLevelLoaded();
 	}
+}
+
+void AElectricCastlePlayerCharacter::AddMovementInput(FVector WorldDirection, float ScaleValue, bool bForce)
+{
+	if (TetherComponent)
+	{
+		TetherComponent->ModifyInputMovementByTetherLimits(WorldDirection, ScaleValue, WorldDirection, ScaleValue);
+	}
+	Super::AddMovementInput(WorldDirection, ScaleValue, bForce);
 }
 
 void AElectricCastlePlayerCharacter::OnRep_PlayerState()

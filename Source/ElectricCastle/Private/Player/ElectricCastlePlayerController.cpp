@@ -192,13 +192,17 @@ void AElectricCastlePlayerController::OnGameDataLoaded_Implementation()
 
 void AElectricCastlePlayerController::Move(const FInputActionValue& Value)
 {
-	const bool bCanMove = GetAbilitySystemComponent() && !GetAbilitySystemComponent()->HasMatchingGameplayTag(
-		FElectricCastleGameplayTags::Get().Player_Block_Movement
-	);
+	const bool bCanMove = GetAbilitySystemComponent()
+		                      ? !GetAbilitySystemComponent()->HasMatchingGameplayTag(
+			                      FElectricCastleGameplayTags::Get().Player_Block_Movement
+		                      )
+		                      : true;
 
-	const bool bCanRotate = GetAbilitySystemComponent() && !GetAbilitySystemComponent()->HasMatchingGameplayTag(
-		FElectricCastleGameplayTags::Get().Player_Block_Rotation
-	);
+	const bool bCanRotate = GetAbilitySystemComponent()
+		                        ? !GetAbilitySystemComponent()->HasMatchingGameplayTag(
+			                        FElectricCastleGameplayTags::Get().Player_Block_Rotation
+		                        )
+		                        : true;
 
 	if (ACharacter* ControlledPawn = GetPawn<ACharacter>())
 	{
@@ -495,6 +499,22 @@ FInputModeGameAndUI AElectricCastlePlayerController::BuildGameAndUIInputMode() c
 	InputModeData.SetLockMouseToViewportBehavior(bShowFormWheel ? EMouseLockMode::LockAlways : EMouseLockMode::DoNotLock);
 	InputModeData.SetHideCursorDuringCapture(!IsInputTypeMouse() || bShowFormWheel);
 	return InputModeData;
+}
+
+void AElectricCastlePlayerController::GetMovementVectors(const AController* Controller, FVector& OutForward, FVector& OutRight)
+{
+	if (!Controller)
+	{
+		return;
+	}
+	const FRotator Rotation = Controller->GetControlRotation();
+	const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+	// get forward vector
+	OutForward = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+
+	// get right vector 
+	OutRight = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 }
 
 void AElectricCastlePlayerController::OnInputTypeChange(const ECommonInputType NewInputMode)

@@ -13,11 +13,14 @@
 #include "Player/Form/FormChangeActorInterface.h"
 #include "Player/Form/PlayerFormChangeComponent.h"
 #include "LiveLinkTypes.h"
+#include "Actor/MagicHand/MagicHandPossessorInterface.h"
+#include "Actor/MagicTether/TetherAbilityActorInterface.h"
 #include "Actor/Mesh/SocketManagerTypes.h"
 #include "Player/Equipment/EquipmentManagerInterface.h"
 #include "Player/Form/FormConfigTypes.h"
 #include "ElectricCastlePlayerCharacter.generated.h"
 
+class UTetherAbilityComponent;
 class AElectricCastlePlayerCharacter;
 class ULiveLinkRetargetAsset;
 struct FLODMappingData;
@@ -66,7 +69,9 @@ UCLASS(Abstract, Blueprintable)
 class ELECTRICCASTLE_API AElectricCastlePlayerCharacter : public AElectricCastleCharacter, public IPlayerInterface,
                                                           public IFishingActorInterface,
                                                           public IFormChangeActorInterface,
-                                                          public IEquipmentManagerInterface
+                                                          public IEquipmentManagerInterface,
+                                                          public ITetherAbilityActorInterface,
+                                                          public IMagicHandPossessorInterface
 {
 	GENERATED_BODY()
 
@@ -80,6 +85,7 @@ public:
 	virtual UElectricCastleAttributeSet* GetAttributeSet() const override;
 
 	virtual void PossessedBy(AController* NewController) override;
+	virtual void AddMovementInput(FVector WorldDirection, float ScaleValue = 1, bool bForce = false) override;
 	virtual void OnRep_PlayerState() override;
 	virtual void OnRep_ActiveAbilityTag() override;
 	virtual void OnRep_StatusEffectTags() override;
@@ -156,6 +162,12 @@ public:
 	}
 
 	/** EquipmentManagerInterface End */
+	/** Start Tether Ability Actor Interface **/
+	virtual UTetherAbilityComponent* GetTetherAbilityComponent_Implementation() const override { return TetherComponent; };
+	/** End Tether Ability Actor Interface **/
+	/** Start Magic Hand Possessor Interface **/
+	virtual USceneComponent* GetMagicHandAttachComponent_Implementation(FName& AttachBoneName) override;
+	/** End Magic Hand Possessor Interface **/
 protected:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void Construction_SetupMetaHuman();
@@ -207,6 +219,8 @@ protected:
 	TObjectPtr<UNiagaraComponent> LevelUpNiagaraComponent;
 	UPROPERTY(EditDefaultsOnly, Category="Components")
 	TObjectPtr<UNiagaraComponent> FishingStatusEffectNiagaraComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
+	TObjectPtr<UTetherAbilityComponent> TetherComponent;
 	UPROPERTY(EditDefaultsOnly, Category="Components")
 	TObjectPtr<UMotionWarpingComponent> MotionWarpingComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
