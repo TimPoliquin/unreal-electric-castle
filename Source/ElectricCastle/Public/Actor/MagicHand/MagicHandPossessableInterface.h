@@ -28,7 +28,14 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	USceneComponent* GetMagicHandAttachComponent(FName& AttachBoneName);
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void OnMagicHandPossess();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void OnMagicHandUnpossess();
+
 	static USceneComponent* GetMagicHandAttachComponent(AActor* Actor, FName& AttachBoneName);
 
 	static bool CanBePossessedByMagicHand(const UObject* Actor);
+	static void OnMagicHandPossess(UObject* Actor);
+	static void OnMagicHandUnpossess(UObject* Actor);
 };

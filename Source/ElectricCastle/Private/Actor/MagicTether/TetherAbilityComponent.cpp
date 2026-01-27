@@ -5,6 +5,7 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "Actor/MagicTether/TetherAbilityTypes.h"
+#include "Actor/Physics/BasicGravityComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/Actor.h"
 
@@ -154,14 +155,6 @@ void UTetherAbilityComponent::ServerAttachTarget_Implementation(AActor* NewTarge
 
 void UTetherAbilityComponent::DetachTarget()
 {
-	if (TargetActor)
-	{
-		FHitResult Hit;
-		if (GetWorld()->LineTraceSingleByChannel(Hit, TargetActor->GetActorLocation(), TargetActor->GetActorLocation() + FVector::DownVector * 10000.f, ECC_Visibility))
-		{
-			TargetActor->SetActorLocation(Hit.ImpactPoint, true, &Hit);
-		}
-	}
 	TargetActor = nullptr;
 	CurrentTetherLength = 0.f;
 }
@@ -171,8 +164,7 @@ void UTetherAbilityComponent::ServerDetachTarget_Implementation()
 	DetachTarget();
 }
 
-void UTetherAbilityComponent::TickComponent(float DeltaTime, ELevelTick TickType,
-                                            FActorComponentTickFunction* ThisTickFunction)
+void UTetherAbilityComponent::TickComponent(const float DeltaTime, const ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 

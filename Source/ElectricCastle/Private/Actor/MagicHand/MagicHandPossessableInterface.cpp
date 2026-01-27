@@ -23,3 +23,19 @@ bool IMagicHandPossessableInterface::CanBePossessedByMagicHand(const UObject* Ac
 	}
 	return false;
 }
+
+void IMagicHandPossessableInterface::OnMagicHandPossess(UObject* Actor)
+{
+	if (IsValid(Actor) && Actor->Implements<UMagicHandPossessableInterface>())
+	{
+		Execute_OnMagicHandPossess(Actor);
+	}
+}
+
+void IMagicHandPossessableInterface::OnMagicHandUnpossess(UObject* Actor)
+{
+	if (IsValid(Actor) && Actor->Implements<UMagicHandPossessableInterface>())
+	{
+		Execute_OnMagicHandUnpossess(Actor);
+	}
+}

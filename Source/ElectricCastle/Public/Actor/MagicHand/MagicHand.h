@@ -43,6 +43,8 @@ protected:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void PossessTarget(AActor* InTarget);
+	UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
+	void ReleaseTarget();
 	UFUNCTION(NetMulticast, Reliable)
 	void MissTarget();
 	UFUNCTION(BlueprintNativeEvent)

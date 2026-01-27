@@ -50,6 +50,14 @@ void AMagicHand::BeginPlay()
 	PreviousLocation = GetActorLocation();
 }
 
+void AMagicHand::ReleaseTarget_Implementation()
+{
+	State = EMagicHandState::None;
+	IMagicHandPossessableInterface::OnMagicHandUnpossess(Target.Get());
+	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	Target = nullptr;
+}
+
 void AMagicHand::UpdateTetherFXBeamEnd_Implementation()
 {
 	if (FName AttachBone; const USceneComponent* PossessorAttachComponent = IMagicHandPossessorInterface::GetMagicHandAttachComponent(Possessor.Get(), AttachBone))
@@ -81,6 +89,7 @@ void AMagicHand::PossessTarget_Implementation(AActor* InTarget)
 	ProjectileMovementComponent->StopMovementImmediately();
 	ProjectileMovementComponent->Deactivate();
 	GrabCollisionComponent->Deactivate();
+	IMagicHandPossessableInterface::OnMagicHandPossess(InTarget);
 	if (FName AttachBoneName; USceneComponent* AttachComponent = IMagicHandPossessableInterface::GetMagicHandAttachComponent(InTarget, AttachBoneName))
 	{
 		if (!AttachBoneName.IsNone())
