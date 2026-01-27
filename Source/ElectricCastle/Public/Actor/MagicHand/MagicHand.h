@@ -30,7 +30,7 @@ public:
 	AMagicHand();
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void Tick(float DeltaTime) override;
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
 	void Launch(AActor* InPossessor, const float InSpeed, const float InRange);
 
 	UPROPERTY(BlueprintAssignable)
@@ -41,9 +41,9 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	UFUNCTION(BlueprintNativeEvent)
+	UFUNCTION(NetMulticast, Reliable)
 	void PossessTarget(AActor* InTarget);
-	UFUNCTION(BlueprintNativeEvent)
+	UFUNCTION(NetMulticast, Reliable)
 	void MissTarget();
 	UFUNCTION(BlueprintNativeEvent)
 	void UpdateTetherFXBeamEnd();

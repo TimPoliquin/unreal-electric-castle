@@ -132,15 +132,8 @@ void UTetherAbilityComponent::BeginPlay()
 	}
 }
 
-void UTetherAbilityComponent::AttachTarget(AActor* NewTarget)
+void UTetherAbilityComponent::AttachTarget_Implementation(AActor* NewTarget)
 {
-	// If client, forward to server
-	if (!GetOwner()->HasAuthority())
-	{
-		ServerAttachTarget(NewTarget);
-		return;
-	}
-
 	TargetActor = NewTarget;
 
 	if (TargetActor && OwnerActor)
@@ -154,52 +147,6 @@ void UTetherAbilityComponent::AttachTarget(AActor* NewTarget)
 	}
 }
 
-void UTetherAbilityComponent::SnapTargetToForwardStart()
-{
-	if (!OwnerActor || !TargetActor)
-	{
-		return;
-	}
-
-	const FVector OwnerLoc = OwnerActor->GetActorLocation();
-	const FVector Forward = OwnerActor->GetActorForwardVector().GetSafeNormal();
-
-	// Distance you want the object to start at.
-	// Usually MinTetherLength, but you can expose this as a variable.
-	const float StartDistance = FVector::Distance(OwnerLoc, TargetActor->GetActorLocation());
-
-	const FVector DesiredLoc = OwnerLoc + Forward * StartDistance + PickupOffset;
-
-	// Sweep the target to the desired location
-	FHitResult Hit;
-	TargetActor->SetActorLocation(DesiredLoc, true, &Hit);
-
-	FVector FinalLoc = TargetActor->GetActorLocation();
-
-	// If sweep hit something, slide along the surface
-	if (Hit.bBlockingHit)
-	{
-		const FVector Normal = Hit.Normal.GetSafeNormal();
-		FVector SlideDelta = FVector::VectorPlaneProject(DesiredLoc - FinalLoc, Normal);
-		SlideDelta.Z = 0.f;
-		if (!SlideDelta.IsNearlyZero())
-		{
-			FHitResult SlideHit;
-			TargetActor->SetActorLocation(FinalLoc + SlideDelta, true, &SlideHit);
-			FinalLoc = TargetActor->GetActorLocation();
-		}
-	}
-
-	// Update tether length
-	CurrentTetherLength = FVector::Distance(OwnerLoc, FinalLoc);
-
-	// Important: first frame should not be considered "blocked"
-	bTargetWasBlockedLastFrame = false;
-
-	// Also update previous owner location so the first UpdateTether() doesn't think we moved
-	PreviousOwnerLocation = OwnerLoc;
-}
-
 void UTetherAbilityComponent::ServerAttachTarget_Implementation(AActor* NewTarget)
 {
 	AttachTarget(NewTarget);
@@ -207,13 +154,13 @@ void UTetherAbilityComponent::ServerAttachTarget_Implementation(AActor* NewTarge
 
 void UTetherAbilityComponent::DetachTarget()
 {
-	if (!GetOwner()->HasAuthority())
-	{
-		ServerDetachTarget();
-	}
 	if (TargetActor)
 	{
-		TargetActor->AddActorWorldOffset(FVector::UpVector * Lift);
+		FHitResult Hit;
+		if (GetWorld()->LineTraceSingleByChannel(Hit, TargetActor->GetActorLocation(), TargetActor->GetActorLocation() + FVector::DownVector * 10000.f, ECC_Visibility))
+		{
+			TargetActor->SetActorLocation(Hit.ImpactPoint, true, &Hit);
+		}
 	}
 	TargetActor = nullptr;
 	CurrentTetherLength = 0.f;

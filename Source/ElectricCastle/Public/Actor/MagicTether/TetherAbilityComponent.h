@@ -18,10 +18,8 @@ public:
 	UTetherAbilityComponent();
 
 	/** Public API for abilities to attach a target */
-	UFUNCTION(BlueprintCallable, Category="Tether")
+	UFUNCTION(BlueprintCallable, NetMulticast, Reliable, Category="Tether")
 	void AttachTarget(AActor* NewTarget);
-	UFUNCTION(BlueprintCallable, Category="Tether")
-	void SnapTargetToForwardStart();
 
 	/** Public API for abilities to detach */
 	UFUNCTION(BlueprintCallable, Category="Tether")
@@ -79,8 +77,6 @@ private:
 	// -------------------------
 	// Config
 	// -------------------------
-	UPROPERTY(EditAnywhere, Category="Tether")
-	FVector PickupOffset = FVector::UpVector * 20.f;
 	UPROPERTY(EditAnywhere, Category="Tether")
 	float MaxTetherLength = 800.f;
 	UPROPERTY(EditAnywhere, Category="Tether")

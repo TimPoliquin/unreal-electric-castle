@@ -29,7 +29,7 @@ AMagicHand::AMagicHand()
 	ProjectileMovementComponent->MaxSpeed = 0.f;
 	ProjectileMovementComponent->ProjectileGravityScale = 0.f;
 	ProjectileMovementComponent->bAutoActivate = false;
-	SetReplicates(true);
+	bReplicates = true;
 }
 
 void AMagicHand::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
