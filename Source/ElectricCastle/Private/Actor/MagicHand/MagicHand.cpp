@@ -90,13 +90,16 @@ void AMagicHand::PossessTarget_Implementation(AActor* InTarget)
 		else
 		{
 			AttachToComponent(AttachComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-			FHitResult HitResult;
 			FCollisionQueryParams QueryParams;
 			QueryParams.AddIgnoredActor(this);
 			QueryParams.AddIgnoredActor(Possessor.Get());
-			if (GetWorld()->LineTraceSingleByChannel(HitResult, PreviousLocation, InTarget->GetActorLocation(), ECC_Visibility, QueryParams))
+			if (FHitResult HitResult; GetWorld()->LineTraceSingleByChannel(HitResult, PreviousLocation, InTarget->GetActorLocation(), ECC_Visibility, QueryParams))
 			{
+				FRotator Rotation = HitResult.ImpactNormal.Rotation();
+				Rotation.Yaw = Rotation.Yaw - 180.f;
+				Rotation.Normalize();
 				SetActorLocation(HitResult.ImpactPoint);
+				SetActorRotation(Rotation);
 			}
 		}
 	}
