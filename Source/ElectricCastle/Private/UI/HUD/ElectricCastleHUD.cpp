@@ -3,9 +3,9 @@
 
 #include "UI/HUD/ElectricCastleHUD.h"
 
-#include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
+#include "Game/ElectricCastleGameState.h"
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "GameFramework/GameStateBase.h"
 #include "Player/ElectricCastlePlayerState.h"
@@ -37,6 +37,37 @@ void AElectricCastleHUD::BeginPlay()
 			}
 			GameDataSubsystem->OnGameDataLoaded.AddUniqueDynamic(this, &AElectricCastleHUD::OnGameDataLoaded);
 		}
+		else
+		{
+			OnGameDataLoaded();
+		}
+	}
+}
+
+void AElectricCastleHUD::AddPlayerFormViewModel_Implementation(UMVVM_PlayerForms* PlayerFormsViewModel)
+{
+	PlayerFormsViewModels.Add(PlayerFormsViewModel);
+	if (OverlayWidget)
+	{
+		OverlayWidget->BindPlayerFormsViewModel(PlayerFormsViewModel);
+	}
+}
+
+void AElectricCastleHUD::AddPlayerStateViewModel_Implementation(UMVVM_PlayerState* PlayerStateViewModel)
+{
+	PlayerStateViewModels.Add(PlayerStateViewModel);
+	if (OverlayWidget)
+	{
+		OverlayWidget->BindPlayerStateViewModel(PlayerStateViewModel);
+	}
+}
+
+void AElectricCastleHUD::AddPlayerAbilityStateViewModel_Implementation(UMVVM_PlayerAbilityStates* PlayerAbilityStateViewModel)
+{
+	PlayerAbilityStatesViewModels.Add(PlayerAbilityStateViewModel);
+	if (OverlayWidget)
+	{
+		OverlayWidget->BindPlayerAbilityStatesViewModel(PlayerAbilityStateViewModel);
 	}
 }
 
@@ -47,60 +78,12 @@ void AElectricCastleHUD::OnGameDataLoaded_Implementation()
 	{
 		LoadingScreenWidget->Hide();
 	}
-	if (OverlayWidget)
-	{
-		OverlayWidget->AddToViewport();
-	}
 }
 
 void AElectricCastleHUD::Initialize()
 {
-	InitializePlayerViewModels();
 	InitializeOverlayWidget();
-}
-
-void AElectricCastleHUD::InitializeWidgets(
-	AActor* InPlayer,
-	APlayerController* InPlayerController,
-	AElectricCastlePlayerState* InPlayerState,
-	UElectricCastleAbilitySystemComponent* InAbilitySystemComponent,
-	UElectricCastleAttributeSet* InAttributeSet
-)
-{
-	if (bInitialized)
-	{
-		return;
-	}
-	InitializeInventoryViewModel();
-
-	MenuWidget = CreateWidget<UAuraMenuWidget>(GetWorld(), MenuWidgetClass, FName("MenuWidget"));
-	MenuWidget->InitializeDependencies(
-		GetOwningPawn()
-	);
-	MenuWidget->OnAuraMenuClosed.AddDynamic(this, &AElectricCastleHUD::OnMenuClosed);
-	MenuWidget->SetVisibility(ESlateVisibility::Hidden);
-	MenuWidget->AddToViewport();
-	auto OnAbilitySystemReadyCallback = [&]()
-	{
-		// const FWidgetControllerParams Params = FWidgetControllerParams(InPlayer, InPlayerController, InPlayerState, InAbilitySystemComponent, InAttributeSet);
-		// InitializeOverlayWidgetController(Params);
-		// InitializeAttributeWidgetController(Params);
-		// InitializeSpellMenuWidgetController(Params);
-	};
-	if (UElectricCastleAbilitySystemComponent* AbilitySystemComponent = Cast<UElectricCastleAbilitySystemComponent>(
-		InAbilitySystemComponent
-	))
-	{
-		if (AbilitySystemComponent->HasFiredOnAbilitiesGivenDelegate())
-		{
-			OnAbilitySystemReadyCallback();
-		}
-		else
-		{
-			AbilitySystemComponent->OnAbilitiesGivenDelegate.AddLambda(OnAbilitySystemReadyCallback);
-		}
-	}
-	bInitialized = true;
+	InitializePlayerViewModels();
 }
 
 UAttributeMenuWidgetController* AElectricCastleHUD::GetAttributeMenuWidgetController() const
@@ -198,7 +181,7 @@ void AElectricCastleHUD::InitializePlayerViewModels()
 		UE_LOG(LogElectricCastle, Error, TEXT("[%s] PlayerStateViewModelClass is null"), *GetName());
 		return;
 	}
-	if (const AGameStateBase* GameState = GetWorld()->GetGameState<AGameStateBase>())
+	if (AElectricCastleGameState* GameState = GetWorld()->GetGameState<AElectricCastleGameState>())
 	{
 		// this should maybe be done on player state begin play?
 		for (int32 PlayerIdx = 0; PlayerIdx < GameState->PlayerArray.Num(); PlayerIdx++)
@@ -207,16 +190,37 @@ void AElectricCastleHUD::InitializePlayerViewModels()
 				GameState->PlayerArray[PlayerIdx]
 			))
 			{
-				PlayerStateViewModels.Add(CreatePlayerStateViewModel(PlayerIdx, PlayerState));
-				PlayerAbilityStatesViewModels.Add(CreatePlayerAbilityStatesViewModel(PlayerIdx, PlayerState));
-				PlayerFormsViewModels.Add(CreatePlayerFormsViewModel(PlayerIdx, PlayerState));
+				InitializeViewModelsForPlayerState(PlayerState, PlayerIdx);
 			}
 		}
+		GameState->OnPlayerStateAdded.AddUniqueDynamic(this, &AElectricCastleHUD::OnPlayerStateAdded);
+		GameState->OnPlayerStateRemoved.AddUniqueDynamic(this, &AElectricCastleHUD::OnPlayerStateRemoved);
 	}
 	else
 	{
 		UE_LOG(LogElectricCastle, Error, TEXT("[%s] GameState is null"), *GetName());
 	}
+}
+
+void AElectricCastleHUD::InitializeViewModelsForPlayerState(AElectricCastlePlayerState* PlayerState, int32 PlayerIdx)
+{
+	AddPlayerStateViewModel(CreatePlayerStateViewModel(PlayerIdx, PlayerState));
+	AddPlayerAbilityStateViewModel(CreatePlayerAbilityStatesViewModel(PlayerIdx, PlayerState));
+	AddPlayerFormViewModel(CreatePlayerFormsViewModel(PlayerIdx, PlayerState));
+}
+
+void AElectricCastleHUD::OnPlayerStateAdded(const FGamePlayerStateAddedPayload& Payload)
+{
+	if (AElectricCastlePlayerState* PlayerState = Cast<AElectricCastlePlayerState>(Payload.PlayerState))
+	{
+		InitializeViewModelsForPlayerState(PlayerState, Payload.PlayerIndex);
+		// TODO - invoke new function for each view model created
+	}
+}
+
+void AElectricCastleHUD::OnPlayerStateRemoved(const FGamePlayerStateRemovedPayload& Payload)
+{
+	// TODO
 }
 
 void AElectricCastleHUD::InitializeInventoryViewModel()
@@ -233,12 +237,12 @@ void AElectricCastleHUD::InitializeOverlayWidget()
 		UE_LOG(LogElectricCastle, Error, TEXT("[%s] OverlayWidgetClass is null"), *GetName());
 		return;
 	}
+	if (OverlayWidget)
+	{
+		UE_LOG(LogElectricCastle, Warning, TEXT("[%s] OverlayWidget already exists!"), *GetName());
+		return;
+	}
 	OverlayWidget = CreateWidget<UOverlayWidget>(GetWorld(), OverlayWidgetClass, FName("OverlayWidget"));
-	OverlayWidget->BindViewModels(
-		GetPlayerStateViewModels(),
-		GetPlayerAbilityStatesViewModels(),
-		GetPlayerFormsViewModels()
-	);
 	if (const UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(GetWorld()))
 	{
 		if (GameDataSubsystem->IsGameDataLoaded())

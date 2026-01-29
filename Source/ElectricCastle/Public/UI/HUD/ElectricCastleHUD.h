@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Game/GameEvents.h"
 #include "GameFramework/HUD.h"
 #include "UI/WidgetController/ElectricCastleWidgetController.h"
 #include "ElectricCastleHUD.generated.h"
@@ -38,18 +39,9 @@ class ELECTRICCASTLE_API AElectricCastleHUD : public AHUD
 
 public:
 	void Initialize();
-	void InitializeWidgets(
-		AActor* InPlayer,
-		APlayerController* InPlayerController,
-		AElectricCastlePlayerState* InPlayerState,
-		UElectricCastleAbilitySystemComponent* InAbilitySystemComponent,
-		UElectricCastleAttributeSet* InAttributeSet
-	);
 
-	UAttributeMenuWidgetController* GetAttributeMenuWidgetController(
-	) const;
-	USpellMenuWidgetController* GetSpellMenuWidgetController(
-	) const;
+	UAttributeMenuWidgetController* GetAttributeMenuWidgetController() const;
+	USpellMenuWidgetController* GetSpellMenuWidgetController() const;
 	UFUNCTION(BlueprintCallable)
 	UMVVM_Inventory* GetInventoryViewModel();
 	UFUNCTION(BlueprintCallable)
@@ -69,6 +61,13 @@ protected:
 	virtual void BeginPlay() override;
 	UFUNCTION(BlueprintNativeEvent)
 	void OnGameDataLoaded();
+	UFUNCTION(BlueprintNativeEvent)
+	void AddPlayerAbilityStateViewModel(UMVVM_PlayerAbilityStates* PlayerAbilityStateViewModel);
+	UFUNCTION(BlueprintNativeEvent)
+	void AddPlayerStateViewModel(UMVVM_PlayerState* PlayerStateViewModel);
+	UFUNCTION(BlueprintNativeEvent)
+	void AddPlayerFormViewModel(UMVVM_PlayerForms* PlayerFormsViewModel);
+
 
 	/** Player State View Model **/
 	UPROPERTY(EditDefaultsOnly, Category = "Properties")
@@ -141,6 +140,11 @@ private:
 
 	void InitializeAttributeWidgetController(const FWidgetControllerParams& Params);
 	void InitializeSpellMenuWidgetController(const FWidgetControllerParams& Params);
+	void InitializeViewModelsForPlayerState(AElectricCastlePlayerState* PlayerState, int32 PlayerIdx);
+	UFUNCTION()
+	void OnPlayerStateAdded(const FGamePlayerStateAddedPayload& Payload);
+	UFUNCTION()
+	void OnPlayerStateRemoved(const FGamePlayerStateRemovedPayload& Payload);
 };
 
 template <typename T>

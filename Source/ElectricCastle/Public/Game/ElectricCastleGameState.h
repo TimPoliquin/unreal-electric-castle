@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameEvents.h"
 #include "GameFramework/GameStateBase.h"
 #include "ElectricCastleGameState.generated.h"
 
@@ -21,11 +22,18 @@ public:
 
 	AElectricCastleGameState();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void AddPlayerState(APlayerState* PlayerState) override;
+	virtual void RemovePlayerState(APlayerState* PlayerState) override;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	UInventoryComponent* GetInventoryComponent() const;
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	UProgressionComponent* GetProgressionComponent() const;
+
+	UPROPERTY(BlueprintAssignable)
+	FGamePlayerStateAddedSignature OnPlayerStateAdded;
+	UPROPERTY(BlueprintAssignable)
+	FGamePlayerStateRemovedSignature OnPlayerStateRemoved;
 
 protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Replicated, Category="Components")

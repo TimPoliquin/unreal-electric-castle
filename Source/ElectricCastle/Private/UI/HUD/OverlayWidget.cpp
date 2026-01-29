@@ -6,10 +6,7 @@
 #include <Components/PanelWidget.h>
 
 #include "ElectricCastle/ElectricCastleLogChannels.h"
-#include "Player/ElectricCastlePlayerState.h"
 #include "UI/HUD/ElectricCastleHUD.h"
-#include "UI/Library/WidgetFunctionLibrary.h"
-#include "UI/ViewModel/Form/MVVM_PlayerForm.h"
 #include "UI/ViewModel/Form/MVVM_PlayerForms.h"
 #include "UI/Widget/FormWheelWidget.h"
 
@@ -45,28 +42,16 @@ void UOverlayWidget::ShowFormWheel_Implementation()
 {
 }
 
-
-void UOverlayWidget::CreateFormWheelWidgets_Implementation(
-	const TArray<UMVVM_PlayerForms*>& PlayerFormsViewModels,
-	UPanelWidget* ParentWidget
+UFormWheelWidget* UOverlayWidget::CreateFormWheelWidget_Implementation(
+	UPanelWidget* ParentWidget,
+	UMVVM_PlayerForms* PlayerFormsViewModel
 )
 {
 	if (!FormWheelWidgetClass)
 	{
 		UE_LOG(LogElectricCastle, Error, TEXT("[%s] FormWheelWidgetClass is null"), *GetName());
-		return;
+		return nullptr;
 	}
-	for (UMVVM_PlayerForms* PlayerFormsViewModel : PlayerFormsViewModels)
-	{
-		ParentWidget->AddChild(CreateFormWheelWidget(PlayerFormsViewModel));
-	}
-}
-
-
-UFormWheelWidget* UOverlayWidget::CreateFormWheelWidget_Implementation(
-	UMVVM_PlayerForms* PlayerFormsViewModel
-)
-{
 	if (UFormWheelWidget* FormWheelWidget = CreateWidget<UFormWheelWidget>(
 		this,
 		FormWheelWidgetClass,
@@ -76,10 +61,25 @@ UFormWheelWidget* UOverlayWidget::CreateFormWheelWidget_Implementation(
 		FormWheelWidget->BindViewModel(PlayerFormsViewModel);
 		FormWheelWidget->Hide(false);
 		FormWheelWidgets.Add(FormWheelWidget);
+		ParentWidget->AddChild(FormWheelWidget);
 		return FormWheelWidget;
 	}
 	UE_LOG(LogElectricCastle, Error, TEXT("[%s] Failed to create FormWheelWidget"), *GetName());
 	return nullptr;
+}
+
+void UOverlayWidget::BindPlayerStateViewModel_Implementation(UMVVM_PlayerState* ViewModel)
+{
+}
+
+void UOverlayWidget::BindPlayerAbilityStatesViewModel_Implementation(UMVVM_PlayerAbilityStates* ViewModel)
+{
+	// nothing to do in native right now
+}
+
+void UOverlayWidget::BindPlayerFormsViewModel_Implementation(UMVVM_PlayerForms* ViewModel)
+{
+	// nothing to do in native right now
 }
 
 UFormWheelWidget* UOverlayWidget::GetFormWheelWidgetByPlayerIndex(const int32 PlayerIndex) const
@@ -94,15 +94,6 @@ UFormWheelWidget* UOverlayWidget::GetFormWheelWidgetByPlayerIndex(const int32 Pl
 		);
 	}
 	return nullptr;
-}
-
-void UOverlayWidget::BindViewModels_Implementation(
-	const TArray<UMVVM_PlayerState*>& ViewModels,
-	const TArray<UMVVM_PlayerAbilityStates*>& AbilityViewModels,
-	const TArray<UMVVM_PlayerForms*>& FormViewModels
-)
-{
-	// TODO
 }
 
 void UOverlayWidget::Hide_Implementation()

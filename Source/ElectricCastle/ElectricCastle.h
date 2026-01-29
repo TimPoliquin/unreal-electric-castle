@@ -17,3 +17,15 @@
 // Custom Tag Names
 #define TAG_PLAYER FName("Player")
 #define TAG_ENEMY FName("Enemy")
+
+static FString NetModeToString(const ENetMode NetMode)
+{
+	switch (NetMode)
+	{
+	case NM_Standalone: return TEXT("Standalone");
+	case NM_DedicatedServer: return TEXT("Dedicated Server");
+	case NM_ListenServer: return TEXT("Listen Server");
+	case NM_Client: return TEXT("Client");
+	default: return TEXT("Unknown");
+	}
+}

@@ -35,7 +35,7 @@ void UPlayerFormChangeComponent::ChangeForm_Implementation(const FGameplayTag& N
 {
 	if (GetOwner()->HasAuthority() && !CurrentFormTag.MatchesTagExact(NewFormTag))
 	{
-		const FGameplayTag& OldValue = CurrentFormTag;
+		const FGameplayTag OldValue = CurrentFormTag;
 		CurrentFormTag = NewFormTag;
 		OnRep_CurrentFormTag(OldValue);
 	}
@@ -114,37 +114,41 @@ void UPlayerFormChangeComponent::FormChange_UpdateAbilities_Implementation(const
 	{
 		return;
 	}
-	const UPlayerFormPrimaryAsset* OldFormConfig = GetPlayerFormConfigRow(Payload.OldFormTag);
-	const UPlayerFormPrimaryAsset* CurrentFormConfig = GetPlayerFormConfigRow(Payload.NewFormTag);
 	if (UElectricCastleAbilitySystemComponent* AbilitySystemComponent = Cast<UElectricCastleAbilitySystemComponent>(
 		UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(
 			GetOwner()
 		)
 	))
 	{
-		for (const FGameplayTag& AbilityTag : OldFormConfig->Abilities)
+		if (const UPlayerFormPrimaryAsset* OldFormConfig = GetPlayerFormConfigRow(Payload.OldFormTag))
 		{
-			UE_LOG(
-				LogElectricCastle,
-				Log,
-				TEXT("[%s:%s] Removing ability %s"),
-				*GetOwner()->GetName(),
-				*GetName(),
-				*AbilityTag.ToString()
-			);
-			AbilitySystemComponent->RemoveAbilitiesWithTag(AbilityTag);
+			for (const FGameplayTag& AbilityTag : OldFormConfig->Abilities)
+			{
+				UE_LOG(
+					LogElectricCastle,
+					Log,
+					TEXT("[%s:%s] Removing ability %s"),
+					*GetOwner()->GetName(),
+					*GetName(),
+					*AbilityTag.ToString()
+				);
+				AbilitySystemComponent->RemoveAbilitiesWithTag(AbilityTag);
+			}
 		}
-		for (const FGameplayTag& AbilityTag : CurrentFormConfig->Abilities)
+		if (const UPlayerFormPrimaryAsset* CurrentFormConfig = GetPlayerFormConfigRow(Payload.NewFormTag))
 		{
-			UE_LOG(
-				LogElectricCastle,
-				Log,
-				TEXT("[%s:%s] Adding ability %s"),
-				*GetOwner()->GetName(),
-				*GetName(),
-				*AbilityTag.ToString()
-			);
-			AbilitySystemComponent->GrantAbilitiesWithTag(AbilityTag);
+			for (const FGameplayTag& AbilityTag : CurrentFormConfig->Abilities)
+			{
+				UE_LOG(
+					LogElectricCastle,
+					Log,
+					TEXT("[%s:%s] Adding ability %s"),
+					*GetOwner()->GetName(),
+					*GetName(),
+					*AbilityTag.ToString()
+				);
+				AbilitySystemComponent->GrantAbilitiesWithTag(AbilityTag);
+			}
 		}
 	}
 }
@@ -266,7 +270,7 @@ UPlayerFormPrimaryAsset* UPlayerFormChangeComponent::GetPlayerFormConfigRow(cons
 {
 	if (const UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(this))
 	{
-		return GameDataSubsystem->GetPlayerFormConfigByTag(CurrentFormTag);
+		return GameDataSubsystem->GetPlayerFormConfigByTag(FormTag);
 	}
 	return nullptr;
 }

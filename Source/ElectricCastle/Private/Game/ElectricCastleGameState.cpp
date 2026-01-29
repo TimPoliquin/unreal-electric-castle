@@ -19,6 +19,19 @@ void AElectricCastleGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 }
 
+void AElectricCastleGameState::AddPlayerState(APlayerState* PlayerState)
+{
+	Super::AddPlayerState(PlayerState);
+	OnPlayerStateAdded.Broadcast(FGamePlayerStateAddedPayload(PlayerState, PlayerArray.IndexOfByKey(PlayerState)));
+}
+
+void AElectricCastleGameState::RemovePlayerState(APlayerState* PlayerState)
+{
+	const int32 PlayerIndex = PlayerArray.IndexOfByKey(PlayerState);
+	Super::RemovePlayerState(PlayerState);
+	OnPlayerStateRemoved.Broadcast(FGamePlayerStateRemovedPayload(PlayerState, PlayerIndex));
+}
+
 AElectricCastleGameState* AElectricCastleGameState::Get(const UObject* WorldContextObject)
 {
 	if (IsValid(WorldContextObject))
