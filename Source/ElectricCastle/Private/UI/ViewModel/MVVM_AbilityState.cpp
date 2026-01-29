@@ -259,7 +259,7 @@ void UMVVM_AbilityState::OnPlayerAbilityAdded(const FOnAbilityChangedPayload& Pa
 
 void UMVVM_AbilityState::OnPlayerAbilityRemoved(const FOnAbilityChangedPayload& Payload)
 {
-	if (Payload.InputTag.MatchesTagExact(InputTag))
+	if (Payload.InputTag.MatchesTagExact(InputTag) && Payload.AbilityTag.MatchesTagExact(AbilityTag))
 	{
 		SetAbilityInfo(FElectricCastleAbilityInfo());
 	}

@@ -32,12 +32,12 @@ public:
 	void ShowFormWheel();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void HideFormWheel();
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void BindViewModels(
-		const TArray<UMVVM_PlayerState*>& ViewModels,
-		const TArray<UMVVM_PlayerAbilityStates*>& AbilityViewModels,
-		const TArray<UMVVM_PlayerForms*>& FormsViewModels
-	);
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void BindPlayerStateViewModel(UMVVM_PlayerState* ViewModel);
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void BindPlayerAbilityStatesViewModel(UMVVM_PlayerAbilityStates* ViewModel);
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void BindPlayerFormsViewModel(UMVVM_PlayerForms* ViewModel);
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties")
@@ -45,9 +45,7 @@ protected:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Components")
 	TArray<TObjectPtr<UFormWheelWidget>> FormWheelWidgets;
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void CreateFormWheelWidgets(UPARAM(ref) const TArray<UMVVM_PlayerForms*>& PlayerFormsViewModels, UPanelWidget* ParentWidget);
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	UFormWheelWidget* CreateFormWheelWidget(UMVVM_PlayerForms* PlayerFormsViewModel);
+	UFormWheelWidget* CreateFormWheelWidget(UPanelWidget* ParentWidget, UMVVM_PlayerForms* PlayerFormsViewModel);
 	UFUNCTION(BlueprintCallable)
 	UFormWheelWidget* GetFormWheelWidgetByPlayerIndex(const int32 PlayerIndex) const;
 

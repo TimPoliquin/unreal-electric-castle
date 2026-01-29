@@ -68,7 +68,7 @@ UPlayerFormPrimaryAsset* UElectricCastleGameDataSubsystem::GetPlayerFormConfigBy
 	{
 		return Config.LoadSynchronous()->FormTag.MatchesTagExact(FormTag);
 	});
-	if (FormAsset->IsValid())
+	if (FormAsset && FormAsset->IsValid())
 	{
 		return FormAsset->Get();
 	}
