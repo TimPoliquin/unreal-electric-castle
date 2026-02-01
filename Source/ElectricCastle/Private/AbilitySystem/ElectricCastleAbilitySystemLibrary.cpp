@@ -456,14 +456,12 @@ FActiveGameplayEffectHandle UElectricCastleAbilitySystemLibrary::ApplyDamageEffe
 	const FDamageEffectParams& DamageEffectParams
 )
 {
-	checkf(
-		DamageEffectParams.TargetAbilitySystemComponent,
-		TEXT("No target ability system set on Damage Effect Params!")
-	)
+	checkf(DamageEffectParams.SourceAbilitySystemComponent, TEXT("No source ability system set on Damage Effect Params!"));
+	checkf(DamageEffectParams.TargetAbilitySystemComponent, TEXT("No target ability system set on Damage Effect Params!"));
+
 	const FElectricCastleGameplayTags& GameplayTags = FElectricCastleGameplayTags::Get();
-	const AActor* SourceAvatarActor = DamageEffectParams.SourceAbilitySystemComponent->GetAvatarActor();
-	FGameplayEffectContextHandle EffectContextHandle = DamageEffectParams.SourceAbilitySystemComponent->
-	                                                                      MakeEffectContext();
+	const AActor* SourceAvatarActor = DamageEffectParams.SourceAbilitySystemComponent ? DamageEffectParams.SourceAbilitySystemComponent->GetAvatarActor() : nullptr;
+	FGameplayEffectContextHandle EffectContextHandle = DamageEffectParams.SourceAbilitySystemComponent->MakeEffectContext();
 	EffectContextHandle.AddSourceObject(SourceAvatarActor);
 	const FGameplayEffectSpecHandle SpecHandle = DamageEffectParams.SourceAbilitySystemComponent->MakeOutgoingSpec(
 		DamageEffectParams.DamageGameplayEffectClass,

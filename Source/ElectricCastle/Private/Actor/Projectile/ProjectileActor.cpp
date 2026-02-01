@@ -193,7 +193,7 @@ void AProjectileActor::OnSphereOverlap(
 
 bool AProjectileActor::IsValidOverlap(const AActor* OtherActor) const
 {
-	const AActor* SourceAvatarActor = DamageEffectParams.SourceAbilitySystemComponent->GetAvatarActor();
+	const AActor* SourceAvatarActor = DamageEffectParams.SourceAbilitySystemComponent ? DamageEffectParams.SourceAbilitySystemComponent->GetAvatarActor() : GetOwner();
 	if (SourceAvatarActor == OtherActor || OtherActor == this)
 	{
 		return false;

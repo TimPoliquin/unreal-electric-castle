@@ -273,7 +273,10 @@ void AElectricCastleCharacter::ChangeMinionCount_Implementation(const int32 Delt
 
 void AElectricCastleCharacter::ApplyDeathImpulse(const FVector& DeathImpulse)
 {
-	GetMesh()->AddImpulse(DeathImpulse, NAME_None, true);
+	if (GetMesh() && GetMesh()->IsSimulatingPhysics())
+	{
+		GetMesh()->AddImpulse(DeathImpulse, NAME_None, true);
+	}
 	if (AActor* Weapon = Execute_GetWeapon(this); IsValid(Weapon) && Weapon->Implements<UEquipmentActor>())
 	{
 		IEquipmentActor::Execute_AddImpulse(Weapon, DeathImpulse);
