@@ -33,9 +33,9 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	UFUNCTION(BlueprintNativeEvent)
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	bool ActivateSwitch();
-	UFUNCTION(BlueprintNativeEvent)
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	bool DeactivateSwitch();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void UpdateSwitchMesh_Activate(UStaticMeshComponent* InSwitchMesh);
