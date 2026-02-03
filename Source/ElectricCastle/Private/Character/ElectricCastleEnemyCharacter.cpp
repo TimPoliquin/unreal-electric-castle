@@ -9,7 +9,6 @@
 #include "AbilitySystem/ElectricCastleAttributeSet.h"
 #include "Actor/Effect/DissolveEffectComponent.h"
 #include "AI/ElectricCastleAIController.h"
-#include "Actor/Mesh/SocketManagerComponent.h"
 #include "ElectricCastle/ElectricCastle.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -135,14 +134,9 @@ void AElectricCastleEnemyCharacter::InitializeAbilityActorInfo()
 
 void AElectricCastleEnemyCharacter::InitializeDefaultAttributes()
 {
-	if (HasAuthority())
+	if (HasAuthority() && AttributeSet)
 	{
-		UElectricCastleAbilitySystemLibrary::InitializeDefaultAttributes(
-			this,
-			CharacterClass,
-			Level,
-			AbilitySystemComponent
-		);
+		AttributeSet->InitializeDefaultAttributes(GetCharacterLevel(this));
 	}
 	OnAbilitySystemReady(Cast<UElectricCastleAbilitySystemComponent>(AbilitySystemComponent));
 }

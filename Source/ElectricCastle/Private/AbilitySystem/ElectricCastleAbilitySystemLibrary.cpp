@@ -55,25 +55,6 @@ UElectricCastleAbilitySystemComponent* UElectricCastleAbilitySystemLibrary::GetA
 	return nullptr;
 }
 
-void UElectricCastleAbilitySystemLibrary::InitializeDefaultAttributes(
-	const UObject* WorldContextObject,
-	const ECharacterClass CharacterClass,
-	const float Level,
-	UAbilitySystemComponent* AbilitySystemComponent
-)
-{
-	if (const UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(
-		WorldContextObject
-	))
-	{
-		const UCharacterClassInfo* ClassInfo = GameDataSubsystem->GetCharacterClassInfo();
-		const FCharacterClassDefaultInfo DefaultInfo = ClassInfo->GetClassDefaultInfo(CharacterClass);
-		ApplyGameplayEffectSpec(AbilitySystemComponent, AbilitySystemComponent, DefaultInfo.PrimaryAttributes, Level);
-		ApplyGameplayEffectSpec(AbilitySystemComponent, AbilitySystemComponent, ClassInfo->SecondaryAttributes, Level);
-		ApplyGameplayEffectSpec(AbilitySystemComponent, AbilitySystemComponent, ClassInfo->VitalAttributes, Level);
-	}
-}
-
 void UElectricCastleAbilitySystemLibrary::GrantStartupAbilities(
 	const UObject* WorldContextObject,
 	UAbilitySystemComponent* AbilitySystemComponent,

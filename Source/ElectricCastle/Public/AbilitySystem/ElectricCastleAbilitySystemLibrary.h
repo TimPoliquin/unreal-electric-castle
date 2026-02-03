@@ -59,14 +59,6 @@ public:
 	)
 	static UElectricCastleAbilitySystemComponent* GetAbilitySystemComponent(AActor* Actor);
 
-	UFUNCTION(BlueprintCallable, Category= "ElectricCastleAbilitySystemLibrary|CharacterClassDefaults")
-	static void InitializeDefaultAttributes(
-		const UObject* WorldContextObject,
-		ECharacterClass CharacterClass,
-		const float Level,
-		UAbilitySystemComponent* AbilitySystemComponent
-	);
-
 	UFUNCTION(BlueprintCallable, Category = "ElectricCastleAbilitySystemLibrary|CharacterClassDefaults")
 	static void GrantStartupAbilities(
 		const UObject* WorldContextObject,
