@@ -298,6 +298,19 @@ void AElectricCastleEnemyCharacter::SetStencilDepth_Implementation(int32 Stencil
 	GetMesh()->SetCustomDepthStencilValue(StencilDepth);
 }
 
+void AElectricCastleEnemyCharacter::SetVisible_Implementation(const bool bInVisible)
+{
+	GetMesh()->SetVisibility(bInVisible, true);
+	if (bInVisible)
+	{
+		GetCapsuleComponent()->Activate();
+	}
+	else
+	{
+		GetCapsuleComponent()->Deactivate();
+	}
+}
+
 int32 AElectricCastleEnemyCharacter::GetXPReward_Implementation() const
 {
 	return UElectricCastleAbilitySystemLibrary::GetXPReward(this, CharacterClass, Level);

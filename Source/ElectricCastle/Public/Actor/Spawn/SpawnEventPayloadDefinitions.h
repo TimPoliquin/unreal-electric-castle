@@ -34,7 +34,17 @@ struct ELECTRICCASTLE_API FOnActorTrackerCountChangedPayload
 	}
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAuraActorTrackerCountChangedDelegate, const FOnActorTrackerCountChangedPayload&, Payload);
+USTRUCT(BlueprintType)
+struct ELECTRICCASTLE_API FAllSpawnsDestroyedPayload
+{
+	GENERATED_BODY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<AActor> Owner;
+};
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FActorTrackerCountChangedDelegate, const FOnActorTrackerCountChangedPayload&, Payload);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAllSpawnsDestroyedDelegate, const FAllSpawnsDestroyedPayload&, Payload);
 
 UCLASS()
 class ELECTRICCASTLE_API USpawnEventHelpers : public UObject

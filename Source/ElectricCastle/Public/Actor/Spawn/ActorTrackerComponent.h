@@ -19,7 +19,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Track(AActor* Actor);
 	UPROPERTY(BlueprintAssignable)
-	FOnAuraActorTrackerCountChangedDelegate OnCountChanged;
+	FActorTrackerCountChangedDelegate OnCountChanged;
 
 protected:
 	UPROPERTY(VisibleInstanceOnly)

@@ -56,7 +56,7 @@ public:
 	);
 
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<UHordeModeConfig> HordeModeConfig;
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, meta=(MustImplement="/Script/ElectricCastle.SpawnInterface"))
 	TArray<AActor*> SpawnPoints;

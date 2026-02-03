@@ -25,7 +25,7 @@ class ELECTRICCASTLE_API ISpawnInterface
 	GENERATED_BODY()
 
 public:
-	virtual FOnAuraActorTrackerCountChangedDelegate& GetOnCountChangedDelegate() = 0;
+	virtual FActorTrackerCountChangedDelegate& GetOnCountChangedDelegate() = 0;
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void BeginSpawning(const int32 NumEnemies, const FRandRange& SpawnDelay, const TArray<FEnemySpawnConfig>& SpawnClasses);

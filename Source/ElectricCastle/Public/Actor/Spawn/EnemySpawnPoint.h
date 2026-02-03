@@ -17,9 +17,9 @@ class ELECTRICCASTLE_API AEnemySpawnPoint : public ATargetPoint
 public:
 	AEnemySpawnPoint();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemey Class")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy Class")
 	FEnemySpawnConfig SpawnConfig;
 
-	UFUNCTION(BlueprintCallable, Category = "Enemey Class")
+	UFUNCTION(BlueprintCallable)
 	AElectricCastleEnemyCharacter* SpawnEnemy() const;
 };

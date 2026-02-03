@@ -46,6 +46,8 @@ public:
 		return false;
 	}
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void SetVisible(bool bInVisible);
 
 	/** Start IElectricCastleAbilitySystemInterface **/
 	FORCEINLINE virtual int GetCharacterLevel_Implementation() const override
