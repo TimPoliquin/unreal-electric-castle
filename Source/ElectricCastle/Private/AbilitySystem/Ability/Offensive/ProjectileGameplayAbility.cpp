@@ -25,8 +25,7 @@ AProjectileActor* UProjectileGameplayAbility::SpawnProjectile(
 	const FGameplayTag& SocketTag
 )
 {
-	AActor* OwningActor = GetAvatarActorFromActorInfo();
-	if (!OwningActor->HasAuthority())
+	if (const AActor* OwningActor = GetAvatarActorFromActorInfo(); !OwningActor->HasAuthority())
 	{
 		// Do not execute on client - run on server only
 		return nullptr;
@@ -37,17 +36,17 @@ AProjectileActor* UProjectileGameplayAbility::SpawnProjectile(
 	return SpawnProjectile(SpawnLocation, Rotation);
 }
 
-void UProjectileGameplayAbility::FireProjectileAtTarget_Implementation(const FGameplayTag& SocketTag)
+void UProjectileGameplayAbility::FireProjectileAtTarget_Implementation(const FGameplayTag& MontageTag)
 {
 	const FVector& TargetLocation = GetFaceTargetLocation();
-	SpawnProjectile(TargetLocation, nullptr, SocketTag);
+	SpawnProjectile(TargetLocation, nullptr, MontageTag);
 }
 
-FVector UProjectileGameplayAbility::GetProjectileSpawnLocation(const FGameplayTag& SocketTag) const
+FVector UProjectileGameplayAbility::GetProjectileSpawnLocation(const FGameplayTag& MontageTag) const
 {
 	return ICombatInterface::Execute_GetCombatSocketLocation(
 		GetAvatarActorFromActorInfo(),
-		SocketTag
+		MontageTag
 	);
 }
 
