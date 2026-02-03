@@ -5,6 +5,8 @@
 
 #include "Actor/Spawn/ActorTrackerComponent.h"
 #include "Actor/Spawn/EnemySpawnConfig.h"
+#include "Actor/Summon/SummonComponent.h"
+#include "Actor/Summon/SummoningActor.h"
 #include "Character/ElectricCastleEnemyCharacter.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Engine/TargetPoint.h"
@@ -71,6 +73,18 @@ void ASpawnManager::FinishSpawningEnemy(AElectricCastleEnemyCharacter* Enemy)
 	Enemy->FinishSpawning(SpawnPointComponent->GetChildActor()->GetActorTransform());
 	Enemy->SpawnDefaultController();
 	Enemy->SetVisible(true);
+	if (USummonComponent* SummonComponent = ISummoningActor::GetSummonComponent(Enemy))
+	{
+		SummonComponent->OnCountChanged.AddUniqueDynamic(this, &ASpawnManager::OnSummonCountChanged);
+	}
+}
+
+void ASpawnManager::OnSummonCountChanged(const FOnActorTrackerCountChangedPayload& Payload)
+{
+	if (Payload.IsActorAdded())
+	{
+		EnemyTrackerComponent->Track(Payload.ChangedActor);
+	}
 }
 
 void ASpawnManager::OnEnemyCountChanged_Implementation(const FOnActorTrackerCountChangedPayload& Payload)

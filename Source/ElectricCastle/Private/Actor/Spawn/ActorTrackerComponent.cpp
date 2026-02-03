@@ -24,7 +24,7 @@ void UActorTrackerComponent::Track(AActor* Actor)
 		{
 			Actor->OnDestroyed.AddUniqueDynamic(this, &UActorTrackerComponent::OnTrackedActorDestroyed);
 		}
-		OnCountChanged.Broadcast(FOnActorTrackerCountChangedPayload(GetOwner(), OldCount, Actors.Num()));
+		OnCountChanged.Broadcast(FOnActorTrackerCountChangedPayload(GetOwner(), Actor, OldCount, Actors.Num()));
 	}
 }
 
@@ -35,5 +35,5 @@ void UActorTrackerComponent::OnTrackedActorDestroyed(AActor* DestroyedActor)
 	{
 		return TrackedActor == DestroyedActor || !IsValid(TrackedActor);
 	});
-	OnCountChanged.Broadcast(FOnActorTrackerCountChangedPayload(GetOwner(), OldCount, Actors.Num()));
+	OnCountChanged.Broadcast(FOnActorTrackerCountChangedPayload(GetOwner(), DestroyedActor, OldCount, Actors.Num()));
 }

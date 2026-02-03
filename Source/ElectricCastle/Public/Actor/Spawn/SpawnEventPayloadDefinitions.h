@@ -10,6 +10,8 @@ struct ELECTRICCASTLE_API FOnActorTrackerCountChangedPayload
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<AActor> Owner;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<AActor> ChangedActor;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	int32 PreviousCount = 0;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	int32 NewCount = 0;
@@ -21,9 +23,10 @@ struct ELECTRICCASTLE_API FOnActorTrackerCountChangedPayload
 		NewCount = 0;
 	}
 
-	FOnActorTrackerCountChangedPayload(AActor* InOwner, const int32 InPreviousCount, const int32 InNewCount)
+	FOnActorTrackerCountChangedPayload(AActor* InOwner, AActor* InChangedActor, const int32 InPreviousCount, const int32 InNewCount)
 	{
 		Owner = InOwner;
+		ChangedActor = InChangedActor;
 		PreviousCount = InPreviousCount;
 		NewCount = InNewCount;
 	}
@@ -31,6 +34,11 @@ struct ELECTRICCASTLE_API FOnActorTrackerCountChangedPayload
 	bool IsEmpty() const
 	{
 		return NewCount == 0;
+	}
+
+	bool IsActorAdded() const
+	{
+		return NewCount > PreviousCount;
 	}
 };
 

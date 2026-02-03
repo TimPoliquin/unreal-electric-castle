@@ -45,6 +45,8 @@ protected:
 	TObjectPtr<UChildActorComponent> SpawnPointComponent;
 
 private:
+	UFUNCTION()
+	void OnSummonCountChanged(const FOnActorTrackerCountChangedPayload& Payload);
 	UPROPERTY()
 	FTimerHandle EnemySpawnTimer;
 	UPROPERTY()

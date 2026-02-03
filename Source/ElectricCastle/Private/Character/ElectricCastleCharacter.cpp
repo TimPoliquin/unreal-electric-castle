@@ -263,16 +263,6 @@ AActor* AElectricCastleCharacter::GetWeapon_Implementation() const
 	return nullptr;
 }
 
-int32 AElectricCastleCharacter::GetMinionCount_Implementation() const
-{
-	return MinionCount;
-}
-
-void AElectricCastleCharacter::ChangeMinionCount_Implementation(const int32 Delta)
-{
-	MinionCount += Delta;
-}
-
 void AElectricCastleCharacter::ApplyDeathImpulse(const FVector& DeathImpulse)
 {
 	if (GetMesh() && GetMesh()->IsSimulatingPhysics())

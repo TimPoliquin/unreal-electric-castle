@@ -75,10 +75,6 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	FTaggedMontage GetTagMontageByTag(const FGameplayTag& MontageTag);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	int32 GetMinionCount() const;
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void ChangeMinionCount(const int32 Delta);
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	int32 GetXPReward() const;
 	virtual FOnDeathSignature& GetOnDeathDelegate() = 0;
 	virtual FOnDamageSignature& GetOnDamageDelegate() = 0;
