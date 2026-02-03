@@ -9,6 +9,7 @@
 #include "AbilitySystem/ElectricCastleAttributeSet.h"
 #include "Actor/Effect/DissolveEffectComponent.h"
 #include "AI/ElectricCastleAIController.h"
+#include "Actor/Mesh/SocketManagerComponent.h"
 #include "ElectricCastle/ElectricCastle.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -116,7 +117,7 @@ void AElectricCastleEnemyCharacter::BeginPlay()
 	InitializeAttributeDelegates();
 	InitializeStartupAbilities();
 	GetMesh()->SetCustomDepthStencilValue(HighlightCustomDepthStencilValue);
-	if (AActor* WeaponActor = Execute_GetWeapon(this))
+	if (AActor* WeaponActor = Execute_GetWeapon(this); IsValid(WeaponActor) && WeaponActor->Implements<UHighlightInterface>())
 	{
 		Execute_SetStencilDepth(WeaponActor, HighlightCustomDepthStencilValue);
 	}
@@ -162,6 +163,11 @@ void AElectricCastleEnemyCharacter::OnStatusShockRemoved()
 	{
 		AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("IsStunned"), false);
 	}
+}
+
+void AElectricCastleEnemyCharacter::RegisterSockets_Implementation(USocketManagerComponent* InSocketManagerComponent)
+{
+	// nothing here for now
 }
 
 void AElectricCastleEnemyCharacter::SpawnLoot_Implementation()
@@ -339,6 +345,12 @@ void AElectricCastleEnemyCharacter::Die()
 FOnTrackableStopTrackingSignature& AElectricCastleEnemyCharacter::GetStopTrackingDelegate()
 {
 	return OnTrackableStopTracking;
+}
+
+void AElectricCastleEnemyCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	RegisterSockets(SocketManagerComponent);
 }
 
 void AElectricCastleEnemyCharacter::OnHitReactTagChanged(const FGameplayTag CallbackTag, int32 NewCount)

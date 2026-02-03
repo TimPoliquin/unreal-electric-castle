@@ -114,18 +114,20 @@ FVector AElectricCastleCharacter::GetCombatSocketLocation_Implementation(const F
 		}
 	))
 	{
-		const FName& SocketName = ActiveMontageDef->SocketName;
-		if (const USocketManagerComponent* WeaponSocketManagerComponent = GetSocketManagerComponent(Execute_GetWeapon(this)))
+		// try to get the location via a socket manager
+		if (const USocketManagerComponent* MontageSocketManagerComponent = ActiveMontageDef->IsWeaponMontage ? GetSocketManagerComponent(Execute_GetWeapon(this)) : SocketManagerComponent.Get())
 		{
-			if (WeaponSocketManagerComponent->HasSocket(ActiveMontageDef->SocketTag))
+			if (MontageSocketManagerComponent->HasSocket(ActiveMontageDef->SocketTag))
 			{
-				return WeaponSocketManagerComponent->GetSocketLocation(ActiveMontageDef->SocketTag);
+				return MontageSocketManagerComponent->GetSocketLocation(ActiveMontageDef->SocketTag);
 			}
 		}
-		if (GetMesh()->GetSocketByName(SocketName))
+		// try to get the location from the mesh
+		if (const FName& SocketName = ActiveMontageDef->SocketName; GetMesh()->GetSocketByName(SocketName))
 		{
 			return GetMesh()->GetSocketLocation(SocketName);
 		}
+		// basically failure - just return the actor location
 		return GetActorLocation();
 	}
 	UE_LOG(LogTemp, Warning, TEXT("%s: No montage definition found for tag [%s]"), *GetName(), *MontageTag.ToString());

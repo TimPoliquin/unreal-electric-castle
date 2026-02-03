@@ -30,6 +30,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void PossessedBy(AController* NewController) override;
 	virtual UElectricCastleAttributeSet* GetAttributeSet() const override { return AttributeSet; }
+	virtual void PostInitializeComponents() override;
 
 	virtual void OnHitReactTagChanged(const FGameplayTag CallbackTag, int32 NewCount) override;
 	void SetTargetingRange(const float InTargetingRange) { TargetingRange = InTargetingRange; }
@@ -107,6 +108,8 @@ protected:
 	void SpawnAnimation_Finalize();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Loot")
 	void SpawnLoot();
+	UFUNCTION(BlueprintNativeEvent, Category="Socket Manager")
+	void RegisterSockets(USocketManagerComponent* InSocketManagerComponent);
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Highlight")
 	bool bHighlighted;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
@@ -117,6 +120,8 @@ protected:
 	TObjectPtr<UMotionWarpingComponent> MotionWarpingComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<ULootSpawnComponent> LootSpawnComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
+	TObjectPtr<UChildActorComponent> WeaponChildActorComponent;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character Class Defaults")
 	int32 Level = 1;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character Class Defaults")
@@ -125,7 +130,6 @@ protected:
 	TObjectPtr<UElectricCastleAttributeSet> AttributeSet;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
 	TObjectPtr<UWidgetComponent> HealthWidget;
-	TObjectPtr<UChildActorComponent> WeaponChildActorComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	float LifeSpan = 5.f;
