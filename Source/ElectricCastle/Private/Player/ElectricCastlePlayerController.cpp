@@ -154,6 +154,11 @@ void AElectricCastlePlayerController::SetupInputComponent()
 	);
 	ElectricCastleInputComponent->BindAction(
 		MoveAction,
+		ETriggerEvent::Completed,
+		this,
+		&AElectricCastlePlayerController::MoveEnd);
+	ElectricCastleInputComponent->BindAction(
+		MoveAction,
 		ETriggerEvent::Triggered,
 		this,
 		&AElectricCastlePlayerController::Move
@@ -203,9 +208,22 @@ void AElectricCastlePlayerController::Move(const FInputActionValue& Value)
 			                        FElectricCastleGameplayTags::Get().Player_Block_Rotation
 		                        )
 		                        : true;
+	if (!bCanMove && !bCanRotate)
+	{
+		if (MovementEffectHandle.IsValid())
+		{
+			UElectricCastleAbilitySystemLibrary::RemoveGameplayEffect(GetPawn(), MovementEffectHandle);
+			MovementEffectHandle.Invalidate();
+		}
+		return;
+	}
 
 	if (ACharacter* ControlledPawn = GetPawn<ACharacter>())
 	{
+		if (MovementEffect && !MovementEffectHandle.IsValid())
+		{
+			MovementEffectHandle = UElectricCastleAbilitySystemLibrary::ApplyBasicGameplayEffect(GetPawn(), MovementEffect);
+		}
 		const FVector2D InputAxisVector = Value.Get<FVector2D>();
 		const FRotator Rotation = ControlledPawn->FindComponentByClass<UCameraComponent>()->GetComponentRotation();
 		const FRotator YawRotation(0.f, Rotation.Yaw, 0.f);
@@ -234,6 +252,15 @@ void AElectricCastlePlayerController::Move(const FInputActionValue& Value)
 				ControlledPawn->AddControllerYawInput(RotationAmount);
 			}
 		}
+	}
+}
+
+void AElectricCastlePlayerController::MoveEnd(const FInputActionValue& Value)
+{
+	if (MovementEffectHandle.IsValid())
+	{
+		UElectricCastleAbilitySystemLibrary::RemoveGameplayEffect(GetPawn(), MovementEffectHandle);
+		MovementEffectHandle.Invalidate();
 	}
 }
 

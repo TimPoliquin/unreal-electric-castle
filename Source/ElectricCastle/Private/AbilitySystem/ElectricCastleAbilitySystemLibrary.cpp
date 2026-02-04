@@ -795,21 +795,22 @@ FActiveGameplayEffectHandle UElectricCastleAbilitySystemLibrary::ApplyBasicGamep
 	const float Magnitude
 )
 {
-	UAbilitySystemComponent* TargetAbilitySystem = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(
-		TargetActor
-	);
-	FGameplayEffectContextHandle EffectContextHandle = TargetAbilitySystem->MakeEffectContext();
-	EffectContextHandle.AddSourceObject(TargetActor);
-	const FGameplayEffectSpecHandle EffectSpecHandle = TargetAbilitySystem->MakeOutgoingSpec(
-		GameplayEffect,
-		Level,
-		EffectContextHandle
-	);
-	EffectSpecHandle.Data->SetSetByCallerMagnitude(MagnitudeTag, Magnitude);
-	const FActiveGameplayEffectHandle ActiveEffectHandle = TargetAbilitySystem->ApplyGameplayEffectSpecToSelf(
-		*EffectSpecHandle.Data.Get()
-	);
-	return ActiveEffectHandle;
+	if (UAbilitySystemComponent* TargetAbilitySystem = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor))
+	{
+		FGameplayEffectContextHandle EffectContextHandle = TargetAbilitySystem->MakeEffectContext();
+		EffectContextHandle.AddSourceObject(TargetActor);
+		const FGameplayEffectSpecHandle EffectSpecHandle = TargetAbilitySystem->MakeOutgoingSpec(
+			GameplayEffect,
+			Level,
+			EffectContextHandle
+		);
+		EffectSpecHandle.Data->SetSetByCallerMagnitude(MagnitudeTag, Magnitude);
+		const FActiveGameplayEffectHandle ActiveEffectHandle = TargetAbilitySystem->ApplyGameplayEffectSpecToSelf(
+			*EffectSpecHandle.Data.Get()
+		);
+		return ActiveEffectHandle;
+	}
+	return FActiveGameplayEffectHandle();
 }
 
 void UElectricCastleAbilitySystemLibrary::RemoveGameplayEffect(
