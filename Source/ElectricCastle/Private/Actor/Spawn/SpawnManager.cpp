@@ -35,6 +35,11 @@ void ASpawnManager::BeginSpawning_Implementation(const int32 NumEnemies, const F
 	SpawnEnemiesWithDelay(SpawnDelay);
 }
 
+int32 ASpawnManager::GetSpawnCount_Implementation() const
+{
+	return EnemyTrackerComponent->GetActorCount();
+}
+
 void ASpawnManager::BeginPlay()
 {
 	Super::BeginPlay();

@@ -32,6 +32,8 @@ public:
 	void ShowFormWheel();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void HideFormWheel();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void ShowMajorNotification(UUserWidget* NotificationWidget, UNamedSlot* NotificationSlot);
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void BindPlayerStateViewModel(UMVVM_PlayerState* ViewModel);
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)

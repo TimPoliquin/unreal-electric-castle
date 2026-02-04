@@ -28,6 +28,11 @@ void UActorTrackerComponent::Track(AActor* Actor)
 	}
 }
 
+int32 UActorTrackerComponent::GetActorCount() const
+{
+	return Actors.Num();
+}
+
 void UActorTrackerComponent::OnTrackedActorDestroyed(AActor* DestroyedActor)
 {
 	const int32 OldCount = Actors.Num();

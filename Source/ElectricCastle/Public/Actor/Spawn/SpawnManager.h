@@ -21,6 +21,7 @@ public:
 	/** Start Spawn Interface **/
 	virtual FActorTrackerCountChangedDelegate& GetOnCountChangedDelegate() override;
 	virtual void BeginSpawning_Implementation(const int32 NumEnemies, const FRandRange& SpawnDelay, const TArray<FEnemySpawnConfig>& SpawnClasses) override;
+	virtual int32 GetSpawnCount_Implementation() const override;
 	/** End Spawn Interface **/
 	UPROPERTY(BlueprintAssignable)
 	FAllSpawnsDestroyedDelegate OnAllSpawnsDestroyedDelegate;

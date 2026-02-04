@@ -29,4 +29,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void BeginSpawning(const int32 NumEnemies, const FRandRange& SpawnDelay, const TArray<FEnemySpawnConfig>& SpawnClasses);
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	int32 GetSpawnCount() const;
+
+	static bool IsSpawnActor(const UObject* Actor);
 };

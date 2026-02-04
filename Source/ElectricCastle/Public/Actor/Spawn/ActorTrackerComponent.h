@@ -20,6 +20,8 @@ public:
 	void Track(AActor* Actor);
 	UPROPERTY(BlueprintAssignable)
 	FActorTrackerCountChangedDelegate OnCountChanged;
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	int32 GetActorCount() const;
 
 protected:
 	UPROPERTY(VisibleInstanceOnly)

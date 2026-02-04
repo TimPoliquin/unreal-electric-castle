@@ -115,4 +115,14 @@ void UHordeModeComponent::OnSpawnPointCountChanged(const FOnActorTrackerCountCha
 			EndRound();
 		}
 	}
+	int32 NumEnemies = 0;
+	for (const AActor* SpawnPoint : ActiveSpawnPoints)
+	{
+		if (ISpawnInterface::IsSpawnActor(SpawnPoint))
+		{
+			NumEnemies += ISpawnInterface::Execute_GetSpawnCount(SpawnPoint);
+		}
+	}
+	OnEnemyCountChanged.Broadcast(FOnActorTrackerCountChangedPayload(GetOwner(), Payload.ChangedActor, PreviousSpawnCount, NumEnemies));
+	PreviousSpawnCount = NumEnemies;
 }
