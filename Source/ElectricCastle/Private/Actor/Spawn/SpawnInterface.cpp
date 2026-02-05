@@ -5,3 +5,7 @@
 
 
 // Add default functionality here for any ISpawnInterface functions that are not pure virtual.
+bool ISpawnInterface::IsSpawnActor(const UObject* Actor)
+{
+	return IsValid(Actor) && Actor->Implements<USpawnInterface>();
+}

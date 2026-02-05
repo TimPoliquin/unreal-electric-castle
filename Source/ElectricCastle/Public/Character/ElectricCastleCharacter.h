@@ -80,8 +80,6 @@ public:
 	{
 		return TArray<FName>();
 	};
-	virtual int32 GetMinionCount_Implementation() const override;
-	virtual void ChangeMinionCount_Implementation(const int32 Delta) override;
 	virtual void ApplyDeathImpulse(const FVector& DeathImpulse) override;
 
 	virtual void SetActiveAbilityTag_Implementation(const FGameplayTag& InActiveAbilityTag) override
@@ -173,9 +171,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Combat|Passive")
 	TObjectPtr<UPassiveNiagaraComponent> ManaSiphonNiagaraComponent;
 
-
-	/** Minions **/
-	int32 MinionCount = 0;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing=OnRep_ActiveAbilityTag, Category = "Combat")
 	FGameplayTag ActiveAbilityTag;
 	UFUNCTION()

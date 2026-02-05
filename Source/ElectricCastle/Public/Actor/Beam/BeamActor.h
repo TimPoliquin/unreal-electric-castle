@@ -92,6 +92,8 @@ protected:
 	FHitResult LastTraceHitResult;
 	UPROPERTY(BlueprintReadOnly)
 	FActiveGameplayEffectHandle TargetEffectHandle;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FGameplayTag BeamTypeTag;
 
 private:
 	bool ShouldSpawnChildBeamsFromTarget(const AActor* Target) const;

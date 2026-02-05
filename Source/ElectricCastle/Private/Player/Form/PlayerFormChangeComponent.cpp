@@ -10,6 +10,7 @@
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 #include "AbilitySystem/ElectricCastleAttributeSet.h"
 #include "Character/ElectricCastlePlayerCharacter.h"
+#include "DSP/BufferDiagnostics.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "GameFramework/Character.h"
@@ -167,10 +168,13 @@ void UPlayerFormChangeComponent::FormChange_UpdateAttributes_Implementation(
 	{
 		bool AttributeFound;
 		const int32 CharacterLevel = IElectricCastleAbilitySystemInterface::GetCharacterLevel(GetOwner());
+		const float OldHealth = AbilitySystemComponent->GetGameplayAttributeValue
+			(UElectricCastleAttributeSet::GetHealthAttribute(), AttributeFound);
 		const float OldMaxHealth = AbilitySystemComponent->GetGameplayAttributeValue(
 			UElectricCastleAttributeSet::GetMaxHealthAttribute(),
 			AttributeFound
 		);
+		const float OldMana = AbilitySystemComponent->GetGameplayAttributeValue(UElectricCastleAttributeSet::GetManaAttribute(), AttributeFound);
 		const float OldMaxMana = AbilitySystemComponent->GetGameplayAttributeValue(
 			UElectricCastleAttributeSet::GetMaxManaAttribute(),
 			AttributeFound
@@ -179,15 +183,6 @@ void UPlayerFormChangeComponent::FormChange_UpdateAttributes_Implementation(
 		{
 			UElectricCastleAbilitySystemLibrary::RemoveGameplayEffect(GetOwner(), CurrentFormEffectHandle);
 		}
-		const float StandardMaxHealth = AbilitySystemComponent->GetGameplayAttributeValue(
-			UElectricCastleAttributeSet::GetMaxHealthAttribute(),
-			AttributeFound
-		);
-		const float StandardMaxMana = AbilitySystemComponent->GetGameplayAttributeValue(
-			UElectricCastleAttributeSet::GetMaxManaAttribute(),
-			AttributeFound
-		);
-
 		CurrentFormEffectHandle = UElectricCastleAbilitySystemLibrary::ApplyBasicGameplayEffect(
 			GetOwner(),
 			Payload.FormAttributes,
@@ -201,8 +196,9 @@ void UPlayerFormChangeComponent::FormChange_UpdateAttributes_Implementation(
 			UElectricCastleAttributeSet::GetMaxManaAttribute(),
 			AttributeFound
 		);
-		const float HealthModifier = (StandardMaxHealth / OldMaxHealth) * NewMaxHealth;
-		const float ManaModifier = (StandardMaxMana / OldMaxMana) * NewMaxMana;
+
+		const float HealthModifier = NewMaxHealth * (OldHealth / OldMaxHealth);
+		const float ManaModifier = NewMaxMana * (OldMana / OldMaxMana);
 		if (Payload.HealthChangeEffect)
 		{
 			UElectricCastleAbilitySystemLibrary::ApplyBasicGameplayEffectWithMagnitude(

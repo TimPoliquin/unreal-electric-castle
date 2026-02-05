@@ -114,18 +114,20 @@ FVector AElectricCastleCharacter::GetCombatSocketLocation_Implementation(const F
 		}
 	))
 	{
-		const FName& SocketName = ActiveMontageDef->SocketName;
-		if (const USocketManagerComponent* WeaponSocketManagerComponent = GetSocketManagerComponent(Execute_GetWeapon(this)))
+		// try to get the location via a socket manager
+		if (const USocketManagerComponent* MontageSocketManagerComponent = ActiveMontageDef->IsWeaponMontage ? GetSocketManagerComponent(Execute_GetWeapon(this)) : SocketManagerComponent.Get())
 		{
-			if (WeaponSocketManagerComponent->HasSocket(ActiveMontageDef->SocketTag))
+			if (MontageSocketManagerComponent->HasSocket(ActiveMontageDef->SocketTag))
 			{
-				return WeaponSocketManagerComponent->GetSocketLocation(ActiveMontageDef->SocketTag);
+				return MontageSocketManagerComponent->GetSocketLocation(ActiveMontageDef->SocketTag);
 			}
 		}
-		if (GetMesh()->GetSocketByName(SocketName))
+		// try to get the location from the mesh
+		if (const FName& SocketName = ActiveMontageDef->SocketName; GetMesh()->GetSocketByName(SocketName))
 		{
 			return GetMesh()->GetSocketLocation(SocketName);
 		}
+		// basically failure - just return the actor location
 		return GetActorLocation();
 	}
 	UE_LOG(LogTemp, Warning, TEXT("%s: No montage definition found for tag [%s]"), *GetName(), *MontageTag.ToString());
@@ -261,19 +263,12 @@ AActor* AElectricCastleCharacter::GetWeapon_Implementation() const
 	return nullptr;
 }
 
-int32 AElectricCastleCharacter::GetMinionCount_Implementation() const
-{
-	return MinionCount;
-}
-
-void AElectricCastleCharacter::ChangeMinionCount_Implementation(const int32 Delta)
-{
-	MinionCount += Delta;
-}
-
 void AElectricCastleCharacter::ApplyDeathImpulse(const FVector& DeathImpulse)
 {
-	GetMesh()->AddImpulse(DeathImpulse, NAME_None, true);
+	if (GetMesh() && GetMesh()->IsSimulatingPhysics())
+	{
+		GetMesh()->AddImpulse(DeathImpulse, NAME_None, true);
+	}
 	if (AActor* Weapon = Execute_GetWeapon(this); IsValid(Weapon) && Weapon->Implements<UEquipmentActor>())
 	{
 		IEquipmentActor::Execute_AddImpulse(Weapon, DeathImpulse);

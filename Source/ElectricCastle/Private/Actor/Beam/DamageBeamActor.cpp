@@ -6,6 +6,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
+#include "Actor/BeamTargetInterface.h"
 #include "Net/UnrealNetwork.h"
 
 
@@ -42,6 +43,10 @@ FActiveGameplayEffectHandle ADamageBeamActor::ApplyBeamTargetEffect_Implementati
 	{
 		return FActiveGameplayEffectHandle();
 	}
+	if (BeamTypeTag.IsValid() && IBeamTargetInterface::IsBeamTarget(Target))
+	{
+		IBeamTargetInterface::Execute_HandleBeamApplied(Target, BeamTypeTag);
+	}
 	if (DealDamagePeriodically)
 	{
 		FTimerHandle& TimerHandle = DamageEffectTimerHandles.Add(Target);
@@ -52,7 +57,7 @@ FActiveGameplayEffectHandle ADamageBeamActor::ApplyBeamTargetEffect_Implementati
 			{
 				ApplyDamageEffect(Target);
 			}
-			else
+			else if (!IBeamTargetInterface::IsBeamTarget(Target))
 			{
 				FActiveGameplayEffectHandle PlaceholderHandle;
 				RemoveBeamTargetEffect(Target, PlaceholderHandle);

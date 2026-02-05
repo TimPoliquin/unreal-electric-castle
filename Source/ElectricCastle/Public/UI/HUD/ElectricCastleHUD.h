@@ -14,7 +14,6 @@ class UFormWheelWidget;
 class UMVVM_PlayerAbilityStates;
 class UOverlayWidget;
 class UMVVM_PlayerState;
-class UAuraOverlayWidget;
 enum class EAuraMenuTab : uint8;
 class UAuraMenuWidget;
 class UAuraInventoryWidget;
@@ -50,6 +49,8 @@ public:
 	TArray<UMVVM_PlayerAbilityStates*> GetPlayerAbilityStatesViewModels() const;
 	UFUNCTION(BlueprintCallable)
 	TArray<UMVVM_PlayerForms*> GetPlayerFormsViewModels() const;
+	UFUNCTION(BlueprintCallable)
+	UOverlayWidget* GetOverlayWidget() const;
 
 
 	UFUNCTION(BlueprintCallable)

@@ -6,6 +6,7 @@
 #include "Engine/GameInstance.h"
 #include "ElectricCastleGameInstance.generated.h"
 
+class UMusicManagerSubsystem;
 class UPlayerManager;
 class USaveGameManager;
 class UElectricCastleAIDirectorGameInstanceSubsystem;
@@ -29,6 +30,8 @@ protected:
 	TSubclassOf<UElectricCastleGameDataSubsystem> CharacterSubsystem;
 	UPROPERTY(EditDefaultsOnly, Category = "Subsystem")
 	TSubclassOf<UElectricCastleLevelManager> LevelSubsystem;
+	UPROPERTY(EditDefaultsOnly, Category="Subsystem")
+	TSubclassOf<UMusicManagerSubsystem> MusicManager;
 	UPROPERTY(EditDefaultsOnly, Category = "Subsystem")
 	TSubclassOf<UPlayerManager> PlayerManager;
 	UPROPERTY(EditDefaultsOnly, Category = "Subsystem")

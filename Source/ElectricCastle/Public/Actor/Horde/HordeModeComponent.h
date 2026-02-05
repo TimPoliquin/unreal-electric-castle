@@ -48,6 +48,8 @@ public:
 	bool HasNextRound() const;
 	UPROPERTY(BlueprintAssignable)
 	FOnHordeModeRoundCompleteSignature OnHordeModeRoundComplete;
+	UPROPERTY(BlueprintAssignable)
+	FActorTrackerCountChangedDelegate OnEnemyCountChanged;
 	UFUNCTION(BlueprintCallable)
 	TArray<FAuraSpawnParams> ConvertRewardsToSpawnParams(
 		const FVector& Center,
@@ -56,7 +58,7 @@ public:
 	);
 
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<UHordeModeConfig> HordeModeConfig;
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, meta=(MustImplement="/Script/ElectricCastle.SpawnInterface"))
 	TArray<AActor*> SpawnPoints;
@@ -66,6 +68,7 @@ protected:
 private:
 	UPROPERTY()
 	TArray<AActor*> ActiveSpawnPoints;
+	int32 PreviousSpawnCount = 0;
 	UFUNCTION()
 	void OnSpawnPointCountChanged(const FOnActorTrackerCountChangedPayload& Payload);
 	void PrepareNextRound();

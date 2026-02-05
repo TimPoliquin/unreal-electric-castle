@@ -116,6 +116,11 @@ TArray<UMVVM_PlayerForms*> AElectricCastleHUD::GetPlayerFormsViewModels() const
 	return PlayerFormsViewModels;
 }
 
+UOverlayWidget* AElectricCastleHUD::GetOverlayWidget() const
+{
+	return OverlayWidget;
+}
+
 void AElectricCastleHUD::OpenMenu(const EAuraMenuTab& OpenTab)
 {
 	GetOwningPlayerController()->SetInputMode(FInputModeUIOnly());

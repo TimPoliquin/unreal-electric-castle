@@ -116,7 +116,7 @@ void AElectricCastleEnemyCharacter::BeginPlay()
 	InitializeAttributeDelegates();
 	InitializeStartupAbilities();
 	GetMesh()->SetCustomDepthStencilValue(HighlightCustomDepthStencilValue);
-	if (AActor* WeaponActor = Execute_GetWeapon(this))
+	if (AActor* WeaponActor = Execute_GetWeapon(this); IsValid(WeaponActor) && WeaponActor->Implements<UHighlightInterface>())
 	{
 		Execute_SetStencilDepth(WeaponActor, HighlightCustomDepthStencilValue);
 	}
@@ -134,14 +134,9 @@ void AElectricCastleEnemyCharacter::InitializeAbilityActorInfo()
 
 void AElectricCastleEnemyCharacter::InitializeDefaultAttributes()
 {
-	if (HasAuthority())
+	if (HasAuthority() && AttributeSet)
 	{
-		UElectricCastleAbilitySystemLibrary::InitializeDefaultAttributes(
-			this,
-			CharacterClass,
-			Level,
-			AbilitySystemComponent
-		);
+		AttributeSet->InitializeDefaultAttributes(GetCharacterLevel(this));
 	}
 	OnAbilitySystemReady(Cast<UElectricCastleAbilitySystemComponent>(AbilitySystemComponent));
 }
@@ -162,6 +157,11 @@ void AElectricCastleEnemyCharacter::OnStatusShockRemoved()
 	{
 		AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("IsStunned"), false);
 	}
+}
+
+void AElectricCastleEnemyCharacter::RegisterSockets_Implementation(USocketManagerComponent* InSocketManagerComponent)
+{
+	// nothing here for now
 }
 
 void AElectricCastleEnemyCharacter::SpawnLoot_Implementation()
@@ -298,6 +298,19 @@ void AElectricCastleEnemyCharacter::SetStencilDepth_Implementation(int32 Stencil
 	GetMesh()->SetCustomDepthStencilValue(StencilDepth);
 }
 
+void AElectricCastleEnemyCharacter::SetVisible_Implementation(const bool bInVisible)
+{
+	GetMesh()->SetVisibility(bInVisible, true);
+	if (bInVisible)
+	{
+		GetCapsuleComponent()->Activate();
+	}
+	else
+	{
+		GetCapsuleComponent()->Deactivate();
+	}
+}
+
 int32 AElectricCastleEnemyCharacter::GetXPReward_Implementation() const
 {
 	return UElectricCastleAbilitySystemLibrary::GetXPReward(this, CharacterClass, Level);
@@ -339,6 +352,12 @@ void AElectricCastleEnemyCharacter::Die()
 FOnTrackableStopTrackingSignature& AElectricCastleEnemyCharacter::GetStopTrackingDelegate()
 {
 	return OnTrackableStopTracking;
+}
+
+void AElectricCastleEnemyCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	RegisterSockets(SocketManagerComponent);
 }
 
 void AElectricCastleEnemyCharacter::OnHitReactTagChanged(const FGameplayTag CallbackTag, int32 NewCount)

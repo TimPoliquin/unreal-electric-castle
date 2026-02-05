@@ -39,9 +39,9 @@ protected:
 	);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void FireProjectileAtTarget(const FGameplayTag& SocketTag);
+	void FireProjectileAtTarget(const FGameplayTag& MontageTag);
 
-	FVector GetProjectileSpawnLocation(const FGameplayTag& SocketTag) const;
+	FVector GetProjectileSpawnLocation(const FGameplayTag& MontageTag) const;
 	FRotator GetProjectileSpawnRotation(
 		const FVector& TargetLocation,
 		const FVector& SpawnLocation,

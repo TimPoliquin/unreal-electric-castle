@@ -5,6 +5,7 @@
 
 #include <Components/PanelWidget.h>
 
+#include "Components/NamedSlot.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "UI/HUD/ElectricCastleHUD.h"
 #include "UI/ViewModel/Form/MVVM_PlayerForms.h"
@@ -21,6 +22,10 @@ TArray<UMVVM_PlayerState*> UOverlayWidget::GetPlayerStateViewModels() const
 	return TArray<UMVVM_PlayerState*>();
 }
 
+void UOverlayWidget::ShowMajorNotification_Implementation(UUserWidget* NotificationWidget, UNamedSlot* NotificationSlot)
+{
+	NotificationSlot->AddChild(NotificationWidget);
+}
 
 void UOverlayWidget::OnFormWheelVisibilityChange(const FOnPlayerFormWheelVisibilityChangePayload& Payload)
 {

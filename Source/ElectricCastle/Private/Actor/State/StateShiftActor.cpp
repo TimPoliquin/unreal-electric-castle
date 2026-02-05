@@ -14,11 +14,10 @@
 // Sets default values
 AStateShiftActor::AStateShiftActor()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	SetReplicates(true);
 	StateShiftComponent = CreateDefaultSubobject<UStateShiftComponent>(TEXT("StateShiftComponent"));
 	SphereMaskComponent = CreateDefaultSubobject<USphereMaskComponent>(TEXT("SphereMaskComponent"));
+	bReplicates = true;
 }
 
 UStateShiftComponent* AStateShiftActor::GetStateShiftComponent() const

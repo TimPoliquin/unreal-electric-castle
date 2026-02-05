@@ -55,25 +55,6 @@ UElectricCastleAbilitySystemComponent* UElectricCastleAbilitySystemLibrary::GetA
 	return nullptr;
 }
 
-void UElectricCastleAbilitySystemLibrary::InitializeDefaultAttributes(
-	const UObject* WorldContextObject,
-	const ECharacterClass CharacterClass,
-	const float Level,
-	UAbilitySystemComponent* AbilitySystemComponent
-)
-{
-	if (const UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(
-		WorldContextObject
-	))
-	{
-		const UCharacterClassInfo* ClassInfo = GameDataSubsystem->GetCharacterClassInfo();
-		const FCharacterClassDefaultInfo DefaultInfo = ClassInfo->GetClassDefaultInfo(CharacterClass);
-		ApplyGameplayEffectSpec(AbilitySystemComponent, AbilitySystemComponent, DefaultInfo.PrimaryAttributes, Level);
-		ApplyGameplayEffectSpec(AbilitySystemComponent, AbilitySystemComponent, ClassInfo->SecondaryAttributes, Level);
-		ApplyGameplayEffectSpec(AbilitySystemComponent, AbilitySystemComponent, ClassInfo->VitalAttributes, Level);
-	}
-}
-
 void UElectricCastleAbilitySystemLibrary::GrantStartupAbilities(
 	const UObject* WorldContextObject,
 	UAbilitySystemComponent* AbilitySystemComponent,
@@ -456,14 +437,12 @@ FActiveGameplayEffectHandle UElectricCastleAbilitySystemLibrary::ApplyDamageEffe
 	const FDamageEffectParams& DamageEffectParams
 )
 {
-	checkf(
-		DamageEffectParams.TargetAbilitySystemComponent,
-		TEXT("No target ability system set on Damage Effect Params!")
-	)
+	checkf(DamageEffectParams.SourceAbilitySystemComponent, TEXT("No source ability system set on Damage Effect Params!"));
+	checkf(DamageEffectParams.TargetAbilitySystemComponent, TEXT("No target ability system set on Damage Effect Params!"));
+
 	const FElectricCastleGameplayTags& GameplayTags = FElectricCastleGameplayTags::Get();
-	const AActor* SourceAvatarActor = DamageEffectParams.SourceAbilitySystemComponent->GetAvatarActor();
-	FGameplayEffectContextHandle EffectContextHandle = DamageEffectParams.SourceAbilitySystemComponent->
-	                                                                      MakeEffectContext();
+	const AActor* SourceAvatarActor = DamageEffectParams.SourceAbilitySystemComponent ? DamageEffectParams.SourceAbilitySystemComponent->GetAvatarActor() : nullptr;
+	FGameplayEffectContextHandle EffectContextHandle = DamageEffectParams.SourceAbilitySystemComponent->MakeEffectContext();
 	EffectContextHandle.AddSourceObject(SourceAvatarActor);
 	const FGameplayEffectSpecHandle SpecHandle = DamageEffectParams.SourceAbilitySystemComponent->MakeOutgoingSpec(
 		DamageEffectParams.DamageGameplayEffectClass,
@@ -816,21 +795,22 @@ FActiveGameplayEffectHandle UElectricCastleAbilitySystemLibrary::ApplyBasicGamep
 	const float Magnitude
 )
 {
-	UAbilitySystemComponent* TargetAbilitySystem = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(
-		TargetActor
-	);
-	FGameplayEffectContextHandle EffectContextHandle = TargetAbilitySystem->MakeEffectContext();
-	EffectContextHandle.AddSourceObject(TargetActor);
-	const FGameplayEffectSpecHandle EffectSpecHandle = TargetAbilitySystem->MakeOutgoingSpec(
-		GameplayEffect,
-		Level,
-		EffectContextHandle
-	);
-	EffectSpecHandle.Data->SetSetByCallerMagnitude(MagnitudeTag, Magnitude);
-	const FActiveGameplayEffectHandle ActiveEffectHandle = TargetAbilitySystem->ApplyGameplayEffectSpecToSelf(
-		*EffectSpecHandle.Data.Get()
-	);
-	return ActiveEffectHandle;
+	if (UAbilitySystemComponent* TargetAbilitySystem = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor))
+	{
+		FGameplayEffectContextHandle EffectContextHandle = TargetAbilitySystem->MakeEffectContext();
+		EffectContextHandle.AddSourceObject(TargetActor);
+		const FGameplayEffectSpecHandle EffectSpecHandle = TargetAbilitySystem->MakeOutgoingSpec(
+			GameplayEffect,
+			Level,
+			EffectContextHandle
+		);
+		EffectSpecHandle.Data->SetSetByCallerMagnitude(MagnitudeTag, Magnitude);
+		const FActiveGameplayEffectHandle ActiveEffectHandle = TargetAbilitySystem->ApplyGameplayEffectSpecToSelf(
+			*EffectSpecHandle.Data.Get()
+		);
+		return ActiveEffectHandle;
+	}
+	return FActiveGameplayEffectHandle();
 }
 
 void UElectricCastleAbilitySystemLibrary::RemoveGameplayEffect(

@@ -3,12 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ActiveGameplayEffectHandle.h"
 #include "InputActionValue.h"
 #include "InputEvents.h"
+#include "AbilitySystem/ElectricCastleAbilitySystemInterface.h"
 #include "GameFramework/PlayerController.h"
 #include "Interaction/HighlightInterface.h"
 #include "ElectricCastlePlayerController.generated.h"
 
+class UGameplayEffect;
 enum class ECommonInputType : uint8;
 class AMagicCircle;
 class UNiagaraSystem;
@@ -161,7 +164,7 @@ public:
 	FOnPlayerFormWheelVisibilityChangeSignature OnFormWheelVisibilityChange;
 	UPROPERTY(BLueprintAssignable)
 	FOnPlayerFormWheelHighlightChangedSignature OnFormWheelHighlightChange;
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static void GetMovementVectors(const AController* Controller, FVector& OutForward, FVector& OutRight);
 
@@ -170,6 +173,8 @@ protected:
 	TObjectPtr<UInputMappingContext> AuraContext;
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputAction> MoveAction;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TSubclassOf<UGameplayEffect> MovementEffect;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputAction> AimAction;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
@@ -204,8 +209,10 @@ protected:
 
 private:
 	FHighlightContext HighlightContext;
+	FActiveGameplayEffectHandle MovementEffectHandle;
 
 	void Move(const FInputActionValue& Value);
+	void MoveEnd(const FInputActionValue& Value);
 	void Aim(const FInputActionValue& InputActionValue);
 	void CursorTrace();
 	void CursorTrace_Mouse();

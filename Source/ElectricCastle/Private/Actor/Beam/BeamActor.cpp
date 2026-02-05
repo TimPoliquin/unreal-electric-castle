@@ -3,6 +3,7 @@
 #include "Actor/Beam/BeamActor.h"
 
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
+#include "Actor/BeamTargetInterface.h"
 #include "Actor/ReflectiveInterface.h"
 #include "Components/AudioComponent.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
@@ -101,6 +102,10 @@ void ABeamActor::UpdateBeamTargetEffect_Implementation(const FHitResult& HitResu
 
 FActiveGameplayEffectHandle ABeamActor::ApplyBeamTargetEffect_Implementation(AActor* Target)
 {
+	if (BeamTypeTag.IsValid() && IBeamTargetInterface::IsBeamTarget(Target))
+	{
+		IBeamTargetInterface::Execute_HandleBeamApplied(Target, BeamTypeTag);
+	}
 	if (ApplyEffectToTarget)
 	{
 		return UElectricCastleAbilitySystemLibrary::ApplyBasicGameplayEffect(Target, ApplyEffectToTarget, EffectLevel);
@@ -110,6 +115,10 @@ FActiveGameplayEffectHandle ABeamActor::ApplyBeamTargetEffect_Implementation(AAc
 
 void ABeamActor::RemoveBeamTargetEffect_Implementation(AActor* Target, FActiveGameplayEffectHandle& Handle)
 {
+	if (!IsValid(Target))
+	{
+		return;
+	}
 	if (TargetEffectHandle.IsValid())
 	{
 		UElectricCastleAbilitySystemLibrary::RemoveGameplayEffect(
@@ -118,6 +127,10 @@ void ABeamActor::RemoveBeamTargetEffect_Implementation(AActor* Target, FActiveGa
 			false
 		);
 		Handle.Invalidate();
+	}
+	if (BeamTypeTag.IsValid() && IBeamTargetInterface::IsBeamTarget(Target))
+	{
+		IBeamTargetInterface::Execute_HandleBeamRemoved(Target, BeamTypeTag);
 	}
 }
 
@@ -289,6 +302,10 @@ void ABeamActor::Terminate_Implementation()
 			false
 		);
 		TargetEffectHandle.Invalidate();
+	}
+	if (BeamTypeTag.IsValid() && IBeamTargetInterface::IsBeamTarget(LastTraceHitResult.GetActor()))
+	{
+		IBeamTargetInterface::Execute_HandleBeamRemoved(LastTraceHitResult.GetActor(), BeamTypeTag);
 	}
 	TerminateChildBeams();
 	Destroy();

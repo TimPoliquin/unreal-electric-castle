@@ -28,11 +28,9 @@ void UBTService_FindNearestPlayer::TickNode(UBehaviorTreeComponent& OwnerComp, u
 	{
 		if (const APawn* ControlledPawn = AIController->GetPawn())
 		{
-			const TArray<AActor*>& PlayerActors = AIDirectorGameInstanceSubsystem->GetActivePlayerActors();
-			for (AActor* PlayerActor : PlayerActors)
+			for (const TArray<AActor*>& PlayerActors = AIDirectorGameInstanceSubsystem->GetActivePlayerActors(); AActor* PlayerActor : PlayerActors)
 			{
-				const float Distance = FVector::Dist(ControlledPawn->GetActorLocation(), PlayerActor->GetActorLocation());
-				if (Distance < ClosestDistance)
+				if (const float Distance = FVector::DistSquared(ControlledPawn->GetActorLocation(), PlayerActor->GetActorLocation()); Distance < ClosestDistance)
 				{
 					ClosestDistance = Distance;
 					NearestPlayer = PlayerActor;
@@ -43,6 +41,6 @@ void UBTService_FindNearestPlayer::TickNode(UBehaviorTreeComponent& OwnerComp, u
 	if (OwnerComp.GetBlackboardComponent())
 	{
 		OwnerComp.GetBlackboardComponent()->SetValueAsObject(TargetToFollowSelector.SelectedKeyName, NearestPlayer);
-		OwnerComp.GetBlackboardComponent()->SetValueAsFloat(DistanceToTargetSelector.SelectedKeyName, ClosestDistance);
+		OwnerComp.GetBlackboardComponent()->SetValueAsFloat(DistanceToTargetSelector.SelectedKeyName, FMath::Sqrt(ClosestDistance));
 	}
 }

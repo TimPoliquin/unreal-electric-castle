@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
-#include "AbilitySystem/AttributeChangeDelegates.h"
 #include "UObject/Interface.h"
 #include "CombatInterface.generated.h"
 
@@ -24,12 +23,14 @@ struct FTaggedMontage
 	UAnimMontage* Montage = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FGameplayTag MontageTag;
+	FGameplayTag MontageTag = FGameplayTag::EmptyTag;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FGameplayTag SocketTag;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	bool IsWeaponMontage = false;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FName SocketName;
+	FName SocketName = NAME_None;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float ImpactRadius = 45.f;
@@ -73,10 +74,6 @@ public:
 	UNiagaraSystem* GetBloodEffect();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	FTaggedMontage GetTagMontageByTag(const FGameplayTag& MontageTag);
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	int32 GetMinionCount() const;
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void ChangeMinionCount(const int32 Delta);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	int32 GetXPReward() const;
 	virtual FOnDeathSignature& GetOnDeathDelegate() = 0;
