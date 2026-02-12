@@ -21,6 +21,7 @@ class ELECTRICCASTLE_API UElectricCastleGameInstance : public UGameInstance
 	GENERATED_BODY()
 
 public:
+	UElectricCastleGameInstance();
 	static UElectricCastleGameInstance* Get(const UObject* WorldContextObject);
 
 protected:

@@ -168,7 +168,10 @@ void AProjectileActor::OnSphereOverlap(
 	PlayImpactEffect();
 	if (HasAuthority())
 	{
-		UE_LOG(LogElectricCastle, Warning, TEXT("[%s] Hit a target: %s"), *GetName(), *OtherActor->GetName())
+		if (bDebug)
+		{
+			UE_LOG(LogElectricCastle, Warning, TEXT("[%s] Hit a target: %s"), *GetName(), *OtherActor->GetName())
+		}
 		if (UAbilitySystemComponent* OtherAbilitySystem = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(
 			OtherActor
 		))
