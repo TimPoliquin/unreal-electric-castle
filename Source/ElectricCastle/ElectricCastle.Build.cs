@@ -13,7 +13,7 @@ public class ElectricCastle : ModuleRules
 			"Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "CommonInput",
 			"GameplayAbilities", "UMG", "Slate", "SlateCore",
 			"ModelViewViewModel", "CableComponent", "AIModule", "MotionWarping",
-			"LiveLinkInterface", "ApplicationCore"
+			"LiveLinkInterface", "ApplicationCore", "CommonUI"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new[]

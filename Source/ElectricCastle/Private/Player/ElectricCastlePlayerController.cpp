@@ -18,6 +18,7 @@
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Input/CommonUIActionRouterBase.h"
 #include "Input/ElectricCastleInputComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Tags/ElectricCastleGameplayTags.h"
@@ -517,6 +518,10 @@ void AElectricCastlePlayerController::SetupInputMode()
 	{
 		bShowMouseCursor = false;
 		SetInputMode(FInputModeGameOnly());
+	}
+	if (UCommonUIActionRouterBase* UIActionRouter = GetLocalPlayer()->GetSubsystem<UCommonUIActionRouterBase>())
+	{
+		UIActionRouter->SetActiveUIInputConfig(FUIInputConfig(ECommonInputMode::Game, EMouseCaptureMode::NoCapture, !bShowMouseCursor));
 	}
 }
 
