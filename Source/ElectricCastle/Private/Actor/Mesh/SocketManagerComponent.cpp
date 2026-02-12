@@ -37,7 +37,10 @@ FVector USocketManagerComponent::GetSocketLocation(const FGameplayTag& SocketTag
 	{
 		return SocketConfig.MeshComponent.Get()->GetSocketLocation(SocketConfig.SocketName);
 	}
-	UE_LOG(LogElectricCastle, Warning, TEXT("[%s:%s] Socket [%s] not registered"), *GetOwner()->GetName(), *GetName(), *SocketTag.ToString())
+	if (bDebug)
+	{
+		UE_LOG(LogElectricCastle, Warning, TEXT("[%s:%s] Socket [%s] not registered"), *GetOwner()->GetName(), *GetName(), *SocketTag.ToString())
+	}
 	return FVector::ZeroVector;
 }
 
@@ -47,7 +50,10 @@ FTransform USocketManagerComponent::GetSocketTransform(const FGameplayTag& Socke
 	{
 		return SocketConfig.MeshComponent.Get()->GetSocketTransform(SocketConfig.SocketName);
 	}
-	UE_LOG(LogElectricCastle, Warning, TEXT("[%s:%s] Socket [%s] not registered"), *GetOwner()->GetName(), *GetName(), *SocketTag.ToString())
+	if (bDebug)
+	{
+		UE_LOG(LogElectricCastle, Warning, TEXT("[%s:%s] Socket [%s] not registered"), *GetOwner()->GetName(), *GetName(), *SocketTag.ToString())
+	}
 	return FTransform();
 }
 
@@ -66,7 +72,10 @@ USkeletalMeshComponent* USocketManagerComponent::GetMeshBySocketTag(const FGamep
 	{
 		return SocketConfig.MeshComponent.Get();
 	}
-	UE_LOG(LogElectricCastle, Warning, TEXT("[%s:%s] No socket registered with tag %s"), *GetOwner()->GetName(), *GetName(), *SocketTag.ToString())
+	if (bDebug)
+	{
+		UE_LOG(LogElectricCastle, Warning, TEXT("[%s:%s] No socket registered with tag %s"), *GetOwner()->GetName(), *GetName(), *SocketTag.ToString())
+	}
 	return nullptr;
 }
 
@@ -90,15 +99,18 @@ void USocketManagerComponent::AttachByTag(USceneComponent* InSkeletalMesh, const
 	{
 		if (SocketConfig.MeshComponent.Get()->DoesSocketExist(SocketConfig.SocketName))
 		{
-			UE_LOG(LogElectricCastle, Warning, TEXT("[%s:%s] Attaching to socket [%s]"), *GetOwner()->GetName(), *GetName(), *SocketTag.ToString())
+			if (bDebug)
+			{
+				UE_LOG(LogElectricCastle, Warning, TEXT("[%s:%s] Attaching to socket [%s]"), *GetOwner()->GetName(), *GetName(), *SocketTag.ToString())
+			}
 			InSkeletalMesh->AttachToComponent(SocketConfig.MeshComponent.Get(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, SocketConfig.SocketName);
 		}
-		else
+		else if (bDebug)
 		{
 			UE_LOG(LogElectricCastle, Error, TEXT("[%s:%s] Socket [%s] does not exist on %s!"), *GetOwner()->GetName(), *GetName(), *SocketTag.ToString(), *SocketConfig.MeshComponent->GetName());
 		}
 	}
-	else
+	else if (bDebug)
 	{
 		UE_LOG(LogElectricCastle, Warning, TEXT("[%s:%s] Socket [%s] not registered - attachment failed!"), *GetOwner()->GetName(), *GetName(), *SocketTag.ToString())
 	}

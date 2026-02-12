@@ -228,16 +228,19 @@ void UDamageGameplayAbility::GetTargetsInAttackRange(
 		OutTargets,
 		bInDebug
 	);
-	UE_LOG(
-		LogElectricCastle,
-		Warning,
-		TEXT(
-			"[DamageGameplayAbility::GetTargetsInAttackRange]: Found actors: [%d] between %s - %s"
-		),
-		OutTargets.Num(),
-		*AttackStart.ToString(),
-		*AttackEnd.ToString()
-	)
+	if (bInDebug)
+	{
+		UE_LOG(
+			LogElectricCastle,
+			Warning,
+			TEXT(
+				"[DamageGameplayAbility::GetTargetsInAttackRange]: Found actors: [%d] between %s - %s"
+			),
+			OutTargets.Num(),
+			*AttackStart.ToString(),
+			*AttackEnd.ToString()
+		)
+	}
 }
 
 void UDamageGameplayAbility::ApplyDefaultDamageConfig(AActor* DamageDealingActor) const

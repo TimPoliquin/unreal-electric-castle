@@ -34,6 +34,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AttachByTag(USceneComponent* InSkeletalMesh, FGameplayTag SocketTag) const;
 	static USocketManagerComponent* GetSocketManagerComponent(const UObject* Actor);
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties")
+	bool bDebug = false;
 
 private:
 	UPROPERTY(Replicated)

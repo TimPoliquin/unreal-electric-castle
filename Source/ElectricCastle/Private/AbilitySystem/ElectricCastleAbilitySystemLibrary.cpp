@@ -336,23 +336,23 @@ void UElectricCastleAbilitySystemLibrary::GetLiveActorsWithinSweepRadius(
 			FCollisionShape::MakeSphere(Radius),
 			SphereParams
 		);
-		UE_LOG(
-			LogElectricCastle,
-			Warning,
-			TEXT(
-				"[ElectricCastleAbilitySystemLibrary::GetLiveActorsWithinSweepRadius]: Found actors: [%d] between %s - %s"
-			),
-			Overlaps.Num(),
-			*SphereStart.ToString(),
-			*SphereEnd.ToString()
-		)
 		if (bDebug)
 		{
+			UE_LOG(
+				LogElectricCastle,
+				Warning,
+				TEXT(
+					"[ElectricCastleAbilitySystemLibrary::GetLiveActorsWithinSweepRadius]: Found actors: [%d] between %s - %s"
+				),
+				Overlaps.Num(),
+				*SphereStart.ToString(),
+				*SphereEnd.ToString()
+			)
 			DrawDebugSweptSphere(World, SphereStart, SphereEnd, Radius, FColor::Red, false, 1.f);
 		}
 		FilterHitOverlaps(TagsToIgnore, OutOverlappingActors, Overlaps);
 	}
-	else
+	else if (bDebug)
 	{
 		UE_LOG(
 			LogElectricCastle,

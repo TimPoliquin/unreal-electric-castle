@@ -202,6 +202,10 @@ protected:
 	TSubclassOf<AMagicCircle> MagicCircleClass;
 	UPROPERTY(VisibleInstanceOnly, Category = "Combat")
 	TObjectPtr<AMagicCircle> MagicCircle;
+	// Debug
+	UPROPERTY(EditDefaultsOnly, Category="Debug")
+	bool bDebug = false;
+
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
 	UFUNCTION(BlueprintNativeEvent)

@@ -546,13 +546,16 @@ void AElectricCastlePlayerController::GetMovementVectors(const AController* Cont
 
 void AElectricCastlePlayerController::OnInputTypeChange(const ECommonInputType NewInputMode)
 {
-	UE_LOG(
-		LogElectricCastle,
-		Warning,
-		TEXT("[%s] Changing InputType: %s"),
-		*GetName(),
-		*UEnum::GetValueAsString(NewInputMode)
-	)
+	if (bDebug)
+	{
+		UE_LOG(
+			LogElectricCastle,
+			Warning,
+			TEXT("[%s] Changing InputType: %s"),
+			*GetName(),
+			*UEnum::GetValueAsString(NewInputMode)
+		)
+	}
 	switch (NewInputMode)
 	{
 	case ECommonInputType::MouseAndKeyboard:
