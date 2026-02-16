@@ -14,7 +14,20 @@ class UCameraComponent;
 class ALevelSequenceActor;
 struct FMovieSceneSequencePlaybackSettings;
 class ULevelSequence;
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLevelSequenceEvent);
+
+USTRUCT(BlueprintType)
+struct ELECTRICCASTLE_API FLevelSequenceEventPayload
+{
+	GENERATED_BODY()
+	UPROPERTY(BlueprintReadOnly)
+	TObjectPtr<ALevelSequenceActor> SequenceActor;
+	UPROPERTY(BlueprintReadOnly)
+	TObjectPtr<ULevelSequencePlayer> SequencePlayer;
+	UPROPERTY(BlueprintReadOnly)
+	TObjectPtr<ULevelSequence> Sequence;
+};
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLevelSequenceEvent, const FLevelSequenceEventPayload&, Payload);
 
 /**
  * Async Blueprint node that spawns a Level Sequence Player and provides execution pins
@@ -57,15 +70,13 @@ public:
 	 * @param WorldContextObject - World context for spawning the actor
 	 * @param LevelSequence - The level sequence asset to play
 	 * @param Settings - Playback settings for the sequence
-	 * @param OutActor - The spawned Level Sequence Actor
 	 * @return The async action node
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Cinematics", meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject", DisplayName="Play Level Sequence with Finish"))
 	static UAsyncPlayLevelSequence* AsyncPlayLevelSequence(
 		UObject* WorldContextObject,
 		ULevelSequence* LevelSequence,
-		FMovieSceneSequencePlaybackSettings Settings,
-		ALevelSequenceActor*& OutActor
+		FMovieSceneSequencePlaybackSettings Settings
 	);
 
 	// UBlueprintAsyncActionBase interface

@@ -11,8 +11,8 @@
 UAsyncPlayLevelSequence* UAsyncPlayLevelSequence::AsyncPlayLevelSequence(
 	UObject* WorldContextObject,
 	ULevelSequence* LevelSequence,
-	FMovieSceneSequencePlaybackSettings Settings,
-	ALevelSequenceActor*& OutActor)
+	FMovieSceneSequencePlaybackSettings Settings
+)
 {
 	UAsyncPlayLevelSequence* Node = NewObject<UAsyncPlayLevelSequence>();
 
@@ -23,7 +23,6 @@ UAsyncPlayLevelSequence* UAsyncPlayLevelSequence::AsyncPlayLevelSequence(
 
 	Node->Sequence = LevelSequence;
 	Node->PlaybackSettings = Settings;
-	OutActor = nullptr; // Will be set in Activate
 
 	return Node;
 }
@@ -35,7 +34,7 @@ void UAsyncPlayLevelSequence::Activate()
 	UWorld* World = WorldPtr.Get();
 	if (!World || !Sequence)
 	{
-		OnFinished.Broadcast();
+		OnFinished.Broadcast(FLevelSequenceEventPayload(SequenceActor, SequencePlayer, Sequence));
 		SetReadyToDestroy();
 		return;
 	}
@@ -48,23 +47,23 @@ void UAsyncPlayLevelSequence::Activate()
 
 	if (!SequenceActor)
 	{
-		OnFinished.Broadcast();
+		OnFinished.Broadcast(FLevelSequenceEventPayload(SequenceActor, SequencePlayer, Sequence));
 		SetReadyToDestroy();
 		return;
 	}
 
 	// Set the sequence
 	SequenceActor->SetSequence(Sequence);
-	SequenceActor->PlaybackSettings = PlaybackSettings;
 
 	// Initialize the sequence player
 	SequenceActor->InitializePlayer();
 	SequencePlayer = SequenceActor->GetSequencePlayer();
+	SequencePlayer->SetPlaybackSettings(PlaybackSettings);
 
 	if (!SequencePlayer)
 	{
 		CleanupSequenceActor();
-		OnFinished.Broadcast();
+		OnFinished.Broadcast(FLevelSequenceEventPayload(SequenceActor, SequencePlayer, Sequence));
 		SetReadyToDestroy();
 		return;
 	}
@@ -84,32 +83,32 @@ void UAsyncPlayLevelSequence::Activate()
 
 void UAsyncPlayLevelSequence::HandleOnPlay()
 {
-	OnPlay.Broadcast();
+	OnPlay.Broadcast(FLevelSequenceEventPayload(SequenceActor, SequencePlayer, Sequence));
 }
 
 void UAsyncPlayLevelSequence::HandleOnPause()
 {
-	OnPause.Broadcast();
+	OnPause.Broadcast(FLevelSequenceEventPayload(SequenceActor, SequencePlayer, Sequence));
 }
 
 void UAsyncPlayLevelSequence::HandleOnStop()
 {
-	OnStop.Broadcast();
+	OnStop.Broadcast(FLevelSequenceEventPayload(SequenceActor, SequencePlayer, Sequence));
 }
 
 void UAsyncPlayLevelSequence::HandleOnCameraCut(UCameraComponent* CameraComponent)
 {
-	OnCameraCut.Broadcast();
+	OnCameraCut.Broadcast(FLevelSequenceEventPayload(SequenceActor, SequencePlayer, Sequence));
 }
 
 void UAsyncPlayLevelSequence::HandleOnPlayReverse()
 {
-	OnPlayReverse.Broadcast();
+	OnPlayReverse.Broadcast(FLevelSequenceEventPayload(SequenceActor, SequencePlayer, Sequence));
 }
 
 void UAsyncPlayLevelSequence::HandleOnFinished()
 {
-	OnFinished.Broadcast();
+	OnFinished.Broadcast(FLevelSequenceEventPayload(SequenceActor, SequencePlayer, Sequence));
 
 	// Clean up after sequence finishes
 	UnbindDelegates();
