@@ -4,6 +4,7 @@
 #include "UI/Widget/Layout/SRadialLayout.h"
 #include "Blueprint/WidgetTree.h"
 #include "Framework/Application/SlateApplication.h"
+#include "UI/Widget/HoverableWidget.h"
 
 #define LOCTEXT_NAMESPACE "UMG"
 
@@ -108,6 +109,11 @@ void URadialLayout::UpdateSelection(int32 NewIndex)
 
 	if (UWidget* SelectedWidget = GetChildAt(SelectedIndex))
 	{
+		if (bAutoHighlightSelection)
+		{
+			IHoverableWidget::Unhover(PreviousWidget);
+			IHoverableWidget::Hover(SelectedWidget);
+		}
 		OnChildSelected.Broadcast(SelectedWidget, PreviousWidget);
 	}
 }

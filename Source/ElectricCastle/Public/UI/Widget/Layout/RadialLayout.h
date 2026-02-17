@@ -76,6 +76,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Radial Layout")
 	bool bRotateChildrenToAngle = false;
 
+	/** Whether to automatically highlight the selected child. Child must implement HoverableWidget **/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Radial Layout")
+	bool bAutoHighlightSelection = true;
+
 	/** Enable debug overlay painting (radial lines, outward arrows, angle labels) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Radial Layout|Debug")
 	bool bDebugOverlay = false;
