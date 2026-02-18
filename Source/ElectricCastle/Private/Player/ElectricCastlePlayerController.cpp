@@ -193,6 +193,7 @@ void AElectricCastlePlayerController::SetupInputComponent()
 	if (SelectionWheelManager)
 	{
 		SelectionWheelManager->SetupInputComponent(ElectricCastleInputComponent);
+		SelectionWheelManager->OnSelectionWheelStateChanged.AddUniqueDynamic(this, &AElectricCastlePlayerController::HandleSelectionWheelStateChanged);
 	}
 }
 
@@ -408,8 +409,6 @@ void AElectricCastlePlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
 
 void AElectricCastlePlayerController::ShowFormWheel(const FInputActionValue& InputActionValue)
 {
-	bShouldTrackRadialUIHighlightAngle = true;
-	SetupInputMode();
 	OnFormWheelVisibilityChange.Broadcast(
 		FOnPlayerFormWheelVisibilityChangePayload(
 			this,
@@ -422,8 +421,6 @@ void AElectricCastlePlayerController::ShowFormWheel(const FInputActionValue& Inp
 
 void AElectricCastlePlayerController::HideFormWheel(const FInputActionValue& InputActionValue)
 {
-	bShouldTrackRadialUIHighlightAngle = false;
-	SetupInputMode();
 	OnFormWheelVisibilityChange.Broadcast(
 		FOnPlayerFormWheelVisibilityChangePayload(
 			this,
@@ -487,14 +484,13 @@ bool AElectricCastlePlayerController::IsNotTargeting() const
 void AElectricCastlePlayerController::SetupInputMode()
 {
 	DefaultMouseCursor = EMouseCursor::Default;
-	if (!bShouldTrackRadialUIHighlightAngle)
+	bShowMouseCursor = false;
+	if (!SelectionWheelManager->IsSelectionWheelActive())
 	{
-		bShowMouseCursor = IsInputTypeMouse();
 		SetInputMode(BuildGameAndUIInputMode());
 	}
 	else
 	{
-		bShowMouseCursor = false;
 		SetInputMode(FInputModeGameOnly());
 	}
 	if (UCommonUIActionRouterBase* UIActionRouter = GetLocalPlayer()->GetSubsystem<UCommonUIActionRouterBase>())
@@ -506,8 +502,8 @@ void AElectricCastlePlayerController::SetupInputMode()
 FInputModeGameAndUI AElectricCastlePlayerController::BuildGameAndUIInputMode() const
 {
 	FInputModeGameAndUI InputModeData;
-	InputModeData.SetLockMouseToViewportBehavior(bShouldTrackRadialUIHighlightAngle ? EMouseLockMode::LockAlways : EMouseLockMode::DoNotLock);
-	InputModeData.SetHideCursorDuringCapture(!IsInputTypeMouse() || bShouldTrackRadialUIHighlightAngle);
+	InputModeData.SetLockMouseToViewportBehavior(SelectionWheelManager->IsSelectionWheelActive() ? EMouseLockMode::LockAlways : EMouseLockMode::DoNotLock);
+	InputModeData.SetHideCursorDuringCapture(!IsInputTypeMouse() || SelectionWheelManager->IsSelectionWheelActive());
 	return InputModeData;
 }
 
@@ -575,6 +571,11 @@ void AElectricCastlePlayerController::OnEffectStateChanged_Aiming(const FGamepla
 		bShowMouseCursor = IsInputTypeMouse();
 		SetupInputMode();
 	}
+}
+
+void AElectricCastlePlayerController::HandleSelectionWheelStateChanged(const FSelectionWheelStateChangedPayload& Payload)
+{
+	SetupInputMode();
 }
 
 bool AElectricCastlePlayerController::IsAiming()

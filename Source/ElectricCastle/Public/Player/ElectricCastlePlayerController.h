@@ -10,6 +10,7 @@
 #include "GameFramework/PlayerController.h"
 #include "SelectionWheel/SelectionWheelManagerActorInterface.h"
 #include "Interaction/HighlightInterface.h"
+#include "SelectionWheel/SelectionWheelManagerComponent.h"
 #include "ElectricCastlePlayerController.generated.h"
 
 class USelectionWheelManagerComponent;
@@ -239,6 +240,8 @@ private:
 	void SetInputMode_KeyboardAndMouse_Server();
 	UFUNCTION()
 	void OnEffectStateChanged_Aiming(FGameplayTag AimingTag, int TagCount);
+	UFUNCTION()
+	void HandleSelectionWheelStateChanged(const FSelectionWheelStateChangedPayload& Payload);
 
 	bool IsAiming();
 
@@ -248,8 +251,4 @@ private:
 	FHitResult CursorHit;
 	UPROPERTY(Replicated)
 	EAuraInputMode InputType = EAuraInputMode::MouseAndKeyboard;
-	UPROPERTY(Replicated)
-	bool bShouldTrackRadialUIHighlightAngle = false;
-	UPROPERTY(Replicated)
-	float RadialUIHighlightAngle = 0.f;
 };

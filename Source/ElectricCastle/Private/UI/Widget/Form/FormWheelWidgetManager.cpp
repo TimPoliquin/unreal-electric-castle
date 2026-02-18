@@ -43,7 +43,9 @@ void UFormWheelWidgetManager::ShowFormWheelWidget(UMVVM_PlayerForms* ViewModel)
 	// show if it exists now (may not exist due to configuration errors
 	if (FormWheelWidgetMap.Contains(ViewModel->GetPlayerIndex()))
 	{
-		FormWheelWidgetMap[ViewModel->GetPlayerIndex()]->Show(true);
+		UFormWheelWidget* FormWheelWidget = FormWheelWidgetMap[ViewModel->GetPlayerIndex()];
+		FormWheelWidget->SetFocus();
+		FormWheelWidget->Show(true);
 	}
 }
 

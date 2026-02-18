@@ -15,7 +15,6 @@
 
 void UFormWheelWidget::Show_Implementation(const bool bAnimate)
 {
-	SetVisibility(ESlateVisibility::Visible);
 	if (USelectionWheelManagerComponent* SelectionWheelManager = ISelectionWheelManagerActorInterface::GetSelectionWheelManagerComponent(PlayerFormsViewModel))
 	{
 		SelectionWheelManager->AddListener(this);
@@ -24,6 +23,7 @@ void UFormWheelWidget::Show_Implementation(const bool bAnimate)
 	{
 		RadialLayout->SetSelectedIndex(GetSelectedIndex());
 	}
+	SetVisibility(ESlateVisibility::Visible);
 }
 
 void UFormWheelWidget::Hide_Implementation(const bool bAnimate)

@@ -17,6 +17,11 @@ USelectionWheelManagerComponent::USelectionWheelManagerComponent()
 	SetIsReplicatedByDefault(true);
 }
 
+bool USelectionWheelManagerComponent::IsSelectionWheelActive() const
+{
+	return bHasAddedContext;
+}
+
 void USelectionWheelManagerComponent::SetupInputComponent(UElectricCastleInputComponent* InputComponent)
 {
 	InputComponent->BindAction(SelectInputAction, ETriggerEvent::Triggered, this, &USelectionWheelManagerComponent::UpdateAngle);
@@ -37,6 +42,7 @@ void USelectionWheelManagerComponent::AddListener(UObject* Listener)
 	{
 		UPlayerInputFunctionLibrary::AddInputMappingContext(GetOwner(), InputMappingContext);
 		bHasAddedContext = true;
+		OnSelectionWheelStateChanged.Broadcast(FSelectionWheelStateChangedPayload(true));
 	}
 }
 
@@ -47,6 +53,7 @@ void USelectionWheelManagerComponent::RemoveListener(const UObject* ToRemove)
 	{
 		UPlayerInputFunctionLibrary::RemoveInputMappingContext(GetOwner(), InputMappingContext);
 		bHasAddedContext = false;
+		FSelectionWheelStateChangedPayload(false);
 	}
 }
 
@@ -98,12 +105,13 @@ void USelectionWheelManagerComponent::ConfirmSelection(const FInputActionValue& 
 
 bool USelectionWheelManagerComponent::CalculateFormWheelAngle_Gamepad(const FVector2D& InputDirection, float& OutFormWheelAngle) const
 {
-	if (const float Magnitude = InputDirection.Size(); Magnitude > AnalogDeadZone)
+	const float NewValue = FMath::RadiansToDegrees(FMath::Atan2(InputDirection.X, -InputDirection.Y));
+	if (FMath::IsNearlyEqual(NewValue, CurrentAngle))
 	{
-		OutFormWheelAngle = FMath::RadiansToDegrees(FMath::Atan2(InputDirection.X, -InputDirection.Y));
-		return true;
+		return false;
 	}
-	return false;
+	OutFormWheelAngle = NewValue;
+	return true;
 }
 
 bool USelectionWheelManagerComponent::CalculateFormWheelAngle_Mouse(const FVector2D& InputDirection, float& OutFormWheelAngle) const
@@ -128,6 +136,7 @@ void USelectionWheelManagerComponent::RemoveStaleListeners()
 	{
 		UPlayerInputFunctionLibrary::RemoveInputMappingContext(GetOwner(), InputMappingContext);
 		bHasAddedContext = false;
+		FSelectionWheelStateChangedPayload(false);
 	}
 }
 

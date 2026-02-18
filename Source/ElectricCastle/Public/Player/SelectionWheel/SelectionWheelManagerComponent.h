@@ -8,11 +8,21 @@
 #include "SelectionWheelManagerComponent.generated.h"
 
 
-class UInputMappingContext;
 enum class ECommonInputType : uint8;
+class UInputMappingContext;
 class UElectricCastleInputComponent;
 class UInputAction;
 struct FInputActionValue;
+
+USTRUCT(BlueprintType)
+struct ELECTRICCASTLE_API FSelectionWheelStateChangedPayload
+{
+	GENERATED_BODY()
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsActive = false;
+};
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSelectionWheelStateChangedSignature, const FSelectionWheelStateChangedPayload&, Payload);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class ELECTRICCASTLE_API USelectionWheelManagerComponent : public UActorComponent
@@ -26,6 +36,10 @@ public:
 	void AddListener(UObject* Listener);
 	void RemoveListener(const UObject* ToRemove);
 	void SetInputType(const ECommonInputType NewInputType) { InputType = NewInputType; }
+	bool IsSelectionWheelActive() const;
+
+	UPROPERTY(BlueprintAssignable, Category="Events")
+	FSelectionWheelStateChangedSignature OnSelectionWheelStateChanged;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties")
@@ -34,8 +48,6 @@ protected:
 	TObjectPtr<UInputAction> SelectInputAction;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties")
 	TObjectPtr<UInputAction> ConfirmInputAction;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties")
-	float AnalogDeadZone = 0.3f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties")
 	float MouseSensitivity = 5.f;
 
