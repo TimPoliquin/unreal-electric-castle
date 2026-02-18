@@ -4,22 +4,20 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Player/Input/RadialInputListenerInterface.h"
+#include "Player/SelectionWheel/SelectionWheelSubscriberInterface.h"
 #include "RadialLayoutCursor.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class ELECTRICCASTLE_API URadialLayoutCursor : public UUserWidget, public IRadialInputListenerInterface
+class ELECTRICCASTLE_API URadialLayoutCursor : public UUserWidget, public ISelectionWheelSubscriberInterface
 {
 	GENERATED_BODY()
 
 public:
-	virtual void NativeConstruct() override;
-	virtual void NativeDestruct() override;
-
 	/** Start IRadialInputListenerInterface **/
-	virtual void OnRadialInputAngleChange_Implementation(float Value) override;
+	virtual void OnSelectionWheelAngleChange_Implementation(float Value) override;
+	virtual void OnSelectionWheelConfirm_Implementation() override;
 	/** End IRadialInputListenerInterface **/
 };

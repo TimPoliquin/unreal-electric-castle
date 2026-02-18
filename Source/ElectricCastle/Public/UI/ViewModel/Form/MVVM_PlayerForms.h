@@ -8,21 +8,38 @@
 #include "Player/Form/FormConfigTypes.h"
 #include "Player/Form/PlayerFormDelegates.h"
 #include "Player/Form/PlayerFormPrimaryAsset.h"
+#include "Player/SelectionWheel/SelectionWheelManagerActorInterface.h"
 #include "UI/Widget/Form/FormWheelFormWidget.h"
 #include "MVVM_PlayerForms.generated.h"
 
+class UMVVM_PlayerForms;
 struct FGameplayTag;
 struct FPlayerFormConfigRow;
 class UMVVM_PlayerForm;
 class AElectricCastlePlayerState;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerFormsVisiblityChangeSignature, const bool, bIsVisible);
+USTRUCT(BlueprintType)
+struct ELECTRICCASTLE_API FPlayerFormsVisibilityChangePayload
+{
+	GENERATED_BODY()
+	UPROPERTY(BlueprintReadOnly)
+	TObjectPtr<UMVVM_PlayerForms> ViewModel;
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsVisible = false;
+
+	bool IsValid() const
+	{
+		return ViewModel != nullptr;
+	}
+};
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerFormsVisiblityChangeSignature, const FPlayerFormsVisibilityChangePayload&, Payload);
 
 /**
  * 
  */
 UCLASS(Abstract)
-class ELECTRICCASTLE_API UMVVM_PlayerForms : public UMVVMViewModelBase
+class ELECTRICCASTLE_API UMVVM_PlayerForms : public UMVVMViewModelBase, public ISelectionWheelManagerActorInterface
 {
 	GENERATED_BODY()
 
@@ -39,11 +56,17 @@ public:
 	TArray<UMVVM_PlayerForm*> GetAvailablePlayerFormViewModels() const;
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	TArray<UMVVM_PlayerForm*> GetPlayerFormViewModels() const;
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	AElectricCastlePlayerController* GetPlayerController() const;
 	void ChangeForm(const FGameplayTag& FormTag);;
 	UPROPERTY(BlueprintAssignable)
 	FOnPlayerFormsVisiblityChangeSignature OnVisibilityChange;
 	UPROPERTY(BlueprintAssignable)
 	FOnPlayerAvailableFormsChangedSignature OnAvailableFormsChangedDelegate;
+
+	/** Start ISelectionWheelManagerActorInterface **/
+	virtual USelectionWheelManagerComponent* GetSelectionWheelManagerComponent_Implementation() const override;
+	/** End ISelectionWheelManagerActorInterface **/
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties")

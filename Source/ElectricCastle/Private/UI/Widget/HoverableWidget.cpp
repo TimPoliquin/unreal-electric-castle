@@ -20,11 +20,3 @@ void IHoverableWidget::Unhover(UObject* Widget)
 		Execute_Unhover(Widget);
 	}
 }
-
-void IHoverableWidget::Select(UObject* Widget)
-{
-	if (IsValid(Widget) && Widget->Implements<UHoverableWidget>())
-	{
-		Execute_Select(Widget);
-	}
-}

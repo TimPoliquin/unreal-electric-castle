@@ -281,12 +281,3 @@ FVector2D SRadialLayout::GetChildPosition(int32 ChildIndex, int32 TotalChildren,
 
 	return Position;
 }
-
-FReply SRadialLayout::OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent)
-{
-	if (Owner.IsValid())
-	{
-		return Owner->HandleKeyDown(MyGeometry, InKeyEvent);
-	}
-	return FReply::Unhandled();
-}

@@ -3,8 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/PanelWidget.h"
-#include "Player/InputEvents.h"
-#include "Player/Input/RadialInputListenerInterface.h"
+#include "Player/SelectionWheel/SelectionWheelSubscriberInterface.h"
 #include "RadialLayout.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnChildSelected, UWidget*, SelectededChild, UWidget*, PreviousSelectedChild);
@@ -13,7 +12,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnChildSelected, UWidget*, Selecte
  * A panel that arranges child widgets in a radial/circular layout
  */
 UCLASS()
-class ELECTRICCASTLE_API URadialLayout : public UPanelWidget, public IRadialInputListenerInterface
+class ELECTRICCASTLE_API URadialLayout : public UPanelWidget, public ISelectionWheelSubscriberInterface
 {
 	GENERATED_BODY()
 
@@ -46,8 +45,6 @@ public:
 	virtual void SynchronizeProperties() override;
 	virtual void ReleaseSlateResources(bool bReleaseChildren) override;
 
-	// Input handling (called from Slate widget)
-	FReply HandleKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent);
 	UFUNCTION(BlueprintCallable)
 	bool UpdateSelectionFromAngle(const float Angle);
 
@@ -58,7 +55,8 @@ public:
 	bool IsDebugOverlayEnabled() const { return bDebugOverlay; }
 
 	/** Start IRadialInputListenerInterface **/
-	virtual void OnRadialInputAngleChange_Implementation(float Value) override;
+	virtual void OnSelectionWheelAngleChange_Implementation(float Value) override;
+	virtual void OnSelectionWheelConfirm_Implementation() override;
 	/** End IRadialInputListenerInterface **/
 
 protected:

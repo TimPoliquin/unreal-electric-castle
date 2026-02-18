@@ -25,12 +25,12 @@
 #include "UI/Widget/DamageTextComponent.h"
 #include "Player/ElectricCastlePlayerState.h"
 #include "Player/Form/PlayerFormPrimaryAsset.h"
-#include "Player/Input/RadialUIInputComponent.h"
+#include "Player/SelectionWheel/SelectionWheelManagerComponent.h"
 
 AElectricCastlePlayerController::AElectricCastlePlayerController()
 {
 	bReplicates = true;
-	RadialUIInputComponent = CreateDefaultSubobject<URadialUIInputComponent>(TEXT("RadialUIInputComponent"));
+	SelectionWheelManager = CreateDefaultSubobject<USelectionWheelManagerComponent>(TEXT("SelectionWheelManager"));
 }
 
 void AElectricCastlePlayerController::BeginPlay()
@@ -190,9 +190,9 @@ void AElectricCastlePlayerController::SetupInputComponent()
 		this,
 		&AElectricCastlePlayerController::HideFormWheel
 	);
-	if (RadialUIInputComponent)
+	if (SelectionWheelManager)
 	{
-		RadialUIInputComponent->SetupInputComponent(ElectricCastleInputComponent);
+		SelectionWheelManager->SetupInputComponent(ElectricCastleInputComponent);
 	}
 }
 
@@ -527,9 +527,9 @@ void AElectricCastlePlayerController::GetMovementVectors(const AController* Cont
 	OutRight = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 }
 
-URadialUIInputComponent* AElectricCastlePlayerController::GetRadialUIInputComponent_Implementation() const
+USelectionWheelManagerComponent* AElectricCastlePlayerController::GetSelectionWheelManagerComponent_Implementation() const
 {
-	return RadialUIInputComponent;
+	return SelectionWheelManager;
 }
 
 void AElectricCastlePlayerController::OnInputTypeChange(const ECommonInputType NewInputType)
@@ -554,9 +554,9 @@ void AElectricCastlePlayerController::OnInputTypeChange(const ECommonInputType N
 		SetInputMode_Gamepad_Server();
 		break;
 	}
-	if (RadialUIInputComponent)
+	if (SelectionWheelManager)
 	{
-		RadialUIInputComponent->SetInputType(NewInputType);
+		SelectionWheelManager->SetInputType(NewInputType);
 	}
 	SetupInputMode();
 }

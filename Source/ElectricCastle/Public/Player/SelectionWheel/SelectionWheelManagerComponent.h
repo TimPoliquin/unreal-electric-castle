@@ -5,21 +5,22 @@
 #include "CoreMinimal.h"
 #include "CommonInputTypeEnum.h"
 #include "Components/ActorComponent.h"
-#include "RadialUIInputComponent.generated.h"
+#include "SelectionWheelManagerComponent.generated.h"
 
 
+class UInputMappingContext;
 enum class ECommonInputType : uint8;
 class UElectricCastleInputComponent;
 class UInputAction;
 struct FInputActionValue;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class ELECTRICCASTLE_API URadialUIInputComponent : public UActorComponent
+class ELECTRICCASTLE_API USelectionWheelManagerComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:
-	URadialUIInputComponent();
+	USelectionWheelManagerComponent();
 
 	void SetupInputComponent(UElectricCastleInputComponent* InputComponent);
 	void AddListener(UObject* Listener);
@@ -27,25 +28,33 @@ public:
 	void SetInputType(const ECommonInputType NewInputType) { InputType = NewInputType; }
 
 protected:
-	void UpdateAngle(const FInputActionValue& InputActionValue);
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties")
-	TObjectPtr<UInputAction> InputAction;
+	TObjectPtr<UInputMappingContext> InputMappingContext;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties")
+	TObjectPtr<UInputAction> SelectInputAction;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties")
+	TObjectPtr<UInputAction> ConfirmInputAction;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties")
 	float AnalogDeadZone = 0.3f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties")
 	float MouseSensitivity = 5.f;
 
 private:
+	void UpdateAngle(const FInputActionValue& InputActionValue);
+	void ConfirmSelection(const FInputActionValue& InputActionValue);
+
 	bool CalculateFormWheelAngle_Gamepad(const FVector2D& InputDirection, float& OutFormWheelAngle) const;
 	bool CalculateFormWheelAngle_Mouse(const FVector2D& InputDirection, float& OutFormWheelAngle) const;
+	void RemoveStaleListeners();
 
 	void NotifyListeners();
 
-	UPROPERTY(VisibleAnywhere, Category="Properties")
+	UPROPERTY(VisibleInstanceOnly, Category="Properties")
 	ECommonInputType InputType = ECommonInputType::Count;
 	UPROPERTY(VisibleInstanceOnly, Category="Properties")
 	float CurrentAngle = 0.f;
 	UPROPERTY(VisibleInstanceOnly, Category="Properties")
 	TArray<TWeakObjectPtr<UObject>> Listeners;
+	UPROPERTY(VisibleInstanceOnly, Category="Properties")
+	bool bHasAddedContext = false;
 };

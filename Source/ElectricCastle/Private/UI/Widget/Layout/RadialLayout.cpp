@@ -4,8 +4,6 @@
 #include "UI/Widget/Layout/SRadialLayout.h"
 #include "Blueprint/WidgetTree.h"
 #include "Framework/Application/SlateApplication.h"
-#include "Player/Input/RadialInputDispatcherInterface.h"
-#include "Player/Input/RadialUIInputComponent.h"
 #include "UI/Widget/HoverableWidget.h"
 
 #define LOCTEXT_NAMESPACE "UMG"
@@ -120,39 +118,6 @@ void URadialLayout::UpdateSelection(int32 NewIndex)
 	}
 }
 
-FReply URadialLayout::HandleKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
-{
-	if (!bEnableGamepadNavigation || GetChildrenCount() == 0)
-	{
-		return FReply::Unhandled();
-	}
-
-	// Initialize selection if not set
-	if (SelectedIndex < 0)
-	{
-		SetSelectedIndex(0);
-		return FReply::Handled();
-	}
-
-	FKey Key = InKeyEvent.GetKey();
-
-	// D-pad navigation - move to next/previous child
-	if (Key == EKeys::Gamepad_DPad_Right || Key == EKeys::Gamepad_DPad_Down)
-	{
-		int32 NewIndex = (SelectedIndex + 1) % GetChildrenCount();
-		UpdateSelection(NewIndex);
-		return FReply::Handled();
-	}
-	if (Key == EKeys::Gamepad_DPad_Left || Key == EKeys::Gamepad_DPad_Up)
-	{
-		int32 NewIndex = (SelectedIndex - 1 + GetChildrenCount()) % GetChildrenCount();
-		UpdateSelection(NewIndex);
-		return FReply::Handled();
-	}
-
-	return FReply::Unhandled();
-}
-
 bool URadialLayout::UpdateSelectionFromAngle(const float Angle)
 {
 	if (!bEnableGamepadNavigation || GetChildrenCount() == 0)
@@ -168,9 +133,14 @@ bool URadialLayout::UpdateSelectionFromAngle(const float Angle)
 	return false;
 }
 
-void URadialLayout::OnRadialInputAngleChange_Implementation(const float Value)
+void URadialLayout::OnSelectionWheelAngleChange_Implementation(const float Value)
 {
 	UpdateSelectionFromAngle(Value);
+}
+
+void URadialLayout::OnSelectionWheelConfirm_Implementation()
+{
+	// TODO
 }
 
 int32 URadialLayout::FindNearestChildToAngle(float Angle) const
@@ -223,10 +193,6 @@ void URadialLayout::SynchronizeProperties()
 		MyRadialLayout->SetRadius(Radius);
 		MyRadialLayout->SetStartAngle(StartAngle);
 		MyRadialLayout->SetClockwise(bClockwise);
-	}
-	if (URadialUIInputComponent* RadialUIInputComponent = IRadialInputDispatcherInterface::GetRadialUIInputComponent(GetOwningPlayer()))
-	{
-		RadialUIInputComponent->AddListener(this);
 	}
 }
 

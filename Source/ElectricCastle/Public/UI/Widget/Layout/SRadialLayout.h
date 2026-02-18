@@ -114,7 +114,6 @@ public:
 		const FWidgetStyle& InWidgetStyle,
 		bool bParentEnabled
 	) const override;
-	virtual FReply OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent) override;
 	virtual bool SupportsKeyboardFocus() const override { return true; }
 
 	void SetRadius(float InRadius) { Radius = InRadius; }

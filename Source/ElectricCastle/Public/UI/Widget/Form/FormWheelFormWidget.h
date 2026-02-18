@@ -28,7 +28,6 @@ public:
 	/** Start IHoverableWidget **/
 	virtual void Hover_Implementation() override;
 	virtual void Unhover_Implementation() override;
-	virtual void Select_Implementation() override;
 	/** End IHoverableWidget **/
 
 private:

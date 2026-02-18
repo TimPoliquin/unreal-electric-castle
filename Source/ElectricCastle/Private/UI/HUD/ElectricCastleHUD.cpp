@@ -207,7 +207,7 @@ void AElectricCastleHUD::InitializePlayerViewModels()
 	}
 }
 
-void AElectricCastleHUD::InitializeViewModelsForPlayerState(AElectricCastlePlayerState* PlayerState, int32 PlayerIdx)
+void AElectricCastleHUD::InitializeViewModelsForPlayerState(AElectricCastlePlayerState* PlayerState, const int32 PlayerIdx)
 {
 	AddPlayerStateViewModel(CreatePlayerStateViewModel(PlayerIdx, PlayerState));
 	AddPlayerAbilityStateViewModel(CreatePlayerAbilityStatesViewModel(PlayerIdx, PlayerState));

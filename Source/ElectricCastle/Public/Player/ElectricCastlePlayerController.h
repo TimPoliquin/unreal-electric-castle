@@ -8,11 +8,11 @@
 #include "InputEvents.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemInterface.h"
 #include "GameFramework/PlayerController.h"
-#include "Input/RadialInputDispatcherInterface.h"
+#include "SelectionWheel/SelectionWheelManagerActorInterface.h"
 #include "Interaction/HighlightInterface.h"
 #include "ElectricCastlePlayerController.generated.h"
 
-class URadialUIInputComponent;
+class USelectionWheelManagerComponent;
 class UGameplayEffect;
 enum class ECommonInputType : uint8;
 class AMagicCircle;
@@ -127,7 +127,7 @@ struct FHighlightContext
  * 
  */
 UCLASS()
-class ELECTRICCASTLE_API AElectricCastlePlayerController : public APlayerController, public IRadialInputDispatcherInterface
+class ELECTRICCASTLE_API AElectricCastlePlayerController : public APlayerController, public ISelectionWheelManagerActorInterface
 {
 	GENERATED_BODY()
 
@@ -168,9 +168,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static void GetMovementVectors(const AController* Controller, FVector& OutForward, FVector& OutRight);
 
-	/** Start RadialUIInputDispatcher Interface **/
-	virtual URadialUIInputComponent* GetRadialUIInputComponent_Implementation() const override;
-	/** End RadialUIInputDispatcher Interface **/
+	/** Start SelectionWheelManagerActor Interface **/
+	virtual USelectionWheelManagerComponent* GetSelectionWheelManagerComponent_Implementation() const override;
+	/** End SelectionWheelManagerActor Interface **/
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Input")
@@ -195,7 +195,7 @@ protected:
 	TObjectPtr<UElectricCastleAbilitySystemComponent> AbilitySystemComponent;
 	// UI
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
-	TObjectPtr<URadialUIInputComponent> RadialUIInputComponent;
+	TObjectPtr<USelectionWheelManagerComponent> SelectionWheelManager;
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<UDamageTextComponent> DamageTextComponentClass;
 	UPROPERTY(EditDefaultsOnly, Category="Combat")

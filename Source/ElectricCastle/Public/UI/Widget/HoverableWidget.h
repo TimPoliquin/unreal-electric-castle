@@ -26,10 +26,7 @@ public:
 	void Hover();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void Unhover();
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void Select();
 
 	static void Hover(UObject* Widget);
 	static void Unhover(UObject* Widget);
-	static void Select(UObject* Widget);
 };

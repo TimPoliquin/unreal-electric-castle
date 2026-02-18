@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Player/Form/PlayerFormDelegates.h"
+#include "Player/SelectionWheel/SelectionWheelSubscriberInterface.h"
 #include "FormWheelWidget.generated.h"
 
 class URadialLayout;
@@ -15,11 +16,12 @@ class UMVVM_PlayerForms;
  * 
  */
 UCLASS(Abstract)
-class ELECTRICCASTLE_API UFormWheelWidget : public UUserWidget
+class ELECTRICCASTLE_API UFormWheelWidget : public UUserWidget, public ISelectionWheelSubscriberInterface
 {
 	GENERATED_BODY()
 
 public:
+	virtual void NativeDestruct() override;
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	int32 GetPlayerIndex() const;
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
@@ -30,6 +32,11 @@ public:
 	void BindViewModel(UMVVM_PlayerForms* InPlayerFormsViewModel);
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void CommitSelection();
+
+	/** Start ISelectionWheelSubscriberInterface **/
+	virtual void OnSelectionWheelAngleChange_Implementation(float Value) override;
+	virtual void OnSelectionWheelConfirm_Implementation() override;
+	/** End ISelectionWheelSubscriberInterface **/
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties")
@@ -48,8 +55,6 @@ private:
 	TObjectPtr<UMVVM_PlayerForms> PlayerFormsViewModel;
 	UPROPERTY()
 	TArray<TObjectPtr<UFormWheelFormWidget>> FormWidgets;
-	UFUNCTION()
-	void OnFormWheelVisibilityChange(const bool bIsVisible);
 	UFUNCTION()
 	void OnAvailableFormsChanged(const FOnPlayerAvailableFormsChangedPayload& Payload);
 };

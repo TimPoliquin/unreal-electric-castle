@@ -160,6 +160,7 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FName("InputTag.Cancel"),
 		FString("Input tag for canceling player interaction and abilities")
 	);
+	Instance.InputTag_Dialog = TagManager.AddNativeGameplayTag(FName("InputTag.Dialog"), FString("Root tag for all dialog input tags"));
 
 	// Effect Tags
 	Instance.Effect = TagManager.AddNativeGameplayTag(FName("Effect"), FString("Root effect tag"));
