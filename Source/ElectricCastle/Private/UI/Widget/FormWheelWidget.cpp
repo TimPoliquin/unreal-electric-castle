@@ -17,7 +17,6 @@ void UFormWheelWidget::Show_Implementation(const bool bAnimate)
 	if (URadialLayout* RadialLayout = GetFormsContainer())
 	{
 		RadialLayout->SetSelectedIndex(GetSelectedIndex());
-		GetCursorWidget()->SetRenderTransformAngle(RadialLayout->GetSelectedIndexAngle());
 	}
 }
 
@@ -32,7 +31,6 @@ void UFormWheelWidget::BindViewModel_Implementation(UMVVM_PlayerForms* InPlayerF
 	CreateFormWidgets(InPlayerFormsViewModel);
 	PlayerFormsViewModel->OnVisibilityChange.AddUniqueDynamic(this, &UFormWheelWidget::OnFormWheelVisibilityChange);
 	PlayerFormsViewModel->OnAvailableFormsChangedDelegate.AddUniqueDynamic(this, &UFormWheelWidget::OnAvailableFormsChanged);
-	PlayerFormsViewModel->OnFormWheelHighlightChangeDelegate.AddUniqueDynamic(this, &UFormWheelWidget::OnFormWheelHighlightChange);
 }
 
 int32 UFormWheelWidget::GetPlayerIndex() const
@@ -85,7 +83,7 @@ void UFormWheelWidget::CreateFormWidgets_Implementation(UMVVM_PlayerForms* Playe
 	}
 }
 
-UWidget* UFormWheelWidget::GetCursorWidget_Implementation() const
+URadialLayoutCursor* UFormWheelWidget::GetCursorWidget_Implementation() const
 {
 	UE_LOG(LogElectricCastle, Warning, TEXT("[%s] GetCursorWidget_Implementation is not implemented"), *GetName());
 	return nullptr;
@@ -101,18 +99,6 @@ int32 UFormWheelWidget::GetSelectedIndex() const
 		}
 	}
 	return 0;
-}
-
-void UFormWheelWidget::UpdateSelectionAngle_Implementation(const float Angle)
-{
-	if (URadialLayout* RadialLayout = GetFormsContainer())
-	{
-		RadialLayout->UpdateSelectionFromAngle(Angle);
-	}
-	if (UWidget* CursorWidget = GetCursorWidget())
-	{
-		CursorWidget->SetRenderTransformAngle(Angle);
-	}
 }
 
 void UFormWheelWidget::OnFormWheelVisibilityChange(const bool bIsVisible)
@@ -149,9 +135,4 @@ void UFormWheelWidget::OnAvailableFormsChanged(const FOnPlayerAvailableFormsChan
 			Container->RemoveChild(FormWidget);
 		}
 	}
-}
-
-void UFormWheelWidget::OnFormWheelHighlightChange(const FOnPlayerFormWheelHighlightChangedPayload& Payload)
-{
-	UpdateSelectionAngle(Payload.InputAngle);
 }

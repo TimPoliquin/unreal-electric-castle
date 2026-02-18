@@ -19,7 +19,6 @@ void UMVVM_PlayerForms::InitializeDependencies(AElectricCastlePlayerState* InPla
 	if (AElectricCastlePlayerController* PlayerController = Cast<AElectricCastlePlayerController>(InPlayerState->GetPlayerController()))
 	{
 		PlayerController->OnFormWheelVisibilityChange.AddUniqueDynamic(this, &UMVVM_PlayerForms::OnFormWheelVisibilityChange);
-		PlayerController->OnFormWheelHighlightChange.AddUniqueDynamic(this, &UMVVM_PlayerForms::OnFormWheelHighlightChange);
 	}
 	if (UPlayerFormChangeComponent* FormChangeComponent = IFormChangeActorInterface::GetFormChangeComponent(InPlayerState))
 	{
@@ -122,9 +121,4 @@ void UMVVM_PlayerForms::OnFormWheelVisibilityChange(const FOnPlayerFormWheelVisi
 void UMVVM_PlayerForms::OnAvailableFormsChanged(const FOnPlayerAvailableFormsChangedPayload& Payload)
 {
 	OnAvailableFormsChangedDelegate.Broadcast(Payload);
-}
-
-void UMVVM_PlayerForms::OnFormWheelHighlightChange(const FOnPlayerFormWheelHighlightChangedPayload& Payload)
-{
-	OnFormWheelHighlightChangeDelegate.Broadcast(Payload);
 }

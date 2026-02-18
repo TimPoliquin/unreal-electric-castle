@@ -44,8 +44,6 @@ public:
 	FOnPlayerFormsVisiblityChangeSignature OnVisibilityChange;
 	UPROPERTY(BlueprintAssignable)
 	FOnPlayerAvailableFormsChangedSignature OnAvailableFormsChangedDelegate;
-	UPROPERTY(BlueprintAssignable)
-	FOnPlayerFormWheelHighlightChangedSignature OnFormWheelHighlightChangeDelegate;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties")
@@ -67,6 +65,4 @@ private:
 	void OnFormWheelVisibilityChange(const FOnPlayerFormWheelVisibilityChangePayload& Payload);
 	UFUNCTION()
 	void OnAvailableFormsChanged(const FOnPlayerAvailableFormsChangedPayload& Payload);
-	UFUNCTION()
-	void OnFormWheelHighlightChange(const FOnPlayerFormWheelHighlightChangedPayload& Payload);
 };

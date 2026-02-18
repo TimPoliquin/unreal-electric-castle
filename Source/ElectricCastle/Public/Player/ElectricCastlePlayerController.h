@@ -8,9 +8,11 @@
 #include "InputEvents.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemInterface.h"
 #include "GameFramework/PlayerController.h"
+#include "Input/RadialInputDispatcherInterface.h"
 #include "Interaction/HighlightInterface.h"
 #include "ElectricCastlePlayerController.generated.h"
 
+class URadialUIInputComponent;
 class UGameplayEffect;
 enum class ECommonInputType : uint8;
 class AMagicCircle;
@@ -125,7 +127,7 @@ struct FHighlightContext
  * 
  */
 UCLASS()
-class ELECTRICCASTLE_API AElectricCastlePlayerController : public APlayerController
+class ELECTRICCASTLE_API AElectricCastlePlayerController : public APlayerController, public IRadialInputDispatcherInterface
 {
 	GENERATED_BODY()
 
@@ -162,11 +164,13 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnPlayerFormWheelVisibilityChangeSignature OnFormWheelVisibilityChange;
-	UPROPERTY(BLueprintAssignable)
-	FOnPlayerFormWheelHighlightChangedSignature OnFormWheelHighlightChange;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static void GetMovementVectors(const AController* Controller, FVector& OutForward, FVector& OutRight);
+
+	/** Start RadialUIInputDispatcher Interface **/
+	virtual URadialUIInputComponent* GetRadialUIInputComponent_Implementation() const override;
+	/** End RadialUIInputDispatcher Interface **/
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Input")
@@ -184,18 +188,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputAction> FormWheelAction;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	TObjectPtr<UInputAction> FormWheelHighlightAction;
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputConfiguration> InputConfig;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputAction> FormChangeAction;
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	float AnalogDeadZone = 0.3f;
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	float MouseSensitivity = 5.f;
 	UPROPERTY()
 	TObjectPtr<UElectricCastleAbilitySystemComponent> AbilitySystemComponent;
 	// UI
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
+	TObjectPtr<URadialUIInputComponent> RadialUIInputComponent;
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<UDamageTextComponent> DamageTextComponentClass;
 	UPROPERTY(EditDefaultsOnly, Category="Combat")
@@ -230,19 +230,15 @@ private:
 	UFUNCTION()
 	void HideFormWheel(const FInputActionValue& InputActionValue);
 	UFUNCTION()
-	void UpdateFormWheelHighlightAngle(const FInputActionValue& InputActionValue);
-	UFUNCTION()
 	void HandleFormChangeInputAction(const FInputActionValue& InputActionValue);
 	void UpdateMagicCircleLocation() const;
-	void OnInputTypeChange(ECommonInputType NewInputMode);
+	void OnInputTypeChange(ECommonInputType NewInputType);
 	UFUNCTION(Server, Reliable)
 	void SetInputMode_Gamepad_Server();
 	UFUNCTION(Server, Reliable)
 	void SetInputMode_KeyboardAndMouse_Server();
 	UFUNCTION()
 	void OnEffectStateChanged_Aiming(FGameplayTag AimingTag, int TagCount);
-	bool CalculateFormWheelAngle_Gamepad(const FVector2D& InputDirection, float& OutFormWheelAngle) const;
-	bool CalculateFormWheelAngle_Mouse(const FVector2D& InputDirection, float& OutFormWheelAngle) const;
 
 	bool IsAiming();
 
@@ -253,7 +249,7 @@ private:
 	UPROPERTY(Replicated)
 	EAuraInputMode InputType = EAuraInputMode::MouseAndKeyboard;
 	UPROPERTY(Replicated)
-	bool bShowFormWheel = false;
+	bool bShouldTrackRadialUIHighlightAngle = false;
 	UPROPERTY(Replicated)
-	float FormWheelAngle = 0.f;
+	float RadialUIHighlightAngle = 0.f;
 };

@@ -8,6 +8,7 @@
 #include "FormWheelWidget.generated.h"
 
 class URadialLayout;
+class URadialLayoutCursor;
 class UFormWheelFormWidget;
 class UMVVM_PlayerForms;
 /**
@@ -36,13 +37,11 @@ protected:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	URadialLayout* GetFormsContainer() const;
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	UWidget* GetCursorWidget() const;
+	URadialLayoutCursor* GetCursorWidget() const;
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void CreateFormWidgets(UMVVM_PlayerForms* PlayerForms);
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	int32 GetSelectedIndex() const;
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void UpdateSelectionAngle(const float Angle);
 
 private:
 	UPROPERTY()
@@ -53,6 +52,4 @@ private:
 	void OnFormWheelVisibilityChange(const bool bIsVisible);
 	UFUNCTION()
 	void OnAvailableFormsChanged(const FOnPlayerAvailableFormsChangedPayload& Payload);
-	UFUNCTION()
-	void OnFormWheelHighlightChange(const FOnPlayerFormWheelHighlightChangedPayload& Payload);
 };

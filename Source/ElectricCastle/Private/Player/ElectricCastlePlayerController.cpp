@@ -25,10 +25,12 @@
 #include "UI/Widget/DamageTextComponent.h"
 #include "Player/ElectricCastlePlayerState.h"
 #include "Player/Form/PlayerFormPrimaryAsset.h"
+#include "Player/Input/RadialUIInputComponent.h"
 
 AElectricCastlePlayerController::AElectricCastlePlayerController()
 {
 	bReplicates = true;
+	RadialUIInputComponent = CreateDefaultSubobject<URadialUIInputComponent>(TEXT("RadialUIInputComponent"));
 }
 
 void AElectricCastlePlayerController::BeginPlay()
@@ -188,7 +190,10 @@ void AElectricCastlePlayerController::SetupInputComponent()
 		this,
 		&AElectricCastlePlayerController::HideFormWheel
 	);
-	ElectricCastleInputComponent->BindAction(FormWheelHighlightAction, ETriggerEvent::Triggered, this, &AElectricCastlePlayerController::UpdateFormWheelHighlightAngle);
+	if (RadialUIInputComponent)
+	{
+		RadialUIInputComponent->SetupInputComponent(ElectricCastleInputComponent);
+	}
 }
 
 void AElectricCastlePlayerController::OnGameDataLoaded_Implementation()
@@ -403,7 +408,7 @@ void AElectricCastlePlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
 
 void AElectricCastlePlayerController::ShowFormWheel(const FInputActionValue& InputActionValue)
 {
-	bShowFormWheel = true;
+	bShouldTrackRadialUIHighlightAngle = true;
 	SetupInputMode();
 	OnFormWheelVisibilityChange.Broadcast(
 		FOnPlayerFormWheelVisibilityChangePayload(
@@ -417,7 +422,7 @@ void AElectricCastlePlayerController::ShowFormWheel(const FInputActionValue& Inp
 
 void AElectricCastlePlayerController::HideFormWheel(const FInputActionValue& InputActionValue)
 {
-	bShowFormWheel = false;
+	bShouldTrackRadialUIHighlightAngle = false;
 	SetupInputMode();
 	OnFormWheelVisibilityChange.Broadcast(
 		FOnPlayerFormWheelVisibilityChangePayload(
@@ -427,33 +432,6 @@ void AElectricCastlePlayerController::HideFormWheel(const FInputActionValue& Inp
 			false
 		)
 	);
-}
-
-void AElectricCastlePlayerController::UpdateFormWheelHighlightAngle(const FInputActionValue& InputActionValue)
-{
-	if (bShowFormWheel)
-	{
-		const FVector2D InputDirection = InputActionValue.Get<FVector2D>();
-		bool bBroadcast;
-		if (IsInputTypeGamepad())
-		{
-			bBroadcast = CalculateFormWheelAngle_Gamepad(InputDirection, FormWheelAngle);
-		}
-		else
-		{
-			bBroadcast = CalculateFormWheelAngle_Mouse(InputDirection, FormWheelAngle);
-		}
-		if (bBroadcast)
-		{
-			OnFormWheelHighlightChange.Broadcast(FOnPlayerFormWheelHighlightChangedPayload(
-				this,
-				GetPlayerState<AElectricCastlePlayerState>(),
-				GetPawn<AElectricCastlePlayerCharacter>(),
-				InputDirection,
-				FormWheelAngle
-			));
-		}
-	}
 }
 
 void AElectricCastlePlayerController::HandleFormChangeInputAction(const FInputActionValue& InputActionValue)
@@ -509,7 +487,7 @@ bool AElectricCastlePlayerController::IsNotTargeting() const
 void AElectricCastlePlayerController::SetupInputMode()
 {
 	DefaultMouseCursor = EMouseCursor::Default;
-	if (!bShowFormWheel)
+	if (!bShouldTrackRadialUIHighlightAngle)
 	{
 		bShowMouseCursor = IsInputTypeMouse();
 		SetInputMode(BuildGameAndUIInputMode());
@@ -528,8 +506,8 @@ void AElectricCastlePlayerController::SetupInputMode()
 FInputModeGameAndUI AElectricCastlePlayerController::BuildGameAndUIInputMode() const
 {
 	FInputModeGameAndUI InputModeData;
-	InputModeData.SetLockMouseToViewportBehavior(bShowFormWheel ? EMouseLockMode::LockAlways : EMouseLockMode::DoNotLock);
-	InputModeData.SetHideCursorDuringCapture(!IsInputTypeMouse() || bShowFormWheel);
+	InputModeData.SetLockMouseToViewportBehavior(bShouldTrackRadialUIHighlightAngle ? EMouseLockMode::LockAlways : EMouseLockMode::DoNotLock);
+	InputModeData.SetHideCursorDuringCapture(!IsInputTypeMouse() || bShouldTrackRadialUIHighlightAngle);
 	return InputModeData;
 }
 
@@ -549,7 +527,12 @@ void AElectricCastlePlayerController::GetMovementVectors(const AController* Cont
 	OutRight = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 }
 
-void AElectricCastlePlayerController::OnInputTypeChange(const ECommonInputType NewInputMode)
+URadialUIInputComponent* AElectricCastlePlayerController::GetRadialUIInputComponent_Implementation() const
+{
+	return RadialUIInputComponent;
+}
+
+void AElectricCastlePlayerController::OnInputTypeChange(const ECommonInputType NewInputType)
 {
 	if (bDebug)
 	{
@@ -558,10 +541,10 @@ void AElectricCastlePlayerController::OnInputTypeChange(const ECommonInputType N
 			Warning,
 			TEXT("[%s] Changing InputType: %s"),
 			*GetName(),
-			*UEnum::GetValueAsString(NewInputMode)
+			*UEnum::GetValueAsString(NewInputType)
 		)
 	}
-	switch (NewInputMode)
+	switch (NewInputType)
 	{
 	case ECommonInputType::MouseAndKeyboard:
 		SetInputMode_KeyboardAndMouse_Server();
@@ -570,6 +553,10 @@ void AElectricCastlePlayerController::OnInputTypeChange(const ECommonInputType N
 	default:
 		SetInputMode_Gamepad_Server();
 		break;
+	}
+	if (RadialUIInputComponent)
+	{
+		RadialUIInputComponent->SetInputType(NewInputType);
 	}
 	SetupInputMode();
 }
@@ -588,31 +575,6 @@ void AElectricCastlePlayerController::OnEffectStateChanged_Aiming(const FGamepla
 		bShowMouseCursor = IsInputTypeMouse();
 		SetupInputMode();
 	}
-}
-
-bool AElectricCastlePlayerController::CalculateFormWheelAngle_Gamepad(const FVector2D& InputDirection, float& OutFormWheelAngle) const
-{
-	if (const float Magnitude = InputDirection.Size(); Magnitude > AnalogDeadZone)
-	{
-		OutFormWheelAngle = FMath::RadiansToDegrees(FMath::Atan2(InputDirection.X, -InputDirection.Y));
-		return true;
-	}
-	return false;
-}
-
-bool AElectricCastlePlayerController::CalculateFormWheelAngle_Mouse(const FVector2D& InputDirection, float& OutFormWheelAngle) const
-{
-	const float AbsX = FMath::Abs(InputDirection.X);
-	const float AbsY = FMath::Abs(InputDirection.Y);
-	const float Value = AbsX > AbsY ? InputDirection.X : InputDirection.Y;
-	if (FMath::Abs(Value) > KINDA_SMALL_NUMBER)
-	{
-		OutFormWheelAngle += Value * MouseSensitivity;
-		// Normalize to [0,360)
-		OutFormWheelAngle = FMath::Fmod(OutFormWheelAngle + 360.0f, 360.0f);
-		return true;
-	}
-	return false;
 }
 
 bool AElectricCastlePlayerController::IsAiming()

@@ -4,6 +4,8 @@
 #include "UI/Widget/Layout/SRadialLayout.h"
 #include "Blueprint/WidgetTree.h"
 #include "Framework/Application/SlateApplication.h"
+#include "Player/Input/RadialInputDispatcherInterface.h"
+#include "Player/Input/RadialUIInputComponent.h"
 #include "UI/Widget/HoverableWidget.h"
 
 #define LOCTEXT_NAMESPACE "UMG"
@@ -166,6 +168,11 @@ bool URadialLayout::UpdateSelectionFromAngle(const float Angle)
 	return false;
 }
 
+void URadialLayout::OnRadialInputAngleChange_Implementation(const float Value)
+{
+	UpdateSelectionFromAngle(Value);
+}
+
 int32 URadialLayout::FindNearestChildToAngle(float Angle) const
 {
 	if (GetChildrenCount() == 0)
@@ -216,6 +223,10 @@ void URadialLayout::SynchronizeProperties()
 		MyRadialLayout->SetRadius(Radius);
 		MyRadialLayout->SetStartAngle(StartAngle);
 		MyRadialLayout->SetClockwise(bClockwise);
+	}
+	if (URadialUIInputComponent* RadialUIInputComponent = IRadialInputDispatcherInterface::GetRadialUIInputComponent(GetOwningPlayer()))
+	{
+		RadialUIInputComponent->AddListener(this);
 	}
 }
 

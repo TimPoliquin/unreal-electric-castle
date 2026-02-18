@@ -3,6 +3,8 @@
 
 #include "CoreMinimal.h"
 #include "Components/PanelWidget.h"
+#include "Player/InputEvents.h"
+#include "Player/Input/RadialInputListenerInterface.h"
 #include "RadialLayout.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnChildSelected, UWidget*, SelectededChild, UWidget*, PreviousSelectedChild);
@@ -11,7 +13,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnChildSelected, UWidget*, Selecte
  * A panel that arranges child widgets in a radial/circular layout
  */
 UCLASS()
-class ELECTRICCASTLE_API URadialLayout : public UPanelWidget
+class ELECTRICCASTLE_API URadialLayout : public UPanelWidget, public IRadialInputListenerInterface
 {
 	GENERATED_BODY()
 
@@ -54,6 +56,10 @@ public:
 	bool IsClockwise() const { return bClockwise; }
 	bool IsGamepadNavigationEnabled() const { return bEnableGamepadNavigation; }
 	bool IsDebugOverlayEnabled() const { return bDebugOverlay; }
+
+	/** Start IRadialInputListenerInterface **/
+	virtual void OnRadialInputAngleChange_Implementation(float Value) override;
+	/** End IRadialInputListenerInterface **/
 
 protected:
 	/** Radius of the radial layout */
