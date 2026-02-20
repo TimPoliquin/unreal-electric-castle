@@ -160,6 +160,8 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, Category = "AI")
 	TObjectPtr<AActor> CombatTarget;
+	UPROPERTY(BlueprintReadOnly, Category="Properties")
+	bool bDebug = false;
 
 private:
 	FOnTrackableStopTrackingSignature OnTrackableStopTracking;
