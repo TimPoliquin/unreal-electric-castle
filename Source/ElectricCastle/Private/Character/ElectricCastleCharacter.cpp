@@ -420,6 +420,24 @@ UAbilitySystemComponent* AElectricCastleCharacter::GetAbilitySystemComponent() c
 	return AbilitySystemComponent;
 }
 
+void AElectricCastleCharacter::SetActorHiddenInGame(const bool bNewHidden)
+{
+	Super::SetActorHiddenInGame(bNewHidden);
+	TArray<AActor*> ChildActors;
+	GetAllChildActors(ChildActors, true);
+	for (AActor* Child : ChildActors)
+	{
+		if (IsValid(Child))
+		{
+			Child->SetActorHiddenInGame(bNewHidden);
+		}
+	}
+	if (AActor* Weapon = GetWeapon(this))
+	{
+		Weapon->SetActorHiddenInGame(bNewHidden);
+	}
+}
+
 float AElectricCastleCharacter::TakeDamage(
 	float DamageAmount,
 	const struct FDamageEvent& DamageEvent,
