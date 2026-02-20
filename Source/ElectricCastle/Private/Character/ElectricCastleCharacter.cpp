@@ -291,6 +291,7 @@ void AElectricCastleCharacter::MulticastHandleDeath_Implementation()
 	GetMesh()->SetEnableGravity(true);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
+	GetMesh()->SetEnableAnimation(false);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	Dissolve();
 	OnDeathDelegate.Broadcast(this);
