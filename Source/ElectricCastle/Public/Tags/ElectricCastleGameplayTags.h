@@ -67,6 +67,7 @@ struct FElectricCastleGameplayTags
 	FGameplayTag InputTag_Interact;
 	FGameplayTag InputTag_Fishing_Reel;
 	FGameplayTag InputTag_Cancel;
+	FGameplayTag InputTag_Dialog;
 
 	/** Effect Tags **/
 	FGameplayTag Effect;

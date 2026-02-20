@@ -41,6 +41,8 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	virtual UElectricCastleAttributeSet* GetAttributeSet() const { return nullptr; }
 
+	virtual void SetActorHiddenInGame(bool bNewHidden) override;
+
 	virtual float TakeDamage(
 		float DamageAmount,
 		const struct FDamageEvent& DamageEvent,

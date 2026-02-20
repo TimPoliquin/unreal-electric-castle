@@ -52,7 +52,10 @@ void UDissolveEffectComponent::InitializeMaterial()
 		if (DynamicMaterial)
 		{
 			// Apply the dynamic material to the mesh
-			TargetMeshComponent->SetMaterial(0, DynamicMaterial);
+			for (int32 Idx = 0; Idx < TargetMeshComponent->GetMaterials().Num(); Idx++)
+			{
+				TargetMeshComponent->SetMaterial(Idx, DynamicMaterial);
+			}
 			UE_LOG(LogElectricCastle, Log, TEXT("TimelineMaterialComponent: Dynamic material created and applied"));
 		}
 		else

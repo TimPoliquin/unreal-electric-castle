@@ -25,10 +25,6 @@ void UFormWheelFormWidget::Unhover_Implementation()
 {
 }
 
-void UFormWheelFormWidget::Select_Implementation()
-{
-}
-
 bool UFormWheelFormWidget::IsFormSelected() const
 {
 	if (!PlayerFormViewModel)

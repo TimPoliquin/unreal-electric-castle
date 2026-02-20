@@ -291,6 +291,7 @@ void AElectricCastleCharacter::MulticastHandleDeath_Implementation()
 	GetMesh()->SetEnableGravity(true);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
+	GetMesh()->SetEnableAnimation(false);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	Dissolve();
 	OnDeathDelegate.Broadcast(this);
@@ -418,6 +419,24 @@ void AElectricCastleCharacter::ApplyEffectToSelf(TSubclassOf<UGameplayEffect> At
 UAbilitySystemComponent* AElectricCastleCharacter::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
+}
+
+void AElectricCastleCharacter::SetActorHiddenInGame(const bool bNewHidden)
+{
+	Super::SetActorHiddenInGame(bNewHidden);
+	TArray<AActor*> ChildActors;
+	GetAllChildActors(ChildActors, true);
+	for (AActor* Child : ChildActors)
+	{
+		if (IsValid(Child))
+		{
+			Child->SetActorHiddenInGame(bNewHidden);
+		}
+	}
+	if (AActor* Weapon = GetWeapon(this))
+	{
+		Weapon->SetActorHiddenInGame(bNewHidden);
+	}
 }
 
 float AElectricCastleCharacter::TakeDamage(

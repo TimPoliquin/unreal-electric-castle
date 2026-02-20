@@ -331,6 +331,11 @@ TArray<FName> AElectricCastleEnemyCharacter::GetTargetTagsToIgnore_Implementatio
 void AElectricCastleEnemyCharacter::UpdateFacingTarget_Implementation(const FVector& FacingTarget)
 {
 	MotionWarpingComponent->AddOrUpdateWarpTargetFromLocation(FName("FacingTarget"), FacingTarget);
+	if (bDebug)
+	{
+		UE_LOG(LogElectricCastle, Log, TEXT("[%s] Updating facing target to: %s"), *GetName(), *FacingTarget.ToString())
+		DrawDebugSphere(GetWorld(), FacingTarget, 100.f, 12, FColor::Red, false, 2.f, 0, 1.f);
+	}
 }
 
 void AElectricCastleEnemyCharacter::Die()

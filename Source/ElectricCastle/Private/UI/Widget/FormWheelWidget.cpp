@@ -1,38 +1,54 @@
 // Copyright Alien Shores
 
 
-#include "UI/Widget/FormWheelWidget.h"
+#include "UI/Widget/Form/FormWheelWidget.h"
 
 #include "Components/Image.h"
 #include "Components/PanelWidget.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
+#include "Player/SelectionWheel/SelectionWheelManagerComponent.h"
 #include "UI/ViewModel/Form/MVVM_PlayerForm.h"
 #include "UI/ViewModel/Form/MVVM_PlayerForms.h"
 #include "UI/Widget/Form/FormWheelFormWidget.h"
 #include "UI/Widget/Layout/RadialLayout.h"
+#include "UI/Widget/Layout/RadialLayoutCursor.h"
 
 void UFormWheelWidget::Show_Implementation(const bool bAnimate)
 {
-	SetVisibility(ESlateVisibility::Visible);
+	if (USelectionWheelManagerComponent* SelectionWheelManager = ISelectionWheelManagerActorInterface::GetSelectionWheelManagerComponent(PlayerFormsViewModel))
+	{
+		SelectionWheelManager->AddListener(this);
+	}
 	if (URadialLayout* RadialLayout = GetFormsContainer())
 	{
 		RadialLayout->SetSelectedIndex(GetSelectedIndex());
-		GetCursorWidget()->SetRenderTransformAngle(RadialLayout->GetSelectedIndexAngle());
 	}
+	SetVisibility(ESlateVisibility::Visible);
 }
 
 void UFormWheelWidget::Hide_Implementation(const bool bAnimate)
 {
 	SetVisibility(ESlateVisibility::Hidden);
+	if (USelectionWheelManagerComponent* SelectionWheelManager = ISelectionWheelManagerActorInterface::GetSelectionWheelManagerComponent(PlayerFormsViewModel))
+	{
+		SelectionWheelManager->RemoveListener(this);
+	}
 }
 
 void UFormWheelWidget::BindViewModel_Implementation(UMVVM_PlayerForms* InPlayerFormsViewModel)
 {
 	PlayerFormsViewModel = InPlayerFormsViewModel;
 	CreateFormWidgets(InPlayerFormsViewModel);
-	PlayerFormsViewModel->OnVisibilityChange.AddUniqueDynamic(this, &UFormWheelWidget::OnFormWheelVisibilityChange);
 	PlayerFormsViewModel->OnAvailableFormsChangedDelegate.AddUniqueDynamic(this, &UFormWheelWidget::OnAvailableFormsChanged);
-	PlayerFormsViewModel->OnFormWheelHighlightChangeDelegate.AddUniqueDynamic(this, &UFormWheelWidget::OnFormWheelHighlightChange);
+}
+
+void UFormWheelWidget::NativeDestruct()
+{
+	Super::NativeDestruct();
+	if (USelectionWheelManagerComponent* SelectionWheelManager = ISelectionWheelManagerActorInterface::GetSelectionWheelManagerComponent(PlayerFormsViewModel))
+	{
+		SelectionWheelManager->RemoveListener(this);
+	}
 }
 
 int32 UFormWheelWidget::GetPlayerIndex() const
@@ -42,6 +58,23 @@ int32 UFormWheelWidget::GetPlayerIndex() const
 		return PlayerFormsViewModel->GetPlayerIndex();
 	}
 	return -1;
+}
+
+void UFormWheelWidget::OnSelectionWheelAngleChange_Implementation(const float Value)
+{
+	if (URadialLayout* RadialLayout = GetFormsContainer())
+	{
+		OnSelectionWheelAngleChange(RadialLayout, Value);
+	}
+	if (URadialLayoutCursor* LocalCursor = GetCursorWidget())
+	{
+		OnSelectionWheelAngleChange(LocalCursor, Value);
+	}
+}
+
+void UFormWheelWidget::OnSelectionWheelConfirm_Implementation()
+{
+	CommitSelection();
 }
 
 void UFormWheelWidget::CommitSelection_Implementation()
@@ -85,7 +118,7 @@ void UFormWheelWidget::CreateFormWidgets_Implementation(UMVVM_PlayerForms* Playe
 	}
 }
 
-UWidget* UFormWheelWidget::GetCursorWidget_Implementation() const
+URadialLayoutCursor* UFormWheelWidget::GetCursorWidget_Implementation() const
 {
 	UE_LOG(LogElectricCastle, Warning, TEXT("[%s] GetCursorWidget_Implementation is not implemented"), *GetName());
 	return nullptr;
@@ -101,30 +134,6 @@ int32 UFormWheelWidget::GetSelectedIndex() const
 		}
 	}
 	return 0;
-}
-
-void UFormWheelWidget::UpdateSelectionAngle_Implementation(const float Angle)
-{
-	if (URadialLayout* RadialLayout = GetFormsContainer())
-	{
-		RadialLayout->UpdateSelectionFromAngle(Angle);
-	}
-	if (UWidget* CursorWidget = GetCursorWidget())
-	{
-		CursorWidget->SetRenderTransformAngle(Angle);
-	}
-}
-
-void UFormWheelWidget::OnFormWheelVisibilityChange(const bool bIsVisible)
-{
-	if (bIsVisible)
-	{
-		Show();
-	}
-	else
-	{
-		Hide();
-	}
 }
 
 void UFormWheelWidget::OnAvailableFormsChanged(const FOnPlayerAvailableFormsChangedPayload& Payload)
@@ -149,9 +158,4 @@ void UFormWheelWidget::OnAvailableFormsChanged(const FOnPlayerAvailableFormsChan
 			Container->RemoveChild(FormWidget);
 		}
 	}
-}
-
-void UFormWheelWidget::OnFormWheelHighlightChange(const FOnPlayerFormWheelHighlightChangedPayload& Payload)
-{
-	UpdateSelectionAngle(Payload.InputAngle);
 }

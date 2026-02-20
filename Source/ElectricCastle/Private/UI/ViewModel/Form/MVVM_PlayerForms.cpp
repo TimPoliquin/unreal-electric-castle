@@ -19,7 +19,6 @@ void UMVVM_PlayerForms::InitializeDependencies(AElectricCastlePlayerState* InPla
 	if (AElectricCastlePlayerController* PlayerController = Cast<AElectricCastlePlayerController>(InPlayerState->GetPlayerController()))
 	{
 		PlayerController->OnFormWheelVisibilityChange.AddUniqueDynamic(this, &UMVVM_PlayerForms::OnFormWheelVisibilityChange);
-		PlayerController->OnFormWheelHighlightChange.AddUniqueDynamic(this, &UMVVM_PlayerForms::OnFormWheelHighlightChange);
 	}
 	if (UPlayerFormChangeComponent* FormChangeComponent = IFormChangeActorInterface::GetFormChangeComponent(InPlayerState))
 	{
@@ -72,12 +71,22 @@ TArray<UMVVM_PlayerForm*> UMVVM_PlayerForms::GetPlayerFormViewModels() const
 	return AllViewModels;
 }
 
+AElectricCastlePlayerController* UMVVM_PlayerForms::GetPlayerController() const
+{
+	return Cast<AElectricCastlePlayerController>(PlayerState->GetPlayerController());
+}
+
 void UMVVM_PlayerForms::ChangeForm(const FGameplayTag& FormTag)
 {
 	if (UPlayerFormChangeComponent* FormChangeComponent = IFormChangeActorInterface::GetFormChangeComponent(PlayerState))
 	{
 		FormChangeComponent->ChangeForm(FormTag);
 	}
+}
+
+USelectionWheelManagerComponent* UMVVM_PlayerForms::GetSelectionWheelManagerComponent_Implementation() const
+{
+	return GetSelectionWheelManagerComponent(GetPlayerController());
 }
 
 void UMVVM_PlayerForms::CreatePlayerFormViewModels(AElectricCastlePlayerState* InPlayerState)
@@ -116,15 +125,10 @@ UMVVM_PlayerForm* UMVVM_PlayerForms::CreatePlayerFormViewModel(
 
 void UMVVM_PlayerForms::OnFormWheelVisibilityChange(const FOnPlayerFormWheelVisibilityChangePayload& Payload)
 {
-	OnVisibilityChange.Broadcast(Payload.bIsVisible);
+	OnVisibilityChange.Broadcast(FPlayerFormsVisibilityChangePayload(this, Payload.bIsVisible));
 }
 
 void UMVVM_PlayerForms::OnAvailableFormsChanged(const FOnPlayerAvailableFormsChangedPayload& Payload)
 {
 	OnAvailableFormsChangedDelegate.Broadcast(Payload);
-}
-
-void UMVVM_PlayerForms::OnFormWheelHighlightChange(const FOnPlayerFormWheelHighlightChangedPayload& Payload)
-{
-	OnFormWheelHighlightChangeDelegate.Broadcast(Payload);
 }

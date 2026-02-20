@@ -3,6 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/PanelWidget.h"
+#include "Player/SelectionWheel/SelectionWheelSubscriberInterface.h"
 #include "RadialLayout.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnChildSelected, UWidget*, SelectededChild, UWidget*, PreviousSelectedChild);
@@ -11,7 +12,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnChildSelected, UWidget*, Selecte
  * A panel that arranges child widgets in a radial/circular layout
  */
 UCLASS()
-class ELECTRICCASTLE_API URadialLayout : public UPanelWidget
+class ELECTRICCASTLE_API URadialLayout : public UPanelWidget, public ISelectionWheelSubscriberInterface
 {
 	GENERATED_BODY()
 
@@ -44,8 +45,6 @@ public:
 	virtual void SynchronizeProperties() override;
 	virtual void ReleaseSlateResources(bool bReleaseChildren) override;
 
-	// Input handling (called from Slate widget)
-	FReply HandleKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent);
 	UFUNCTION(BlueprintCallable)
 	bool UpdateSelectionFromAngle(const float Angle);
 
@@ -54,6 +53,11 @@ public:
 	bool IsClockwise() const { return bClockwise; }
 	bool IsGamepadNavigationEnabled() const { return bEnableGamepadNavigation; }
 	bool IsDebugOverlayEnabled() const { return bDebugOverlay; }
+
+	/** Start IRadialInputListenerInterface **/
+	virtual void OnSelectionWheelAngleChange_Implementation(float Value) override;
+	virtual void OnSelectionWheelConfirm_Implementation() override;
+	/** End IRadialInputListenerInterface **/
 
 protected:
 	/** Radius of the radial layout */
@@ -75,6 +79,10 @@ protected:
 	/** Whether to rotate each child to match its angle on the circle */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Radial Layout")
 	bool bRotateChildrenToAngle = false;
+
+	/** Whether to automatically highlight the selected child. Child must implement HoverableWidget **/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Radial Layout")
+	bool bAutoHighlightSelection = true;
 
 	/** Enable debug overlay painting (radial lines, outward arrows, angle labels) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Radial Layout|Debug")

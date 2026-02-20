@@ -73,7 +73,30 @@ void SRadialLayout::OnArrangeChildren(const FGeometry& AllottedGeometry, FArrang
 			ChildPositionF.X = FMath::Cos(AngleRad) * EffectiveRadius;
 			ChildPositionF.Y = -FMath::Sin(AngleRad) * EffectiveRadius; // screen-space Y down
 
-			// Center the child at its position
+			// Push the child outward so its inner edge (closest point) sits at the radius,
+			// rather than its center. For a rectangle, the half-extent in a given direction
+			// is the distance from the center to the edge along that direction.
+			const float ax = FMath::Abs(FMath::Cos(AngleRad));
+			const float ay = FMath::Abs(FMath::Sin(AngleRad));
+			float HalfExtentOutward;
+			if (ax < KINDA_SMALL_NUMBER)
+			{
+				HalfExtentOutward = ChildDesiredSizeF.Y * 0.5f;
+			}
+			else if (ay < KINDA_SMALL_NUMBER)
+			{
+				HalfExtentOutward = ChildDesiredSizeF.X * 0.5f;
+			}
+			else
+			{
+				HalfExtentOutward = FMath::Min(
+					ChildDesiredSizeF.X * 0.5f / ax,
+					ChildDesiredSizeF.Y * 0.5f / ay
+				);
+			}
+			ChildPositionF += FVector2f(FMath::Cos(AngleRad), -FMath::Sin(AngleRad)) * HalfExtentOutward;
+
+			// Offset from center-relative to top-left (Slate convention)
 			ChildPositionF += LocalCenterF - (ChildDesiredSizeF * 0.5f);
 
 			// Rotate so the child's top faces outward:
@@ -120,9 +143,10 @@ FVector2D SRadialLayout::ComputeDesiredSize(float) const
 		}
 	}
 
-	// Size needs to fit the radius plus half the largest child on each side
+	// Children are positioned outside the ring: their inner edge is at Radius,
+	// so their outer edge is at Radius + MaxChildDimension from the center.
 	float MaxChildDimension = FMath::Max(MaxChildSize.X, MaxChildSize.Y);
-	float TotalSize = (Radius * 2.0f) + MaxChildDimension;
+	float TotalSize = (Radius + MaxChildDimension) * 2.0f;
 
 	return FVector2D(TotalSize, TotalSize);
 }
@@ -258,7 +282,7 @@ FVector2D SRadialLayout::GetChildPosition(int32 ChildIndex, int32 TotalChildren,
 	}
 
 	// Calculate base angle for this child
-	float AngleStep = 360.0f / TotalChildren;
+	const float AngleStep = 360.0f / TotalChildren;
 	// NEW: rotate base by 90 degrees to start at North
 	float Angle = StartAngle + 90.0f + (bClockwise
 		                                    ? -AngleStep * ChildIndex
@@ -268,10 +292,10 @@ FVector2D SRadialLayout::GetChildPosition(int32 ChildIndex, int32 TotalChildren,
 	Angle += Slot.AngleOffset;
 
 	// Convert to radians
-	float AngleRad = FMath::DegreesToRadians(Angle);
+	const float AngleRad = FMath::DegreesToRadians(Angle);
 
 	// Calculate effective radius with slot multiplier
-	float EffectiveRadius = Radius * Slot.RadiusMultiplier;
+	const float EffectiveRadius = Radius * Slot.RadiusMultiplier;
 
 	// Calculate position
 	// Note: Unreal's Y axis points down, so we negate the Y component
@@ -280,13 +304,4 @@ FVector2D SRadialLayout::GetChildPosition(int32 ChildIndex, int32 TotalChildren,
 	Position.Y = -FMath::Sin(AngleRad) * EffectiveRadius; // Negate for correct screen space
 
 	return Position;
-}
-
-FReply SRadialLayout::OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent)
-{
-	if (Owner.IsValid())
-	{
-		return Owner->HandleKeyDown(MyGeometry, InKeyEvent);
-	}
-	return FReply::Unhandled();
 }
