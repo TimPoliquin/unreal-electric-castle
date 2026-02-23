@@ -29,3 +29,10 @@ static FString NetModeToString(const ENetMode NetMode)
 	default: return TEXT("Unknown");
 	}
 }
+
+class FElectricCastleModule : public FDefaultGameModuleImpl
+{
+public:
+	virtual void StartupModule() override;
+	virtual void ShutdownModule() override;
+};

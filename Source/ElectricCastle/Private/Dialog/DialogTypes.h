@@ -10,7 +10,7 @@ struct ELECTRICCASTLE_API FDialogChoice
 	UPROPERTY(BlueprintReadWrite)
 	FGameplayTag ChoiceTag = FGameplayTag::EmptyTag;
 	UPROPERTY(BlueprintReadWrite)
-	FText Text;
+	FText Text = FText();
 	UPROPERTY(BlueprintReadWrite)
-	UTexture2D* Icon;
+	TObjectPtr<UTexture2D> Icon = nullptr;
 };

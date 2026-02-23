@@ -14,7 +14,8 @@ public class ElectricCastle : ModuleRules
 			"GameplayAbilities", "UMG", "Slate", "SlateCore",
 			"ModelViewViewModel", "CableComponent", "AIModule", "MotionWarping",
 			"LiveLinkInterface", "ApplicationCore", "CommonUI", "LevelSequence",
-			"MovieScene", "MovieSceneTracks"
+			"MovieScene", "MovieSceneTracks",
+			"MoviePlayer"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new[]
