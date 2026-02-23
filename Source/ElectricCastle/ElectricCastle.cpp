@@ -2,5 +2,18 @@
 
 #include "ElectricCastle.h"
 #include "Modules/ModuleManager.h"
+#include "System/Loading/LoadingScreenManager.h"
 
-IMPLEMENT_PRIMARY_GAME_MODULE(FDefaultGameModuleImpl, ElectricCastle, "ElectricCastle");
+void FElectricCastleModule::StartupModule()
+{
+	FDefaultGameModuleImpl::StartupModule();
+	FLoadingScreenManager::Initialize();
+}
+
+void FElectricCastleModule::ShutdownModule()
+{
+	FLoadingScreenManager::Shutdown();
+	FDefaultGameModuleImpl::ShutdownModule();
+}
+
+IMPLEMENT_PRIMARY_GAME_MODULE(FElectricCastleModule, ElectricCastle, "ElectricCastle");
