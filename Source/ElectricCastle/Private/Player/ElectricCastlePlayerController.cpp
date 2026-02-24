@@ -14,6 +14,8 @@
 #include "Camera/CameraComponent.h"
 #include "Character/ElectricCastlePlayerCharacter.h"
 #include "Character/EnemyInterface.h"
+#include "Cinematic/CinematicManager.h"
+#include "Cinematic/Context/CinematicContextHandle.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "GameFramework/Character.h"
@@ -88,6 +90,10 @@ void AElectricCastlePlayerController::BeginPlay()
 			DisableInput(this);
 			GameData->OnGameDataLoaded.AddUniqueDynamic(this, &AElectricCastlePlayerController::OnGameDataLoaded);
 		}
+	}
+	if (UCinematicManager* CinematicManager = UCinematicManager::Get(this))
+	{
+		CinematicManager->OnCinematicBegin.AddDynamic(this, &AElectricCastlePlayerController::OnCinematicBegin);
 	}
 }
 
@@ -576,6 +582,25 @@ void AElectricCastlePlayerController::OnEffectStateChanged_Aiming(const FGamepla
 void AElectricCastlePlayerController::HandleSelectionWheelStateChanged(const FSelectionWheelStateChangedPayload& Payload)
 {
 	SetupInputMode();
+}
+
+void AElectricCastlePlayerController::OnCinematicBegin(const FCinematicLifeCycleEventPayload& Payload)
+{
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
+		GetLocalPlayer()
+	))
+	{
+		if (Subsystem->HasMappingContext(AuraContext))
+		{
+			Payload.ContextHandle->AddRestoreLambda(Subsystem, AuraContext, [](UEnhancedInputLocalPlayerSubsystem* InSubsystem, const UInputMappingContext* InMappingContext)
+			{
+				InSubsystem->AddMappingContext(InMappingContext, 0);
+				UE_LOG(LogElectricCastle, Log, TEXT("[PlayerController] Restoring input mapping context"))
+			});
+			Subsystem->RemoveMappingContext(AuraContext);
+			UE_LOG(LogElectricCastle, Log, TEXT("[PlayerController] Removing input mapping context"));
+		}
+	}
 }
 
 bool AElectricCastlePlayerController::IsAiming()

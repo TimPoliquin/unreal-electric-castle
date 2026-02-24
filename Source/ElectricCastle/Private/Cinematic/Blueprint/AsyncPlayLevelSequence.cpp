@@ -1,12 +1,13 @@
 ﻿// Copyright Alien Shores
 
 
-#include "Cinematic/AsyncPlayLevelSequence.h"
+#include "Cinematic/Blueprint/AsyncPlayLevelSequence.h"
 
 #include "Engine/World.h"
 #include "LevelSequence.h"
 #include "LevelSequenceActor.h"
 #include "LevelSequencePlayer.h"
+#include "Cinematic/CinematicManager.h"
 
 UAsyncPlayLevelSequence* UAsyncPlayLevelSequence::AsyncPlayLevelSequence(
 	UObject* WorldContextObject,
@@ -68,6 +69,12 @@ void UAsyncPlayLevelSequence::Activate()
 		return;
 	}
 
+	// register to cinematic manager
+	if (UCinematicManager* CinematicManager = UCinematicManager::Get(World))
+	{
+		CinematicManager->RegisterSequencePlayer(SequencePlayer, Sequence);
+	}
+
 	// Bind to all events
 	SequencePlayer->OnPlay.AddDynamic(this, &UAsyncPlayLevelSequence::HandleOnPlay);
 	SequencePlayer->OnPause.AddDynamic(this, &UAsyncPlayLevelSequence::HandleOnPause);
@@ -76,6 +83,7 @@ void UAsyncPlayLevelSequence::Activate()
 
 	// Bind to camera cut events
 	SequencePlayer->OnCameraCut.AddDynamic(this, &UAsyncPlayLevelSequence::HandleOnCameraCut);
+
 
 	// Start playing the sequence
 	SequencePlayer->Play();

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "MovieSceneSequencePlaybackSettings.h"
 #include "Kismet/BlueprintAsyncActionBase.h"
 #include "AsyncPlayLevelSequence.generated.h"

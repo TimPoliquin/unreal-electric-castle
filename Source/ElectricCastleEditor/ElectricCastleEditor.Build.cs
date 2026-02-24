@@ -18,7 +18,8 @@ public class ElectricCastleEditor : ModuleRules
 				"AssetRegistry",
 				"HairStrandsCore", // groom support
 				"SkeletalMeshUtilitiesCommon",
-				"ToolMenus"
+				"ToolMenus",
+				"LevelSequence", "LevelSequenceEditor", "MovieSceneTools", "AssetTools", "GameplayTags", "ContentBrowser", "UMG"
 			}
 		);
 
@@ -30,7 +31,7 @@ public class ElectricCastleEditor : ModuleRules
 				"EditorFramework",
 				"UnrealEd",
 				"BlueprintGraph",
-				"KismetCompiler", "ElectricCastle"
+				"KismetCompiler", "ElectricCastle", "EditorScriptingUtilities", "Blutility", "UMGEditor"
 			}
 		);
 	}

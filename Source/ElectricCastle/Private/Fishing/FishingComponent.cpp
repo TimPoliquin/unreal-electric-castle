@@ -4,16 +4,15 @@
 #include "Fishing/FishingComponent.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystemComponent.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Fishing/FishInfo.h"
-#include "Game/ElectricCastleGameState.h"
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "Item/Equipment/FishingRodActor.h"
 #include "Player/PlayerEquipmentComponent.h"
 #include "Player/InventoryComponent.h"
 #include "Tags/ElectricCastleGameplayTags.h"
-
 
 UFishingComponent::UFishingComponent()
 {

@@ -7,6 +7,7 @@
 #include "InputActionValue.h"
 #include "InputEvents.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemInterface.h"
+#include "Cinematic/CinematicEvents.h"
 #include "GameFramework/PlayerController.h"
 #include "SelectionWheel/SelectionWheelManagerActorInterface.h"
 #include "Interaction/HighlightInterface.h"
@@ -242,6 +243,8 @@ private:
 	void OnEffectStateChanged_Aiming(FGameplayTag AimingTag, int TagCount);
 	UFUNCTION()
 	void HandleSelectionWheelStateChanged(const FSelectionWheelStateChangedPayload& Payload);
+	UFUNCTION()
+	void OnCinematicBegin(const FCinematicLifeCycleEventPayload& Payload);
 
 	bool IsAiming();
 

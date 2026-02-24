@@ -53,6 +53,20 @@ struct FElectricCastleGameplayTags
 	FGameplayTag Attributes_Progression_XP;
 	FGameplayTag Attributes_Progression_SpellPoints;
 
+	/** Cinematic Tags **/
+	FGameplayTag Cinematic;
+	FGameplayTag Cinematic_Type;
+	FGameplayTag Cinematic_Type_Ambient;
+	FGameplayTag Cinematic_Type_Cutscene;
+	FGameplayTag Cinematic_Type_Cutscene_Story;
+	FGameplayTag Cinematic_Type_Cutscene_Intro;
+	FGameplayTag Cinematic_Type_Cutscene_Outro;
+	FGameplayTag Cinematic_Type_Gameplay;
+	FGameplayTag Cinematic_Type_Gameplay_Dialog;
+	FGameplayTag Cinematic_Type_UI;
+
+	FGameplayTag Cinematic_Type_Dialog;
+
 	/** Input Tags **/
 	FGameplayTag InputTag;
 	FGameplayTag InputTag_LeftMouseButton;

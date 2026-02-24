@@ -107,6 +107,18 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FString("The tag representation the character's spell points")
 	);
 
+	// Cinematic Tags
+	Instance.Cinematic = TagManager.AddNativeGameplayTag(FName("Cinematic"), FString("Root cinematic tag"));
+	Instance.Cinematic_Type = TagManager.AddNativeGameplayTag(FName("Cinematic.Type"), FString("Root cinematic type tag"));
+	Instance.Cinematic_Type_Ambient = TagManager.AddNativeGameplayTag(FName("Cinematic.Type.Ambient"), FString("Ambient cinematic; player maintains control"));
+	Instance.Cinematic_Type_Cutscene = TagManager.AddNativeGameplayTag(FName("Cinematic.Type.Cutscene"), FString("Cutscene cinematic; Environment is fully controlled"));
+	Instance.Cinematic_Type_Cutscene_Story = TagManager.AddNativeGameplayTag(FName("Cinematic.Type.Cutscene.Story"), FString("Cutscene cinematic; Story content."));
+	Instance.Cinematic_Type_Cutscene_Intro = TagManager.AddNativeGameplayTag(FName("Cinematic.Type.Cutscene.Intro"), FString("Cutscene cinematic; Area introduction."));
+	Instance.Cinematic_Type_Cutscene_Outro = TagManager.AddNativeGameplayTag(FName("Cinematic.Type.Cutscene.Outro"), FString("Cutscene cinematic; Area exit."));
+	Instance.Cinematic_Type_Gameplay = TagManager.AddNativeGameplayTag(FName("Cinematic.Type.Gameplay"), FString("Gameplay cinematic"));
+	Instance.Cinematic_Type_Gameplay_Dialog = TagManager.AddNativeGameplayTag(FName("Cinematic.Type.Gameplay.Dialog"), FString("Gameplay cinematic featuring dialog sequences"));
+	Instance.Cinematic_Type_UI = TagManager.AddNativeGameplayTag(FName("Cinematic.Type.UI"), FString("Sequences used in menus/UI"));
+
 	// Input Tags
 	Instance.InputTag = TagManager.AddNativeGameplayTag(
 		FName("InputTag"),
