@@ -1,0 +1,37 @@
+﻿// Copyright Alien Shores
+
+
+#include "Actor/Cinematic/Actions/CinematicEventAction.h"
+
+#include "Cinematic/Context/CinematicContextHandle.h"
+#include "ElectricCastle/ElectricCastleLogChannels.h"
+
+bool UCinematicEventAction::ShouldExecute_Implementation(const UCinematicContextHandle* ContextHandle) const
+{
+	return ContextHandle->HasAnyTag(Triggers);
+}
+
+void UCinematicEventAction::Execute_Implementation(const UCinematicContextHandle* ContextHandle) const
+{
+	UE_LOG(LogElectricCastle, Error, TEXT("[%s] Must implement Execute_Implementation!"), *GetClass()->GetName());
+}
+
+void UCinematicEventAction::Initialize_Implementation(AActor* InOwner)
+{
+	Owner = InOwner;
+}
+
+AActor* UCinematicEventAction::GetOwner() const
+{
+	return Owner;
+}
+
+FString UCinematicEventAction::GetOwnerName() const
+{
+	return Owner ? Owner->GetName() : TEXT("NULLPTR");
+}
+
+UWorld* UCinematicEventAction::GetWorld() const
+{
+	return Owner ? Owner->GetWorld() : nullptr;
+}

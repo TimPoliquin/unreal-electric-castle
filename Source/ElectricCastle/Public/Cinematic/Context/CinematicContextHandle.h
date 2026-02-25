@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
+#include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "CinematicContextHandle.generated.h"
 
 class UCinematicContext;
@@ -49,6 +50,10 @@ void UCinematicContextHandle::AddRestoreLambda(TObject* Object, TValue CurrentVa
 		if (WeakObj.IsValid())
 		{
 			RestoreFunc(WeakObj.Get(), CurrentValue);
+		}
+		else
+		{
+			UE_LOG(LogElectricCastle, Error, TEXT("CinematicContextHandle] Unable to restore - Object is invalid!"));
 		}
 	});
 }

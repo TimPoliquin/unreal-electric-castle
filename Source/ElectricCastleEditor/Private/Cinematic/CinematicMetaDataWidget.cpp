@@ -48,9 +48,9 @@ UCinematicSequenceMetaData* UCinematicMetaDataWidget::GetOrCreateSequenceMetaDat
 	{
 		return nullptr;
 	}
-	if (CurrentLevelSequence->FindMetaData<UCinematicSequenceMetaData>())
+	if (UCinematicSequenceMetaData* Metadata = CurrentLevelSequence->FindMetaData<UCinematicSequenceMetaData>())
 	{
-		return CurrentLevelSequence->FindMetaData<UCinematicSequenceMetaData>();
+		return Metadata;
 	}
 	return NewObject<UCinematicSequenceMetaData>(CurrentLevelSequence);
 }

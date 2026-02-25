@@ -109,6 +109,17 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 
 	// Cinematic Tags
 	Instance.Cinematic = TagManager.AddNativeGameplayTag(FName("Cinematic"), FString("Root cinematic tag"));
+	Instance.Cinematic_Reaction_Trigger = TagManager.AddNativeGameplayTag(FName("Cinematic.Reaction.Trigger"), FString("Root tag for cinematic reaction triggers."));
+	Instance.Cinematic_Reaction_Trigger_HidePlayer = TagManager.AddNativeGameplayTag(FName("Cinematic.Reaction.Trigger.HidePlayer"), FString("When cinematic starts, hide the player"));
+	Instance.Cinematic_Reaction_Trigger_HideGameOverlay = TagManager.AddNativeGameplayTag(FName("Cinematic.Reaction.Trigger.HideGameOverlay"), FString("When cinematic starts, hide the game overlay"));
+	Instance.Cinematic_Reaction_Trigger_DisableStandardInput = TagManager.AddNativeGameplayTag(
+		FName("Cinematic.Reaction.Trigger.DisableStandardInput"),
+		FString("When cinematic starts, disable standard input")
+	);
+	Instance.Cinematic_Reaction_Trigger_HideNonCinematicActors = TagManager.AddNativeGameplayTag(
+		FName("Cinematic.Reaction.Trigger.HideNonCinematicActors"),
+		FString("When cinematic starts, hide all non-cinematic actors")
+	);
 	Instance.Cinematic_Type = TagManager.AddNativeGameplayTag(FName("Cinematic.Type"), FString("Root cinematic type tag"));
 	Instance.Cinematic_Type_Ambient = TagManager.AddNativeGameplayTag(FName("Cinematic.Type.Ambient"), FString("Ambient cinematic; player maintains control"));
 	Instance.Cinematic_Type_Cutscene = TagManager.AddNativeGameplayTag(FName("Cinematic.Type.Cutscene"), FString("Cutscene cinematic; Environment is fully controlled"));

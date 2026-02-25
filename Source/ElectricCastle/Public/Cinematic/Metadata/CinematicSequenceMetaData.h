@@ -14,7 +14,7 @@ class ELECTRICCASTLE_API UCinematicSequenceMetaData : public UObject
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Cinematic|Metadata", meta = (Categories = "Cinematic.Type"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Cinematic|Metadata", meta = (Categories = "Cinematic"))
 	FGameplayTagContainer TypeTags = FGameplayTagContainer::EmptyContainer;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Cinematic|Metadata")

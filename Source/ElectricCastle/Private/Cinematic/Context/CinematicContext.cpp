@@ -35,6 +35,7 @@ void UCinematicContext::SetLevelSequencePlayer(ULevelSequencePlayer* InPlayer)
 	}
 	InPlayer->OnPlay.AddDynamic(this, &UCinematicContext::HandleOnPlay);
 	InPlayer->OnFinished.AddDynamic(this, &UCinematicContext::HandleOnFinished);
+	InPlayer->OnStop.AddDynamic(this, &UCinematicContext::HandleOnFinished);
 }
 
 void UCinematicContext::SetLevelSequence(ULevelSequence* InSequence)

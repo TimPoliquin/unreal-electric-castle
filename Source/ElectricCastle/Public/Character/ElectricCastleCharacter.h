@@ -11,6 +11,7 @@
 #include "Interaction/CombatInterface.h"
 #include "ElectricCastleCharacter.generated.h"
 
+class UCinematicHandlerComponent;
 class UStatusEffectManagerComponent;
 class UDissolveEffectComponent;
 class UElectricCastleAttributeSet;
@@ -142,6 +143,8 @@ protected:
 	TObjectPtr<USocketManagerComponent> SocketManagerComponent;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UStatusEffectManagerComponent> StatusEffectManagerComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UCinematicHandlerComponent> CinematicHandlerComponent;
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Dissolve")
 	void Dissolve() const;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Combat")

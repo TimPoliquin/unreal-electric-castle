@@ -11,7 +11,8 @@
 
 UCinematicManager* UCinematicManager::Get(const UObject* WorldContextObject)
 {
-	return UGameplayStatics::GetGameInstance(WorldContextObject)->GetSubsystem<UCinematicManager>();
+	const UGameInstance* GameInstance = UGameplayStatics::GetGameInstance(WorldContextObject);
+	return GameInstance ? GameInstance->GetSubsystem<UCinematicManager>() : nullptr;
 }
 
 void UCinematicManager::RegisterSequencePlayer(ULevelSequencePlayer* LevelSequencePlayer, ULevelSequence* LevelSequence)
@@ -33,8 +34,6 @@ void UCinematicManager::HandleCinematicBegin(const FCinematicContextEventPayload
 
 void UCinematicManager::HandleCinematicEnd(const FCinematicContextEventPayload& EventPayload)
 {
-	// restore the state after the cinematic completes
-	EventPayload.CinematicContext->RestoreAll();
 	// notify listeners that the cinematic has finished
 	UCinematicContextHandle* Handle = NewObject<UCinematicContextHandle>(this);
 	Handle->Initialize(EventPayload.CinematicContext);
@@ -48,7 +47,7 @@ UCinematicContext* UCinematicManager::CreateCinematicContext(ULevelSequencePlaye
 	UCinematicContext* Context = NewObject<UCinematicContext>(this, UCinematicContext::StaticClass());
 	Context->SetLevelSequencePlayer(LevelSequencePlayer);
 	Context->SetLevelSequence(LevelSequence);
-	if (const UCinematicSequenceMetaData* Metadata = LevelSequence->GetAssetUserData<UCinematicSequenceMetaData>())
+	if (const UCinematicSequenceMetaData* Metadata = LevelSequence->FindMetaData<UCinematicSequenceMetaData>())
 	{
 		Context->SetCinematicTags(Metadata->TypeTags);
 	}

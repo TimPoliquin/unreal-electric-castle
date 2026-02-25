@@ -7,6 +7,7 @@
 #include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
 #include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
 #include "AbilitySystem/Passive/PassiveNiagaraComponent.h"
+#include "Actor/Cinematic/CinematicHandlerComponent.h"
 #include "Actor/Effect/DissolvableActor.h"
 #include "Actor/Effect/DissolveEffectComponent.h"
 #include "Actor/Mesh/SocketManagerComponent.h"
@@ -43,6 +44,7 @@ AElectricCastleCharacter::AElectricCastleCharacter()
 	ShockDebuffComponent->DebuffTag = FElectricCastleGameplayTags::Get().Effect_Debuff_Type_Shock;
 	SocketManagerComponent = CreateDefaultSubobject<USocketManagerComponent>(TEXT("Socket Manager Component"));
 	StatusEffectManagerComponent = CreateDefaultSubobject<UStatusEffectManagerComponent>(TEXT("Status Effect Manager Component"));
+	CinematicHandlerComponent = CreateDefaultSubobject<UCinematicHandlerComponent>(TEXT("Cinematic Handler Component"));
 	HaloOfProtectionNiagaraComponent = CreateDefaultSubobject<UPassiveNiagaraComponent>(
 		TEXT("Halo of Protection Niagara Component")
 	);

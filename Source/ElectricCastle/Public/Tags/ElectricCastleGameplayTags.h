@@ -55,6 +55,11 @@ struct FElectricCastleGameplayTags
 
 	/** Cinematic Tags **/
 	FGameplayTag Cinematic;
+	FGameplayTag Cinematic_Reaction_Trigger;
+	FGameplayTag Cinematic_Reaction_Trigger_HidePlayer;
+	FGameplayTag Cinematic_Reaction_Trigger_HideGameOverlay;
+	FGameplayTag Cinematic_Reaction_Trigger_DisableStandardInput;
+	FGameplayTag Cinematic_Reaction_Trigger_HideNonCinematicActors;
 	FGameplayTag Cinematic_Type;
 	FGameplayTag Cinematic_Type_Ambient;
 	FGameplayTag Cinematic_Type_Cutscene;
