@@ -8,17 +8,6 @@
 #include "Game/Subsystem/ElectricCastleLevelTransition.h"
 #include "Kismet/GameplayStatics.h"
 
-void UElectricCastleLevelManager::Initialize(FSubsystemCollectionBase& Collection)
-{
-	Super::Initialize(Collection);
-	UE_LOG(LogElectricCastle, Warning, TEXT("[%s] Initialize"), *GetName())
-}
-
-void UElectricCastleLevelManager::Deinitialize()
-{
-	Super::Deinitialize();
-}
-
 TSoftObjectPtr<UWorld> UElectricCastleLevelManager::GetMapFromMapDisplayName(const FString& MapDisplayName) const
 {
 	return GetMapConfigByDisplayName(MapDisplayName).Map;

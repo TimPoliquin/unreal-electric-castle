@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "ElectricCastleCharacter.h"
 #include "EnemyInterface.h"
-#include "Interaction/HighlightInterface.h"
 #include "AbilitySystem/AttributeChangeDelegates.h"
 #include "AbilitySystem/Data/CharacterClassInfo.h"
 #include "Actor/Spawn/TrackableInterface.h"
@@ -21,7 +20,7 @@ class AElectricCastleAIController;
 class UWidgetComponent;
 
 UCLASS(Abstract, Blueprintable)
-class ELECTRICCASTLE_API AElectricCastleEnemyCharacter : public AElectricCastleCharacter, public IHighlightInterface, public IEnemyInterface, public ITrackableInterface
+class ELECTRICCASTLE_API AElectricCastleEnemyCharacter : public AElectricCastleCharacter, public IEnemyInterface, public ITrackableInterface
 {
 	GENERATED_BODY()
 
@@ -35,16 +34,6 @@ public:
 	virtual void OnHitReactTagChanged(const FGameplayTag CallbackTag, int32 NewCount) override;
 	void SetTargetingRange(const float InTargetingRange) { TargetingRange = InTargetingRange; }
 	void SetMaxAIProcessingRange(const float InMaxProcessingRange) { MaxAIProcessingRange = InMaxProcessingRange; }
-	// IHighlightInterface
-	virtual void HighlightActor_Implementation() override;
-	virtual void UnHighlightActor_Implementation() override;
-	virtual void SetStencilDepth_Implementation(int32 StencilDepth) override;
-
-	virtual bool SetMoveToLocation_Implementation(FVector& OutDestination) override
-	{
-		// do not override destination
-		return false;
-	}
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void SetVisible(bool bInVisible);

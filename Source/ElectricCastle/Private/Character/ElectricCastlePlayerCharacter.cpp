@@ -28,6 +28,7 @@
 #include "GroomComponent.h"
 #include "LiveLinkInstance.h"
 #include "MetaHumanComponentUE.h"
+#include "Actor/Highlight/HighlightComponent.h"
 #include "Actor/MagicTether/TetherAbilityComponent.h"
 #include "Actor/Mesh/SocketManagerComponent.h"
 #include "Components/LODSyncComponent.h"
@@ -121,6 +122,7 @@ AElectricCastlePlayerCharacter::AElectricCastlePlayerCharacter()
 	RightHandConfig.SocketTag = FElectricCastleGameplayTags::Get().Combat_Socket_RightHand;
 	LeftHandConfig.SocketName = TEXT("Socket_Hand_Left");
 	RightHandConfig.SocketName = TEXT("Socket_Hand_Right");
+	HighlightComponent->SetCustomDepthStencilValue(CUSTOM_DEPTH_BLUE);
 }
 
 USceneComponent* AElectricCastlePlayerCharacter::GetMagicHandAttachComponent_Implementation(FName& AttachBoneName)

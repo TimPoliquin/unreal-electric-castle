@@ -4,24 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "Actor/POI/PointOfInterestActor.h"
-#include "Interaction/HighlightInterface.h"
 #include "LockPointOfInterest.generated.h"
 
 class ILockedInterface;
 class UUserWidget;
 
 UCLASS(Abstract, Blueprintable)
-class ELECTRICCASTLE_API ALockPointOfInterest : public APointOfInterestActor, public IHighlightInterface
+class ELECTRICCASTLE_API ALockPointOfInterest : public APointOfInterestActor
 {
 	GENERATED_BODY()
 
 public:
 	ALockPointOfInterest();
 
-	/** IHighlightInterface Start **/
-	virtual void HighlightActor_Implementation() override;
-	virtual void UnHighlightActor_Implementation() override;
-	/** IHighlightInterface End **/
 	/** ISaveGameInterface Start **/
 	virtual void PostLoad_Implementation() override;
 	/** ISaveGameInterface End **/
@@ -29,6 +24,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual bool IsPreconditionMet_Implementation(AActor* Player) const override;
+
 	UFUNCTION(BlueprintImplementableEvent)
 	void InitializeInteractionWidgetSettings(UUserWidget* InInteractionWidget, const FString& InInteractionText);
 	UFUNCTION(BlueprintImplementableEvent)

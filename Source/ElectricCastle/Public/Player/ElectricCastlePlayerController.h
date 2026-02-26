@@ -8,10 +8,9 @@
 #include "InputEvents.h"
 #include "InputMappingContext.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemInterface.h"
-#include "Cinematic/CinematicEvents.h"
+#include "Actor/Highlight/HighlightTypes.h"
 #include "GameFramework/PlayerController.h"
 #include "SelectionWheel/SelectionWheelManagerActorInterface.h"
-#include "Interaction/HighlightInterface.h"
 #include "SelectionWheel/SelectionWheelManagerComponent.h"
 #include "ElectricCastlePlayerController.generated.h"
 
@@ -52,80 +51,6 @@ enum class EAttackMessageType : uint8
 	Miss
 };
 
-USTRUCT()
-struct FHighlightContext
-{
-	GENERATED_BODY()
-
-	FHighlightContext()
-	{
-	}
-
-	UPROPERTY()
-	TObjectPtr<AActor> LastActor;
-	UPROPERTY()
-	TObjectPtr<AActor> CurrentActor;
-
-	void Track(AActor* Actor)
-	{
-		LastActor = CurrentActor;
-		if (IHighlightInterface::IsHighlightActor(Actor))
-		{
-			CurrentActor = Actor;
-		}
-		else
-		{
-			CurrentActor = nullptr;
-		}
-		if (IsDifferentPtr())
-		{
-			UnHighlightLast();
-			HighlightCurrent();
-		}
-	}
-
-	void Clear()
-	{
-		UnHighlightCurrent();
-		UnHighlightLast();
-		CurrentActor = nullptr;
-		LastActor = nullptr;
-	}
-
-	bool HasCurrentTarget() const
-	{
-		return CurrentActor != nullptr;
-	}
-
-	bool IsDifferentPtr() const
-	{
-		return LastActor != CurrentActor;
-	}
-
-	void HighlightCurrent() const
-	{
-		if (CurrentActor != nullptr)
-		{
-			IHighlightInterface::HighlightActor(CurrentActor);
-		}
-	}
-
-	void UnHighlightCurrent() const
-	{
-		if (CurrentActor != nullptr)
-		{
-			IHighlightInterface::UnHighlightActor(CurrentActor);
-		}
-	}
-
-	void UnHighlightLast() const
-	{
-		if (LastActor != nullptr)
-		{
-			IHighlightInterface::UnHighlightActor(LastActor);
-		}
-	}
-};
 
 /**
  * 

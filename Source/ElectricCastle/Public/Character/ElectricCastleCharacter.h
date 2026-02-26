@@ -7,6 +7,7 @@
 #include "AbilitySystemInterface.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemInterface.h"
 #include "Actor/CollidableInterface.h"
+#include "Actor/Highlight/HighlightActorInterface.h"
 #include "Actor/Mesh/SocketManagerActor.h"
 #include "Interaction/CombatInterface.h"
 #include "ElectricCastleCharacter.generated.h"
@@ -28,6 +29,7 @@ class UAbilitySystemComponent;
 UCLASS(Abstract, Blueprintable)
 class ELECTRICCASTLE_API AElectricCastleCharacter : public ACharacter, public IAbilitySystemInterface,
                                                     public IElectricCastleAbilitySystemInterface,
+                                                    public IHighlightActorInterface,
                                                     public ICombatInterface,
                                                     public ICollidableInterface,
                                                     public ISocketManagerActor
@@ -50,6 +52,11 @@ public:
 		class AController* EventInstigator,
 		AActor* DamageCauser
 	) override;
+
+	/** Start HighlightActorInterface **/
+	virtual UHighlightComponent* GetHighlightComponent_Implementation() const override;
+	virtual void GetHighlightMeshes_Implementation(TArray<UMeshComponent*>& OutHighlightMeshes) override;
+	/** End HighlightActorInterface **/
 
 	/** Combat Interface **/
 	virtual AActor* GetAvatar_Implementation() override;
@@ -146,6 +153,8 @@ protected:
 	TObjectPtr<UStatusEffectManagerComponent> StatusEffectManagerComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UCinematicHandlerComponent> CinematicHandlerComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UHighlightComponent> HighlightComponent;
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Dissolve")
 	void Dissolve() const;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Combat")

@@ -3,10 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Actor/Highlight/HighlightActorInterface.h"
 #include "Game/Save/SaveableInterface.h"
 #include "GameFramework/PlayerStart.h"
-#include "Interaction/HighlightInterface.h"
-#include "Interaction/SaveInterface.h"
 #include "Checkpoint.generated.h"
 
 class USphereComponent;
@@ -14,7 +13,7 @@ class USphereComponent;
  * 
  */
 UCLASS()
-class ELECTRICCASTLE_API ACheckpoint : public APlayerStart, public ISaveableInterface, public IHighlightInterface
+class ELECTRICCASTLE_API ACheckpoint : public APlayerStart, public ISaveableInterface, public IHighlightActorInterface
 {
 	GENERATED_BODY()
 
@@ -47,16 +46,17 @@ protected:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void PlayActivatedEffect();
 
-	/** Highlight Interface*/
-	virtual void HighlightActor_Implementation() override;
-	virtual void UnHighlightActor_Implementation() override;
-	virtual bool SetMoveToLocation_Implementation(FVector& OutDestination) override;
-	/** Highlight Interface End**/
+	/** HighlightActor Interface*/
+	virtual UHighlightComponent* GetHighlightComponent_Implementation() const override;
+	virtual void GetHighlightMeshes_Implementation(TArray<UMeshComponent*>& OutHighlightMeshes) override;
+	/** HighlightActor Interface End**/
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UStaticMeshComponent> CheckpointMesh;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<USphereComponent> Sphere;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
+	TObjectPtr<UHighlightComponent> HighlightComponent;
 	UPROPERTY(BlueprintReadWrite, SaveGame)
 	bool bHasBeenActivated = false;
 	UPROPERTY(BlueprintReadOnly)

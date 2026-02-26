@@ -3,6 +3,7 @@
 
 #include "Actor/POI/PointOfInterestActor.h"
 
+#include "Actor/Highlight/HighlightComponent.h"
 #include "ElectricCastle/ElectricCastle.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
@@ -33,6 +34,7 @@ APointOfInterestActor::APointOfInterestActor()
 	TArray<FName> ApplyToTags;
 	ApplyToTags.Add(TAG_PLAYER);
 	EffectComponent->SetDefaults(EffectConfigs, false, ApplyToTags);
+	HighlightComponent = CreateDefaultSubobject<UHighlightComponent>(TEXT("HighlightComponent"));
 }
 
 void APointOfInterestActor::BeginPlay()
@@ -54,6 +56,16 @@ void APointOfInterestActor::InitializeState()
 void APointOfInterestActor::PostLoad_Implementation()
 {
 	InitializeState();
+}
+
+UHighlightComponent* APointOfInterestActor::GetHighlightComponent_Implementation() const
+{
+	return HighlightComponent;
+}
+
+void APointOfInterestActor::GetHighlightMeshes_Implementation(TArray<UMeshComponent*>& OutHighlightMeshes)
+{
+	GetComponents<UMeshComponent>(OutHighlightMeshes);
 }
 
 void APointOfInterestActor::OnBeginOverlap(
@@ -153,6 +165,7 @@ void APointOfInterestActor::DisablePOI()
 {
 	bDisabled = true;
 	OverlapDetectionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	HighlightComponent->SetHighlightable(false);
 	if (POIWidget && POIWidget->GetWidget())
 	{
 		POIWidget->GetWidget()->SetVisibility(ESlateVisibility::Hidden);

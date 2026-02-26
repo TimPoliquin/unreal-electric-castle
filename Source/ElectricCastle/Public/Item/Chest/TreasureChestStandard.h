@@ -22,11 +22,6 @@ class ELECTRICCASTLE_API ATreasureChestStandard : public ATreasureChestActor
 public:
 	ATreasureChestStandard();
 
-	/** Start IHighlightInterface **/
-	virtual void HighlightActor_Implementation() override;
-	virtual void UnHighlightActor_Implementation() override;
-	/** End IHighlightInterface **/
-
 protected:
 	virtual void BeginPlay() override;
 
@@ -57,8 +52,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties")
 	TObjectPtr<UCurveFloat> OpenCurve;
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void InitializeHighlight();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void InitializeSwitchLockEffect();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)

@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
+#include "Actor/Highlight/HighlightActorInterface.h"
 #include "GameFramework/Actor.h"
-#include "Interaction/HighlightInterface.h"
 #include "ItemPickupBase.generated.h"
 
 class UCapsuleComponent;
@@ -14,7 +14,7 @@ class UApplyGameplayEffectComponent;
 class USinusoidalMovementComponent;
 
 UCLASS()
-class ELECTRICCASTLE_API AItemPickupBase : public AActor, public IHighlightInterface
+class ELECTRICCASTLE_API AItemPickupBase : public AActor, public IHighlightActorInterface
 {
 	GENERATED_BODY()
 
@@ -22,11 +22,10 @@ public:
 	// Sets default values for this actor's properties
 	AItemPickupBase();
 
-	/** Start IHighlightInterface **/
-	virtual void HighlightActor_Implementation() override;
-	virtual void UnHighlightActor_Implementation() override;
-	virtual bool SetMoveToLocation_Implementation(FVector& OutDestination) override;
-	/** End IHighlightInterface **/
+	/** Start IHighlightActorInterface **/
+	virtual UHighlightComponent* GetHighlightComponent_Implementation() const override;
+	virtual void GetHighlightMeshes_Implementation(TArray<UMeshComponent*>& OutHighlightMeshes) override;
+	/** End IHighlightActorInterface **/
 
 protected:
 	// Called when the game starts or when spawned
@@ -38,6 +37,9 @@ protected:
 	TObjectPtr<UStaticMeshComponent> MeshComponent;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<USinusoidalMovementComponent> SinusoidalMovementComponent;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Components")
+	TObjectPtr<UHighlightComponent> HighlightComponent;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties")
 	FGameplayTag ItemType = FGameplayTag::EmptyTag;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties|Spawn")

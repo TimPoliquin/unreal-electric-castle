@@ -67,8 +67,6 @@ class ELECTRICCASTLE_API UElectricCastleLevelManager : public UGameInstanceSubsy
 public:
 	static UElectricCastleLevelManager* Get(const UObject* WorldContextObject);
 
-	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
-	virtual void Deinitialize() override;
 	TSoftObjectPtr<UWorld> GetMapFromMapDisplayName(const FString& MapDisplayName) const;
 	FString GetMapNameFromMapAssetName(const FString& MapAssetName) const;
 	void LoadMap(const UObject* WorldContextObject, const FString& MapAssetName) const;
