@@ -21,13 +21,12 @@ protected:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void GetActorsToHide(TArray<AActor*>& OutActors) const;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool bShouldRelocate = false;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(EditCondition="bShouldRelocate", EditConditionHides))
-	FVector MoveToLocation = FVector::ZeroVector;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties")
 	bool bHideChildActors = false;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties")
+	bool bApplyRelocation = false;
 
 private:
 	void HideActor(AActor* Actor, const UCinematicContextHandle* ContextHandle) const;
+	void RelocateActor(AActor* Actor, const UCinematicContextHandle* ContextHandle) const;
 };

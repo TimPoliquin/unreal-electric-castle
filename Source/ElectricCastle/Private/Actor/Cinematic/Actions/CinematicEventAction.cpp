@@ -35,3 +35,16 @@ UWorld* UCinematicEventAction::GetWorld() const
 {
 	return Owner ? Owner->GetWorld() : nullptr;
 }
+
+AController* UCinematicEventAction::GetOwnerController() const
+{
+	if (GetOwner() && GetOwner()->IsA<AController>())
+	{
+		return Cast<AController>(GetOwner());
+	}
+	if (const APawn* Pawn = Cast<APawn>(GetOwner()))
+	{
+		return Pawn->GetController();
+	}
+	return nullptr;
+}

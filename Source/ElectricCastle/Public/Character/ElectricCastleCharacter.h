@@ -114,6 +114,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void SetActorTickEnabled(bool bEnabled) override;
 
 	virtual void InitializeAbilityActorInfo()
 	{

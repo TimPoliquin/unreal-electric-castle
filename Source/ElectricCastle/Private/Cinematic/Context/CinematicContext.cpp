@@ -4,7 +4,10 @@
 #include "Cinematic/Context/CinematicContext.h"
 
 #include "LevelSequencePlayer.h"
-#include "Cinematic/Blueprint/AsyncPlayLevelSequence.h"
+#include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
+#include "Actor/Cinematic/CinematicRelocationTarget.h"
+#include "Cinematic/Metadata/CinematicSequenceMetaData.h"
+#include "Kismet/GameplayStatics.h"
 
 ULevelSequencePlayer* UCinematicContext::GetLevelSequencePlayer() const
 {
@@ -16,9 +19,53 @@ ULevelSequence* UCinematicContext::GetLevelSequence() const
 	return LevelSequence.Get();
 }
 
-FGameplayTagContainer UCinematicContext::GetCinematicTagContainer() const
+bool UCinematicContext::HasTag(const FGameplayTag& Tag) const
 {
-	return CinematicTags;
+	if (!Metadata.IsValid())
+	{
+		return false;
+	}
+	return Metadata->HasTypeTag(Tag) || Metadata->HasReactionTriggerTag(Tag);
+}
+
+bool UCinematicContext::HasAnyTag(const FGameplayTagContainer& Tags) const
+{
+	if (!Metadata.IsValid())
+	{
+		return false;
+	}
+	return Metadata->HasAnyTypeTags(Tags) || Metadata->HasAnyReactionTriggerTags(Tags);
+}
+
+bool UCinematicContext::ShouldRelocatePlayer() const
+{
+	if (!Metadata.IsValid())
+	{
+		return false;
+	}
+	return Metadata->GetPlayerRelocationMode() == ECinematicPlayerRelocationMode::Level || Metadata->GetPlayerRelocationMode() == ECinematicPlayerRelocationMode::CinematicOverride;
+}
+
+FVector UCinematicContext::GetPlayerRelocationLocation() const
+{
+	if (!Metadata.IsValid())
+	{
+		return FVector::ZeroVector;
+	}
+	if (Metadata->GetPlayerRelocationMode() == ECinematicPlayerRelocationMode::CinematicOverride)
+	{
+		return Metadata->GetPlayerRelocationLocation();
+	}
+	if (LevelSequencePlayer.IsValid())
+	{
+		TArray<AActor*> LevelRelocationTargets;
+		UGameplayStatics::GetAllActorsOfClass(LevelSequencePlayer.Get(), ACinematicRelocationTarget::StaticClass(), LevelRelocationTargets);
+		if (LevelRelocationTargets.Num() > 0)
+		{
+			return LevelRelocationTargets[0]->GetActorLocation();
+		}
+	}
+	return FVector::ZeroVector;
 }
 
 void UCinematicContext::RestoreAll()
@@ -41,11 +88,7 @@ void UCinematicContext::SetLevelSequencePlayer(ULevelSequencePlayer* InPlayer)
 void UCinematicContext::SetLevelSequence(ULevelSequence* InSequence)
 {
 	LevelSequence = InSequence;
-}
-
-void UCinematicContext::SetCinematicTags(const FGameplayTagContainer& InCinematicTags)
-{
-	CinematicTags = InCinematicTags;
+	Metadata = LevelSequence.IsValid() ? LevelSequence->FindMetaData<UCinematicSequenceMetaData>() : nullptr;
 }
 
 void UCinematicContext::AddRestoreFunction(const TFunction<void()>& InRestoreFunc)

@@ -37,6 +37,8 @@ class ELECTRICCASTLE_API AElectricCastleHUD : public AHUD
 	GENERATED_BODY()
 
 public:
+	AElectricCastleHUD();
+
 	void Initialize();
 
 	UAttributeMenuWidgetController* GetAttributeMenuWidgetController() const;
@@ -88,6 +90,8 @@ protected:
 	TSubclassOf<UOverlayWidget> OverlayWidgetClass;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UOverlayWidget> OverlayWidget;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UCinematicHandlerComponent> CinematicHandlerComponent;
 
 	/** Menu Widget **/
 	UPROPERTY(EditDefaultsOnly, Category = "Menu")

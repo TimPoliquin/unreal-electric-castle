@@ -23,20 +23,12 @@ void UCinematicHandlerComponent::BeginPlay()
 	if (UCinematicManager* CinematicManager = UCinematicManager::Get(GetOwner()))
 	{
 		CinematicManager->OnCinematicBegin.AddUniqueDynamic(this, &UCinematicHandlerComponent::OnCinematicBegin);
-		CinematicManager->OnCinematicEnd.AddUniqueDynamic(this, &UCinematicHandlerComponent::OnCinematicEnd);
 	}
 	else
 	{
 		UE_LOG(LogElectricCastle, Error, TEXT("[%s] No CinematicManager found!"), *GetName())
 	}
-	for (UCinematicEventAction* Action : CinematicBeginActions)
-	{
-		if (IsValid(Action))
-		{
-			Action->Initialize(GetOwner());
-		}
-	}
-	for (UCinematicEventAction* Action : CinematicEndActions)
+	for (UCinematicEventAction* Action : CinematicActions)
 	{
 		if (IsValid(Action))
 		{
@@ -54,9 +46,17 @@ void UCinematicHandlerComponent::BeginDestroy()
 	if (UCinematicManager* CinematicManager = UCinematicManager::Get(GetOwner()))
 	{
 		CinematicManager->OnCinematicBegin.RemoveDynamic(this, &UCinematicHandlerComponent::OnCinematicBegin);
-		CinematicManager->OnCinematicEnd.RemoveDynamic(this, &UCinematicHandlerComponent::OnCinematicEnd);
 	}
 	Super::BeginDestroy();
+}
+
+void UCinematicHandlerComponent::AddCinematicAction(UCinematicEventAction* Action)
+{
+	if (IsValid(Action))
+	{
+		Action->Initialize(GetOwner());
+		CinematicActions.Add(Action);
+	}
 }
 
 UCinematicHandlerComponent* UCinematicHandlerComponent::GetCinematicHandlerComponent_Implementation()
@@ -68,31 +68,21 @@ void UCinematicHandlerComponent::OnCinematicBegin(const FCinematicLifeCycleEvent
 {
 	if (bDebug)
 	{
-		UE_LOG(LogElectricCastle, Log, TEXT("[%s:%s] OnCinematicBegin - Executing %d Actions"), *GetOwner()->GetName(), *GetName(), CinematicBeginActions.Num())
+		UE_LOG(LogElectricCastle, Log, TEXT("[%s:%s] OnCinematicBegin - Executing %d Actions"), *GetOwner()->GetName(), *GetName(), CinematicActions.Num())
 	}
-	for (const UCinematicEventAction* Action : CinematicBeginActions)
+	for (UCinematicEventAction* Action : CinematicActions)
 	{
-		if (IsValid(Action) && Action->ShouldExecute(Payload.ContextHandle))
+		if (!IsValid(Action))
+		{
+			return;
+		}
+		Action->SetDebugEnabled(bDebug || Action->IsDebugEnabled());
+		if (Action->ShouldExecute(Payload.ContextHandle))
 		{
 			if (bDebug)
 			{
 				UE_LOG(LogElectricCastle, Log, TEXT("[%s] Executing action %s"), *GetName(), *Action->GetClass()->GetName())
 			}
-			Action->Execute(Payload.ContextHandle);
-		}
-	}
-}
-
-void UCinematicHandlerComponent::OnCinematicEnd(const FCinematicLifeCycleEventPayload& Payload)
-{
-	if (bDebug)
-	{
-		UE_LOG(LogElectricCastle, Log, TEXT("[%s:%s] OnCinematicEnd - Executing %d Actions"), *GetOwner()->GetName(), *GetName(), CinematicEndActions.Num())
-	}
-	for (const UCinematicEventAction* Action : CinematicEndActions)
-	{
-		if (IsValid(Action) && Action->ShouldExecute(Payload.ContextHandle))
-		{
 			Action->Execute(Payload.ContextHandle);
 		}
 	}

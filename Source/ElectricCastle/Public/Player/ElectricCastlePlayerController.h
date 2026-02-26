@@ -6,6 +6,7 @@
 #include "ActiveGameplayEffectHandle.h"
 #include "InputActionValue.h"
 #include "InputEvents.h"
+#include "InputMappingContext.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemInterface.h"
 #include "Cinematic/CinematicEvents.h"
 #include "GameFramework/PlayerController.h"
@@ -14,6 +15,7 @@
 #include "SelectionWheel/SelectionWheelManagerComponent.h"
 #include "ElectricCastlePlayerController.generated.h"
 
+class UCinematicHandlerComponent;
 class USelectionWheelManagerComponent;
 class UGameplayEffect;
 enum class ECommonInputType : uint8;
@@ -195,6 +197,8 @@ protected:
 	TObjectPtr<UInputAction> FormChangeAction;
 	UPROPERTY()
 	TObjectPtr<UElectricCastleAbilitySystemComponent> AbilitySystemComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
+	TObjectPtr<UCinematicHandlerComponent> CinematicHandlerComponent;
 	// UI
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
 	TObjectPtr<USelectionWheelManagerComponent> SelectionWheelManager;
@@ -243,8 +247,6 @@ private:
 	void OnEffectStateChanged_Aiming(FGameplayTag AimingTag, int TagCount);
 	UFUNCTION()
 	void HandleSelectionWheelStateChanged(const FSelectionWheelStateChangedPayload& Payload);
-	UFUNCTION()
-	void OnCinematicBegin(const FCinematicLifeCycleEventPayload& Payload);
 
 	bool IsAiming();
 

@@ -3,6 +3,7 @@
 
 #include "UI/HUD/ElectricCastleHUD.h"
 
+#include "Actor/Cinematic/CinematicHandlerComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Game/ElectricCastleGameState.h"
@@ -19,6 +20,11 @@
 #include "UI/WidgetController/AttributeMenuWidgetController.h"
 #include "UI/WidgetController/SpellMenuWidgetController.h"
 
+
+AElectricCastleHUD::AElectricCastleHUD()
+{
+	CinematicHandlerComponent = CreateDefaultSubobject<UCinematicHandlerComponent>(TEXT("CinematicHandlerComponent"));
+}
 
 void AElectricCastleHUD::BeginPlay()
 {

@@ -28,8 +28,8 @@ UCinematicSequenceMetaData* UCinematicMetaDataLibrary::GetMetaDataFromFirstSelec
 			if (Meta)
 			{
 				UE_LOG(LogTemp, Log, TEXT("  Tags: %s | Description: %s"),
-				       *Meta->TypeTags.ToString(),
-				       *Meta->Description);
+				       *Meta->GetTypeTags().ToString(),
+				       *Meta->GetDescription());
 			}
 
 			return Meta;
@@ -50,9 +50,7 @@ void UCinematicMetaDataLibrary::ApplyMetaDataToSelected(ULevelSequence* LevelSeq
 
 	if (UCinematicSequenceMetaData* Meta = LevelSequence ? LevelSequence->FindOrAddMetaData<UCinematicSequenceMetaData>() : nullptr)
 	{
-		Meta->TypeTags = SourceMetaData->TypeTags;
-		Meta->Description = SourceMetaData->Description;
-		Meta->bSkippable = SourceMetaData->bSkippable;
+		Meta->CopyFrom(SourceMetaData);
 		LevelSequence->MarkPackageDirty();
 	}
 }
@@ -61,9 +59,7 @@ void UCinematicMetaDataLibrary::CopyMetaData(UCinematicSequenceMetaData* SourceM
 {
 	if (IsValid(SourceMetaData) && IsValid(TargetMetaData))
 	{
-		TargetMetaData->TypeTags = SourceMetaData->TypeTags;
-		TargetMetaData->Description = SourceMetaData->Description;
-		TargetMetaData->bSkippable = SourceMetaData->bSkippable;
+		TargetMetaData->CopyFrom(SourceMetaData);
 	}
 }
 

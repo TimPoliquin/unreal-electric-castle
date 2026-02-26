@@ -47,10 +47,6 @@ UCinematicContext* UCinematicManager::CreateCinematicContext(ULevelSequencePlaye
 	UCinematicContext* Context = NewObject<UCinematicContext>(this, UCinematicContext::StaticClass());
 	Context->SetLevelSequencePlayer(LevelSequencePlayer);
 	Context->SetLevelSequence(LevelSequence);
-	if (const UCinematicSequenceMetaData* Metadata = LevelSequence->FindMetaData<UCinematicSequenceMetaData>())
-	{
-		Context->SetCinematicTags(Metadata->TypeTags);
-	}
 	Context->OnCinematicBegin.AddDynamic(this, &UCinematicManager::HandleCinematicBegin);
 	Context->OnCinematicEnd.AddDynamic(this, &UCinematicManager::HandleCinematicEnd);
 	return Context;

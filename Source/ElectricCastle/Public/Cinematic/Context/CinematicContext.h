@@ -8,6 +8,8 @@
 #include "UObject/Object.h"
 #include "CinematicContext.generated.h"
 
+class UCinematicSequenceMetaData;
+
 USTRUCT()
 struct FCinematicRestoreStack
 {
@@ -39,12 +41,16 @@ class ELECTRICCASTLE_API UCinematicContext : public UObject
 public:
 	ULevelSequencePlayer* GetLevelSequencePlayer() const;
 	ULevelSequence* GetLevelSequence() const;
-	FGameplayTagContainer GetCinematicTagContainer() const;
+	bool HasTag(const FGameplayTag& Tag) const;
+	bool HasAnyTag(const FGameplayTagContainer& Tags) const;
+	bool ShouldRelocatePlayer() const;
+	FVector GetPlayerRelocationLocation() const;
+
+
 	void RestoreAll();
 
 	void SetLevelSequencePlayer(ULevelSequencePlayer* InPlayer);
 	void SetLevelSequence(ULevelSequence* InSequence);
-	void SetCinematicTags(const FGameplayTagContainer& InCinematicTags);
 	void AddRestoreFunction(const TFunction<void()>& InRestoreFunc);
 
 	FCinematicContextEventSignature OnCinematicBegin;
@@ -56,7 +62,7 @@ protected:
 	UPROPERTY()
 	TWeakObjectPtr<ULevelSequence> LevelSequence;
 	UPROPERTY()
-	FGameplayTagContainer CinematicTags = FGameplayTagContainer::EmptyContainer;
+	TWeakObjectPtr<UCinematicSequenceMetaData> Metadata;
 	UPROPERTY()
 	FCinematicRestoreStack RestoreStack;
 

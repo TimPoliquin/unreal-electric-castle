@@ -22,40 +22,6 @@ TArray<ULevelSequence*> UCinematicMetaDataUtility::GetSelectedLevelSequences() c
 	return Result;
 }
 
-void UCinematicMetaDataUtility::SetCinematicMetaData(
-	const FGameplayTagContainer& TypeTags,
-	FString Description,
-	const bool bSkippable)
-{
-	TArray<ULevelSequence*> Sequences = GetSelectedLevelSequences();
-
-	if (Sequences.IsEmpty())
-	{
-		FMessageDialog::Open(EAppMsgType::Ok,
-		                     FText::FromString(TEXT("No Level Sequences selected. Select one or more in the Content Browser first.")));
-		return;
-	}
-
-	for (ULevelSequence* Seq : Sequences)
-	{
-		UCinematicSequenceMetaData* Meta = Seq->FindOrAddMetaData<UCinematicSequenceMetaData>();
-
-		Meta->TypeTags = TypeTags;
-		Meta->Description = Description;
-		Meta->bSkippable = bSkippable;
-
-		Seq->MarkPackageDirty();
-
-		UE_LOG(LogTemp, Log, TEXT("Set metadata on: %s | Tags: %s"),
-		       *Seq->GetName(),
-		       *TypeTags.ToString());
-	}
-
-	const FString Msg = FString::Printf(
-		TEXT("Metadata applied to %d sequence(s). Don't forget to save."), Sequences.Num());
-	FMessageDialog::Open(EAppMsgType::Ok, FText::FromString(Msg));
-}
-
 void UCinematicMetaDataUtility::LogCinematicMetaData()
 {
 	TArray<ULevelSequence*> Sequences = GetSelectedLevelSequences();
@@ -68,15 +34,14 @@ void UCinematicMetaDataUtility::LogCinematicMetaData()
 
 	for (const ULevelSequence* Seq : Sequences)
 	{
-		const UCinematicSequenceMetaData* Meta = Seq->FindMetaData<UCinematicSequenceMetaData>();
-		if (Meta)
+		if (const UCinematicSequenceMetaData* Meta = Seq->FindMetaData<UCinematicSequenceMetaData>())
 		{
 			UE_LOG(LogTemp, Log,
 			       TEXT("[%s] Tags: %s | Description: %s | Skippable: %s"),
 			       *Seq->GetName(),
-			       *Meta->TypeTags.ToString(),
-			       *Meta->Description,
-			       Meta->bSkippable ? TEXT("Yes") : TEXT("No"));
+			       *Meta->GetTypeTags().ToString(),
+			       *Meta->GetDescription(),
+			       Meta->IsSkippable() ? TEXT("Yes") : TEXT("No"));
 		}
 		else
 		{

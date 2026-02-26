@@ -16,9 +16,6 @@ public:
 	/** Returns true if the underlying context is still valid */
 	bool IsValid() const { return Context.IsValid(); }
 
-	/** Access cinematic tags safely */
-	FGameplayTagContainer GetCinematicTags() const;
-
 	/** Add a restore function to the underlying context */
 	void AddRestoreFunction(const TFunction<void()>& Func) const;
 	/** Set and restore **/
@@ -29,8 +26,9 @@ public:
 	bool HasTag(const FGameplayTag& Tag) const;
 	/** convenience tag check */
 	bool HasAnyTag(const FGameplayTagContainer& Tags) const;
-	/** convenience tag check */
-	bool HasNoneTag(const FGameplayTagContainer& Tags) const;
+
+	bool ShouldRelocate() const;
+	FVector GetRelocateLocation() const;
 
 	/** Called by CinematicManager when creating the handle */
 	void Initialize(UCinematicContext* InContext);

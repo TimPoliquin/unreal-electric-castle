@@ -30,12 +30,11 @@ void UHideActorsCinematicEventAction::Execute_Implementation(const UCinematicCon
 			}
 			continue;
 		}
-		if (bShouldRelocate)
-		{
-			ContextHandle->AddRestoreLambda(Actor, Actor->GetActorLocation(), [](AActor* Actor, const FVector& InValue) { Actor->SetActorLocation(InValue); });
-			Actor->SetActorLocation(MoveToLocation, false);
-		}
 		HideActor(Actor, ContextHandle);
+		if (bApplyRelocation && ContextHandle->ShouldRelocate())
+		{
+			RelocateActor(Actor, ContextHandle);
+		}
 		if (bHideChildActors)
 		{
 			Actor->GetAttachedActors(ChildActors, true, true);
@@ -66,5 +65,18 @@ void UHideActorsCinematicEventAction::HideActor(AActor* Actor, const UCinematicC
 	else if (bDebug)
 	{
 		UE_LOG(LogElectricCastle, Warning, TEXT("[%s] Actor %s is already hidden"), *GetClass()->GetName(), Actor ? *Actor->GetName() : *FString("NULLPTR"));
+	}
+}
+
+void UHideActorsCinematicEventAction::RelocateActor(AActor* Actor, const UCinematicContextHandle* ContextHandle) const
+{
+	if (IsValid(Actor))
+	{
+		ContextHandle->AddRestoreLambda(Actor, Actor->GetActorLocation(), [](AActor* Actor, const FVector& InValue) { Actor->SetActorLocation(InValue); });
+		Actor->SetActorLocation(ContextHandle->GetRelocateLocation(), false);
+	}
+	else if (bDebug)
+	{
+		UE_LOG(LogElectricCastle, Warning, TEXT("[%s] Actor %s is invalid"), *GetClass()->GetName(), Actor ? *Actor->GetName() : *FString("NULLPTR"));
 	}
 }

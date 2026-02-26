@@ -17,15 +17,6 @@ class ELECTRICCASTLEEDITOR_API UCinematicMetaDataUtility : public UAssetActionUt
 	GENERATED_BODY()
 
 public:
-	// Appears as a right-click action when one or more Level Sequences are selected.
-	// Opens a dialog to set tags on all selected sequences.
-	UFUNCTION(CallInEditor, Category = "Cinematic Metadata")
-	void SetCinematicMetaData(
-		const FGameplayTagContainer& TypeTags,
-		FString Description,
-		bool bSkippable = true
-	);
-
 	// Prints the current metadata of all selected sequences to the Output Log.
 	UFUNCTION(CallInEditor, Category = "Cinematic Metadata")
 	void LogCinematicMetaData();

@@ -21,6 +21,14 @@ enum class ECinematicLifeCycle : uint8
 	Count
 };
 
+UENUM(BlueprintType)
+enum class ECinematicPlayerRelocationMode : uint8
+{
+	None,
+	Level,
+	CinematicOverride,
+	Count
+};
 
 USTRUCT(BlueprintType)
 struct ELECTRICCASTLE_API FCinematicLifeCycleEventPayload

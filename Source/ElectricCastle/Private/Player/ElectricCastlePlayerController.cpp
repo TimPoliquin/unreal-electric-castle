@@ -11,6 +11,7 @@
 #include "ElectricCastle/ElectricCastle.h"
 #include "CommonInputSubsystem.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
+#include "Actor/Cinematic/CinematicHandlerComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Character/ElectricCastlePlayerCharacter.h"
 #include "Character/EnemyInterface.h"
@@ -33,6 +34,7 @@ AElectricCastlePlayerController::AElectricCastlePlayerController()
 {
 	bReplicates = true;
 	SelectionWheelManager = CreateDefaultSubobject<USelectionWheelManagerComponent>(TEXT("SelectionWheelManager"));
+	CinematicHandlerComponent = CreateDefaultSubobject<UCinematicHandlerComponent>(TEXT("CinematicHandlerComponent"));
 }
 
 void AElectricCastlePlayerController::BeginPlay()
@@ -90,10 +92,6 @@ void AElectricCastlePlayerController::BeginPlay()
 			DisableInput(this);
 			GameData->OnGameDataLoaded.AddUniqueDynamic(this, &AElectricCastlePlayerController::OnGameDataLoaded);
 		}
-	}
-	if (UCinematicManager* CinematicManager = UCinematicManager::Get(this))
-	{
-		CinematicManager->OnCinematicBegin.AddDynamic(this, &AElectricCastlePlayerController::OnCinematicBegin);
 	}
 }
 
@@ -582,25 +580,6 @@ void AElectricCastlePlayerController::OnEffectStateChanged_Aiming(const FGamepla
 void AElectricCastlePlayerController::HandleSelectionWheelStateChanged(const FSelectionWheelStateChangedPayload& Payload)
 {
 	SetupInputMode();
-}
-
-void AElectricCastlePlayerController::OnCinematicBegin(const FCinematicLifeCycleEventPayload& Payload)
-{
-	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
-		GetLocalPlayer()
-	))
-	{
-		if (Subsystem->HasMappingContext(AuraContext))
-		{
-			Payload.ContextHandle->AddRestoreLambda(Subsystem, AuraContext, [](UEnhancedInputLocalPlayerSubsystem* InSubsystem, const UInputMappingContext* InMappingContext)
-			{
-				InSubsystem->AddMappingContext(InMappingContext, 0);
-				UE_LOG(LogElectricCastle, Log, TEXT("[PlayerController] Restoring input mapping context"))
-			});
-			Subsystem->RemoveMappingContext(AuraContext);
-			UE_LOG(LogElectricCastle, Log, TEXT("[PlayerController] Removing input mapping context"));
-		}
-	}
 }
 
 bool AElectricCastlePlayerController::IsAiming()

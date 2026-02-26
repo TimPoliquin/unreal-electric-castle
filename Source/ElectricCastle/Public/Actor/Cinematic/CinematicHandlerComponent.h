@@ -21,6 +21,8 @@ public:
 	UCinematicHandlerComponent();
 	virtual void BeginDestroy() override;
 
+	void AddCinematicAction(UCinematicEventAction* Action);
+
 	/** Start ICinematicHandlerInterface **/
 	virtual UCinematicHandlerComponent* GetCinematicHandlerComponent_Implementation() override;
 	/** End ICinematicHandlerInterface **/
@@ -31,13 +33,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties")
 	bool bDebug = false;
 	UPROPERTY(EditAnywhere, Instanced, Category="Properties")
-	TArray<TObjectPtr<UCinematicEventAction>> CinematicBeginActions;
-	UPROPERTY(EditAnywhere, Instanced, Category="Properties")
-	TArray<TObjectPtr<UCinematicEventAction>> CinematicEndActions;
+	TArray<TObjectPtr<UCinematicEventAction>> CinematicActions;
 
 private:
 	UFUNCTION()
 	void OnCinematicBegin(const FCinematicLifeCycleEventPayload& Payload);
-	UFUNCTION()
-	void OnCinematicEnd(const FCinematicLifeCycleEventPayload& Payload);
 };

@@ -106,6 +106,22 @@ void AElectricCastleCharacter::BeginPlay()
 	}
 }
 
+void AElectricCastleCharacter::SetActorTickEnabled(bool bEnabled)
+{
+	Super::SetActorTickEnabled(bEnabled);
+	GetMesh()->SetComponentTickEnabled(bEnabled);
+	GetMesh()->SetEnableAnimation(bEnabled);
+	GetCharacterMovement()->SetComponentTickEnabled(bEnabled);
+	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
+	{
+		AnimInstance->EnableUpdateAnimation(bEnabled);
+		if (!bEnabled)
+		{
+			AnimInstance->StopAllMontages(0);
+		}
+	}
+}
+
 
 FVector AElectricCastleCharacter::GetCombatSocketLocation_Implementation(const FGameplayTag& MontageTag) const
 {
