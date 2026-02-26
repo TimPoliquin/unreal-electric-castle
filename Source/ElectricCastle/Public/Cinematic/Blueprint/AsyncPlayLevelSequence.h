@@ -10,6 +10,7 @@
 #include "Kismet/BlueprintAsyncActionBase.h"
 #include "AsyncPlayLevelSequence.generated.h"
 
+class UCinematicPlayerContext;
 class ULevelSequencePlayer;
 class UCameraComponent;
 class ALevelSequenceActor;
@@ -98,6 +99,9 @@ private:
 	/** Reference to the Level Sequence Player */
 	UPROPERTY()
 	TObjectPtr<ULevelSequencePlayer> SequencePlayer;
+
+	UPROPERTY()
+	TObjectPtr<UCinematicPlayerContext> CinematicContext;
 
 	/** The level sequence to play */
 	UPROPERTY()

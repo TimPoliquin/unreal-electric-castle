@@ -8,6 +8,7 @@
 #include "LevelSequenceActor.h"
 #include "LevelSequencePlayer.h"
 #include "Cinematic/CinematicManager.h"
+#include "Cinematic/Context/CinematicPlayerContext.h"
 
 UAsyncPlayLevelSequence* UAsyncPlayLevelSequence::AsyncPlayLevelSequence(
 	UObject* WorldContextObject,
@@ -69,10 +70,11 @@ void UAsyncPlayLevelSequence::Activate()
 		return;
 	}
 
-	// register to cinematic manager
-	if (UCinematicManager* CinematicManager = UCinematicManager::Get(World))
+
+	CinematicContext = UCinematicPlayerContext::Create(SequencePlayer, Sequence);
+	if (UCinematicManager* CinematicManager = UCinematicManager::Get(SequencePlayer))
 	{
-		CinematicManager->RegisterSequencePlayer(SequencePlayer, Sequence);
+		CinematicManager->RegisterContext(CinematicContext);
 	}
 
 	// Bind to all events
@@ -142,6 +144,10 @@ void UAsyncPlayLevelSequence::CleanupSequenceActor()
 	{
 		SequenceActor->Destroy();
 		SequenceActor = nullptr;
+	}
+	if (CinematicContext)
+	{
+		CinematicContext = nullptr;
 	}
 }
 

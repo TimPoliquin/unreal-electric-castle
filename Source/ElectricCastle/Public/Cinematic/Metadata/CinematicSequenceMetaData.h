@@ -10,7 +10,7 @@
 #include "CinematicSequenceMetaData.generated.h"
 
 UCLASS(BlueprintType, EditInlineNew, CollapseCategories)
-class ELECTRICCASTLE_API UCinematicSequenceMetaData : public UObject
+class ELECTRICCASTLE_API UCinematicSequenceMetadata : public UObject
 {
 	GENERATED_BODY()
 
@@ -34,7 +34,7 @@ protected:
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void CopyFrom(const UCinematicSequenceMetaData* Source);
+	void CopyFrom(const UCinematicSequenceMetadata* Source);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FGameplayTagContainer GetTypeTags() const { return TypeTags; }

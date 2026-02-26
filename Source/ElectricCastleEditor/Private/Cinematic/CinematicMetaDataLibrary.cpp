@@ -8,7 +8,7 @@
 #include "Cinematic/Metadata/CinematicSequenceMetaData.h"
 
 
-UCinematicSequenceMetaData* UCinematicMetaDataLibrary::GetMetaDataFromFirstSelected()
+UCinematicSequenceMetadata* UCinematicMetaDataLibrary::GetMetaDataFromFirstSelected()
 {
 	TArray<UObject*> Selected = UEditorUtilityLibrary::GetSelectedAssets();
 	UE_LOG(LogTemp, Log, TEXT("GetMetaDataFromFirstSelected: %d assets selected"), Selected.Num());
@@ -21,7 +21,7 @@ UCinematicSequenceMetaData* UCinematicMetaDataLibrary::GetMetaDataFromFirstSelec
 
 		if (ULevelSequence* Seq = Cast<ULevelSequence>(Asset))
 		{
-			UCinematicSequenceMetaData* Meta = Seq->FindMetaData<UCinematicSequenceMetaData>();
+			UCinematicSequenceMetadata* Meta = Seq->FindMetaData<UCinematicSequenceMetadata>();
 			UE_LOG(LogTemp, Log, TEXT("  FindMetaData result: %s"),
 			       Meta ? TEXT("FOUND") : TEXT("NOT FOUND"));
 
@@ -40,7 +40,7 @@ UCinematicSequenceMetaData* UCinematicMetaDataLibrary::GetMetaDataFromFirstSelec
 	return nullptr;
 }
 
-void UCinematicMetaDataLibrary::ApplyMetaDataToSelected(ULevelSequence* LevelSequence, UCinematicSequenceMetaData* SourceMetaData)
+void UCinematicMetaDataLibrary::ApplyMetaDataToSelected(ULevelSequence* LevelSequence, UCinematicSequenceMetadata* SourceMetaData)
 {
 	if (!SourceMetaData)
 	{
@@ -48,14 +48,14 @@ void UCinematicMetaDataLibrary::ApplyMetaDataToSelected(ULevelSequence* LevelSeq
 		return;
 	}
 
-	if (UCinematicSequenceMetaData* Meta = LevelSequence ? LevelSequence->FindOrAddMetaData<UCinematicSequenceMetaData>() : nullptr)
+	if (UCinematicSequenceMetadata* Meta = LevelSequence ? LevelSequence->FindOrAddMetaData<UCinematicSequenceMetadata>() : nullptr)
 	{
 		Meta->CopyFrom(SourceMetaData);
 		LevelSequence->MarkPackageDirty();
 	}
 }
 
-void UCinematicMetaDataLibrary::CopyMetaData(UCinematicSequenceMetaData* SourceMetaData, UCinematicSequenceMetaData* TargetMetaData)
+void UCinematicMetaDataLibrary::CopyMetaData(UCinematicSequenceMetadata* SourceMetaData, UCinematicSequenceMetadata* TargetMetaData)
 {
 	if (IsValid(SourceMetaData) && IsValid(TargetMetaData))
 	{

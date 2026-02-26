@@ -8,7 +8,7 @@
 
 class ULevelSequence;
 enum class ECinematicSelectionState : uint8;
-class UCinematicSequenceMetaData;
+class UCinematicSequenceMetadata;
 /**
  * 
  */
@@ -20,14 +20,14 @@ class ELECTRICCASTLEEDITOR_API UCinematicMetaDataLibrary : public UBlueprintFunc
 public:
 	// Returns metadata from the first selected Level Sequence, or nullptr.
 	UFUNCTION(BlueprintCallable, Category = "Cinematic Metadata")
-	static UCinematicSequenceMetaData* GetMetaDataFromFirstSelected();
+	static UCinematicSequenceMetadata* GetMetaDataFromFirstSelected();
 
 	// Writes the given metadata object's values to all selected Level Sequences.
 	UFUNCTION(BlueprintCallable, Category = "Cinematic Metadata")
-	static void ApplyMetaDataToSelected(ULevelSequence* LevelSequence, UCinematicSequenceMetaData* SourceMetaData);
+	static void ApplyMetaDataToSelected(ULevelSequence* LevelSequence, UCinematicSequenceMetadata* SourceMetaData);
 
 	UFUNCTION(BlueprintCallable, Category = "Cinematic Metadata")
-	static void CopyMetaData(UCinematicSequenceMetaData* SourceMetaData, UCinematicSequenceMetaData* TargetMetaData);
+	static void CopyMetaData(UCinematicSequenceMetadata* SourceMetaData, UCinematicSequenceMetadata* TargetMetaData);
 
 	UFUNCTION(BlueprintCallable, Category = "Cinematic Metadata")
 	static ULevelSequence* GetFirstSelectedLevelSequence();

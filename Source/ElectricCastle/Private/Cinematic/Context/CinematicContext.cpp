@@ -3,21 +3,10 @@
 
 #include "Cinematic/Context/CinematicContext.h"
 
-#include "LevelSequencePlayer.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 #include "Actor/Cinematic/CinematicRelocationTarget.h"
 #include "Cinematic/Metadata/CinematicSequenceMetaData.h"
 #include "Kismet/GameplayStatics.h"
-
-ULevelSequencePlayer* UCinematicContext::GetLevelSequencePlayer() const
-{
-	return LevelSequencePlayer.Get();
-}
-
-ULevelSequence* UCinematicContext::GetLevelSequence() const
-{
-	return LevelSequence.Get();
-}
 
 bool UCinematicContext::HasTag(const FGameplayTag& Tag) const
 {
@@ -56,10 +45,10 @@ FVector UCinematicContext::GetPlayerRelocationLocation() const
 	{
 		return Metadata->GetPlayerRelocationLocation();
 	}
-	if (LevelSequencePlayer.IsValid())
+	if (IsValid(GetWorld()))
 	{
 		TArray<AActor*> LevelRelocationTargets;
-		UGameplayStatics::GetAllActorsOfClass(LevelSequencePlayer.Get(), ACinematicRelocationTarget::StaticClass(), LevelRelocationTargets);
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACinematicRelocationTarget::StaticClass(), LevelRelocationTargets);
 		if (LevelRelocationTargets.Num() > 0)
 		{
 			return LevelRelocationTargets[0]->GetActorLocation();
@@ -73,22 +62,9 @@ void UCinematicContext::RestoreAll()
 	RestoreStack.RestoreAll();
 }
 
-void UCinematicContext::SetLevelSequencePlayer(ULevelSequencePlayer* InPlayer)
+void UCinematicContext::SetSequenceMetadata(UCinematicSequenceMetadata* InMetadata)
 {
-	LevelSequencePlayer = InPlayer;
-	if (!IsValid(InPlayer))
-	{
-		return;
-	}
-	InPlayer->OnPlay.AddDynamic(this, &UCinematicContext::HandleOnPlay);
-	InPlayer->OnFinished.AddDynamic(this, &UCinematicContext::HandleOnFinished);
-	InPlayer->OnStop.AddDynamic(this, &UCinematicContext::HandleOnFinished);
-}
-
-void UCinematicContext::SetLevelSequence(ULevelSequence* InSequence)
-{
-	LevelSequence = InSequence;
-	Metadata = LevelSequence.IsValid() ? LevelSequence->FindMetaData<UCinematicSequenceMetaData>() : nullptr;
+	Metadata = InMetadata;
 }
 
 void UCinematicContext::AddRestoreFunction(const TFunction<void()>& InRestoreFunc)
@@ -96,23 +72,7 @@ void UCinematicContext::AddRestoreFunction(const TFunction<void()>& InRestoreFun
 	RestoreStack.Add(InRestoreFunc);
 }
 
-void UCinematicContext::HandleOnPlay()
+UWorld* UCinematicContext::GetWorld() const
 {
-	OnCinematicBegin.Broadcast(FCinematicContextEventPayload(ECinematicLifeCycle::Begin, this));
-}
-
-void UCinematicContext::HandleOnFinished()
-{
-	RestoreStack.RestoreAll();
-	UnbindDelegates();
-	OnCinematicEnd.Broadcast(FCinematicContextEventPayload(ECinematicLifeCycle::End, this));
-}
-
-void UCinematicContext::UnbindDelegates()
-{
-	if (LevelSequencePlayer.IsValid())
-	{
-		LevelSequencePlayer->OnPlay.RemoveDynamic(this, &UCinematicContext::HandleOnPlay);
-		LevelSequencePlayer->OnFinished.RemoveDynamic(this, &UCinematicContext::HandleOnFinished);
-	}
+	return Super::GetWorld();
 }

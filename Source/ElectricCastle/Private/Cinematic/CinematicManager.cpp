@@ -3,10 +3,8 @@
 
 #include "Cinematic/CinematicManager.h"
 
-#include "LevelSequencePlayer.h"
 #include "Cinematic/Context/CinematicContext.h"
 #include "Cinematic/Context/CinematicContextHandle.h"
-#include "Cinematic/Metadata/CinematicSequenceMetaData.h"
 #include "Kismet/GameplayStatics.h"
 
 UCinematicManager* UCinematicManager::Get(const UObject* WorldContextObject)
@@ -15,15 +13,14 @@ UCinematicManager* UCinematicManager::Get(const UObject* WorldContextObject)
 	return GameInstance ? GameInstance->GetSubsystem<UCinematicManager>() : nullptr;
 }
 
-void UCinematicManager::RegisterSequencePlayer(ULevelSequencePlayer* LevelSequencePlayer, ULevelSequence* LevelSequence)
+void UCinematicManager::RegisterContext(UCinematicContext* InContext)
 {
-	if (!IsValid(LevelSequencePlayer) || !IsValid(LevelSequence))
+	if (IsValid(InContext))
 	{
-		return;
+		InContext->OnCinematicBegin.AddDynamic(this, &UCinematicManager::HandleCinematicBegin);
+		InContext->OnCinematicEnd.AddDynamic(this, &UCinematicManager::HandleCinematicEnd);
 	}
-	CinematicContextMap.Add(LevelSequencePlayer, CreateCinematicContext(LevelSequencePlayer, LevelSequence));
 }
-
 
 void UCinematicManager::HandleCinematicBegin(const FCinematicContextEventPayload& EventPayload)
 {
@@ -38,16 +35,4 @@ void UCinematicManager::HandleCinematicEnd(const FCinematicContextEventPayload& 
 	UCinematicContextHandle* Handle = NewObject<UCinematicContextHandle>(this);
 	Handle->Initialize(EventPayload.CinematicContext);
 	OnCinematicEnd.Broadcast(FCinematicLifeCycleEventPayload(EventPayload.EventType, Handle));
-	// cleanup
-	CinematicContextMap.Remove(EventPayload.CinematicContext->GetLevelSequencePlayer());
-}
-
-UCinematicContext* UCinematicManager::CreateCinematicContext(ULevelSequencePlayer* LevelSequencePlayer, ULevelSequence* LevelSequence)
-{
-	UCinematicContext* Context = NewObject<UCinematicContext>(this, UCinematicContext::StaticClass());
-	Context->SetLevelSequencePlayer(LevelSequencePlayer);
-	Context->SetLevelSequence(LevelSequence);
-	Context->OnCinematicBegin.AddDynamic(this, &UCinematicManager::HandleCinematicBegin);
-	Context->OnCinematicEnd.AddDynamic(this, &UCinematicManager::HandleCinematicEnd);
-	return Context;
 }

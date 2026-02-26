@@ -8,7 +8,7 @@
 #include "UObject/Object.h"
 #include "CinematicContext.generated.h"
 
-class UCinematicSequenceMetaData;
+class UCinematicSequenceMetadata;
 
 USTRUCT()
 struct FCinematicRestoreStack
@@ -39,18 +39,16 @@ class ELECTRICCASTLE_API UCinematicContext : public UObject
 	GENERATED_BODY()
 
 public:
-	ULevelSequencePlayer* GetLevelSequencePlayer() const;
-	ULevelSequence* GetLevelSequence() const;
+	virtual UWorld* GetWorld() const override;
+
 	bool HasTag(const FGameplayTag& Tag) const;
 	bool HasAnyTag(const FGameplayTagContainer& Tags) const;
 	bool ShouldRelocatePlayer() const;
 	FVector GetPlayerRelocationLocation() const;
 
-
 	void RestoreAll();
 
-	void SetLevelSequencePlayer(ULevelSequencePlayer* InPlayer);
-	void SetLevelSequence(ULevelSequence* InSequence);
+	void SetSequenceMetadata(UCinematicSequenceMetadata* InMetadata);
 	void AddRestoreFunction(const TFunction<void()>& InRestoreFunc);
 
 	FCinematicContextEventSignature OnCinematicBegin;
@@ -58,22 +56,7 @@ public:
 
 protected:
 	UPROPERTY()
-	TWeakObjectPtr<ULevelSequencePlayer> LevelSequencePlayer;
-	UPROPERTY()
-	TWeakObjectPtr<ULevelSequence> LevelSequence;
-	UPROPERTY()
-	TWeakObjectPtr<UCinematicSequenceMetaData> Metadata;
+	TWeakObjectPtr<UCinematicSequenceMetadata> Metadata;
 	UPROPERTY()
 	FCinematicRestoreStack RestoreStack;
-
-private:
-	/** Event callback functions */
-	UFUNCTION()
-	void HandleOnPlay();
-
-	UFUNCTION()
-	void HandleOnFinished();
-
-	/** Unbind all delegates */
-	void UnbindDelegates();
 };

@@ -34,7 +34,7 @@ void UCinematicMetaDataUtility::LogCinematicMetaData()
 
 	for (const ULevelSequence* Seq : Sequences)
 	{
-		if (const UCinematicSequenceMetaData* Meta = Seq->FindMetaData<UCinematicSequenceMetaData>())
+		if (const UCinematicSequenceMetadata* Meta = Seq->FindMetaData<UCinematicSequenceMetadata>())
 		{
 			UE_LOG(LogTemp, Log,
 			       TEXT("[%s] Tags: %s | Description: %s | Skippable: %s"),
@@ -64,18 +64,18 @@ void UCinematicMetaDataUtility::ClearCinematicMetaData()
 
 	for (ULevelSequence* Seq : Sequences)
 	{
-		Seq->RemoveMetaData<UCinematicSequenceMetaData>();
+		Seq->RemoveMetaData<UCinematicSequenceMetadata>();
 		Seq->MarkPackageDirty();
 		UE_LOG(LogTemp, Log, TEXT("Cleared metadata from: %s"), *Seq->GetName());
 	}
 }
 
-UCinematicSequenceMetaData* UCinematicMetaDataUtility::GetMetaDataFromFirstSelected() const
+UCinematicSequenceMetadata* UCinematicMetaDataUtility::GetMetaDataFromFirstSelected() const
 {
 	TArray<ULevelSequence*> Sequences = GetSelectedLevelSequences();
 	if (Sequences.IsEmpty()) { return nullptr; }
 
-	return Sequences[0]->FindMetaData<UCinematicSequenceMetaData>();
+	return Sequences[0]->FindMetaData<UCinematicSequenceMetadata>();
 }
 
 void UCinematicMetaDataUtility::OpenMetaDataEditor()

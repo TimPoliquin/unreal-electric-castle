@@ -42,17 +42,17 @@ void UCinematicMetaDataWidget::SaveCurrent_Implementation()
 	bIsDirty = false;
 }
 
-UCinematicSequenceMetaData* UCinematicMetaDataWidget::GetOrCreateSequenceMetaData_Implementation()
+UCinematicSequenceMetadata* UCinematicMetaDataWidget::GetOrCreateSequenceMetaData_Implementation()
 {
 	if (!CurrentLevelSequence)
 	{
 		return nullptr;
 	}
-	if (UCinematicSequenceMetaData* Metadata = CurrentLevelSequence->FindMetaData<UCinematicSequenceMetaData>())
+	if (UCinematicSequenceMetadata* Metadata = CurrentLevelSequence->FindMetaData<UCinematicSequenceMetadata>())
 	{
 		return Metadata;
 	}
-	return NewObject<UCinematicSequenceMetaData>(CurrentLevelSequence);
+	return NewObject<UCinematicSequenceMetadata>(CurrentLevelSequence);
 }
 
 void UCinematicMetaDataWidget::HandleContentBrowserSelectionChanged(

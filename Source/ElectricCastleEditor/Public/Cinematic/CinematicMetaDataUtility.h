@@ -9,7 +9,7 @@
 #include "CinematicMetaDataUtility.generated.h"
 
 class UEditorUtilityWidgetBlueprint;
-class UCinematicSequenceMetaData;
+class UCinematicSequenceMetadata;
 
 UCLASS()
 class ELECTRICCASTLEEDITOR_API UCinematicMetaDataUtility : public UAssetActionUtility
@@ -28,7 +28,7 @@ public:
 	// Returns the metadata from the first selected Level Sequence, or nullptr if none exists.
 	// Used by the Editor Utility Widget to pre-populate its fields.
 	UFUNCTION(BlueprintCallable, Category = "Cinematic Metadata")
-	UCinematicSequenceMetaData* GetMetaDataFromFirstSelected() const;
+	UCinematicSequenceMetadata* GetMetaDataFromFirstSelected() const;
 
 	UFUNCTION(CallInEditor, Category = "Cinematic Metadata")
 	void OpenMetaDataEditor();

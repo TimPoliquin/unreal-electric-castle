@@ -7,6 +7,7 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "CinematicManager.generated.h"
 
+class UCinematicSequenceMetadata;
 class UCinematicContextHandle;
 class ULevelSequencePlayer;
 /**
@@ -20,7 +21,8 @@ class ELECTRICCASTLE_API UCinematicManager : public UGameInstanceSubsystem
 public:
 	static UCinematicManager* Get(const UObject* WorldContextObject);
 
-	void RegisterSequencePlayer(ULevelSequencePlayer* LevelSequencePlayer, ULevelSequence* LevelSequence);
+	UFUNCTION(BlueprintCallable)
+	void RegisterContext(UCinematicContext* InContext);
 
 	UPROPERTY(BlueprintAssignable)
 	FCinematicLifeCycleEventSignature OnCinematicBegin;
@@ -32,10 +34,4 @@ private:
 	void HandleCinematicBegin(const FCinematicContextEventPayload& EventPayload);
 	UFUNCTION()
 	void HandleCinematicEnd(const FCinematicContextEventPayload& EventPayload);
-
-	UCinematicContext* CreateCinematicContext(ULevelSequencePlayer* LevelSequencePlayer, ULevelSequence* LevelSequence);
-
-	/** A map of sequences and cinematic context objects **/
-	UPROPERTY()
-	TMap<ULevelSequencePlayer*, UCinematicContext*> CinematicContextMap;
 };

@@ -6,7 +6,7 @@
 #include "EditorUtilityWidget.h"
 #include "CinematicMetaDataWidget.generated.h"
 
-class UCinematicSequenceMetaData;
+class UCinematicSequenceMetadata;
 class ULevelSequence;
 /**
  * 
@@ -25,16 +25,16 @@ protected:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Cinematic Metadata")
 	void SaveCurrent();
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Cinematic Metadata")
-	void RefreshFromSelection(ULevelSequence* LevelSequence, UCinematicSequenceMetaData* MetaData);
+	void RefreshFromSelection(ULevelSequence* LevelSequence, UCinematicSequenceMetadata* MetaData);
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Cinematic Metadata")
 	void ShowEmptyOrInvalidSelection();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Cinematic Metadata")
-	UCinematicSequenceMetaData* GetOrCreateSequenceMetaData();
+	UCinematicSequenceMetadata* GetOrCreateSequenceMetaData();
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Cinematic Metadata")
 	TObjectPtr<ULevelSequence> CurrentLevelSequence;
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Cinematic Metadata")
-	TObjectPtr<UCinematicSequenceMetaData> CurrentMetaData;
+	TObjectPtr<UCinematicSequenceMetadata> CurrentMetaData;
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Cinematic Metadata")
 	bool bIsDirty = false;
 

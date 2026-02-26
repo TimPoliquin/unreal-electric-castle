@@ -3,7 +3,7 @@
 
 #include "Cinematic/Metadata/CinematicSequenceMetaData.h"
 
-void UCinematicSequenceMetaData::CopyFrom(const UCinematicSequenceMetaData* Source)
+void UCinematicSequenceMetadata::CopyFrom(const UCinematicSequenceMetadata* Source)
 {
 	TypeTags = Source->TypeTags;
 	ReactionTriggerTags = Source->ReactionTriggerTags;
