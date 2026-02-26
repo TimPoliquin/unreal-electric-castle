@@ -9,6 +9,7 @@
 #include "AbilitySystem/ElectricCastleAttributeSet.h"
 #include "Actor/Effect/DissolveEffectComponent.h"
 #include "AI/ElectricCastleAIController.h"
+#include "Actor/Highlight/HighlightComponent.h"
 #include "ElectricCastle/ElectricCastle.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -48,6 +49,7 @@ AElectricCastleEnemyCharacter::AElectricCastleEnemyCharacter()
 	CharacterDissolveComponent = CreateDefaultSubobject<UDissolveEffectComponent>(TEXT("Character Dissolve Component"));
 	LootSpawnComponent = CreateDefaultSubobject<ULootSpawnComponent>(TEXT("Loot Spawn Component"));
 	Tags.Add(TAG_ENEMY);
+	HighlightComponent->SetCustomDepthStencilValue(CUSTOM_DEPTH_RED);
 }
 
 void AElectricCastleEnemyCharacter::InitializeAttributeDelegates()
@@ -115,11 +117,6 @@ void AElectricCastleEnemyCharacter::BeginPlay()
 	InitializeDefaultAttributes();
 	InitializeAttributeDelegates();
 	InitializeStartupAbilities();
-	GetMesh()->SetCustomDepthStencilValue(HighlightCustomDepthStencilValue);
-	if (AActor* WeaponActor = Execute_GetWeapon(this); IsValid(WeaponActor) && WeaponActor->Implements<UHighlightInterface>())
-	{
-		Execute_SetStencilDepth(WeaponActor, HighlightCustomDepthStencilValue);
-	}
 	if (bShouldAnimateSpawn)
 	{
 		SpawnAnimation();
@@ -273,29 +270,6 @@ void AElectricCastleEnemyCharacter::PossessedBy(AController* NewController)
 		FName("AttackWaitDeviation"),
 		AttackWaitDeviation
 	);
-}
-
-void AElectricCastleEnemyCharacter::HighlightActor_Implementation()
-{
-	GetMesh()->SetRenderCustomDepth(true);
-	if (AActor* Weapon = Execute_GetWeapon(this); IsValid(Weapon) && Weapon->Implements<UHighlightInterface>())
-	{
-		Execute_HighlightActor(Weapon);
-	}
-}
-
-void AElectricCastleEnemyCharacter::UnHighlightActor_Implementation()
-{
-	GetMesh()->SetRenderCustomDepth(false);
-	if (AActor* Weapon = Execute_GetWeapon(this); IsValid(Weapon) && Weapon->Implements<UHighlightInterface>())
-	{
-		Execute_UnHighlightActor(Weapon);
-	}
-}
-
-void AElectricCastleEnemyCharacter::SetStencilDepth_Implementation(int32 StencilDepth)
-{
-	GetMesh()->SetCustomDepthStencilValue(StencilDepth);
 }
 
 void AElectricCastleEnemyCharacter::SetVisible_Implementation(const bool bInVisible)

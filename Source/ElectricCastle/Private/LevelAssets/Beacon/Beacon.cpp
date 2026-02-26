@@ -33,20 +33,6 @@ void ABeacon::BeginPlay()
 	}
 }
 
-void ABeacon::HighlightActor_Implementation()
-{
-	if (IsPOIDisabled())
-	{
-		return;
-	}
-	BeaconMesh->SetRenderCustomDepth(true);
-}
-
-void ABeacon::UnHighlightActor_Implementation()
-{
-	BeaconMesh->SetRenderCustomDepth(false);
-}
-
 void ABeacon::PostLoad_Implementation()
 {
 	Super::PostLoad_Implementation();

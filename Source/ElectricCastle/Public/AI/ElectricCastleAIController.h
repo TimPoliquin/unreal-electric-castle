@@ -6,6 +6,7 @@
 #include "Runtime/AIModule/Classes/AIController.h"
 #include "ElectricCastleAIController.generated.h"
 
+class UCinematicHandlerComponent;
 class UBehaviorTreeComponent;
 class UBlackboardComponent;
 
@@ -19,13 +20,9 @@ public:
 	AElectricCastleAIController();
 
 protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UCinematicHandlerComponent> CinematicHandlerComponent;
+
 	UPROPERTY()
 	TObjectPtr<UBehaviorTreeComponent> BehaviorTreeComponent;
-
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 };

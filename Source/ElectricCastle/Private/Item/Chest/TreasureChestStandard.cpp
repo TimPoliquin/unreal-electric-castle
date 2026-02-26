@@ -55,22 +55,9 @@ ATreasureChestStandard::ATreasureChestStandard()
 	OnOpenFinish.BindDynamic(this, &ATreasureChestStandard::OpenEffect_Finish);
 }
 
-void ATreasureChestStandard::HighlightActor_Implementation()
-{
-	ChestBaseMeshComponent->SetRenderCustomDepth(true);
-	LidMeshComponent->SetRenderCustomDepth(true);
-}
-
-void ATreasureChestStandard::UnHighlightActor_Implementation()
-{
-	ChestBaseMeshComponent->SetRenderCustomDepth(false);
-	LidMeshComponent->SetRenderCustomDepth(false);
-}
-
 void ATreasureChestStandard::BeginPlay()
 {
 	Super::BeginPlay();
-	InitializeHighlight();
 	InitializeSwitchLockEffect();
 	InitializeInteractionWidget();
 	InitializeLootLightIntensity();
@@ -101,14 +88,6 @@ void ATreasureChestStandard::InitializeSwitchLockEffect_Implementation()
 	{
 		SwitchLockRing_Deactivate();
 	}
-}
-
-void ATreasureChestStandard::InitializeHighlight_Implementation()
-{
-	ChestBaseMeshComponent->SetRenderCustomDepth(false);
-	ChestBaseMeshComponent->SetCustomDepthStencilValue(CUSTOM_DEPTH_BLUE);
-	LidMeshComponent->SetRenderCustomDepth(false);
-	LidMeshComponent->SetCustomDepthStencilValue(CUSTOM_DEPTH_BLUE);
 }
 
 void ATreasureChestStandard::SwitchLockRing_Activate_Implementation()

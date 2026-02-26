@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "Actor/POI/PointOfInterestActor.h"
 #include "GameFramework/Actor.h"
-#include "Interaction/HighlightInterface.h"
 #include "LevelAssets/Switch/SwitchInterface.h"
 #include "Beacon.generated.h"
 
@@ -20,16 +19,12 @@ enum class EBeaconValidationState : uint8
 };
 
 UCLASS()
-class ELECTRICCASTLE_API ABeacon : public APointOfInterestActor, public IHighlightInterface, public ISwitchInterface
+class ELECTRICCASTLE_API ABeacon : public APointOfInterestActor, public ISwitchInterface
 {
 	GENERATED_BODY()
 
 public:
 	ABeacon();
-	/** Start IHighlightInterface */
-	virtual void HighlightActor_Implementation() override;
-	virtual void UnHighlightActor_Implementation() override;
-	/** End IHighlightInterface */
 	/** Start ISaveInterface */
 	FORCEINLINE virtual bool ShouldLoadTransform_Implementation() const override { return false; }
 	virtual void PostLoad_Implementation() override;

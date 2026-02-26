@@ -11,6 +11,7 @@
 #include "ElectricCastle/ElectricCastle.h"
 #include "CommonInputSubsystem.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
+#include "Actor/Cinematic/CinematicHandlerComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Character/ElectricCastlePlayerCharacter.h"
 #include "Character/EnemyInterface.h"
@@ -31,6 +32,7 @@ AElectricCastlePlayerController::AElectricCastlePlayerController()
 {
 	bReplicates = true;
 	SelectionWheelManager = CreateDefaultSubobject<USelectionWheelManagerComponent>(TEXT("SelectionWheelManager"));
+	CinematicHandlerComponent = CreateDefaultSubobject<UCinematicHandlerComponent>(TEXT("CinematicHandlerComponent"));
 }
 
 void AElectricCastlePlayerController::BeginPlay()

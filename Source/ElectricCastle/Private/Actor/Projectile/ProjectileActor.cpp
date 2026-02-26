@@ -10,6 +10,8 @@
 #include "NiagaraFunctionLibrary.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 #include "Actor/ElectricCastleActorBlueprintFunctionLibrary.h"
+#include "Actor/Cinematic/CinematicHandlerComponent.h"
+#include "Actor/Cinematic/Actions/DestroyActorCinematicEventAction.h"
 #include "ElectricCastle/ElectricCastle.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Components/AudioComponent.h"
@@ -37,6 +39,9 @@ AProjectileActor::AProjectileActor()
 	ProjectileMovement->InitialSpeed = 550.f;
 	ProjectileMovement->MaxSpeed = 550.f;
 	ProjectileMovement->ProjectileGravityScale = 0.f;
+
+	CinematicHandlerComponent = CreateDefaultSubobject<UCinematicHandlerComponent>(TEXT("CinematicHandlerComponent"));
+	CinematicHandlerComponent->AddCinematicAction(NewObject<UDestroyActorCinematicEventAction>(this, TEXT("DestroyActorCinematicEventAction")));
 }
 
 void AProjectileActor::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const

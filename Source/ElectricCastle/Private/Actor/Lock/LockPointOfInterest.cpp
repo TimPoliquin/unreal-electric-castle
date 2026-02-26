@@ -15,20 +15,6 @@ ALockPointOfInterest::ALockPointOfInterest()
 	PrimaryActorTick.bCanEverTick = false;
 	LockMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Lock Mesh Component"));
 	LockMeshComponent->SetupAttachment(GetRootComponent());
-	LockMeshComponent->SetRenderCustomDepth(false);
-}
-
-void ALockPointOfInterest::HighlightActor_Implementation()
-{
-	if (!bUnlocked)
-	{
-		LockMeshComponent->SetRenderCustomDepth(true);
-	}
-}
-
-void ALockPointOfInterest::UnHighlightActor_Implementation()
-{
-	LockMeshComponent->SetRenderCustomDepth(false);
 }
 
 void ALockPointOfInterest::PostLoad_Implementation()
@@ -107,7 +93,6 @@ void ALockPointOfInterest::Unlock(AActor* Player)
 			}
 			PlayUnlockEffect(Player);
 			DisablePOI();
-			UnHighlightActor(this);
 		}
 	}
 }

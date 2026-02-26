@@ -8,6 +8,7 @@
 #include "GameFramework/Actor.h"
 #include "ProjectileActor.generated.h"
 
+class UCinematicHandlerComponent;
 class UCapsuleComponent;
 struct FGameplayEffectSpecHandle;
 class UProjectileMovementComponent;
@@ -77,6 +78,8 @@ protected:
 	TObjectPtr<UCapsuleComponent> CollisionComponent;
 	UPROPERTY(Category="Components", EditDefaultsOnly)
 	TObjectPtr<UAudioComponent> TravelSoundComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
+	TObjectPtr<UCinematicHandlerComponent> CinematicHandlerComponent;
 	UPROPERTY(EditAnywhere, Category="Properties")
 	TObjectPtr<UNiagaraSystem> ImpactEffect;
 	UPROPERTY(EditAnywhere, Category="Properties")

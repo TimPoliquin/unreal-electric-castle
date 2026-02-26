@@ -3,6 +3,7 @@
 
 #include "Checkpoint/Checkpoint.h"
 
+#include "Actor/Highlight/HighlightComponent.h"
 #include "ElectricCastle/ElectricCastle.h"
 #include "Components/SphereComponent.h"
 #include "Game/Save/SaveGameManager.h"
@@ -24,6 +25,8 @@ ACheckpoint::ACheckpoint(const FObjectInitializer& ObjectInitializer) : Super(Ob
 	Sphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 	MoveToComponent = CreateDefaultSubobject<USceneComponent>(TEXT("MoveToComponent"));
 	MoveToComponent->SetupAttachment(GetRootComponent());
+	HighlightComponent = CreateDefaultSubobject<UHighlightComponent>(TEXT("HighlightComponent"));
+	HighlightComponent->SetCustomDepthStencilValue(CUSTOM_DEPTH_BLUE);
 }
 
 void ACheckpoint::PostLoad_Implementation()
@@ -64,6 +67,16 @@ void ACheckpoint::OnSphereOverlap(
 	}
 }
 
+UHighlightComponent* ACheckpoint::GetHighlightComponent_Implementation() const
+{
+	return HighlightComponent;
+}
+
+void ACheckpoint::GetHighlightMeshes_Implementation(TArray<UMeshComponent*>& OutHighlightMeshes)
+{
+	OutHighlightMeshes.Add(CheckpointMesh);
+}
+
 void ACheckpoint::PlayActivatedEffect_Implementation()
 {
 	if (bDisableAfterActivation)
@@ -76,20 +89,4 @@ void ACheckpoint::PlayActivatedEffect_Implementation()
 	);
 	CheckpointMesh->SetMaterial(0, DynamicMaterialInstance);
 	CheckpointReached(DynamicMaterialInstance);
-}
-
-void ACheckpoint::HighlightActor_Implementation()
-{
-	CheckpointMesh->SetRenderCustomDepth(true);
-}
-
-void ACheckpoint::UnHighlightActor_Implementation()
-{
-	CheckpointMesh->SetRenderCustomDepth(false);
-}
-
-bool ACheckpoint::SetMoveToLocation_Implementation(FVector& OutDestination)
-{
-	OutDestination = MoveToComponent->GetComponentLocation();
-	return true;
 }

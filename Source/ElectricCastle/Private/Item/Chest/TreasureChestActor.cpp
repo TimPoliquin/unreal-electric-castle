@@ -45,12 +45,6 @@ void ATreasureChestActor::HandleInitialState()
 	}
 }
 
-bool ATreasureChestActor::SetMoveToLocation_Implementation(FVector& OutDestination)
-{
-	OutDestination = OverlapDetectionComponent->GetComponentLocation();
-	return true;
-}
-
 void ATreasureChestActor::PostLoad_Implementation()
 {
 	Super::PostLoad_Implementation();

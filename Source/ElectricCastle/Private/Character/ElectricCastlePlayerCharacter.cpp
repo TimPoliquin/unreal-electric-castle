@@ -12,16 +12,13 @@
 #include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
 #include "AbilitySystem/ElectricCastleAttributeSet.h"
 #include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
-#include "Camera/ElectricCastleCameraComponent.h"
 #include "Camera/CameraComponent.h"
-#include "Fishing/FishingComponent.h"
 #include "Game/Save/SaveGameManager.h"
 #include "Game/Subsystem/ElectricCastleAIDirectorGameInstanceSubsystem.h"
 #include "Game/Subsystem/ElectricCastleLevelManager.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Tags/ElectricCastleGameplayTags.h"
-#include "Interaction/PlayerInterface.h"
 #include "Player/PlayerEquipmentComponent.h"
 #include "Player/Progression/ProgressionComponent.h"
 #include "MotionWarpingComponent.h"
@@ -31,6 +28,7 @@
 #include "GroomComponent.h"
 #include "LiveLinkInstance.h"
 #include "MetaHumanComponentUE.h"
+#include "Actor/Highlight/HighlightComponent.h"
 #include "Actor/MagicTether/TetherAbilityComponent.h"
 #include "Actor/Mesh/SocketManagerComponent.h"
 #include "Components/LODSyncComponent.h"
@@ -83,7 +81,7 @@ AElectricCastlePlayerCharacter::AElectricCastlePlayerCharacter()
 	SpringArmComponent->SetupAttachment(GetRootComponent());
 	SpringArmComponent->SetUsingAbsoluteRotation(true);
 	SpringArmComponent->bDoCollisionTest = false;
-	CameraComponent = CreateDefaultSubobject<UElectricCastleCameraComponent>(TEXT("Camera Component"));
+	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera Component"));
 	CameraComponent->SetupAttachment(SpringArmComponent, USpringArmComponent::SocketName);
 	CameraComponent->bUsePawnControlRotation = false;
 	FadeDetectionComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Fade Detection Component"));
@@ -93,10 +91,6 @@ AElectricCastlePlayerCharacter::AElectricCastlePlayerCharacter()
 	FadeDetectionComponent->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Overlap);
 	FadeDetectionComponent->SetGenerateOverlapEvents(true);
 	EquipmentComponent = CreateDefaultSubobject<UPlayerEquipmentComponent>(TEXT("Equipment Component"));
-	FishingComponent = CreateDefaultSubobject<UFishingComponent>(TEXT("Fishing Component"));
-	FishingStatusEffectNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Fishing Status Effect"));
-	FishingStatusEffectNiagaraComponent->SetupAttachment(EffectAttachComponent);
-	FishingStatusEffectNiagaraComponent->SetAutoActivate(false);
 	MotionWarpingComponent = CreateDefaultSubobject<UMotionWarpingComponent>(TEXT("Motion Warping"));
 	FormChangeComponent = CreateDefaultSubobject<UPlayerFormChangeComponent>(TEXT("Form Change Component"));
 	TetherComponent = CreateDefaultSubobject<UTetherAbilityComponent>(TEXT("Tether Component"));
@@ -128,6 +122,7 @@ AElectricCastlePlayerCharacter::AElectricCastlePlayerCharacter()
 	RightHandConfig.SocketTag = FElectricCastleGameplayTags::Get().Combat_Socket_RightHand;
 	LeftHandConfig.SocketName = TEXT("Socket_Hand_Left");
 	RightHandConfig.SocketName = TEXT("Socket_Hand_Right");
+	HighlightComponent->SetCustomDepthStencilValue(CUSTOM_DEPTH_BLUE);
 }
 
 USceneComponent* AElectricCastlePlayerCharacter::GetMagicHandAttachComponent_Implementation(FName& AttachBoneName)
@@ -146,7 +141,6 @@ void AElectricCastlePlayerCharacter::BeginPlay()
 	}
 	FormChangeComponent->OnPlayerFormChange.AddUniqueDynamic(this, &AElectricCastlePlayerCharacter::OnFormChange);
 	FaceMesh->OnAnimInitialized.AddUniqueDynamic(this, &AElectricCastlePlayerCharacter::PrepareLiveLinkSetup);
-	OnCameraReturnDelegate.BindUObject(this, &AElectricCastlePlayerCharacter::OnCameraReturned);
 	FadeDetectionComponent->OnComponentBeginOverlap.AddUniqueDynamic(
 		this,
 		&AElectricCastlePlayerCharacter::OnFadeDetectionBeginOverlap
@@ -362,10 +356,6 @@ void AElectricCastlePlayerCharacter::OnAbilitySystemReady_Implementation(
 )
 {
 	Super::OnAbilitySystemReady_Implementation(InAbilitySystemComponent);
-	FishingComponent->OnFishingComponentCastAnimationDelegate.AddDynamic(
-		this,
-		&AElectricCastlePlayerCharacter::PlayFishingRodCastMontage
-	);
 	EquipmentComponent->OnEquipmentAnimationRequest.AddDynamic(
 		this,
 		&AElectricCastlePlayerCharacter::OnEquipmentAnimationRequest
@@ -410,7 +400,6 @@ void AElectricCastlePlayerCharacter::InitializeAbilityActorInfo()
 	ElectricCastlePlayerState->InitializeAbilityActorInfo();
 	AbilitySystemComponent = ElectricCastlePlayerState->GetElectricCastleAbilitySystemComponent();
 	EquipmentComponent->InitializeEquipment();
-	FishingComponent->SetPlayerEquipmentComponent(EquipmentComponent);
 	// Broadcast Ability System Setup
 	OnAbilitySystemReady(GetElectricCastleAbilitySystemComponent());
 }
@@ -419,11 +408,6 @@ void AElectricCastlePlayerCharacter::InitializeAbilityActorInfo()
 void AElectricCastlePlayerCharacter::Server_UpdateFacingRotation_Implementation(FRotator NewControlRotation)
 {
 	SetActorRotation(NewControlRotation);
-}
-
-void AElectricCastlePlayerCharacter::OnCameraReturned()
-{
-	CameraComponent->SetupAttachment(SpringArmComponent, USpringArmComponent::SocketName);
 }
 
 void AElectricCastlePlayerCharacter::OnLevelLoaded()
@@ -663,46 +647,6 @@ void AElectricCastlePlayerCharacter::HideMagicCircle_Implementation()
 	}
 }
 
-void AElectricCastlePlayerCharacter::MoveCameraToPoint_Implementation(
-	const FVector& Destination,
-	const FVector& Direction,
-	UCurveFloat* AnimationCurve
-)
-{
-	DesiredCameraForwardVector = CameraComponent->GetForwardVector();
-	CameraComponent->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
-	CameraComponent->MoveToLocation(Destination, Direction, AnimationCurve);
-}
-
-void AElectricCastlePlayerCharacter::MoveCameraToPointWithCallback(
-	const FVector& Destination,
-	const FVector& Direction,
-	UCurveFloat* AnimationCurve,
-	FOnCameraMoveFinishedSignature& OnCameraMoveFinishedSignature
-)
-{
-	DesiredCameraForwardVector = CameraComponent->GetForwardVector();
-	CameraComponent->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
-	CameraComponent->MoveToLocation(Destination, Direction, AnimationCurve, &OnCameraMoveFinishedSignature);
-}
-
-void AElectricCastlePlayerCharacter::ReturnCamera_Implementation(
-	UCurveFloat* AnimationCurve
-)
-{
-	CameraComponent->AttachToComponent(
-		SpringArmComponent,
-		FAttachmentTransformRules::KeepWorldTransform,
-		USpringArmComponent::SocketName
-	);
-	CameraComponent->MoveToLocation(
-		SpringArmComponent->GetSocketTransform(USpringArmComponent::SocketName).GetLocation(),
-		DesiredCameraForwardVector,
-		AnimationCurve,
-		&OnCameraReturnDelegate
-	);
-}
-
 void AElectricCastlePlayerCharacter::SetFormMeshes_Implementation(const FFormMeshConfig& FormMeshConfig)
 {
 	FormMeshConfig.Body.SetToComponent(GetMesh());
@@ -738,24 +682,6 @@ void AElectricCastlePlayerCharacter::SetGroomAssets_Implementation(const FFormMe
 	FormMeshConfig.Moustache.SetToComponent(Groom_Moustache);
 }
 
-UFishingComponent* AElectricCastlePlayerCharacter::GetFishingComponent_Implementation() const
-{
-	return FishingComponent;
-}
-
-void AElectricCastlePlayerCharacter::ShowFishingStatusEffect_Implementation(UNiagaraSystem* EffectSystem)
-{
-	if (EffectSystem)
-	{
-		FishingStatusEffectNiagaraComponent->SetAsset(EffectSystem);
-		FishingStatusEffectNiagaraComponent->Activate(true);
-	}
-	else
-	{
-		FishingStatusEffectNiagaraComponent->SetAsset(nullptr);
-		FishingStatusEffectNiagaraComponent->DeactivateImmediate();
-	}
-}
 
 UPlayerFormChangeComponent* AElectricCastlePlayerCharacter::GetFormChangeComponent_Implementation() const
 {

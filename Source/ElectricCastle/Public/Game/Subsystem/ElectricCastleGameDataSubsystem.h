@@ -16,7 +16,6 @@ class UPlayerFormPrimaryAsset;
 class UDebuffConfig;
 class UPlayerFormConfig;
 class ULevelUpInfo;
-class UFishInfo;
 class UTreasureConfig;
 class UItemDefinitions;
 class UGameplayEffect;
@@ -50,7 +49,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	UDebuffConfig* GetDebuffConfig() const { return DebuffConfig; }
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	UStatusEffectConfig* GetStatusEffectConfig() const { return StatusEffectConfig; }
 
@@ -74,14 +73,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FItemDefinition FindItemDefinitionByItemTag(const FGameplayTag& ItemTag);
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FGameplayTag GetDefaultItemPickupMessageTag() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FGameplayTag GetDefaultItemUseMessageTag() const;
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	UFishInfo* GetFishInfo() const { return FishInfo; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool IsGameDataLoaded() const { return bIsGameDataLoaded; }
@@ -120,15 +117,12 @@ protected:
 	TObjectPtr<UMaterialParameterCollection> PsychedelicVisionParameters;
 	UPROPERTY(EditDefaultsOnly, Category="Items")
 	TArray<UItemDefinitions*> ItemInfos;
-	UPROPERTY(EditDefaultsOnly, Category="Items|Fishing")
-	TObjectPtr<UFishInfo> FishInfo;
 	UPROPERTY(EditDefaultsOnly, Category="Items|Treasure")
 	TObjectPtr<UTreasureConfig> TreasureConfig;
 	UPROPERTY(EditDefaultsOnly, Category="Items|Messages", meta=(Categories="Message"))
 	FGameplayTag DefaultItemPickupMessageTag = FGameplayTag::EmptyTag;
 	UPROPERTY(EditDefaultsOnly, Category="Items|Messages", meta=(Categories="Message"))
 	FGameplayTag DefaultItemUsedMessageTag = FGameplayTag::EmptyTag;
-	
 
 private:
 	void InitializeItemDefinitions();

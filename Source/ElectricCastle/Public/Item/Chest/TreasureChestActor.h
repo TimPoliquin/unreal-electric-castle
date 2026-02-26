@@ -4,8 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Actor/POI/PointOfInterestActor.h"
-#include "Interaction/HighlightInterface.h"
-#include "Item/ItemTypes.h"
 #include "TreasureChestActor.generated.h"
 
 
@@ -24,7 +22,7 @@ enum class EAuraTreasureChestState : uint8
 };
 
 UCLASS(Abstract, Blueprintable)
-class ELECTRICCASTLE_API ATreasureChestActor : public APointOfInterestActor, public IHighlightInterface
+class ELECTRICCASTLE_API ATreasureChestActor : public APointOfInterestActor
 {
 	GENERATED_BODY()
 
@@ -35,7 +33,6 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool IsUnlocked() const;
 	void HandleInitialState();
-	virtual bool SetMoveToLocation_Implementation(FVector& OutDestination) override;
 	/** Start ISaveInterface **/
 	virtual void PostLoad_Implementation() override;
 	/** End ISaveInterface **/

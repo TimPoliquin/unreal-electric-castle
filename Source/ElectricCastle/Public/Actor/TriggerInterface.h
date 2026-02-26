@@ -24,6 +24,10 @@ class ELECTRICCASTLE_API ITriggerInterface
 public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void OnTrigger(const bool InActivate);
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	bool IsTriggered() const;
 
 	static void Trigger(UObject* TriggerActor, const bool InActivate);
+	static bool IsTrigger(const UObject* Object);
+	static bool IsTriggered(const UObject* Object);
 };

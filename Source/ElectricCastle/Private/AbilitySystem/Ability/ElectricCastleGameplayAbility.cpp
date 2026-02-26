@@ -10,6 +10,7 @@
 #include "AbilitySystem/Effect/DurationGameplayEffect.h"
 #include "Actor/Mesh/SocketManagerActor.h"
 #include "Actor/Mesh/SocketManagerComponent.h"
+#include "Cinematic/CinematicManager.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "GameFramework/Character.h"
 #include "Interaction/CombatInterface.h"

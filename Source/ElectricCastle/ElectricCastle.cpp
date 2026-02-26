@@ -1,6 +1,7 @@
 // Copyright Alien Shores
 
 #include "ElectricCastle.h"
+
 #include "Modules/ModuleManager.h"
 #include "System/Loading/LoadingScreenManager.h"
 

@@ -7,8 +7,10 @@
 #include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
 #include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
 #include "AbilitySystem/Passive/PassiveNiagaraComponent.h"
+#include "Actor/Cinematic/CinematicHandlerComponent.h"
 #include "Actor/Effect/DissolvableActor.h"
 #include "Actor/Effect/DissolveEffectComponent.h"
+#include "Actor/Highlight/HighlightComponent.h"
 #include "Actor/Mesh/SocketManagerComponent.h"
 #include "Character/Status/StatusEffectManagerComponent.h"
 #include "ElectricCastle/ElectricCastle.h"
@@ -43,6 +45,8 @@ AElectricCastleCharacter::AElectricCastleCharacter()
 	ShockDebuffComponent->DebuffTag = FElectricCastleGameplayTags::Get().Effect_Debuff_Type_Shock;
 	SocketManagerComponent = CreateDefaultSubobject<USocketManagerComponent>(TEXT("Socket Manager Component"));
 	StatusEffectManagerComponent = CreateDefaultSubobject<UStatusEffectManagerComponent>(TEXT("Status Effect Manager Component"));
+	HighlightComponent = CreateDefaultSubobject<UHighlightComponent>(TEXT("Highlight Component"));
+	CinematicHandlerComponent = CreateDefaultSubobject<UCinematicHandlerComponent>(TEXT("Cinematic Handler Component"));
 	HaloOfProtectionNiagaraComponent = CreateDefaultSubobject<UPassiveNiagaraComponent>(
 		TEXT("Halo of Protection Niagara Component")
 	);
@@ -101,6 +105,22 @@ void AElectricCastleCharacter::BeginPlay()
 	else
 	{
 		RegisterStatusEffectTags(AbilitySystemComponent);
+	}
+}
+
+void AElectricCastleCharacter::SetActorTickEnabled(bool bEnabled)
+{
+	Super::SetActorTickEnabled(bEnabled);
+	GetMesh()->SetComponentTickEnabled(bEnabled);
+	GetMesh()->SetEnableAnimation(bEnabled);
+	GetCharacterMovement()->SetComponentTickEnabled(bEnabled);
+	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
+	{
+		AnimInstance->EnableUpdateAnimation(bEnabled);
+		if (!bEnabled)
+		{
+			AnimInstance->StopAllMontages(0);
+		}
 	}
 }
 
@@ -449,4 +469,14 @@ float AElectricCastleCharacter::TakeDamage(
 	const float Damage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	OnDamageDelegate.Broadcast(Damage);
 	return Damage;
+}
+
+UHighlightComponent* AElectricCastleCharacter::GetHighlightComponent_Implementation() const
+{
+	return HighlightComponent;
+}
+
+void AElectricCastleCharacter::GetHighlightMeshes_Implementation(TArray<UMeshComponent*>& OutHighlightMeshes)
+{
+	OutHighlightMeshes.Add(GetMesh());
 }

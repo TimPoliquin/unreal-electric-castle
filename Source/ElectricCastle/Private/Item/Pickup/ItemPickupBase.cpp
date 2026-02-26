@@ -4,6 +4,7 @@
 #include "Item/Pickup/ItemPickupBase.h"
 
 #include "NiagaraFunctionLibrary.h"
+#include "Actor/Highlight/HighlightComponent.h"
 #include "ElectricCastle/ElectricCastle.h"
 #include "Components/CapsuleComponent.h"
 #include "Item/Component/SinusoidalMovementComponent.h"
@@ -26,6 +27,17 @@ AItemPickupBase::AItemPickupBase()
 	MeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	MeshComponent->SetRenderCustomDepth(false);
 	SinusoidalMovementComponent = CreateDefaultSubobject<USinusoidalMovementComponent>(TEXT("Sinusoidal Movement Component"));
+	HighlightComponent = CreateDefaultSubobject<UHighlightComponent>(TEXT("Highlight Component"));
+}
+
+UHighlightComponent* AItemPickupBase::GetHighlightComponent_Implementation() const
+{
+	return HighlightComponent;
+}
+
+void AItemPickupBase::GetHighlightMeshes_Implementation(TArray<UMeshComponent*>& OutHighlightMeshes)
+{
+	GetComponents<UMeshComponent>(OutHighlightMeshes);
 }
 
 // Called when the game starts or when spawned
@@ -36,22 +48,6 @@ void AItemPickupBase::BeginPlay()
 	CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &AItemPickupBase::OnEndOverlap);
 	MeshComponent->SetCustomDepthStencilValue(CUSTOM_DEPTH_BLUE);
 	PlaySpawnEffect();
-}
-
-void AItemPickupBase::HighlightActor_Implementation()
-{
-	MeshComponent->SetRenderCustomDepth(true);
-}
-
-void AItemPickupBase::UnHighlightActor_Implementation()
-{
-	MeshComponent->SetRenderCustomDepth(false);
-}
-
-bool AItemPickupBase::SetMoveToLocation_Implementation(FVector& OutDestination)
-{
-	OutDestination = GetActorLocation();
-	return true;
 }
 
 void AItemPickupBase::PlaySpawnEffect_Implementation()

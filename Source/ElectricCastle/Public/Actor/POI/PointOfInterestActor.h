@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Actor/EffectAreaActor.h"
 #include "Actor/InteractionInterface.h"
+#include "Actor/Highlight/HighlightActorInterface.h"
 #include "Game/Save/SaveableInterface.h"
 #include "GameFramework/Actor.h"
 #include "PointOfInterestActor.generated.h"
@@ -14,7 +15,7 @@ class USphereComponent;
 class UWidgetComponent;
 
 UCLASS(Abstract, Blueprintable)
-class ELECTRICCASTLE_API APointOfInterestActor : public AEffectAreaActor, public IInteractionInterface, public ISaveableInterface
+class ELECTRICCASTLE_API APointOfInterestActor : public AEffectAreaActor, public IInteractionInterface, public ISaveableInterface, public IHighlightActorInterface
 {
 	GENERATED_BODY()
 
@@ -28,6 +29,10 @@ protected:
 	/** Start ISaveableInterface **/
 	virtual void PostLoad_Implementation() override;
 	/** End ISaveableInterface **/
+	/** Start IHighlightActorInterface**/
+	virtual UHighlightComponent* GetHighlightComponent_Implementation() const override;
+	virtual void GetHighlightMeshes_Implementation(TArray<UMeshComponent*>& OutHighlightMeshes) override;
+	/** End IHighlightActorInterface**/
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UWidgetComponent> POIWidget;
@@ -37,6 +42,8 @@ protected:
 	TObjectPtr<UWidgetComponent> PreconditionWidget;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UCapsuleComponent> OverlapDetectionComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
+	TObjectPtr<UHighlightComponent> HighlightComponent;
 
 	UFUNCTION()
 	void OnBeginOverlap(
@@ -68,7 +75,7 @@ protected:
 	virtual void OnInteractionEnd_Implementation(AActor* Player, const bool bIsCancelled) override;
 	/** AuraInteractionInterface End **/
 	void EnablePOI();
-	void DisablePOI();
+	virtual void DisablePOI();
 	bool IsPOIDisabled() const;
 
 private:
