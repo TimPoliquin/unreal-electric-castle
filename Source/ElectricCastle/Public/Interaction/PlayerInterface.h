@@ -48,24 +48,6 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void HideMagicCircle();
 
-	/** Camera **/
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void MoveCameraToPoint(
-		const FVector& Destination,
-		const FVector& Direction,
-		UCurveFloat* AnimationCurve
-	);
-	virtual void MoveCameraToPointWithCallback(
-		const FVector& Destination,
-		const FVector& Direction,
-		UCurveFloat* AnimationCurve,
-		FOnCameraMoveFinishedSignature& OnCameraMoveFinishedSignature
-	) = 0;
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void ReturnCamera(
-		UCurveFloat* AnimationCurve
-	);
-
 	UFUNCTION(BlueprintNativeEvent)
 	void LevelUp();
 

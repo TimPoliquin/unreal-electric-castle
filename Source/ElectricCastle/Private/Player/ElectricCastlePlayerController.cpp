@@ -15,8 +15,6 @@
 #include "Camera/CameraComponent.h"
 #include "Character/ElectricCastlePlayerCharacter.h"
 #include "Character/EnemyInterface.h"
-#include "Cinematic/CinematicManager.h"
-#include "Cinematic/Context/CinematicContextHandle.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "GameFramework/Character.h"

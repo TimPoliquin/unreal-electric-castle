@@ -29,6 +29,4 @@ public:
 	static FString Substitute(const FString& Message, const FMessageSubstitutions& MessageSubstitutions);
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="AuraItemBlueprintLibrary|Messages")
 	static UTexture2D* SubstituteMessageIcon(UTexture2D* MessageIcon, const FMessageSubstitutions& MessageSubstitutions);
-
-	static UFishCatch* ToFishCatch(const UObject* WorldContextObject, const FGameplayTag& FishType);
 };

@@ -4,9 +4,6 @@
 #include "Item/ItemBlueprintLibrary.h"
 
 #include "ElectricCastle/ElectricCastleLogChannels.h"
-#include "Fishing/FishCatch.h"
-#include "Fishing/FishInfo.h"
-#include "Fishing/FishTypes.h"
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 
 FItemDefinition UItemBlueprintLibrary::GetItemDefinitionByItemType(
@@ -56,18 +53,4 @@ UTexture2D* UItemBlueprintLibrary::SubstituteMessageIcon(
 		return MessageSubstitutions.Icon;
 	}
 	return MessageIcon;
-}
-
-UFishCatch* UItemBlueprintLibrary::ToFishCatch(const UObject* WorldContextObject, const FGameplayTag& FishType)
-{
-	UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(WorldContextObject);
-	FItemDefinition ItemDefinition = GameDataSubsystem->FindItemDefinitionByItemTag(FishType);
-	FFishDefinition FishDefinition = GameDataSubsystem->GetFishInfo()->GetFishDefinitionByFishType(FishType);
-	UFishCatch* Catch = NewObject<UFishCatch>();
-	Catch->FishType = FishType;
-	Catch->Description = ItemDefinition.ItemDescription;
-	Catch->FishName = ItemDefinition.ItemName;
-	Catch->Icon = FishDefinition.Icon;
-	Catch->Size = FishDefinition.WeightRange.Value();
-	return Catch;
 }

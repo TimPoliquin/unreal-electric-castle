@@ -4,9 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "ElectricCastleCharacter.h"
-#include "Camera/ElectricCastleCameraComponent.h"
 #include "Components/LODSyncComponent.h"
-#include "Interaction/FishingActorInterface.h"
 #include "Interaction/PlayerInterface.h"
 #include "Player/ElectricCastlePlayerState.h"
 #include "Player/Equipment/EquipmentEvents.h"
@@ -28,10 +26,7 @@ class ULODSyncComponent;
 class UPlayerFormChangeComponent;
 class UBoxComponent;
 class UPlayerEquipmentComponent;
-class UFishingComponentInterface;
-class UFishingComponent;
 class UInventoryComponent;
-class UElectricCastleCameraComponent;
 class UElectricCastleAbilitySystemComponent;
 class UElectricCastleAttributeSet;
 class USpringArmComponent;
@@ -67,7 +62,6 @@ struct ELECTRICCASTLE_API FLiveLinkCharacterConfig
 
 UCLASS(Abstract, Blueprintable)
 class ELECTRICCASTLE_API AElectricCastlePlayerCharacter : public AElectricCastleCharacter, public IPlayerInterface,
-                                                          public IFishingActorInterface,
                                                           public IFormChangeActorInterface,
                                                           public IEquipmentManagerInterface,
                                                           public ITetherAbilityActorInterface,
@@ -124,31 +118,12 @@ public:
 	virtual void SpendSpellPoints_Implementation(int32 SpentPoints) override;
 	virtual void ShowMagicCircle_Implementation(UMaterialInterface* DecalMaterial = nullptr) override;
 	virtual void HideMagicCircle_Implementation() override;
-	virtual void MoveCameraToPoint_Implementation(
-		const FVector& Destination,
-		const FVector& Direction,
-		UCurveFloat* AnimationCurve
-	) override;
-	virtual void MoveCameraToPointWithCallback(
-		const FVector& Destination,
-		const FVector& Direction,
-		UCurveFloat* AnimationCurve,
-		FOnCameraMoveFinishedSignature& OnCameraMoveFinishedSignature
-	) override;
-	virtual void ReturnCamera_Implementation(
-		UCurveFloat* AnimationCurve
-	) override;
 	UFUNCTION(BlueprintNativeEvent)
 	void SetFormMeshes(const FFormMeshConfig& FormMeshConfig);
 	UFUNCTION(BlueprintNativeEvent)
 	void TryApplyGroomAssets(const FFormMeshConfig& FormMeshConfig);
 	UFUNCTION(BlueprintNativeEvent)
 	void SetGroomAssets(const FFormMeshConfig& FormMeshConfig);
-
-	/** FishingActorInterface Start */
-	virtual UFishingComponent* GetFishingComponent_Implementation() const override;
-	virtual void ShowFishingStatusEffect_Implementation(UNiagaraSystem* EffectSystem) override;
-	/** FishingActorInterface End */
 
 	/** FormChangeActorInterface Start */
 	virtual UPlayerFormChangeComponent* GetFormChangeComponent_Implementation() const override;
@@ -173,8 +148,6 @@ protected:
 	void Construction_SetupMetaHuman();
 	virtual void BeginPlay() override;
 	virtual void BeginDestroy() override;
-	UFUNCTION(BlueprintImplementableEvent)
-	void PlayFishingRodCastMontage();
 	UFUNCTION(BlueprintNativeEvent)
 	void OnEquipmentAnimationRequest(const FEquipmentDelegatePayload& Payload);
 	UFUNCTION(BlueprintNativeEvent)
@@ -208,17 +181,13 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UBoxComponent> FadeDetectionComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
-	TObjectPtr<UFishingComponent> FishingComponent;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UPlayerEquipmentComponent> EquipmentComponent;
 	UPROPERTY(VisibleAnywhere, Category="Components")
-	TObjectPtr<UElectricCastleCameraComponent> CameraComponent;
+	TObjectPtr<UCameraComponent> CameraComponent;
 	UPROPERTY(VisibleAnywhere, Category="Components")
 	TObjectPtr<USpringArmComponent> SpringArmComponent;
 	UPROPERTY(EditDefaultsOnly, Category="Components")
 	TObjectPtr<UNiagaraComponent> LevelUpNiagaraComponent;
-	UPROPERTY(EditDefaultsOnly, Category="Components")
-	TObjectPtr<UNiagaraComponent> FishingStatusEffectNiagaraComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UTetherAbilityComponent> TetherComponent;
 	UPROPERTY(EditDefaultsOnly, Category="Components")
@@ -245,7 +214,6 @@ protected:
 private:
 	UPROPERTY()
 	FTimerHandle DeathTimer;
-	FOnCameraMoveFinishedSignature OnCameraReturnDelegate;
 
 	virtual void InitializeAbilityActorInfo() override;
 
@@ -253,8 +221,6 @@ private:
 	void Multicast_LevelUpParticles() const;
 	UFUNCTION(Server, Reliable)
 	void Server_UpdateFacingRotation(FRotator NewControlRotation);
-	UFUNCTION()
-	void OnCameraReturned();
 	UFUNCTION()
 	void OnLevelLoaded();
 	UFUNCTION()
@@ -276,6 +242,5 @@ private:
 	UFUNCTION()
 	void UpdatePlayerPositionInMaterialParameterCollections();
 
-	FVector DesiredCameraForwardVector;
 	FLODMappingData CreateCustomLODMappingDefault() const;
 };
