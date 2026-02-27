@@ -6,7 +6,7 @@
 #include "Actor/POI/PointOfInterestActor.h"
 #include "LockPointOfInterest.generated.h"
 
-class ILockedInterface;
+class ILockInterface;
 class UUserWidget;
 
 UCLASS(Abstract, Blueprintable)
