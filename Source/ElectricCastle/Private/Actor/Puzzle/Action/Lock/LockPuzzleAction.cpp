@@ -14,6 +14,11 @@ void ULockPuzzleAction::Execute_Implementation() const
 {
 	for (AActor* Actor : ToLock)
 	{
-		ILockInterface::Lock(Actor);
+		LockActor(Actor);
 	}
+}
+
+void ULockPuzzleAction::LockActor_Implementation(AActor* Actor) const
+{
+	ILockInterface::Lock(Actor);
 }

@@ -10,7 +10,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(DisplayName="Puzzle Action|Trigger|Trigger Action")
 class ELECTRICCASTLE_API UTriggeringPuzzleAction : public UPuzzleAction
 {
 	GENERATED_BODY()

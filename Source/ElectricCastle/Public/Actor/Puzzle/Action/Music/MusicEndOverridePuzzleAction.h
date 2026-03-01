@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(DisplayName="Puzzle Action|Music|End Override Action")
 class ELECTRICCASTLE_API UMusicEndOverridePuzzleAction : public UPuzzleAction
 {
 	GENERATED_BODY()

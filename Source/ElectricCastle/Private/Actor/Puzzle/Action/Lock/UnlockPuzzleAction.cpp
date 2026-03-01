@@ -14,6 +14,11 @@ void UUnlockPuzzleAction::Execute_Implementation() const
 {
 	for (AActor* Actor : ToUnlock)
 	{
-		ILockInterface::Unlock(Actor);
+		UnlockActor(Actor);
 	}
+}
+
+void UUnlockPuzzleAction::UnlockActor_Implementation(AActor* Actor) const
+{
+	ILockInterface::Unlock(Actor);
 }
