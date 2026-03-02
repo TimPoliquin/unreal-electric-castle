@@ -209,6 +209,7 @@ struct FElectricCastleGameplayTags
 	FGameplayTag Player_Block_Ability_Offensive;
 	FGameplayTag Player_Block_Interaction;
 	FGameplayTag Player_Block_ChangeForm;
+	FGameplayTag Player_Block_Aim;
 	FGameplayTag Player_Form;
 	FGameplayTag Player_Form_Barbarian;
 	FGameplayTag Player_Form_Egyptian;

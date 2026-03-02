@@ -53,34 +53,6 @@ void AElectricCastlePlayerController::BeginPlay()
 		);
 		OnInputTypeChange(CommonSubsystem->GetCurrentInputType());
 	}
-	if (IElectricCastleAbilitySystemInterface::IsAbilitySystemReady(GetPawn()))
-	{
-		GetAbilitySystemComponent()->RegisterGameplayTagEvent(
-			FElectricCastleGameplayTags::Get().Effect_State_Aiming,
-			EGameplayTagEventType::NewOrRemoved
-		).AddUObject(
-			this,
-			&AElectricCastlePlayerController::OnEffectStateChanged_Aiming
-		);
-	}
-	else
-	{
-		if (AElectricCastlePlayerCharacter* PlayerCharacter = Cast<AElectricCastlePlayerCharacter>(GetPawn()))
-		{
-			PlayerCharacter->GetOnAbilitySystemRegisteredDelegate().AddLambda(
-				[this](UAbilitySystemComponent* LocalAbilitySystem)
-				{
-					LocalAbilitySystem->RegisterGameplayTagEvent(
-						FElectricCastleGameplayTags::Get().Effect_State_Aiming,
-						EGameplayTagEventType::NewOrRemoved
-					).AddUObject(
-						this,
-						&AElectricCastlePlayerController::OnEffectStateChanged_Aiming
-					);
-				}
-			);
-		}
-	}
 	if (UElectricCastleGameDataSubsystem* GameData = UElectricCastleGameDataSubsystem::Get(this))
 	{
 		if (!GameData->IsGameDataLoaded())
@@ -154,12 +126,12 @@ void AElectricCastlePlayerController::SetupInputComponent()
 		ElectricCastleInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AElectricCastlePlayerController::JumpStart);
 		ElectricCastleInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AElectricCastlePlayerController::JumpEnd);
 	}
-	ElectricCastleInputComponent->BindAction(
-		AimAction,
-		ETriggerEvent::Triggered,
-		this,
-		&AElectricCastlePlayerController::Aim
-	);
+	if (AimAction)
+	{
+		ElectricCastleInputComponent->BindAction(AimAction, ETriggerEvent::Started, this, &AElectricCastlePlayerController::AimStart);
+		ElectricCastleInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &AElectricCastlePlayerController::AimEnd);
+	}
+
 	ElectricCastleInputComponent->BindAction(
 		FormChangeAction,
 		ETriggerEvent::Triggered,
@@ -185,9 +157,30 @@ void AElectricCastlePlayerController::SetupInputComponent()
 	}
 }
 
+void AElectricCastlePlayerController::OnAbilitySystemReady_Implementation(UElectricCastleAbilitySystemComponent* InAbilitySystemComponent)
+{
+	const FGameplayTag& AimTag = FElectricCastleGameplayTags::Get().Player_Block_Aim;
+	InAbilitySystemComponent->RegisterGameplayTagEvent(AimTag).AddUObject(this, &AElectricCastlePlayerController::HandleBlockAimTagChange);
+	HandleBlockAimTagChange(AimTag, InAbilitySystemComponent->HasMatchingGameplayTag(AimTag));
+}
+
 void AElectricCastlePlayerController::OnGameDataLoaded_Implementation()
 {
 	EnableInput(this);
+	if (UElectricCastleAbilitySystemComponent* LocalAbilitySystem = GetAbilitySystemComponent())
+	{
+		if (LocalAbilitySystem->HasFiredOnAbilitiesGivenDelegate())
+		{
+			OnAbilitySystemReady(LocalAbilitySystem);
+		}
+		else
+		{
+			LocalAbilitySystem->OnAbilitiesGivenDelegate.AddLambda([this]()
+			{
+				OnAbilitySystemReady(GetAbilitySystemComponent());
+			});
+		}
+	}
 }
 
 void AElectricCastlePlayerController::Move(const FInputActionValue& Value)
@@ -294,7 +287,33 @@ void AElectricCastlePlayerController::JumpEnd(const FInputActionValue& InputActi
 	}
 }
 
-void AElectricCastlePlayerController::Aim(const FInputActionValue& InputActionValue)
+void AElectricCastlePlayerController::AimStart()
+{
+	if (bIsAiming || !bCanAim)
+	{
+		return;
+	}
+	bIsAiming = true;
+	if (AElectricCastlePlayerCharacter* PlayerCharacter = Cast<AElectricCastlePlayerCharacter>(GetPawn()))
+	{
+		PlayerCharacter->AimStart();
+	}
+}
+
+void AElectricCastlePlayerController::AimEnd()
+{
+	if (!bIsAiming)
+	{
+		return;
+	}
+	bIsAiming = false;
+	if (AElectricCastlePlayerCharacter* PlayerCharacter = Cast<AElectricCastlePlayerCharacter>(GetPawn()))
+	{
+		PlayerCharacter->AimEnd();
+	}
+}
+
+void AElectricCastlePlayerController::Aim_Rotation(const FInputActionValue& InputActionValue)
 {
 	const FElectricCastleGameplayTags& GameplayTags = FElectricCastleGameplayTags::Get();
 	const UElectricCastleAbilitySystemComponent* LocalAbilitySystemComponent = GetAbilitySystemComponent();
@@ -523,14 +542,25 @@ void AElectricCastlePlayerController::OnInputTypeChange(const ECommonInputType N
 	SetupInputMode();
 }
 
-void AElectricCastlePlayerController::OnEffectStateChanged_Aiming(const FGameplayTag AimingTag, const int TagCount)
+void AElectricCastlePlayerController::HandleSelectionWheelStateChanged(const FSelectionWheelStateChangedPayload& Payload)
 {
 	SetupInputMode();
 }
 
-void AElectricCastlePlayerController::HandleSelectionWheelStateChanged(const FSelectionWheelStateChangedPayload& Payload)
+void AElectricCastlePlayerController::HandleBlockAimTagChange(FGameplayTag BlockAimTag, int TagCount)
 {
-	SetupInputMode();
+	if (TagCount > 0)
+	{
+		bCanAim = false;
+		if (bIsAiming)
+		{
+			AimEnd();
+		}
+	}
+	else
+	{
+		bCanAim = true;
+	}
 }
 
 bool AElectricCastlePlayerController::IsAiming()
@@ -542,6 +572,16 @@ bool AElectricCastlePlayerController::IsAiming()
 		);
 	}
 	return false;
+}
+
+bool AElectricCastlePlayerController::HasEffectiveGameplayTag(const FGameplayTag& Tag)
+{
+	const UElectricCastleAbilitySystemComponent* LocalAbilitySystemComponent = GetAbilitySystemComponent();
+	if (!LocalAbilitySystemComponent)
+	{
+		return false;
+	}
+	return LocalAbilitySystemComponent->HasMatchingGameplayTag(Tag);
 }
 
 void AElectricCastlePlayerController::SetInputMode_KeyboardAndMouse_Server_Implementation()

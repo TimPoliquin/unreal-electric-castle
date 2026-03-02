@@ -387,6 +387,17 @@ UElectricCastleAbilitySystemComponent* AElectricCastlePlayerCharacter::GetElectr
 	return Cast<UElectricCastleAbilitySystemComponent>(GetAbilitySystemComponent());
 }
 
+void AElectricCastlePlayerCharacter::AimStart_Implementation()
+{
+	// Nothing to do here right now
+}
+
+
+void AElectricCastlePlayerCharacter::AimEnd_Implementation()
+{
+	// Nothing to do here right now
+}
+
 void AElectricCastlePlayerCharacter::Multicast_SetTimeDilation_Implementation(const float Magnitude)
 {
 	CustomTimeDilation = Magnitude;

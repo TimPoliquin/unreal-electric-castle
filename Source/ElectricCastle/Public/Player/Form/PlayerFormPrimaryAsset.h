@@ -42,7 +42,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(Categories="Abilities"))
 	TArray<FGameplayTag> Abilities;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TArray<TSubclassOf<UGameplayAbility>> PassiveAbilities;
+	TArray<FGameplayTag> PassiveAbilities;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<UGameplayEffect> FormAttributes;
 };

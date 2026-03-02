@@ -94,6 +94,11 @@ public:
 	UElectricCastleAbilitySystemComponent* GetElectricCastleAbilitySystemComponent() const;
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_SetTimeDilation(const float Magnitude);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void AimStart();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void AimEnd();
+
 	/** Start IElectricCastleAbilitySystemInterface **/
 	virtual int32 GetCharacterLevel_Implementation() const override;
 	/** End IElectricCastleAbilitySystemInterface **/
@@ -180,9 +185,9 @@ protected:
 	TObjectPtr<UBoxComponent> FadeDetectionComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UPlayerEquipmentComponent> EquipmentComponent;
-	UPROPERTY(VisibleAnywhere, Category="Components")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UCameraComponent> CameraComponent;
-	UPROPERTY(VisibleAnywhere, Category="Components")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<USpringArmComponent> SpringArmComponent;
 	UPROPERTY(EditDefaultsOnly, Category="Components")
 	TObjectPtr<UNiagaraComponent> LevelUpNiagaraComponent;

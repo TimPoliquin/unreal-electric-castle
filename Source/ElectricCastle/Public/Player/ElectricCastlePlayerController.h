@@ -136,6 +136,8 @@ protected:
 	virtual void SetupInputComponent() override;
 	UFUNCTION(BlueprintNativeEvent)
 	void OnGameDataLoaded();
+	UFUNCTION(BlueprintNativeEvent)
+	void OnAbilitySystemReady(UElectricCastleAbilitySystemComponent* InAbilitySystemComponent);
 
 private:
 	FHighlightContext HighlightContext;
@@ -146,7 +148,9 @@ private:
 	void Look(const FInputActionValue& InputActionValue);
 	void JumpStart(const FInputActionValue& InputActionValue);
 	void JumpEnd(const FInputActionValue& InputActionValue);
-	void Aim(const FInputActionValue& InputActionValue);
+	void AimStart();
+	void AimEnd();
+	void Aim_Rotation(const FInputActionValue& InputActionValue);
 	void CursorTrace();
 	UElectricCastleAbilitySystemComponent* GetAbilitySystemComponent();
 	void AbilityInputTagPressed(FGameplayTag InputTag);
@@ -165,14 +169,19 @@ private:
 	UFUNCTION(Server, Reliable)
 	void SetInputMode_KeyboardAndMouse_Server();
 	UFUNCTION()
-	void OnEffectStateChanged_Aiming(FGameplayTag AimingTag, int TagCount);
-	UFUNCTION()
 	void HandleSelectionWheelStateChanged(const FSelectionWheelStateChangedPayload& Payload);
+	UFUNCTION()
+	void HandleBlockAimTagChange(FGameplayTag BlockAimTag, int TagCount);
+
 
 	bool IsAiming();
+	bool HasEffectiveGameplayTag(const FGameplayTag& Tag);
 
 	// Character Movement / Targeting
 	ETargetingStatus TargetingStatus = ETargetingStatus::NotTargeting;
+
+	bool bIsAiming = false;
+	bool bCanAim = false;
 
 	FHitResult CursorHit;
 	UPROPERTY(Replicated)

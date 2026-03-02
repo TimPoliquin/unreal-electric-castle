@@ -563,6 +563,7 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FName("Player.Block.Ability.Offensive"),
 		FString("Blocks player offensive abilities")
 	);
+	Instance.Player_Block_Aim = TagManager.AddNativeGameplayTag(FName("Player.Block.Aim"), FString("Blocks player aim"));
 	Instance.Player_State_InteractionAvailable = TagManager.AddNativeGameplayTag(
 		FName("Player.State.InteractionAvailable"),
 		FString("Interaction is available for the player")
