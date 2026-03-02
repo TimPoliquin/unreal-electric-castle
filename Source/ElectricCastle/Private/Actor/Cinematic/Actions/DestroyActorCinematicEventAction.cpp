@@ -12,7 +12,7 @@ UDestroyActorCinematicEventAction::UDestroyActorCinematicEventAction()
 
 void UDestroyActorCinematicEventAction::Execute_Implementation(const UCinematicContextHandle* ContextHandle) const
 {
-	if (GetOwner())
+	if (IsValid(GetOwner()))
 	{
 		GetOwner()->Destroy();
 	}

@@ -18,7 +18,6 @@ class UCinematicHandlerComponent;
 class USelectionWheelManagerComponent;
 class UGameplayEffect;
 enum class ECommonInputType : uint8;
-class AMagicCircle;
 class UNiagaraSystem;
 class UDamageTextComponent;
 class USplineComponent;
@@ -72,10 +71,6 @@ public:
 		const EAttackMessageType InAttackMessageType
 	);
 
-	UFUNCTION(BlueprintCallable)
-	void ShowMagicCircle(UMaterialInterface* DecalMaterial = nullptr);
-	UFUNCTION(BlueprintCallable)
-	void HideMagicCircle();
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool IsInputTypeMouse() const { return InputType == EAuraInputMode::MouseAndKeyboard; }
 
@@ -106,6 +101,10 @@ protected:
 	TObjectPtr<UInputMappingContext> AuraContext;
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputAction> MoveAction;
+	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> LookAction;
+	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> JumpAction;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TSubclassOf<UGameplayEffect> MovementEffect;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
@@ -129,10 +128,6 @@ protected:
 	TObjectPtr<USelectionWheelManagerComponent> SelectionWheelManager;
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<UDamageTextComponent> DamageTextComponentClass;
-	UPROPERTY(EditDefaultsOnly, Category="Combat")
-	TSubclassOf<AMagicCircle> MagicCircleClass;
-	UPROPERTY(VisibleInstanceOnly, Category = "Combat")
-	TObjectPtr<AMagicCircle> MagicCircle;
 	// Debug
 	UPROPERTY(EditDefaultsOnly, Category="Debug")
 	bool bDebug = false;
@@ -148,10 +143,11 @@ private:
 
 	void Move(const FInputActionValue& Value);
 	void MoveEnd(const FInputActionValue& Value);
+	void Look(const FInputActionValue& InputActionValue);
+	void JumpStart(const FInputActionValue& InputActionValue);
+	void JumpEnd(const FInputActionValue& InputActionValue);
 	void Aim(const FInputActionValue& InputActionValue);
 	void CursorTrace();
-	void CursorTrace_Mouse();
-	void CursorTrace_Gamepad();
 	UElectricCastleAbilitySystemComponent* GetAbilitySystemComponent();
 	void AbilityInputTagPressed(FGameplayTag InputTag);
 	void AbilityInputTagReleased(FGameplayTag InputTag);
@@ -162,7 +158,7 @@ private:
 	void HideFormWheel(const FInputActionValue& InputActionValue);
 	UFUNCTION()
 	void HandleFormChangeInputAction(const FInputActionValue& InputActionValue);
-	void UpdateMagicCircleLocation() const;
+	UFUNCTION()
 	void OnInputTypeChange(ECommonInputType NewInputType);
 	UFUNCTION(Server, Reliable)
 	void SetInputMode_Gamepad_Server();
