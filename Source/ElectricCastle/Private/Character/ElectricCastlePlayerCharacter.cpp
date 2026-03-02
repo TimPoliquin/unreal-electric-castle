@@ -356,7 +356,7 @@ void AElectricCastlePlayerCharacter::OnAbilitySystemReady_Implementation(
 )
 {
 	Super::OnAbilitySystemReady_Implementation(InAbilitySystemComponent);
-	EquipmentComponent->OnEquipmentAnimationRequest.AddDynamic(
+	EquipmentComponent->OnEquipmentAnimationRequest.AddUniqueDynamic(
 		this,
 		&AElectricCastlePlayerCharacter::OnEquipmentAnimationRequest
 	);
