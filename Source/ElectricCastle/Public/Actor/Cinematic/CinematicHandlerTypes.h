@@ -45,3 +45,6 @@ enum class ECinematicStateChange :uint8
 	Deactivate,
 	Count
 };
+
+UDELEGATE()
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCinematicPlaybackEventSignature);

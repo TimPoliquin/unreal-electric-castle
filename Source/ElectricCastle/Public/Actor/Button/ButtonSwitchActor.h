@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/BoxComponent.h"
 #include "GameFramework/Actor.h"
-#include "LevelAssets/Switch/SwitchInterface.h"
+#include "Actor/Switch/SwitchInterface.h"
 #include "ButtonSwitchActor.generated.h"
 
 class UBoxComponent;

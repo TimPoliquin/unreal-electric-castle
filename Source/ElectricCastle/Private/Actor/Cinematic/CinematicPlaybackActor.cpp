@@ -29,6 +29,7 @@ void ACinematicPlaybackActor::Start_Implementation()
 	bIsPlaying = true;
 	bHasPlayed = true;
 	CinematicContext->OnCinematicBegin.Broadcast(FCinematicContextEventPayload(ECinematicLifeCycle::Begin, CinematicContext));
+	OnCinematicPlaybackStart.Broadcast();
 }
 
 void ACinematicPlaybackActor::End_Implementation()
@@ -36,6 +37,7 @@ void ACinematicPlaybackActor::End_Implementation()
 	bIsPlaying = false;
 	CinematicContext->RestoreAll();
 	CinematicContext->OnCinematicEnd.Broadcast(FCinematicContextEventPayload(ECinematicLifeCycle::End, CinematicContext));
+	OnCinematicPlaybackEnd.Broadcast();
 }
 
 bool ACinematicPlaybackActor::IsTriggered_Implementation() const
@@ -47,10 +49,10 @@ void ACinematicPlaybackActor::OnTrigger_Implementation(const bool InActivate)
 {
 	if (InActivate)
 	{
-		Start();
+		Execute_Start(this);
 	}
 	else
 	{
-		End();
+		Execute_End(this);
 	}
 }

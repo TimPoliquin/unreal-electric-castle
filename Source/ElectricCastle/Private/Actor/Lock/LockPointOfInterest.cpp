@@ -3,7 +3,7 @@
 
 #include "Actor/Lock/LockPointOfInterest.h"
 
-#include "Actor/Lock/LockedInterface.h"
+#include "Actor/Lock/LockInterface.h"
 #include "ElectricCastle/ElectricCastle.h"
 #include "Components/WidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -24,7 +24,7 @@ void ALockPointOfInterest::PostLoad_Implementation()
 		DisablePOI();
 		for (AActor* Gate : Gates)
 		{
-			ILockedInterface::Unlock(Gate);
+			ILockInterface::Unlock(Gate);
 		}
 	}
 }
@@ -89,7 +89,7 @@ void ALockPointOfInterest::Unlock(AActor* Player)
 			}
 			for (AActor* Gate : Gates)
 			{
-				ILockedInterface::Unlock(Gate);
+				ILockInterface::Unlock(Gate);
 			}
 			PlayUnlockEffect(Player);
 			DisablePOI();
