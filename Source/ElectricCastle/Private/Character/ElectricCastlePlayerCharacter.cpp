@@ -80,10 +80,10 @@ AElectricCastlePlayerCharacter::AElectricCastlePlayerCharacter()
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("Camera Boom"));
 	SpringArmComponent->SetupAttachment(GetRootComponent());
 	SpringArmComponent->SetUsingAbsoluteRotation(true);
-	SpringArmComponent->bDoCollisionTest = false;
+	SpringArmComponent->bDoCollisionTest = true;
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera Component"));
 	CameraComponent->SetupAttachment(SpringArmComponent, USpringArmComponent::SocketName);
-	CameraComponent->bUsePawnControlRotation = false;
+	CameraComponent->bUsePawnControlRotation = true;
 	FadeDetectionComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Fade Detection Component"));
 	FadeDetectionComponent->SetupAttachment(SpringArmComponent);
 	FadeDetectionComponent->SetBoxExtent(FVector(370.f, 26.f, 32.f));
@@ -122,7 +122,6 @@ AElectricCastlePlayerCharacter::AElectricCastlePlayerCharacter()
 	RightHandConfig.SocketTag = FElectricCastleGameplayTags::Get().Combat_Socket_RightHand;
 	LeftHandConfig.SocketName = TEXT("Socket_Hand_Left");
 	RightHandConfig.SocketName = TEXT("Socket_Hand_Right");
-	HighlightComponent->SetCustomDepthStencilValue(CUSTOM_DEPTH_BLUE);
 }
 
 USceneComponent* AElectricCastlePlayerCharacter::GetMagicHandAttachComponent_Implementation(FName& AttachBoneName)
@@ -629,22 +628,6 @@ void AElectricCastlePlayerCharacter::SpendSpellPoints_Implementation(const int32
 		*GetName()
 	);
 	return ProgressionComponent->AddSpellPoints(-1 * SpentPoints);
-}
-
-void AElectricCastlePlayerCharacter::ShowMagicCircle_Implementation(UMaterialInterface* DecalMaterial)
-{
-	if (AElectricCastlePlayerController* AuraPlayerController = Cast<AElectricCastlePlayerController>(GetController()))
-	{
-		AuraPlayerController->ShowMagicCircle(DecalMaterial);
-	}
-}
-
-void AElectricCastlePlayerCharacter::HideMagicCircle_Implementation()
-{
-	if (AElectricCastlePlayerController* AuraPlayerController = Cast<AElectricCastlePlayerController>(GetController()))
-	{
-		AuraPlayerController->HideMagicCircle();
-	}
 }
 
 void AElectricCastlePlayerCharacter::SetFormMeshes_Implementation(const FFormMeshConfig& FormMeshConfig)

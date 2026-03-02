@@ -7,7 +7,6 @@
 #include "AbilitySystemComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
-#include "Actor/MagicCircle.h"
 #include "ElectricCastle/ElectricCastle.h"
 #include "CommonInputSubsystem.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
@@ -19,7 +18,6 @@
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Input/CommonUIActionRouterBase.h"
 #include "Input/ElectricCastleInputComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Tags/ElectricCastleGameplayTags.h"
@@ -97,7 +95,6 @@ void AElectricCastlePlayerController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
 	CursorTrace();
-	UpdateMagicCircleLocation();
 }
 
 void AElectricCastlePlayerController::GetLifetimeReplicatedProps(
@@ -106,26 +103,6 @@ void AElectricCastlePlayerController::GetLifetimeReplicatedProps(
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AElectricCastlePlayerController, InputType);
-}
-
-void AElectricCastlePlayerController::ShowMagicCircle(UMaterialInterface* DecalMaterial)
-{
-	if (!IsValid(MagicCircle))
-	{
-		MagicCircle = GetWorld()->SpawnActor<AMagicCircle>(MagicCircleClass);
-		MagicCircle->SetDecalMaterial(DecalMaterial);
-		SetShowMouseCursor(false);
-	}
-}
-
-void AElectricCastlePlayerController::HideMagicCircle()
-{
-	if (IsValid(MagicCircle))
-	{
-		MagicCircle->Destroy();
-		MagicCircle = nullptr;
-		SetShowMouseCursor(true);
-	}
 }
 
 void AElectricCastlePlayerController::ShowDamageNumber_Implementation(
@@ -168,6 +145,15 @@ void AElectricCastlePlayerController::SetupInputComponent()
 		this,
 		&AElectricCastlePlayerController::Move
 	);
+	if (LookAction)
+	{
+		ElectricCastleInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AElectricCastlePlayerController::Look);
+	}
+	if (JumpAction)
+	{
+		ElectricCastleInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AElectricCastlePlayerController::JumpStart);
+		ElectricCastleInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AElectricCastlePlayerController::JumpEnd);
+	}
 	ElectricCastleInputComponent->BindAction(
 		AimAction,
 		ETriggerEvent::Triggered,
@@ -273,6 +259,41 @@ void AElectricCastlePlayerController::MoveEnd(const FInputActionValue& Value)
 	}
 }
 
+void AElectricCastlePlayerController::Look(const FInputActionValue& InputActionValue)
+{
+	if (APawn* ControlledPawn = GetPawn())
+	{
+		const FVector2D InputAxisVector = InputActionValue.Get<FVector2D>();
+		ControlledPawn->AddControllerYawInput(InputAxisVector.X);
+		ControlledPawn->AddControllerPitchInput(InputAxisVector.Y);
+	}
+}
+
+void AElectricCastlePlayerController::JumpStart(const FInputActionValue& InputActionValue)
+{
+	const FElectricCastleGameplayTags& GameplayTags = FElectricCastleGameplayTags::Get();
+	const UElectricCastleAbilitySystemComponent* LocalAbilitySystemComponent = GetAbilitySystemComponent();
+	if (!LocalAbilitySystemComponent)
+	{
+		return;
+	}
+	if (!LocalAbilitySystemComponent->HasMatchingGameplayTag(GameplayTags.Player_Block_Movement))
+	{
+		if (ACharacter* ControlledPawn = GetPawn<ACharacter>())
+		{
+			ControlledPawn->Jump();
+		}
+	}
+}
+
+void AElectricCastlePlayerController::JumpEnd(const FInputActionValue& InputActionValue)
+{
+	if (ACharacter* ControlledPawn = GetPawn<ACharacter>())
+	{
+		ControlledPawn->StopJumping();
+	}
+}
+
 void AElectricCastlePlayerController::Aim(const FInputActionValue& InputActionValue)
 {
 	const FElectricCastleGameplayTags& GameplayTags = FElectricCastleGameplayTags::Get();
@@ -314,51 +335,9 @@ void AElectricCastlePlayerController::CursorTrace()
 		HighlightContext.Clear();
 		return;
 	}
-	if (InputType == EAuraInputMode::Gamepad || IsAiming())
-	{
-		CursorTrace_Gamepad();
-	}
-	else
-	{
-		CursorTrace_Mouse();
-	}
-}
-
-void AElectricCastlePlayerController::CursorTrace_Mouse()
-{
-	const ECollisionChannel TraceChannel = IsValid(MagicCircle)
-		                                       ? ECC_ExcludeCharacters
-		                                       : ECC_Target;
-	GetHitResultUnderCursor(TraceChannel, false, CursorHit);
-	if (CursorHit.bBlockingHit)
-	{
-		HighlightContext.Track(CursorHit.GetActor());
-		if (HighlightContext.HasCurrentTarget())
-		{
-			TargetingStatus = IEnemyInterface::IsEnemyActor(
-				                  HighlightContext.CurrentActor
-			                  )
-				                  ? ETargetingStatus::TargetingEnemy
-				                  : ETargetingStatus::TargetingOther;
-		}
-		else
-		{
-			TargetingStatus = ETargetingStatus::NotTargeting;
-		}
-	}
-	else
-	{
-		HighlightContext.Clear();
-		TargetingStatus = ETargetingStatus::NotTargeting;
-	}
-}
-
-void AElectricCastlePlayerController::CursorTrace_Gamepad()
-{
 	FLineTraceParams Params;
-	Params.TraceChannel = IsValid(MagicCircle)
-		                      ? ECC_ExcludeCharacters
-		                      : ECC_Target;
+	Params.TraceChannel = ECC_Target;
+	// TODO - this needs to be updated to trace from the camera to the crosshair
 	if (AActor* HitActor = UElectricCastleAbilitySystemLibrary::FindHitByLineTrace(GetPawn(), Params))
 	{
 		HighlightContext.Track(HitActor);
@@ -460,14 +439,6 @@ void AElectricCastlePlayerController::AbilityInputTagReleased(FGameplayTag Input
 	}
 }
 
-void AElectricCastlePlayerController::UpdateMagicCircleLocation() const
-{
-	if (IsValid(MagicCircle))
-	{
-		MagicCircle->SetActorLocation(CursorHit.ImpactPoint);
-	}
-}
-
 bool AElectricCastlePlayerController::IsTargetingEnemy() const
 {
 	return TargetingStatus == ETargetingStatus::TargetingEnemy;
@@ -487,25 +458,18 @@ void AElectricCastlePlayerController::SetupInputMode()
 {
 	DefaultMouseCursor = EMouseCursor::Default;
 	bShowMouseCursor = false;
-	if (!SelectionWheelManager->IsSelectionWheelActive())
-	{
-		SetInputMode(BuildGameAndUIInputMode());
-	}
-	else
-	{
-		SetInputMode(FInputModeGameOnly());
-	}
-	if (UCommonUIActionRouterBase* UIActionRouter = GetLocalPlayer()->GetSubsystem<UCommonUIActionRouterBase>())
-	{
-		UIActionRouter->SetActiveUIInputConfig(FUIInputConfig(ECommonInputMode::Game, EMouseCaptureMode::NoCapture, !bShowMouseCursor));
-	}
+	bEnableClickEvents = false;
+	bEnableMouseOverEvents = false;
+	FInputModeGameOnly InputModeData;
+	InputModeData.SetConsumeCaptureMouseDown(false);
+	SetInputMode(InputModeData);
 }
 
 FInputModeGameAndUI AElectricCastlePlayerController::BuildGameAndUIInputMode() const
 {
 	FInputModeGameAndUI InputModeData;
 	InputModeData.SetLockMouseToViewportBehavior(SelectionWheelManager->IsSelectionWheelActive() ? EMouseLockMode::LockAlways : EMouseLockMode::DoNotLock);
-	InputModeData.SetHideCursorDuringCapture(!IsInputTypeMouse() || SelectionWheelManager->IsSelectionWheelActive());
+	InputModeData.SetHideCursorDuringCapture(true);
 	return InputModeData;
 }
 
@@ -561,18 +525,7 @@ void AElectricCastlePlayerController::OnInputTypeChange(const ECommonInputType N
 
 void AElectricCastlePlayerController::OnEffectStateChanged_Aiming(const FGameplayTag AimingTag, const int TagCount)
 {
-	if (TagCount > 0)
-	{
-		bShowMouseCursor = false;
-		FInputModeGameOnly InputModeData;
-		InputModeData.SetConsumeCaptureMouseDown(true);
-		SetInputMode(InputModeData);
-	}
-	else
-	{
-		bShowMouseCursor = IsInputTypeMouse();
-		SetupInputMode();
-	}
+	SetupInputMode();
 }
 
 void AElectricCastlePlayerController::HandleSelectionWheelStateChanged(const FSelectionWheelStateChangedPayload& Payload)

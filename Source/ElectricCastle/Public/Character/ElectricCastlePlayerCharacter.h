@@ -116,8 +116,6 @@ public:
 	) override;
 	virtual int32 GetSpellPoints_Implementation() const override;
 	virtual void SpendSpellPoints_Implementation(int32 SpentPoints) override;
-	virtual void ShowMagicCircle_Implementation(UMaterialInterface* DecalMaterial = nullptr) override;
-	virtual void HideMagicCircle_Implementation() override;
 	UFUNCTION(BlueprintNativeEvent)
 	void SetFormMeshes(const FFormMeshConfig& FormMeshConfig);
 	UFUNCTION(BlueprintNativeEvent)
