@@ -440,14 +440,21 @@ FGameplayAbilitySpecHandle UElectricCastleAbilitySystemComponent::GiveActiveAbil
 )
 {
 	FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass, AbilityLevel);
-	if (const UElectricCastleGameplayAbility* AuraAbility = Cast<UElectricCastleGameplayAbility>(
-		AbilitySpec.Ability
-	))
+	UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(GetOwnerActor());
+	if (!GameDataSubsystem)
 	{
-		for (FGameplayTag StartupTag : AuraAbility->GetStartupInputTag())
-		{
-			AbilitySpec.GetDynamicSpecSourceTags().AddTag(StartupTag);
-		}
+		UE_LOG(
+			LogElectricCastle,
+			Error,
+			TEXT("No GameDataSubsystem found for [%s:%s]"),
+			*GetOwner()->GetName(),
+			*GetName()
+		);
+		return FGameplayAbilitySpecHandle();
+	}
+	if (const FElectricCastleAbilityInfo AbilityInfo = GameDataSubsystem->GetAbilityInfo()->FindAbilityInfoByAbilityClass(AbilityClass); AbilityInfo.IsValid())
+	{
+		AbilitySpec.GetDynamicSpecSourceTags().AddTag(AbilityInfo.InputTag);
 	}
 	const FGameplayTag EquippedTag = FElectricCastleGameplayTags::Get().Abilities_Status_Equipped;
 	AbilitySpec.GetDynamicSpecSourceTags().AddTag(EquippedTag);

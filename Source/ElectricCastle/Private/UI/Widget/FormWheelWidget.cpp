@@ -84,7 +84,7 @@ void UFormWheelWidget::CommitSelection_Implementation()
 		const UFormWheelFormWidget* FormWidget = Cast<UFormWheelFormWidget>(RadialLayout->GetSelectedChild());
 		if (!FormWidget)
 		{
-			UE_LOG(LogElectricCastle, Warning, TEXT("[%s] Unexpected selected form widget: %s"), *GetName(), *RadialLayout->GetSelectedChild()->GetName());
+			UE_LOG(LogElectricCastle, Warning, TEXT("[%s] Unexpected selected form widget"), *GetName());
 			return;
 		}
 		UE_LOG(LogElectricCastle, Log, TEXT("[%s] Selected form: %s"), *GetName(), *FormWidget->GetFormTag().ToString());

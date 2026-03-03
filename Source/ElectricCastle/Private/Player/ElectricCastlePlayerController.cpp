@@ -191,12 +191,7 @@ void AElectricCastlePlayerController::Move(const FInputActionValue& Value)
 		                      )
 		                      : true;
 
-	const bool bCanRotate = GetAbilitySystemComponent()
-		                        ? !GetAbilitySystemComponent()->HasMatchingGameplayTag(
-			                        FElectricCastleGameplayTags::Get().Player_Block_Rotation
-		                        )
-		                        : true;
-	if (!bCanMove && !bCanRotate)
+	if (!bCanMove)
 	{
 		if (MovementEffectHandle.IsValid())
 		{
@@ -218,28 +213,10 @@ void AElectricCastlePlayerController::Move(const FInputActionValue& Value)
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 		UCharacterMovementComponent* CharacterMovement = ControlledPawn->GetCharacterMovement();
-		if (bCanMove)
-		{
-			CharacterMovement->bOrientRotationToMovement = true;
-			ControlledPawn->bUseControllerRotationYaw = false;
-			ControlledPawn->AddMovementInput(ForwardDirection, InputAxisVector.Y);
-			ControlledPawn->AddMovementInput(RightDirection, InputAxisVector.X);
-		}
-		else if (bCanRotate)
-		{
-			CharacterMovement->bOrientRotationToMovement = false;
-			ControlledPawn->bUseControllerRotationYaw = true;
-			// Use horizontal input to rotate the pawn
-			if (!FMath::IsNearlyZero(InputAxisVector.X))
-			{
-				const float RotationAmount = FMath::Clamp(
-					InputAxisVector.X * GetWorld()->GetDeltaSeconds() * 90.f,
-					AimClampMin,
-					AimClampMax
-				);
-				ControlledPawn->AddControllerYawInput(RotationAmount);
-			}
-		}
+		CharacterMovement->bOrientRotationToMovement = true;
+		ControlledPawn->bUseControllerRotationYaw = false;
+		ControlledPawn->AddMovementInput(ForwardDirection, InputAxisVector.Y);
+		ControlledPawn->AddMovementInput(RightDirection, InputAxisVector.X);
 	}
 }
 
@@ -254,12 +231,31 @@ void AElectricCastlePlayerController::MoveEnd(const FInputActionValue& Value)
 
 void AElectricCastlePlayerController::Look(const FInputActionValue& InputActionValue)
 {
-	if (APawn* ControlledPawn = GetPawn())
+	const bool bCanRotate = GetAbilitySystemComponent()
+		                        ? !GetAbilitySystemComponent()->HasMatchingGameplayTag(
+			                        FElectricCastleGameplayTags::Get().Player_Block_Rotation
+		                        )
+		                        : true;
+	ACharacter* ControlledPawn = GetPawn<ACharacter>();
+	UCharacterMovementComponent* CharacterMovement = ControlledPawn ? ControlledPawn->GetCharacterMovement() : nullptr;
+	if (!ControlledPawn || !CharacterMovement)
 	{
-		const FVector2D InputAxisVector = InputActionValue.Get<FVector2D>();
-		ControlledPawn->AddControllerYawInput(InputAxisVector.X);
-		ControlledPawn->AddControllerPitchInput(InputAxisVector.Y);
+		UE_LOG(LogElectricCastle, Warning, TEXT("[%s] No pawn or movement component found for Look action"), *GetName());
+		return;
 	}
+	if (bCanRotate && bIsAiming)
+	{
+		CharacterMovement->bOrientRotationToMovement = false;
+		ControlledPawn->bUseControllerRotationYaw = true;
+	}
+	else
+	{
+		CharacterMovement->bOrientRotationToMovement = true;
+		ControlledPawn->bUseControllerRotationYaw = false;
+	}
+	const FVector2D InputAxisVector = InputActionValue.Get<FVector2D>();
+	ControlledPawn->AddControllerYawInput(bIsAiming ? FMath::Clamp(InputAxisVector.X, AimClampMin, AimClampMax) : InputAxisVector.X);
+	ControlledPawn->AddControllerPitchInput(bIsAiming ? FMath::Clamp(InputAxisVector.Y, AimClampMin, AimClampMax) : InputAxisVector.Y);
 }
 
 void AElectricCastlePlayerController::JumpStart(const FInputActionValue& InputActionValue)

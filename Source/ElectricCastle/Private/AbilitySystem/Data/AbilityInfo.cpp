@@ -26,3 +26,25 @@ FElectricCastleAbilityInfo UAbilityInfo::FindAbilityInfoForTag(const FGameplayTa
 	}
 	return FElectricCastleAbilityInfo();
 }
+
+FElectricCastleAbilityInfo UAbilityInfo::FindAbilityInfoByAbilityClass(TSubclassOf<UGameplayAbility> AbilityClass, bool bLogNotFound) const
+{
+	for (const FElectricCastleAbilityInfo& AbilityInfo : AbilityInformation)
+	{
+		if (AbilityInfo.Ability == AbilityClass)
+		{
+			return AbilityInfo;
+		}
+	}
+	if (bLogNotFound)
+	{
+		UE_LOG(
+			LogElectricCastle,
+			Error,
+			TEXT("Unable to find ability by tag [%s] on Ability Info [%s]"),
+			*AbilityClass->GetName(),
+			*GetNameSafe(this)
+		);
+	}
+	return FElectricCastleAbilityInfo();
+}
