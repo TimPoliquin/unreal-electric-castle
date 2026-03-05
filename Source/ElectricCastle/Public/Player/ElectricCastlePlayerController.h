@@ -9,6 +9,9 @@
 #include "InputMappingContext.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemInterface.h"
 #include "Actor/Highlight/HighlightTypes.h"
+
+#include "Aim/AimActorInterface.h"
+
 #include "GameFramework/PlayerController.h"
 #include "SelectionWheel/SelectionWheelManagerActorInterface.h"
 #include "SelectionWheel/SelectionWheelManagerComponent.h"
@@ -55,7 +58,7 @@ enum class EAttackMessageType : uint8
  * 
  */
 UCLASS()
-class ELECTRICCASTLE_API AElectricCastlePlayerController : public APlayerController, public ISelectionWheelManagerActorInterface
+class ELECTRICCASTLE_API AElectricCastlePlayerController : public APlayerController, public ISelectionWheelManagerActorInterface, public IAimActorInterface
 {
 	GENERATED_BODY()
 
@@ -96,6 +99,9 @@ public:
 	virtual USelectionWheelManagerComponent* GetSelectionWheelManagerComponent_Implementation() const override;
 	/** End SelectionWheelManagerActor Interface **/
 
+	/** Start IAimActorInterface **/
+	virtual UAimController* GetAimController_Implementation() const override;
+	/** End IAimActorInterface **/
 protected:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputMappingContext> AuraContext;
@@ -170,18 +176,12 @@ private:
 	void SetInputMode_KeyboardAndMouse_Server();
 	UFUNCTION()
 	void HandleSelectionWheelStateChanged(const FSelectionWheelStateChangedPayload& Payload);
-	UFUNCTION()
-	void HandleBlockAimTagChange(FGameplayTag BlockAimTag, int TagCount);
 
-
-	bool IsAiming();
+	bool IsAiming() const;
 	bool HasEffectiveGameplayTag(const FGameplayTag& Tag);
 
 	// Character Movement / Targeting
 	ETargetingStatus TargetingStatus = ETargetingStatus::NotTargeting;
-
-	bool bIsAiming = false;
-	bool bCanAim = false;
 
 	FHitResult CursorHit;
 	UPROPERTY(Replicated)

@@ -11,6 +11,7 @@
 #include "GameFramework/GameStateBase.h"
 #include "Player/ElectricCastlePlayerState.h"
 #include "UI/HUD/OverlayWidget.h"
+#include "UI/ViewModel/MVVM_Crosshair.h"
 #include "UI/ViewModel/MVVM_Inventory.h"
 #include "UI/ViewModel/MVVM_PlayerAbilityStates.h"
 #include "UI/ViewModel/MVVM_PlayerState.h"
@@ -218,6 +219,17 @@ void AElectricCastleHUD::InitializeViewModelsForPlayerState(AElectricCastlePlaye
 	AddPlayerStateViewModel(CreatePlayerStateViewModel(PlayerIdx, PlayerState));
 	AddPlayerAbilityStateViewModel(CreatePlayerAbilityStatesViewModel(PlayerIdx, PlayerState));
 	AddPlayerFormViewModel(CreatePlayerFormsViewModel(PlayerIdx, PlayerState));
+	// this is technically incorrect with the current implementation, but we'll be migrating away from a global/cross-player HUD to a
+	// player specific HUD in future work, so this will be fine then.
+	if (PlayerState->HasLocalNetOwner())
+	{
+		CrosshairViewModel = NewObject<UMVVM_Crosshair>(this, CrosshairViewModelClass);
+		CrosshairViewModel->InitializeDependencies(PlayerState);
+		if (OverlayWidget)
+		{
+			OverlayWidget->BindCrosshairViewModel(CrosshairViewModel);
+		}
+	}
 }
 
 void AElectricCastleHUD::OnPlayerStateAdded(const FGamePlayerStateAddedPayload& Payload)

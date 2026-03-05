@@ -1,6 +1,5 @@
 // Copyright Alien Shores
 
-
 #include "Character/ElectricCastlePlayerCharacter.h"
 #include "AbilitySystemComponent.h"
 #include "ElectricCastle/ElectricCastle.h"
@@ -28,17 +27,15 @@
 #include "GroomComponent.h"
 #include "LiveLinkInstance.h"
 #include "MetaHumanComponentUE.h"
-#include "Actor/Highlight/HighlightComponent.h"
 #include "Actor/MagicTether/TetherAbilityComponent.h"
 #include "Actor/Mesh/SocketManagerComponent.h"
 #include "Components/LODSyncComponent.h"
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "Game/Subsystem/PlayerManager.h"
-
 #include "Materials/MaterialParameterCollectionInstance.h"
+#include "Player/Aim/AimController.h"
 #include "Player/Equipment/WeaponInterface.h"
 #include "Player/Form/FormConfigTypes.h"
-
 
 AElectricCastlePlayerCharacter::AElectricCastlePlayerCharacter()
 {
@@ -93,6 +90,7 @@ AElectricCastlePlayerCharacter::AElectricCastlePlayerCharacter()
 	EquipmentComponent = CreateDefaultSubobject<UPlayerEquipmentComponent>(TEXT("Equipment Component"));
 	MotionWarpingComponent = CreateDefaultSubobject<UMotionWarpingComponent>(TEXT("Motion Warping"));
 	FormChangeComponent = CreateDefaultSubobject<UPlayerFormChangeComponent>(TEXT("Form Change Component"));
+	AimController = CreateDefaultSubobject<UAimController>(TEXT("Aim Controller"));
 	TetherComponent = CreateDefaultSubobject<UTetherAbilityComponent>(TEXT("Tether Component"));
 	MetaHumanComponent = CreateDefaultSubobject<UMetaHumanComponentUE>(TEXT("MetaHuman"));
 	LODSyncComponent = CreateDefaultSubobject<ULODSyncComponent>(TEXT("LODSync"));
@@ -249,6 +247,8 @@ void AElectricCastlePlayerCharacter::PostInitializeComponents()
 	Super::PostInitializeComponents();
 	SocketManagerComponent->RegisterSocket(GetMesh(), LeftHandConfig.SocketTag, LeftHandConfig.SocketName);
 	SocketManagerComponent->RegisterSocket(GetMesh(), RightHandConfig.SocketTag, RightHandConfig.SocketName);
+	AimController->OnAimStart.AddUniqueDynamic(this, &AElectricCastlePlayerCharacter::AimStart);
+	AimController->OnAimEnd.AddUniqueDynamic(this, &AElectricCastlePlayerCharacter::AimEnd);
 }
 
 void AElectricCastlePlayerCharacter::FaceRotation(const FRotator NewControlRotation, const float DeltaTime)
@@ -685,6 +685,11 @@ UPlayerFormChangeComponent* AElectricCastlePlayerCharacter::GetFormChangeCompone
 void AElectricCastlePlayerCharacter::SetAnimInstanceClass(const TSubclassOf<UAnimInstance> InAnimInstance)
 {
 	GetMesh()->SetAnimInstanceClass(InAnimInstance);
+}
+
+UAimController* AElectricCastlePlayerCharacter::GetAimController_Implementation() const
+{
+	return AimController;
 }
 
 void AElectricCastlePlayerCharacter::Construction_SetupMetaHuman_Implementation()

@@ -8,6 +8,7 @@
 #include "UI/WidgetController/ElectricCastleWidgetController.h"
 #include "ElectricCastleHUD.generated.h"
 
+class UMVVM_Crosshair;
 class ULoadingScreenWidget;
 class UMVVM_PlayerForms;
 class UFormWheelWidget;
@@ -85,6 +86,10 @@ protected:
 	TSubclassOf<UMVVM_PlayerForms> PlayerFormsViewModelClass;
 	UPROPERTY()
 	TArray<TObjectPtr<UMVVM_PlayerForms>> PlayerFormsViewModels;
+	UPROPERTY(EditDefaultsOnly, Category = "Properties")
+	TSubclassOf<UMVVM_Crosshair> CrosshairViewModelClass;
+	UPROPERTY()
+	TObjectPtr<UMVVM_Crosshair> CrosshairViewModel;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
 	TSubclassOf<UOverlayWidget> OverlayWidgetClass;

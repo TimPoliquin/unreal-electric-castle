@@ -6,6 +6,8 @@
 #include "Blueprint/UserWidget.h"
 #include "OverlayWidget.generated.h"
 
+class UMVVM_Crosshair;
+class UCrosshairWidget;
 class UFormWheelWidgetManager;
 class UFormWheelWidget;
 class AElectricCastlePlayerState;
@@ -35,6 +37,12 @@ public:
 	void BindPlayerAbilityStatesViewModel(UMVVM_PlayerAbilityStates* ViewModel);
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void BindPlayerFormsViewModel(UMVVM_PlayerForms* ViewModel);
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void BindCrosshairViewModel(UMVVM_Crosshair* ViewModel);
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
 	UFormWheelWidgetManager* GetFormWheelWidgetManager();
+
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta=(BindWidget))
+	TObjectPtr<UCrosshairWidget> Crosshair;
 };

@@ -8,6 +8,10 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Interaction/CombatInterface.h"
+
+#include "Player/Aim/AimActorInterface.h"
+#include "Player/Aim/AimController.h"
+
 #include "Tags/ElectricCastleGameplayTags.h"
 
 void UElectricCastleAnimInstance::NativeUpdateAnimation(const float DeltaSeconds)
@@ -55,9 +59,9 @@ AController* UElectricCastleAnimInstance::TryGetController()
 
 void UElectricCastleAnimInstance::UpdateIsAiming_Implementation()
 {
-	if (const UAbilitySystemComponent* AbilitySystemComponent = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TryGetPawnOwner()))
+	if (const UAimController* AimController = IAimActorInterface::GetAimController(TryGetPawnOwner()))
 	{
-		bIsAiming = AbilitySystemComponent->HasMatchingGameplayTag(FElectricCastleGameplayTags::Get().Effect_State_Aiming);
+		bIsAiming = AimController->IsAiming();
 	}
 	else
 	{

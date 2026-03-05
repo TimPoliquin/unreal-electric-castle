@@ -61,11 +61,13 @@ struct ELECTRICCASTLE_API FLiveLinkCharacterConfig
 };
 
 UCLASS(Abstract, Blueprintable)
-class ELECTRICCASTLE_API AElectricCastlePlayerCharacter : public AElectricCastleCharacter, public IPlayerInterface,
+class ELECTRICCASTLE_API AElectricCastlePlayerCharacter : public AElectricCastleCharacter,
+                                                          public IPlayerInterface,
                                                           public IFormChangeActorInterface,
                                                           public IEquipmentManagerInterface,
                                                           public ITetherAbilityActorInterface,
-                                                          public IMagicHandPossessorInterface
+                                                          public IMagicHandPossessorInterface,
+                                                          public IAimActorInterface
 {
 	GENERATED_BODY()
 
@@ -133,6 +135,10 @@ public:
 	void SetAnimInstanceClass(const TSubclassOf<UAnimInstance> InAnimInstance);
 	/** FormChangeActorInterface End */
 
+	/** Start AimActorInterface **/
+	virtual UAimController* GetAimController_Implementation() const override;
+	/** End AimActorInterface **/
+
 	/** EquipmentManagerInterface Start */
 	virtual UPlayerEquipmentComponent* GetEquipmentComponent_Implementation() const override
 	{
@@ -197,6 +203,8 @@ protected:
 	TObjectPtr<UMotionWarpingComponent> MotionWarpingComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UPlayerFormChangeComponent> FormChangeComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
+	TObjectPtr<UAimController> AimController;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UMetaHumanComponentUE> MetaHumanComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemInterface.h"
+#include "Aim/AimActorInterface.h"
 #include "Form/FormChangeActorInterface.h"
 #include "Game/Save/SaveableInterface.h"
 #include "GameFramework/PlayerState.h"
@@ -23,7 +24,8 @@ class UAbilitySystemComponent;
 UCLASS(Abstract, Blueprintable)
 class ELECTRICCASTLE_API AElectricCastlePlayerState : public APlayerState, public IAbilitySystemInterface,
                                                       public IElectricCastleAbilitySystemInterface,
-                                                      public IFormChangeActorInterface, public ISaveableInterface
+                                                      public IFormChangeActorInterface, public ISaveableInterface,
+                                                      public IAimActorInterface
 {
 	GENERATED_BODY()
 
@@ -50,6 +52,11 @@ public:
 	/** Start IFormChangeActorInterface **/
 	virtual UPlayerFormChangeComponent* GetFormChangeComponent_Implementation() const override;
 	/** End IFormChangeActorInterface **/
+
+	/** Start IAimActorInterface **/
+	virtual UAimController* GetAimController_Implementation() const override;
+	/** End IAimActorInterface **/
+
 
 	void InitializeAbilityActorInfo();
 

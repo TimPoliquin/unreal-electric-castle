@@ -23,6 +23,8 @@
 #include "Tags/ElectricCastleGameplayTags.h"
 #include "UI/Widget/DamageTextComponent.h"
 #include "Player/ElectricCastlePlayerState.h"
+#include "Player/Aim/AimActorInterface.h"
+#include "Player/Aim/AimController.h"
 #include "Player/Form/PlayerFormPrimaryAsset.h"
 #include "Player/SelectionWheel/SelectionWheelManagerComponent.h"
 
@@ -66,7 +68,14 @@ void AElectricCastlePlayerController::BeginPlay()
 void AElectricCastlePlayerController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
-	CursorTrace();
+	// CursorTrace();
+	if (UAimController* AimController = GetAimController(GetPawn()))
+	{
+		FVector CameraLocation;
+		FRotator CameraRotation;
+		GetPlayerViewPoint(CameraLocation, CameraRotation);
+		AimController->TraceForTarget(GetPawn()->GetActorLocation(), CameraLocation, CameraRotation);
+	}
 }
 
 void AElectricCastlePlayerController::GetLifetimeReplicatedProps(
@@ -159,9 +168,10 @@ void AElectricCastlePlayerController::SetupInputComponent()
 
 void AElectricCastlePlayerController::OnAbilitySystemReady_Implementation(UElectricCastleAbilitySystemComponent* InAbilitySystemComponent)
 {
-	const FGameplayTag& AimTag = FElectricCastleGameplayTags::Get().Player_Block_Aim;
-	InAbilitySystemComponent->RegisterGameplayTagEvent(AimTag).AddUObject(this, &AElectricCastlePlayerController::HandleBlockAimTagChange);
-	HandleBlockAimTagChange(AimTag, InAbilitySystemComponent->HasMatchingGameplayTag(AimTag));
+	if (UAimController* AimController = GetAimController(GetPawn()))
+	{
+		AimController->HandleAbilitySystemReady(InAbilitySystemComponent);
+	}
 }
 
 void AElectricCastlePlayerController::OnGameDataLoaded_Implementation()
@@ -236,6 +246,7 @@ void AElectricCastlePlayerController::Look(const FInputActionValue& InputActionV
 			                        FElectricCastleGameplayTags::Get().Player_Block_Rotation
 		                        )
 		                        : true;
+	const bool bIsAiming = IsAiming();
 	ACharacter* ControlledPawn = GetPawn<ACharacter>();
 	UCharacterMovementComponent* CharacterMovement = ControlledPawn ? ControlledPawn->GetCharacterMovement() : nullptr;
 	if (!ControlledPawn || !CharacterMovement)
@@ -285,27 +296,17 @@ void AElectricCastlePlayerController::JumpEnd(const FInputActionValue& InputActi
 
 void AElectricCastlePlayerController::AimStart()
 {
-	if (bIsAiming || !bCanAim)
+	if (UAimController* AimController = GetAimController(GetPawn()))
 	{
-		return;
-	}
-	bIsAiming = true;
-	if (AElectricCastlePlayerCharacter* PlayerCharacter = Cast<AElectricCastlePlayerCharacter>(GetPawn()))
-	{
-		PlayerCharacter->AimStart();
+		AimController->AimStart();
 	}
 }
 
 void AElectricCastlePlayerController::AimEnd()
 {
-	if (!bIsAiming)
+	if (UAimController* AimController = GetAimController(GetPawn()))
 	{
-		return;
-	}
-	bIsAiming = false;
-	if (AElectricCastlePlayerCharacter* PlayerCharacter = Cast<AElectricCastlePlayerCharacter>(GetPawn()))
-	{
-		PlayerCharacter->AimEnd();
+		AimController->AimEnd();
 	}
 }
 
@@ -509,6 +510,11 @@ USelectionWheelManagerComponent* AElectricCastlePlayerController::GetSelectionWh
 	return SelectionWheelManager;
 }
 
+UAimController* AElectricCastlePlayerController::GetAimController_Implementation() const
+{
+	return GetAimController(GetPawn());
+}
+
 void AElectricCastlePlayerController::OnInputTypeChange(const ECommonInputType NewInputType)
 {
 	if (bDebug)
@@ -543,29 +549,11 @@ void AElectricCastlePlayerController::HandleSelectionWheelStateChanged(const FSe
 	SetupInputMode();
 }
 
-void AElectricCastlePlayerController::HandleBlockAimTagChange(FGameplayTag BlockAimTag, int TagCount)
+bool AElectricCastlePlayerController::IsAiming() const
 {
-	if (TagCount > 0)
+	if (const UAimController* AimController = GetAimController(GetPawn()))
 	{
-		bCanAim = false;
-		if (bIsAiming)
-		{
-			AimEnd();
-		}
-	}
-	else
-	{
-		bCanAim = true;
-	}
-}
-
-bool AElectricCastlePlayerController::IsAiming()
-{
-	if (const UElectricCastleAbilitySystemComponent* LocalAbilitySystemComponent = GetAbilitySystemComponent())
-	{
-		return LocalAbilitySystemComponent->HasMatchingGameplayTag(
-			FElectricCastleGameplayTags::Get().Effect_State_Aiming
-		);
+		return AimController->IsAiming();
 	}
 	return false;
 }
