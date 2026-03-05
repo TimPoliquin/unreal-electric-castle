@@ -7,6 +7,7 @@
 
 #include "Components/NamedSlot.h"
 #include "UI/HUD/ElectricCastleHUD.h"
+#include "UI/Widget/Crosshair/CrosshairWidget.h"
 #include "UI/Widget/Form/FormWheelWidgetManager.h"
 
 TArray<UMVVM_PlayerState*> UOverlayWidget::GetPlayerStateViewModels() const
@@ -16,6 +17,14 @@ TArray<UMVVM_PlayerState*> UOverlayWidget::GetPlayerStateViewModels() const
 		return HUD->GetPlayerStateViewModels();
 	}
 	return TArray<UMVVM_PlayerState*>();
+}
+
+void UOverlayWidget::BindCrosshairViewModel_Implementation(UMVVM_Crosshair* ViewModel)
+{
+	if (ViewModel && Crosshair)
+	{
+		Crosshair->InitializeDependencies(ViewModel);
+	}
 }
 
 void UOverlayWidget::ShowMajorNotification_Implementation(UUserWidget* NotificationWidget, UNamedSlot* NotificationSlot)

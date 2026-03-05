@@ -5,6 +5,7 @@
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "IContentBrowserSingleton.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Input/ElectricCastleInputComponent.h"
 #include "Input/Utils/PlayerInputFunctionLibrary.h"
@@ -53,7 +54,7 @@ void USelectionWheelManagerComponent::RemoveListener(const UObject* ToRemove)
 	{
 		UPlayerInputFunctionLibrary::RemoveInputMappingContext(GetOwner(), InputMappingContext);
 		bHasAddedContext = false;
-		FSelectionWheelStateChangedPayload(false);
+		OnSelectionWheelStateChanged.Broadcast(FSelectionWheelStateChangedPayload(false));
 	}
 }
 

@@ -92,6 +92,11 @@ UPlayerFormChangeComponent* AElectricCastlePlayerState::GetFormChangeComponent_I
 	return GetFormChangeComponent(GetPawn());
 }
 
+UAimController* AElectricCastlePlayerState::GetAimController_Implementation() const
+{
+	return GetAimController(GetPawn());
+}
+
 void AElectricCastlePlayerState::InitializeAbilityActorInfo()
 {
 	AbilitySystemComponent->InitAbilityActorInfo(this, GetPawn());

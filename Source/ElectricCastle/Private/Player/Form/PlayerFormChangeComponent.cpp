@@ -135,10 +135,34 @@ void UPlayerFormChangeComponent::FormChange_UpdateAbilities_Implementation(const
 				);
 				AbilitySystemComponent->RemoveAbilitiesWithTag(AbilityTag);
 			}
+			for (const FGameplayTag& AbilityTag : Payload.FormData->PassiveAbilities)
+			{
+				UE_LOG(
+					LogElectricCastle,
+					Log,
+					TEXT("[%s:%s] Adding ability %s"),
+					*GetOwner()->GetName(),
+					*GetName(),
+					*AbilityTag.ToString()
+				);
+				AbilitySystemComponent->RemoveAbilitiesWithTag(AbilityTag);
+			}
 		}
 		if (const UPlayerFormPrimaryAsset* CurrentFormConfig = GetPlayerFormConfigRow(Payload.NewFormTag))
 		{
 			for (const FGameplayTag& AbilityTag : CurrentFormConfig->Abilities)
+			{
+				UE_LOG(
+					LogElectricCastle,
+					Log,
+					TEXT("[%s:%s] Adding ability %s"),
+					*GetOwner()->GetName(),
+					*GetName(),
+					*AbilityTag.ToString()
+				);
+				AbilitySystemComponent->GrantAbilitiesWithTag(AbilityTag);
+			}
+			for (const FGameplayTag& AbilityTag : CurrentFormConfig->PassiveAbilities)
 			{
 				UE_LOG(
 					LogElectricCastle,

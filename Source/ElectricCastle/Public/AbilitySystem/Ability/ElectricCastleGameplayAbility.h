@@ -54,10 +54,6 @@ class ELECTRICCASTLE_API UElectricCastleGameplayAbility : public UGameplayAbilit
 
 public:
 	UElectricCastleGameplayAbility();
-	FORCEINLINE TArray<FGameplayTag> GetStartupInputTag() const
-	{
-		return StartupInputTags;
-	}
 
 	virtual FString GetAbilityName() const
 	{
@@ -141,6 +137,4 @@ protected:
 private:
 	UPROPERTY(EditDefaultsOnly, Category="Properties")
 	FName AbilityName;
-	UPROPERTY(EditDefaultsOnly, Category="Properties", meta=(Categories="InputTag"))
-	TArray<FGameplayTag> StartupInputTags;
 };

@@ -51,4 +51,5 @@ public:
 	TArray<FElectricCastleAbilityInfo> AbilityInformation;
 
 	FElectricCastleAbilityInfo FindAbilityInfoForTag(const FGameplayTag AbilityTag, bool bLogNotFound = false) const;
+	FElectricCastleAbilityInfo FindAbilityInfoByAbilityClass(TSubclassOf<UGameplayAbility> AbilityClass, bool bLogNotFound = false) const;
 };

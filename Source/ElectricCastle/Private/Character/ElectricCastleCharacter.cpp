@@ -27,10 +27,12 @@ AElectricCastleCharacter::AElectricCastleCharacter()
 	PrimaryActorTick.bCanEverTick = false;
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_ExcludeCharacters, ECR_Overlap);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Target, ECR_Block);
 	GetCapsuleComponent()->SetGenerateOverlapEvents(true);
 	GetMesh()->SetCollisionResponseToChannel(ECC_Projectile, ECR_Overlap);
 	GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECC_ExcludeCharacters, ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECC_Target, ECR_Block);
 	GetMesh()->SetGenerateOverlapEvents(true);
 	// fixes animations not replicating bone positions correctly on the server
 	GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;

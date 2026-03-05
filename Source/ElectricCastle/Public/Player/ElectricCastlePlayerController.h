@@ -9,6 +9,9 @@
 #include "InputMappingContext.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemInterface.h"
 #include "Actor/Highlight/HighlightTypes.h"
+
+#include "Aim/AimActorInterface.h"
+
 #include "GameFramework/PlayerController.h"
 #include "SelectionWheel/SelectionWheelManagerActorInterface.h"
 #include "SelectionWheel/SelectionWheelManagerComponent.h"
@@ -55,7 +58,7 @@ enum class EAttackMessageType : uint8
  * 
  */
 UCLASS()
-class ELECTRICCASTLE_API AElectricCastlePlayerController : public APlayerController, public ISelectionWheelManagerActorInterface
+class ELECTRICCASTLE_API AElectricCastlePlayerController : public APlayerController, public ISelectionWheelManagerActorInterface, public IAimActorInterface
 {
 	GENERATED_BODY()
 
@@ -96,6 +99,9 @@ public:
 	virtual USelectionWheelManagerComponent* GetSelectionWheelManagerComponent_Implementation() const override;
 	/** End SelectionWheelManagerActor Interface **/
 
+	/** Start IAimActorInterface **/
+	virtual UAimController* GetAimController_Implementation() const override;
+	/** End IAimActorInterface **/
 protected:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputMappingContext> AuraContext;
@@ -136,6 +142,8 @@ protected:
 	virtual void SetupInputComponent() override;
 	UFUNCTION(BlueprintNativeEvent)
 	void OnGameDataLoaded();
+	UFUNCTION(BlueprintNativeEvent)
+	void OnAbilitySystemReady(UElectricCastleAbilitySystemComponent* InAbilitySystemComponent);
 
 private:
 	FHighlightContext HighlightContext;
@@ -146,7 +154,9 @@ private:
 	void Look(const FInputActionValue& InputActionValue);
 	void JumpStart(const FInputActionValue& InputActionValue);
 	void JumpEnd(const FInputActionValue& InputActionValue);
-	void Aim(const FInputActionValue& InputActionValue);
+	void AimStart();
+	void AimEnd();
+	void Aim_Rotation(const FInputActionValue& InputActionValue);
 	void CursorTrace();
 	UElectricCastleAbilitySystemComponent* GetAbilitySystemComponent();
 	void AbilityInputTagPressed(FGameplayTag InputTag);
@@ -165,11 +175,10 @@ private:
 	UFUNCTION(Server, Reliable)
 	void SetInputMode_KeyboardAndMouse_Server();
 	UFUNCTION()
-	void OnEffectStateChanged_Aiming(FGameplayTag AimingTag, int TagCount);
-	UFUNCTION()
 	void HandleSelectionWheelStateChanged(const FSelectionWheelStateChangedPayload& Payload);
 
-	bool IsAiming();
+	bool IsAiming() const;
+	bool HasEffectiveGameplayTag(const FGameplayTag& Tag);
 
 	// Character Movement / Targeting
 	ETargetingStatus TargetingStatus = ETargetingStatus::NotTargeting;
