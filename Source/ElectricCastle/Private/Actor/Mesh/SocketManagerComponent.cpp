@@ -89,7 +89,8 @@ void USocketManagerComponent::RegisterSocketConfig(const FSocketMeshConfig& Sock
 	SocketConfigs.Add(SocketConfig);
 }
 
-void USocketManagerComponent::AttachByTag(USceneComponent* InSkeletalMesh, const FGameplayTag SocketTag) const
+void USocketManagerComponent::AttachByTag(USceneComponent* InSkeletalMesh, FGameplayTag SocketTag, const EAttachmentRule LocationAttachRule, const EAttachmentRule RotationAttachRule,
+                                          const EAttachmentRule ScaleAttachRule) const
 {
 	if (!GetOwner()->HasAuthority())
 	{
@@ -103,7 +104,8 @@ void USocketManagerComponent::AttachByTag(USceneComponent* InSkeletalMesh, const
 			{
 				UE_LOG(LogElectricCastle, Warning, TEXT("[%s:%s] Attaching to socket [%s]"), *GetOwner()->GetName(), *GetName(), *SocketTag.ToString())
 			}
-			InSkeletalMesh->AttachToComponent(SocketConfig.MeshComponent.Get(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, SocketConfig.SocketName);
+			const FAttachmentTransformRules AttachRules(LocationAttachRule, RotationAttachRule, ScaleAttachRule, false);
+			InSkeletalMesh->AttachToComponent(SocketConfig.MeshComponent.Get(), AttachRules, SocketConfig.SocketName);
 		}
 		else if (bDebug)
 		{

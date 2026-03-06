@@ -87,10 +87,25 @@ void ABasicEquipmentActor::AddImpulse_Implementation(const FVector Impulse)
 	GetMesh()->AddImpulse(Impulse, NAME_None, true);
 }
 
+void ABasicEquipmentActor::BeginPlay()
+{
+	Super::BeginPlay();
+	SetActorTickEnabled(bDebug);
+}
+
 void ABasicEquipmentActor::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 	RegisterSocketsToSocketManager(SocketManagerComponent);
+}
+
+void ABasicEquipmentActor::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	if (bDebug)
+	{
+		DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + GetActorForwardVector() * 5000, FColor::Red, false, 0, 0, .25f);
+	}
 }
 
 void ABasicEquipmentActor::RegisterSocketsToSocketManager_Implementation(USocketManagerComponent* InSocketManagerComponent) const

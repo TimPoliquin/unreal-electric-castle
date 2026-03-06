@@ -65,9 +65,12 @@ void UBeamGameplayAbility::SpawnBeam_Implementation()
 	{
 		SourceObject = GetAvatarActorFromActorInfo();
 	}
+	const FVector StartLocation = GetAvatarActorSocketLocation(SocketTag);
+	const FRotator StartRotation = CalculateSpawnRotationFacingAimTarget(StartLocation);
+	const FTransform StartTransform = FTransform(StartRotation, StartLocation);
 	BeamActor = GetWorld()->SpawnActorDeferred<ABeamActor>(
 		BeamClass,
-		SourceObject->GetActorTransform(),
+		StartTransform,
 		SourceObject,
 		Cast<APawn>(GetAvatarActorFromActorInfo()),
 		ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
@@ -92,16 +95,15 @@ void UBeamGameplayAbility::SpawnBeam_Implementation()
 			break;
 		}
 		BeamActor->SetTraceParams(MaxBeamLength.GetValueAtLevel(GetAbilityLevel()), BeamRadius.GetValueAtLevel(GetAbilityLevel()), BeamTraceChannel, bDebug);
-		BeamActor->SetTraceOrigin(GetAvatarActorFromActorInfo());
 		if (ADamageBeamActor* DamageBeamActor = Cast<ADamageBeamActor>(BeamActor))
 		{
 			DamageBeamActor->SetDamageEffectParams(MakeDamageEffectParamsFromClassDefaults(nullptr));
 		}
 	}
-	BeamActor->FinishSpawning(SourceObject->GetActorTransform());
+	BeamActor->FinishSpawning(StartTransform);
 	if (const USocketManagerComponent* SocketManagerComponent = ISocketManagerActor::GetSocketManagerComponent(SourceObject))
 	{
-		SocketManagerComponent->AttachByTag(BeamActor->GetRootComponent(), SocketTag);
+		SocketManagerComponent->AttachByTag(BeamActor->GetRootComponent(), SocketTag, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld);
 	}
 	else
 	{

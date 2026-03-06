@@ -148,6 +148,15 @@ FRotator UElectricCastleGameplayAbility::GetAvatarActorForwardRotator() const
 	return UKismetMathLibrary::MakeRotFromX(GetAvatarActorFromActorInfo()->GetActorForwardVector());
 }
 
+FVector UElectricCastleGameplayAbility::GetAvatarActorSocketLocation(const FGameplayTag& SocketTag) const
+{
+	if (USocketManagerComponent* SocketManagerComponent = ISocketManagerActor::GetSocketManagerComponent(GetAvatarActorFromActorInfo()))
+	{
+		return SocketManagerComponent->GetSocketLocation(SocketTag);
+	}
+	return GetAvatarActorFromActorInfo()->GetActorLocation();
+}
+
 FRotator UElectricCastleGameplayAbility::CalculateRotationToTarget(const AActor* Target, const FVector StartingLocation, const float ProjectileSpeed, const bool bAffectedByGravity) const
 {
 	if (!Target)

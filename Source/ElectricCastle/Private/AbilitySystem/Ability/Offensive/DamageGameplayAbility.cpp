@@ -10,6 +10,10 @@
 #include "Character/EnemyInterface.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Interaction/CombatInterface.h"
+
+#include "Player/Aim/AimActorInterface.h"
+#include "Player/Aim/AimController.h"
+
 #include "Tags/ElectricCastleGameplayTags.h"
 #include "Utils/ArrayUtils.h"
 
@@ -246,6 +250,15 @@ void UDamageGameplayAbility::GetTargetsInAttackRange(
 void UDamageGameplayAbility::ApplyDefaultDamageConfig(AActor* DamageDealingActor) const
 {
 	IDamageDealingActor::ApplyDamageEffectParams(DamageDealingActor, MakeDamageEffectParamsFromClassDefaults());
+}
+
+FRotator UDamageGameplayAbility::CalculateSpawnRotationFacingAimTarget_Implementation(const FVector SpawnLocation) const
+{
+	if (const UAimController* AimController = IAimActorInterface::GetAimController(GetAvatarActorFromActorInfo()))
+	{
+		return AimController->CalculateRotationToFaceAimTarget(SpawnLocation);
+	}
+	return GetAvatarActorFromActorInfo()->GetActorForwardVector().Rotation();
 }
 
 void UDamageGameplayAbility::FaceTarget_Implementation()

@@ -59,26 +59,33 @@ public:
 	bool HasTarget() const;
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	AActor* GetTarget() const;
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FVector GetHitLocation() const;
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FRotator CalculateRotationToFaceAimTarget(const FVector& Location) const;
 
 	void TraceForTarget(const FVector& PlayerLocation, const FVector& CameraLocation, const FRotator& CameraRotation);
+	FHitResult GetTraceResult() const { return TraceResult; }
 
 protected:
 	void SetCanAim(bool bInCanAim);
 	void SetIsAiming(bool bInIsAiming);
-	void SetTarget(AActor* InTarget);
-	void ClearTarget();
+	void SetTarget(AActor* InTarget) const;
+	void ClearTarget(const AActor* InOldTarget) const;
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Aim")
 	bool bCanAim = false;
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Aim")
 	bool bIsAiming = false;
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Aim")
 	bool bIsFiring = false;
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Aim")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Aim")
 	float TraceDistance = 1000.f;
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Aim")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Aim")
 	float TraceRadius = 10.f;
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Aim")
-	TWeakObjectPtr<AActor> Target;
+	FHitResult TraceResult;
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Aim")
+	FVector TraceEndLocation;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Aim")
 	bool bDebug = false;
 

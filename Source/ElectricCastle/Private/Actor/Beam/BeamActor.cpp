@@ -7,12 +7,19 @@
 #include "Actor/ReflectiveInterface.h"
 #include "Components/AudioComponent.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
+
+#include "Kismet/KismetMathLibrary.h"
+
 #include "Net/UnrealNetwork.h"
+
+#include "Player/Aim/AimActorInterface.h"
+#include "Player/Aim/AimController.h"
 
 ABeamActor::ABeamActor()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	SetRootComponent(CreateDefaultSubobject<USceneComponent>(TEXT("Root")));
+	GetRootComponent()->SetUsingAbsoluteRotation(true);
 	BeamComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Beam Component"));
 	BeamComponent->SetupAttachment(GetRootComponent());
 	SFXComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("SFX Component"));
@@ -36,6 +43,7 @@ void ABeamActor::Tick(float DeltaTime)
 void ABeamActor::Update_Implementation()
 {
 	FHitResult HitResult;
+	UpdateStartingLocation();
 	TraceDestination(HitResult);
 	UpdateBeamDestination(HitResult);
 	UpdateBeamTargetEffect(HitResult);
@@ -49,8 +57,23 @@ void ABeamActor::Update_Implementation()
 	}
 }
 
+void ABeamActor::UpdateStartingLocation_Implementation()
+{
+	if (const UAimController* AimController = IAimActorInterface::GetAimController(GetInstigator()))
+	{
+		const FVector StartLocation = GetActorLocation();
+		const FVector EndLocation = AimController->GetHitLocation();
+		SetActorRotation(UKismetMathLibrary::FindLookAtRotation(StartLocation, EndLocation));
+	}
+}
+
 void ABeamActor::TraceDestination_Implementation(FHitResult& HitResult)
 {
+	if (const UAimController* AimController = IAimActorInterface::GetAimController(GetInstigator()))
+	{
+		HitResult = AimController->GetTraceResult();
+		return;
+	}
 	UElectricCastleAbilitySystemLibrary::FindHitBySphereTrace(
 		TraceOrigin ? TraceOrigin : this,
 		FSphereTraceParams(TraceDistance, TraceRadius, TraceChannel, IgnoreActors, bDebug),
@@ -178,7 +201,7 @@ void ABeamActor::SpawnChildBeam_Implementation(const FHitResult& OriginHit, cons
 		GetClass(),
 		ChildTransform,
 		this,
-		GetInstigator(),
+		nullptr,
 		ESpawnActorCollisionHandlingMethod::AlwaysSpawn
 	);
 	InitializeChildBeamProperties(ChildBeam, OriginHit);
