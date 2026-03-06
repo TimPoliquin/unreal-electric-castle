@@ -135,11 +135,6 @@ void AElectricCastlePlayerController::SetupInputComponent()
 		ElectricCastleInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AElectricCastlePlayerController::JumpStart);
 		ElectricCastleInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AElectricCastlePlayerController::JumpEnd);
 	}
-	if (AimAction)
-	{
-		ElectricCastleInputComponent->BindAction(AimAction, ETriggerEvent::Started, this, &AElectricCastlePlayerController::AimStart);
-		ElectricCastleInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &AElectricCastlePlayerController::AimEnd);
-	}
 
 	ElectricCastleInputComponent->BindAction(
 		FormChangeAction,
@@ -291,22 +286,6 @@ void AElectricCastlePlayerController::JumpEnd(const FInputActionValue& InputActi
 	if (ACharacter* ControlledPawn = GetPawn<ACharacter>())
 	{
 		ControlledPawn->StopJumping();
-	}
-}
-
-void AElectricCastlePlayerController::AimStart()
-{
-	if (UAimController* AimController = GetAimController(GetPawn()))
-	{
-		AimController->AimStart();
-	}
-}
-
-void AElectricCastlePlayerController::AimEnd()
-{
-	if (UAimController* AimController = GetAimController(GetPawn()))
-	{
-		AimController->AimEnd();
 	}
 }
 

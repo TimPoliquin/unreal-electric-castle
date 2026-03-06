@@ -114,8 +114,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TSubclassOf<UGameplayEffect> MovementEffect;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	TObjectPtr<UInputAction> AimAction;
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	float AimClampMin = -1.f;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	float AimClampMax = 1.f;
@@ -154,8 +152,6 @@ private:
 	void Look(const FInputActionValue& InputActionValue);
 	void JumpStart(const FInputActionValue& InputActionValue);
 	void JumpEnd(const FInputActionValue& InputActionValue);
-	void AimStart();
-	void AimEnd();
 	void Aim_Rotation(const FInputActionValue& InputActionValue);
 	void CursorTrace();
 	UElectricCastleAbilitySystemComponent* GetAbilitySystemComponent();
