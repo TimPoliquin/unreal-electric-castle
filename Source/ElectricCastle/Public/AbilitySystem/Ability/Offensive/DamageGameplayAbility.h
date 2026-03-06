@@ -95,6 +95,8 @@ public:
 protected:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	FRotator CalculateSpawnRotationFacingAimTarget(const FVector SpawnLocation) const;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void RotateTowardAvatarActorAimTarget(AActor* ActorToRotate) const;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Properties|Damage")
 	TSubclassOf<UGameplayEffect> DamageEffectClass;
