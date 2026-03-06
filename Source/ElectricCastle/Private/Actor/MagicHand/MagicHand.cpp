@@ -140,7 +140,7 @@ void AMagicHand::Launch_Implementation(AActor* InPossessor, const float InSpeed,
 	GrabCollisionComponent->Activate();
 	ProjectileMovementComponent->InitialSpeed = InSpeed;
 	ProjectileMovementComponent->MaxSpeed = InSpeed;
-	ProjectileMovementComponent->Velocity = InPossessor->GetActorForwardVector() * InSpeed;
+	ProjectileMovementComponent->Velocity = GetActorForwardVector() * InSpeed;
 	ProjectileMovementComponent->Activate();
 	UpdateTetherFXBeamEnd();
 }

@@ -135,6 +135,10 @@ protected:
 	FRotator GetAvatarActorForwardRotator() const;
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FVector GetAvatarActorSocketLocation(const FGameplayTag& SocketTag) const;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	FRotator CalculateSpawnRotationFacingAimTarget(const FVector SpawnLocation) const;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void RotateTowardAvatarActorAimTarget(AActor* ActorToRotate) const;
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category="Properties")

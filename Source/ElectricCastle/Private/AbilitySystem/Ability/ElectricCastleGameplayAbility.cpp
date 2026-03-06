@@ -16,6 +16,7 @@
 #include "Interaction/CombatInterface.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Player/ElectricCastlePlayerController.h"
+#include "Player/Aim/AimController.h"
 
 
 UElectricCastleGameplayAbility::UElectricCastleGameplayAbility()
@@ -155,6 +156,23 @@ FVector UElectricCastleGameplayAbility::GetAvatarActorSocketLocation(const FGame
 		return SocketManagerComponent->GetSocketLocation(SocketTag);
 	}
 	return GetAvatarActorFromActorInfo()->GetActorLocation();
+}
+
+void UElectricCastleGameplayAbility::RotateTowardAvatarActorAimTarget_Implementation(AActor* ActorToRotate) const
+{
+	if (const UAimController* AimController = IAimActorInterface::GetAimController(GetAvatarActorFromActorInfo()))
+	{
+		ActorToRotate->SetActorRotation(AimController->CalculateRotationToFaceAimTarget(ActorToRotate->GetActorLocation()));
+	}
+}
+
+FRotator UElectricCastleGameplayAbility::CalculateSpawnRotationFacingAimTarget_Implementation(const FVector SpawnLocation) const
+{
+	if (const UAimController* AimController = IAimActorInterface::GetAimController(GetAvatarActorFromActorInfo()))
+	{
+		return AimController->CalculateRotationToFaceAimTarget(SpawnLocation);
+	}
+	return GetAvatarActorFromActorInfo()->GetActorForwardVector().Rotation();
 }
 
 FRotator UElectricCastleGameplayAbility::CalculateRotationToTarget(const AActor* Target, const FVector StartingLocation, const float ProjectileSpeed, const bool bAffectedByGravity) const
