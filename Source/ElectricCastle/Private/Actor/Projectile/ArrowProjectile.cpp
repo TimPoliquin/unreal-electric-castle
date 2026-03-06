@@ -9,6 +9,9 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 
+#include "Player/Aim/AimActorInterface.h"
+#include "Player/Aim/AimController.h"
+
 
 // Sets default values
 AArrowProjectile::AArrowProjectile()
@@ -50,25 +53,36 @@ void AArrowProjectile::Release_Implementation()
 	FSphereTraceParams Params;
 	Params.TraceRadius = CollisionComponent->GetScaledCapsuleRadius();
 	float ReleasePitch = Pitch;
-	FHitResult HitResult;
-	UElectricCastleAbilitySystemLibrary::FindHitBySphereTrace(bMatchOwnerForward ? GetOwner() : this, Params, HitResult);
-	if (IsValid(HitResult.GetActor()))
+	FVector TargetLocation;
+	if (const UAimController* AimController = IAimActorInterface::GetAimController(GetInstigator()))
 	{
-		UElectricCastleAbilitySystemLibrary::CalculatePitchToHitTarget(GetActorLocation(), HitResult.ImpactPoint, ProjectileMovement->InitialSpeed, ReleasePitch);
+		TargetLocation = AimController->GetHitLocation();
+		SetActorRotation(AimController->CalculateRotationToFaceAimTarget(GetActorLocation()));
 	}
-	const FVector ForwardVector = bMatchOwnerForward ? GetOwner()->GetActorForwardVector() : GetActorForwardVector();
+	else
+	{
+		FHitResult HitResult;
+		UElectricCastleAbilitySystemLibrary::FindHitBySphereTrace(bMatchOwnerForward ? GetOwner() : this, Params, HitResult);
+		TargetLocation = HitResult.ImpactPoint;
+	}
+	UElectricCastleAbilitySystemLibrary::CalculatePitchToHitTarget(GetActorLocation(), TargetLocation, ProjectileMovement->InitialSpeed, ReleasePitch);
+	if (bDebug)
+	{
+		DrawDebugSphere(GetWorld(), TargetLocation, 100.f, 10, FColor::Red, false, 1.f, 0, 1);
+	}
+	const FVector ForwardVector = GetActorForwardVector();
 	// Get the actor's right vector (axis to rotate around)
-	const FVector RightVector = bMatchOwnerForward ? GetOwner()->GetActorRightVector() : GetActorRightVector();
+	const FVector RightVector = GetActorRightVector();
 	// Create a rotation of +10 degrees around the right axis
 	const FQuat RotationQuat = FQuat(RightVector, FMath::DegreesToRadians(-1 * ReleasePitch));
 	// Apply the rotation to the forward vector
 	const FVector NewForward = RotationQuat.RotateVector(ForwardVector);
 	ProjectileMovement->Velocity = NewForward * ProjectileMovement->InitialSpeed;
-	SetMatchOwnerForward(false);
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	TrailFX->Activate();
 	ProjectileMovement->Activate();
 	SetLifeSpan(LifeSpan);
+	SetMatchOwnerForward(false);
 }
 
 void AArrowProjectile::SetMatchOwnerForward_Implementation(const bool bInMatchOwnerPitch)

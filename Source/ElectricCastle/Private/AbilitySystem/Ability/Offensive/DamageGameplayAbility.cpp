@@ -252,6 +252,14 @@ void UDamageGameplayAbility::ApplyDefaultDamageConfig(AActor* DamageDealingActor
 	IDamageDealingActor::ApplyDamageEffectParams(DamageDealingActor, MakeDamageEffectParamsFromClassDefaults());
 }
 
+void UDamageGameplayAbility::RotateTowardAvatarActorAimTarget_Implementation(AActor* ActorToRotate) const
+{
+	if (const UAimController* AimController = IAimActorInterface::GetAimController(GetAvatarActorFromActorInfo()))
+	{
+		ActorToRotate->SetActorRotation(AimController->CalculateRotationToFaceAimTarget(ActorToRotate->GetActorLocation()));
+	}
+}
+
 FRotator UDamageGameplayAbility::CalculateSpawnRotationFacingAimTarget_Implementation(const FVector SpawnLocation) const
 {
 	if (const UAimController* AimController = IAimActorInterface::GetAimController(GetAvatarActorFromActorInfo()))
