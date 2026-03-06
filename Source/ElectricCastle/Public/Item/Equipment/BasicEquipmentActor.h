@@ -22,6 +22,7 @@ public:
 	ABasicEquipmentActor();
 
 	virtual void PostInitializeComponents() override;
+	virtual void Tick(float DeltaSeconds) override;
 
 	USkeletalMeshComponent* GetMesh() const;
 
@@ -54,7 +55,10 @@ protected:
 	FSocketConfig TipSocketConfig;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties")
 	FGameplayTag ParentAttachSocketTag = FGameplayTag::EmptyTag;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties")
+	bool bDebug = false;
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void RegisterSocketsToSocketManager(USocketManagerComponent* InSocketManagerComponent) const;
+	virtual void BeginPlay() override;
 };

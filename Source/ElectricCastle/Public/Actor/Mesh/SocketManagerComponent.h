@@ -32,9 +32,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void RegisterSocketConfig(const FSocketMeshConfig& SocketConfig);
 	UFUNCTION(BlueprintCallable)
-	void AttachByTag(USceneComponent* InSkeletalMesh, FGameplayTag SocketTag) const;
+	void AttachByTag(USceneComponent* InSkeletalMesh, FGameplayTag SocketTag, const EAttachmentRule LocationAttachRule = EAttachmentRule::SnapToTarget,
+	                 const EAttachmentRule RotationAttachRule = EAttachmentRule::SnapToTarget, const EAttachmentRule ScaleAttachRule = EAttachmentRule::KeepWorld) const;
 	static USocketManagerComponent* GetSocketManagerComponent(const UObject* Actor);
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties")
 	bool bDebug = false;
 

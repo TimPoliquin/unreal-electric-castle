@@ -6,11 +6,9 @@
 #include "KismetTraceUtils.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
-
 #include "Actor/Highlight/HighlightActorInterface.h"
-
 #include "ElectricCastle/ElectricCastle.h"
-#include "ElectricCastle/ElectricCastleLogChannels.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Tags/ElectricCastleGameplayTags.h"
 
 
@@ -52,12 +50,22 @@ bool UAimController::IsAiming() const
 
 bool UAimController::HasTarget() const
 {
-	return Target.IsValid();
+	return TraceResult.bBlockingHit && IHighlightActorInterface::IsHighlightActor(TraceResult.GetActor());
 }
 
 AActor* UAimController::GetTarget() const
 {
-	return Target.Get();
+	return TraceResult.GetActor();
+}
+
+FVector UAimController::GetHitLocation() const
+{
+	return TraceResult.bBlockingHit ? TraceResult.ImpactPoint : TraceEndLocation;
+}
+
+FRotator UAimController::CalculateRotationToFaceAimTarget(const FVector& Location) const
+{
+	return UKismetMathLibrary::FindLookAtRotation(Location, GetHitLocation());
 }
 
 void UAimController::TraceForTarget(const FVector& PlayerLocation, const FVector& CameraLocation, const FRotator& CameraRotation)
@@ -66,8 +74,8 @@ void UAimController::TraceForTarget(const FVector& PlayerLocation, const FVector
 	{
 		return;
 	}
-	const FVector TraceEnd = CameraLocation + (CameraRotation.Vector() * TraceDistance);
-	const FVector TraceStartLocation = CalculateTraceStartLocation(PlayerLocation, CameraLocation, TraceEnd);
+	TraceEndLocation = CameraLocation + (CameraRotation.Vector() * TraceDistance);
+	const FVector TraceStartLocation = CalculateTraceStartLocation(PlayerLocation, CameraLocation, TraceEndLocation);
 
 
 	// Setup collision query parameters
@@ -77,38 +85,25 @@ void UAimController::TraceForTarget(const FVector& PlayerLocation, const FVector
 	TraceParams.bTraceComplex = false;
 	TraceParams.bReturnPhysicalMaterial = false;
 
-	const bool bHit = GetWorld()->SweepSingleByChannel(
+	GetWorld()->SweepSingleByChannel(
 		HitResult,
 		TraceStartLocation,
-		TraceEnd,
+		TraceEndLocation,
 		FQuat::Identity,
-		ECC_Target,
+		ECC_Visibility,
 		FCollisionShape::MakeSphere(TraceRadius),
 		TraceParams
 	);
 
 	if (bDebug)
 	{
-		DrawDebugSphereTraceSingle(GetWorld(), CameraLocation, TraceEnd, TraceRadius, EDrawDebugTrace::ForOneFrame, true, HitResult, FColor::Green, FColor::Red, 0.f);
+		DrawDebugSphereTraceSingle(GetWorld(), CameraLocation, TraceEndLocation, TraceRadius, EDrawDebugTrace::ForOneFrame, true, HitResult, FColor::Green, FColor::Red, 0.f);
 	}
-
-	if (bHit)
+	if (HitResult.GetActor() != TraceResult.GetActor())
 	{
-		if (bDebug)
-		{
-			UE_LOG(LogElectricCastle, Log, TEXT("[%s:%s] Hit Actor: %s at Location: %s"),
-			       *GetOwner()->GetName(),
-			       *GetName(),
-			       *HitResult.GetActor()->GetName(),
-			       *HitResult.ImpactPoint.ToString()
-			);
-		}
 		SetTarget(HitResult.GetActor());
 	}
-	else
-	{
-		ClearTarget();
-	}
+	TraceResult = HitResult;
 }
 
 FVector UAimController::CalculateTraceStartLocation(const FVector& PlayerLocation, const FVector& CameraLocation, const FVector& TraceEnd)
@@ -170,26 +165,24 @@ void UAimController::SetIsAiming(const bool bInIsAiming)
 	OnAimEnd.Broadcast();
 }
 
-void UAimController::SetTarget(AActor* InTarget)
+void UAimController::SetTarget(AActor* InTarget) const
 {
-	if (IsValid(InTarget))
+	if (IHighlightActorInterface::IsHighlightActor(InTarget))
 	{
-		Target = InTarget;
 		IHighlightActorInterface::Highlight(InTarget);
 		OnTargetChanged.Broadcast(FTargetChangedPayload(InTarget));
 	}
 	else
 	{
-		ClearTarget();
+		ClearTarget(TraceResult.GetActor());
 	}
 }
 
-void UAimController::ClearTarget()
+void UAimController::ClearTarget(const AActor* InOldTarget) const
 {
-	if (Target.IsValid())
+	if (IsValid(InOldTarget))
 	{
-		IHighlightActorInterface::Unhighlight(Target.Get());
-		Target.Reset();
+		IHighlightActorInterface::Unhighlight(InOldTarget);
 		OnTargetChanged.Broadcast(FTargetChangedPayload(nullptr));
 	}
 }

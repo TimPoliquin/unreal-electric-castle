@@ -34,6 +34,8 @@ protected:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void Update();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void UpdateStartingLocation();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void TraceDestination(FHitResult& HitResult);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void UpdateBeamDestination(const FHitResult& HitResult);
