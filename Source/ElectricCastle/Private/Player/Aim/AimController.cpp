@@ -7,7 +7,6 @@
 #include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 #include "Actor/Highlight/HighlightActorInterface.h"
-#include "ElectricCastle/ElectricCastle.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Tags/ElectricCastleGameplayTags.h"
 

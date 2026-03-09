@@ -28,6 +28,7 @@ AItemPickupBase::AItemPickupBase()
 	MeshComponent->SetRenderCustomDepth(false);
 	SinusoidalMovementComponent = CreateDefaultSubobject<USinusoidalMovementComponent>(TEXT("Sinusoidal Movement Component"));
 	HighlightComponent = CreateDefaultSubobject<UHighlightComponent>(TEXT("Highlight Component"));
+	HighlightComponent->SetHighlightType(EHighlightType::Friendly);
 }
 
 UHighlightComponent* AItemPickupBase::GetHighlightComponent_Implementation() const

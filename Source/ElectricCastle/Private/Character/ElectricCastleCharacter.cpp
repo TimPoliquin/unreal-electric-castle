@@ -48,6 +48,7 @@ AElectricCastleCharacter::AElectricCastleCharacter()
 	SocketManagerComponent = CreateDefaultSubobject<USocketManagerComponent>(TEXT("Socket Manager Component"));
 	StatusEffectManagerComponent = CreateDefaultSubobject<UStatusEffectManagerComponent>(TEXT("Status Effect Manager Component"));
 	HighlightComponent = CreateDefaultSubobject<UHighlightComponent>(TEXT("Highlight Component"));
+	HighlightComponent->SetHighlightType(EHighlightType::Friendly);
 	CinematicHandlerComponent = CreateDefaultSubobject<UCinematicHandlerComponent>(TEXT("Cinematic Handler Component"));
 	HaloOfProtectionNiagaraComponent = CreateDefaultSubobject<UPassiveNiagaraComponent>(
 		TEXT("Halo of Protection Niagara Component")

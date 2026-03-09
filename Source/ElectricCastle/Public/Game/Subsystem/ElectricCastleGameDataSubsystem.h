@@ -11,6 +11,7 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "ElectricCastleGameDataSubsystem.generated.h"
 
+class UHighlightConfig;
 class UStatusEffectConfig;
 class UPlayerFormPrimaryAsset;
 class UDebuffConfig;
@@ -83,6 +84,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool IsGameDataLoaded() const { return bIsGameDataLoaded; }
 
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	UHighlightConfig* GetHighlightConfig() const { return HighlightConfig; }
+
 	UPROPERTY(BlueprintAssignable)
 	FOnGameDataLoaded OnGameDataLoaded;
 
@@ -123,6 +127,8 @@ protected:
 	FGameplayTag DefaultItemPickupMessageTag = FGameplayTag::EmptyTag;
 	UPROPERTY(EditDefaultsOnly, Category="Items|Messages", meta=(Categories="Message"))
 	FGameplayTag DefaultItemUsedMessageTag = FGameplayTag::EmptyTag;
+	UPROPERTY(EditDefaultsOnly, Category="Highlight", Instanced)
+	TObjectPtr<UHighlightConfig> HighlightConfig;
 
 private:
 	void InitializeItemDefinitions();

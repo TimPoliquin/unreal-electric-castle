@@ -35,6 +35,7 @@ APointOfInterestActor::APointOfInterestActor()
 	ApplyToTags.Add(TAG_PLAYER);
 	EffectComponent->SetDefaults(EffectConfigs, false, ApplyToTags);
 	HighlightComponent = CreateDefaultSubobject<UHighlightComponent>(TEXT("HighlightComponent"));
+	HighlightComponent->SetHighlightType(EHighlightType::Friendly);
 }
 
 void APointOfInterestActor::BeginPlay()
