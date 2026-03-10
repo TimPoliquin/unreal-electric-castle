@@ -171,6 +171,7 @@ struct FElectricCastleGameplayTags
 	FGameplayTag Abilities_Passive_HaloOfProtection;
 	FGameplayTag Abilities_Passive_LifeSiphon;
 	FGameplayTag Abilities_Passive_ManaSiphon;
+	FGameplayTag Abilities_Other_Aim;
 	FGameplayTag Abilities_Other_Interact;
 	FGameplayTag Abilities_Other_Cancel;
 	FGameplayTag Abilities_Fishing;

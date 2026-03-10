@@ -4,7 +4,12 @@
 #include "Actor/Highlight/HighlightComponent.h"
 
 #include "Actor/Highlight/HighlightActorInterface.h"
+#include "Actor/Highlight/HighlightConfig.h"
+
 #include "ElectricCastle/ElectricCastleLogChannels.h"
+
+#include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
+
 #include "Net/UnrealNetwork.h"
 
 
@@ -88,6 +93,18 @@ void UHighlightComponent::Unhighlight()
 	}
 }
 
+void UHighlightComponent::SetHighlightType(const EHighlightType InHighlightType)
+{
+	HighlightType = InHighlightType;
+}
+
+FLinearColor UHighlightComponent::GetHighlightColor() const
+{
+	const UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(GetOwner());
+	const UHighlightConfig* HighlightConfig = GameDataSubsystem ? GameDataSubsystem->GetHighlightConfig() : nullptr;
+	return HighlightConfig ? HighlightConfig->GetHighlightConfigByHighlightType(HighlightType).HighlightColor : FLinearColor::White;
+}
+
 
 void UHighlightComponent::SetHighlightable(const bool bNewHighlightable)
 {
@@ -114,10 +131,10 @@ void UHighlightComponent::BeginPlay()
 
 void UHighlightComponent::HighlightMesh(UMeshComponent* Mesh) const
 {
-	if (IsValid(Mesh))
+	if (const UHighlightConfig* HighlightConfig = UElectricCastleGameDataSubsystem::Get(GetOwner())->GetHighlightConfig(); IsValid(Mesh) && IsValid(HighlightConfig))
 	{
 		Mesh->SetRenderCustomDepth(true);
-		Mesh->SetCustomDepthStencilValue(HighlightCustomDepthStencilValue);
+		Mesh->SetCustomDepthStencilValue(HighlightConfig->GetHighlightConfigByHighlightType(HighlightType).HighlightCode);
 	}
 }
 

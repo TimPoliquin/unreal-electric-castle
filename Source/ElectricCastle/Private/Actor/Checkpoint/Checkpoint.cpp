@@ -26,7 +26,7 @@ ACheckpoint::ACheckpoint(const FObjectInitializer& ObjectInitializer) : Super(Ob
 	MoveToComponent = CreateDefaultSubobject<USceneComponent>(TEXT("MoveToComponent"));
 	MoveToComponent->SetupAttachment(GetRootComponent());
 	HighlightComponent = CreateDefaultSubobject<UHighlightComponent>(TEXT("HighlightComponent"));
-	HighlightComponent->SetCustomDepthStencilValue(CUSTOM_DEPTH_BLUE);
+	HighlightComponent->SetHighlightType(EHighlightType::Friendly);
 }
 
 void ACheckpoint::PostLoad_Implementation()

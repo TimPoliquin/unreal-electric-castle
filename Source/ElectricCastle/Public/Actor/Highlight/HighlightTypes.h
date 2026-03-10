@@ -3,6 +3,15 @@
 #include "CoreMinimal.h"
 #include "HighlightTypes.generated.h"
 
+UENUM(BlueprintType)
+enum class EHighlightType : uint8
+{
+	None,
+	Friendly,
+	Enemy,
+	Count
+};
+
 USTRUCT()
 struct FHighlightContext
 {

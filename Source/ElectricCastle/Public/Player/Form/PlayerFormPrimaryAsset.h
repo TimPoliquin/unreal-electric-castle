@@ -9,6 +9,8 @@
 #include "Engine/DataAsset.h"
 #include "PlayerFormPrimaryAsset.generated.h"
 
+class UPlayerFormChangeComponent;
+class UFormConfig;
 /**
  * 
  */
@@ -19,6 +21,10 @@ class ELECTRICCASTLE_API UPlayerFormPrimaryAsset : public UPrimaryDataAsset
 
 public:
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
+	UFUNCTION(BlueprintNativeEvent)
+	void OnFormActivated(AActor* Actor, UPlayerFormChangeComponent* FormChangeComponent) const;
+	UFUNCTION(BlueprintNativeEvent)
+	void OnFormDeactivated(AActor* Actor, UPlayerFormChangeComponent* FormChangeComponent) const;
 
 	bool IsValid() const;
 	void Initialize();
@@ -45,4 +51,6 @@ public:
 	TArray<FGameplayTag> PassiveAbilities;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<UGameplayEffect> FormAttributes;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TArray<TObjectPtr<UFormConfig>> FormConfigs;
 };

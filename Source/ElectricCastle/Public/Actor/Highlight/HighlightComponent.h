@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "HighlightTypes.h"
+
 #include "Components/ActorComponent.h"
 #include "ElectricCastle/ElectricCastle.h"
 #include "HighlightComponent.generated.h"
@@ -21,7 +23,8 @@ public:
 	void RemoveHighlightMesh(UMeshComponent* Mesh);
 	void Highlight();
 	void Unhighlight();
-	void SetCustomDepthStencilValue(const uint8 Value) { HighlightCustomDepthStencilValue = Value; }
+	void SetHighlightType(const EHighlightType InHighlightType);
+	FLinearColor GetHighlightColor() const;
 	bool IsHighlighted() const { return bIsHighlighted; }
 	bool IsHighlightable() const { return bHighlightable; }
 	void SetHighlightable(const bool bNewHighlightable);
@@ -31,10 +34,10 @@ protected:
 	virtual void BeginPlay() override;
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Highlight")
 	bool bIsHighlighted = false;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Highlight")
-	uint8 HighlightCustomDepthStencilValue = CUSTOM_DEPTH_BLUE;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Highlight", SaveGame, Replicated)
 	bool bHighlightable = true;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Highlight")
+	EHighlightType HighlightType = EHighlightType::None;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Highlight")
 	bool bDebug = false;
 

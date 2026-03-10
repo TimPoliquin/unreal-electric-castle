@@ -49,7 +49,7 @@ AElectricCastleEnemyCharacter::AElectricCastleEnemyCharacter()
 	CharacterDissolveComponent = CreateDefaultSubobject<UDissolveEffectComponent>(TEXT("Character Dissolve Component"));
 	LootSpawnComponent = CreateDefaultSubobject<ULootSpawnComponent>(TEXT("Loot Spawn Component"));
 	Tags.Add(TAG_ENEMY);
-	HighlightComponent->SetCustomDepthStencilValue(CUSTOM_DEPTH_RED);
+	HighlightComponent->SetHighlightType(EHighlightType::Enemy);
 }
 
 void AElectricCastleEnemyCharacter::InitializeAttributeDelegates()

@@ -7,7 +7,6 @@
 #include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 #include "Actor/Highlight/HighlightActorInterface.h"
-#include "ElectricCastle/ElectricCastle.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Tags/ElectricCastleGameplayTags.h"
 
@@ -23,6 +22,12 @@ void UAimController::HandleAbilitySystemReady(UElectricCastleAbilitySystemCompon
 	const FElectricCastleGameplayTags& GameplayTags = FElectricCastleGameplayTags::Get();
 	InAbilitySystemComponent->RegisterGameplayTagEvent(GameplayTags.Player_Block_Aim, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &UAimController::HandleTagChange_BlockAim);
 	HandleTagChange_BlockAim(GameplayTags.Player_Block_Aim, InAbilitySystemComponent->GetTagCount(GameplayTags.Player_Block_Aim));
+}
+
+void UAimController::SetTraceParams(const float InTraceDistance, const float InTraceRadius)
+{
+	TraceDistance = InTraceDistance;
+	TraceRadius = InTraceRadius;
 }
 
 void UAimController::AimStart()
@@ -70,7 +75,7 @@ FRotator UAimController::CalculateRotationToFaceAimTarget(const FVector& Locatio
 
 void UAimController::TraceForTarget(const FVector& PlayerLocation, const FVector& CameraLocation, const FRotator& CameraRotation)
 {
-	if (!bCanAim)
+	if (!bCanAim || bHideCrosshair)
 	{
 		return;
 	}
@@ -132,17 +137,30 @@ void UAimController::HandleTagChange_BlockAim(FGameplayTag BlockAimTag, const in
 	SetCanAim(Count == 0);
 }
 
+
 void UAimController::SetCanAim(const bool bInCanAim)
 {
 	bCanAim = bInCanAim;
-	if (bCanAim)
+	if (!bCanAim)
 	{
-		OnCanAim.Broadcast();
+		ClearTrace();
 	}
-	else
+	BroadcastCrosshairEvent();
+}
+
+bool UAimController::GetHideCrosshair() const
+{
+	return bHideCrosshair;
+}
+
+void UAimController::SetHideCrosshair(const bool bInHideCrosshair)
+{
+	bHideCrosshair = bInHideCrosshair;
+	if (bHideCrosshair)
 	{
-		OnCannotAim.Broadcast();
+		ClearTrace();
 	}
+	BroadcastCrosshairEvent();
 }
 
 void UAimController::SetIsAiming(const bool bInIsAiming)
@@ -162,6 +180,7 @@ void UAimController::SetIsAiming(const bool bInIsAiming)
 	{
 		UElectricCastleAbilitySystemLibrary::RemoveGameplayEffect(GetOwner(), AimingEffectHandle);
 	}
+	ClearTrace();
 	OnAimEnd.Broadcast();
 }
 
@@ -185,4 +204,23 @@ void UAimController::ClearTarget(const AActor* InOldTarget) const
 		IHighlightActorInterface::Unhighlight(InOldTarget);
 		OnTargetChanged.Broadcast(FTargetChangedPayload(nullptr));
 	}
+}
+
+
+void UAimController::BroadcastCrosshairEvent()
+{
+	if (bCanAim && !bHideCrosshair)
+	{
+		OnShowCrosshair.Broadcast();
+	}
+	else
+	{
+		OnHideCrosshair.Broadcast();
+	}
+}
+
+void UAimController::ClearTrace()
+{
+	IHighlightActorInterface::Unhighlight(TraceResult.GetActor());
+	TraceResult.Reset();
 }

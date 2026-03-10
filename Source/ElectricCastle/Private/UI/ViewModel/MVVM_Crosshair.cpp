@@ -3,6 +3,9 @@
 
 #include "UI/ViewModel/MVVM_Crosshair.h"
 
+#include "Actor/Highlight/HighlightActorInterface.h"
+#include "Actor/Highlight/HighlightComponent.h"
+
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Player/ElectricCastlePlayerState.h"
 #include "Player/Aim/AimActorInterface.h"
@@ -17,15 +20,15 @@ void UMVVM_Crosshair::InitializeDependencies_Implementation(const AElectricCastl
 	}
 	if (UAimController* AimController = IAimActorInterface::GetAimController(PlayerState))
 	{
-		AimController->OnCanAim.AddUniqueDynamic(this, &UMVVM_Crosshair::HandleCanAim);
-		AimController->OnCannotAim.AddUniqueDynamic(this, &UMVVM_Crosshair::HandleCannotAim);
+		AimController->OnShowCrosshair.AddUniqueDynamic(this, &UMVVM_Crosshair::HandleCanAim);
+		AimController->OnHideCrosshair.AddUniqueDynamic(this, &UMVVM_Crosshair::HandleCannotAim);
 		AimController->OnAimStart.AddUniqueDynamic(this, &UMVVM_Crosshair::HandleAimStart);
 		AimController->OnAimEnd.AddUniqueDynamic(this, &UMVVM_Crosshair::HandleAimEnd);
 		AimController->OnTargetChanged.AddUniqueDynamic(this, &UMVVM_Crosshair::HandleTargetChange);
-		SetCanAim(AimController->GetCanAim());
+		SetCanAim(AimController->GetCanAim() && !AimController->GetHideCrosshair());
 		SetIsAiming(AimController->IsAiming());
-		SetHasValidTarget(AimController->HasTarget());
 	}
+	UE_MVVM_BROADCAST_FIELD_VALUE_CHANGED(GetCrosshairStyle);
 }
 
 ECrosshairState UMVVM_Crosshair::GetCrosshairState() const
@@ -41,14 +44,24 @@ ECrosshairState UMVVM_Crosshair::GetCrosshairState() const
 	return ECrosshairState::Subtle;
 }
 
-ECrosshairStyle UMVVM_Crosshair::GetCrosshairStyle() const
+FCrosshairStyle UMVVM_Crosshair::GetCrosshairStyle() const
 {
-	return HasValidTarget ? ECrosshairStyle::Targeting : ECrosshairStyle::Default;
+	return CrosshairStyle;
 }
 
 void UMVVM_Crosshair::HandleTargetChange_Implementation(const FTargetChangedPayload& Payload)
 {
-	SetHasValidTarget(IsValid(Payload.Target));
+	if (const UHighlightComponent* HighlightComponent = IHighlightActorInterface::GetHighlightComponent(Payload.Target))
+	{
+		CrosshairStyle.Style = ECrosshairStyle::Targeting;
+		CrosshairStyle.Color = HighlightComponent->GetHighlightColor();
+	}
+	else
+	{
+		CrosshairStyle.Style = ECrosshairStyle::Default;
+		CrosshairStyle.Color = DefaultCrosshairColor;
+	}
+	UE_MVVM_BROADCAST_FIELD_VALUE_CHANGED(GetCrosshairStyle);
 }
 
 void UMVVM_Crosshair::HandleAimEnd_Implementation()
@@ -69,6 +82,11 @@ void UMVVM_Crosshair::HandleCannotAim_Implementation()
 void UMVVM_Crosshair::HandleCanAim_Implementation()
 {
 	SetCanAim(true);
+}
+
+bool FCrosshairStyle::operator==(const FCrosshairStyle& CrosshairStyle) const
+{
+	return Style == CrosshairStyle.Style && Color == CrosshairStyle.Color;
 }
 
 bool UMVVM_Crosshair::GetCanAim() const
@@ -102,15 +120,4 @@ void UMVVM_Crosshair::SetIsFiring(const bool InIsFiring)
 {
 	UE_MVVM_SET_PROPERTY_VALUE(IsFiring, InIsFiring);
 	UE_MVVM_BROADCAST_FIELD_VALUE_CHANGED(GetCrosshairState);
-}
-
-bool UMVVM_Crosshair::GetHasValidTarget() const
-{
-	return HasValidTarget;
-}
-
-void UMVVM_Crosshair::SetHasValidTarget(const bool InHasValidTarget)
-{
-	UE_MVVM_SET_PROPERTY_VALUE(HasValidTarget, InHasValidTarget);
-	UE_MVVM_BROADCAST_FIELD_VALUE_CHANGED(GetCrosshairStyle);
 }

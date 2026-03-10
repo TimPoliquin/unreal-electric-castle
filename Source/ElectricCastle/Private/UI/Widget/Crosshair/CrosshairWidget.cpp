@@ -42,7 +42,7 @@ void UCrosshairWidget::TransitionTo_Visible_Implementation()
 	SetVisibility(ESlateVisibility::Visible);
 }
 
-void UCrosshairWidget::TransitionTo_StyleTargeting_Implementation()
+void UCrosshairWidget::TransitionTo_StyleTargeting_Implementation(FLinearColor InColor)
 {
 	// nothing to do right now
 }
@@ -69,23 +69,27 @@ void UCrosshairWidget::SetCrosshairState_Implementation(ECrosshairState InCrossh
 	case ECrosshairState::Active:
 		TransitionTo_Visible();
 		break;
+	default:
+		break;
 	}
 	CrosshairState = InCrosshairState;
 }
 
-void UCrosshairWidget::SetCrosshairStyle_Implementation(ECrosshairStyle InCrosshairStyle)
+void UCrosshairWidget::SetCrosshairStyle_Implementation(const FCrosshairStyle InCrosshairStyle)
 {
 	if (InCrosshairStyle == CrosshairStyle)
 	{
 		return;
 	}
-	switch (InCrosshairStyle)
+	switch (InCrosshairStyle.Style)
 	{
 	case ECrosshairStyle::Default:
 		TransitionTo_StyleDefault();
 		break;
 	case ECrosshairStyle::Targeting:
-		TransitionTo_StyleTargeting();
+		TransitionTo_StyleTargeting(InCrosshairStyle.Color);
+		break;
+	default:
 		break;
 	}
 	CrosshairStyle = InCrosshairStyle;
@@ -98,5 +102,8 @@ void UCrosshairWidget::HandleCrosshairStateChanged(UObject* ViewModel, UE::Field
 
 void UCrosshairWidget::HandleCrosshairStyleChanged(UObject* Object, UE::FieldNotification::FFieldId FieldId)
 {
-	SetCrosshairStyle_Implementation(CastChecked<UMVVM_Crosshair>(Object)->GetCrosshairStyle());
+	if (const UMVVM_Crosshair* CrosshairViewModel = Cast<UMVVM_Crosshair>(Object))
+	{
+		SetCrosshairStyle_Implementation(CrosshairViewModel->GetCrosshairStyle());
+	}
 }

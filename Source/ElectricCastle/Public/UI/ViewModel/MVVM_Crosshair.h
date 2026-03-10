@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "MVVMViewModelBase.h"
 #include "Player/Aim/AimController.h"
+
 #include "MVVM_Crosshair.generated.h"
 
 UENUM(BlueprintType)
@@ -22,6 +23,17 @@ enum class ECrosshairStyle : uint8
 	Default,
 	Targeting,
 	Count
+};
+
+USTRUCT(BlueprintType)
+struct FCrosshairStyle
+{
+	GENERATED_BODY()
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
+	ECrosshairStyle Style = ECrosshairStyle::Default;
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
+	FLinearColor Color = FLinearColor::White;
+	bool operator==(const FCrosshairStyle& CrosshairStyle) const;
 };
 
 class AElectricCastlePlayerState;
@@ -42,13 +54,11 @@ public:
 	void SetIsAiming(const bool InIsAiming);
 	bool GetIsFiring() const;
 	void SetIsFiring(const bool InIsFiring);
-	bool GetHasValidTarget() const;
-	void SetHasValidTarget(const bool InHasValidTarget);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, FieldNotify)
 	ECrosshairState GetCrosshairState() const;
 	UFUNCTION(BlueprintCallable, BlueprintPure, FieldNotify)
-	ECrosshairStyle GetCrosshairStyle() const;
+	FCrosshairStyle GetCrosshairStyle() const;
 
 protected:
 	UFUNCTION(BlueprintNativeEvent)
@@ -68,6 +78,8 @@ protected:
 	bool IsAiming = false;
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, FieldNotify, Getter, Setter)
 	bool IsFiring = false;
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, FieldNotify, Getter, Setter)
-	bool HasValidTarget = false;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FLinearColor DefaultCrosshairColor = FLinearColor::White;
+	UPROPERTY(VisibleInstanceOnly)
+	FCrosshairStyle CrosshairStyle;
 };

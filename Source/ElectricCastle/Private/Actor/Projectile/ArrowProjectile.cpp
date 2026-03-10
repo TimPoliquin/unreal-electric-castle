@@ -39,6 +39,13 @@ void AArrowProjectile::Tick(float DeltaTime)
 		const FRotator NewRotation(Pitch, OwnerRotation.Yaw, OwnerRotation.Roll);
 		SetActorRotation(NewRotation);
 	}
+	else
+	{
+		if (const FVector Vel = GetVelocity(); !Vel.IsNearlyZero())
+		{
+			SetActorRotation(FRotationMatrix::MakeFromX(Vel).Rotator());
+		}
+	}
 }
 
 void AArrowProjectile::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
@@ -78,6 +85,8 @@ void AArrowProjectile::Release_Implementation()
 	// Apply the rotation to the forward vector
 	const FVector NewForward = RotationQuat.RotateVector(ForwardVector);
 	ProjectileMovement->Velocity = NewForward * ProjectileMovement->InitialSpeed;
+	ProjectileMovement->bRotationFollowsVelocity = true;
+	bMatchOwnerForward = false;
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	TrailFX->Activate();
 	ProjectileMovement->Activate();

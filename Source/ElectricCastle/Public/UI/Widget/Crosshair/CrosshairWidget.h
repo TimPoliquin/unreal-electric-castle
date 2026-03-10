@@ -9,6 +9,7 @@
 
 class UImage;
 class UWidgetFadeController;
+
 /**
  * 
  */
@@ -29,19 +30,19 @@ protected:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void TransitionTo_Visible();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void TransitionTo_StyleTargeting();
+	void TransitionTo_StyleTargeting(FLinearColor CrosshairColor);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void TransitionTo_StyleDefault();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void SetCrosshairState(ECrosshairState InCrosshairState);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void SetCrosshairStyle(ECrosshairStyle InCrosshairStyle);
+	void SetCrosshairStyle(const FCrosshairStyle InCrosshairStyle);
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite)
 	ECrosshairState CrosshairState = ECrosshairState::Active;
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite)
-	ECrosshairStyle CrosshairStyle = ECrosshairStyle::Targeting;
+	FCrosshairStyle CrosshairStyle;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Components", meta=(BindWidget))
 	TObjectPtr<UImage> CrosshairImage;
 
