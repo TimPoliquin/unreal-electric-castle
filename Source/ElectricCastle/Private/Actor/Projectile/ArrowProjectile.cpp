@@ -78,6 +78,7 @@ void AArrowProjectile::Release_Implementation()
 	// Apply the rotation to the forward vector
 	const FVector NewForward = RotationQuat.RotateVector(ForwardVector);
 	ProjectileMovement->Velocity = NewForward * ProjectileMovement->InitialSpeed;
+	ProjectileMovement->bRotationFollowsVelocity = true;
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	TrailFX->Activate();
 	ProjectileMovement->Activate();

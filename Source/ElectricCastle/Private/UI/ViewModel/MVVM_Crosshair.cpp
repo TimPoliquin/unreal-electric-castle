@@ -20,12 +20,12 @@ void UMVVM_Crosshair::InitializeDependencies_Implementation(const AElectricCastl
 	}
 	if (UAimController* AimController = IAimActorInterface::GetAimController(PlayerState))
 	{
-		AimController->OnCanAim.AddUniqueDynamic(this, &UMVVM_Crosshair::HandleCanAim);
-		AimController->OnCannotAim.AddUniqueDynamic(this, &UMVVM_Crosshair::HandleCannotAim);
+		AimController->OnShowCrosshair.AddUniqueDynamic(this, &UMVVM_Crosshair::HandleCanAim);
+		AimController->OnHideCrosshair.AddUniqueDynamic(this, &UMVVM_Crosshair::HandleCannotAim);
 		AimController->OnAimStart.AddUniqueDynamic(this, &UMVVM_Crosshair::HandleAimStart);
 		AimController->OnAimEnd.AddUniqueDynamic(this, &UMVVM_Crosshair::HandleAimEnd);
 		AimController->OnTargetChanged.AddUniqueDynamic(this, &UMVVM_Crosshair::HandleTargetChange);
-		SetCanAim(AimController->GetCanAim());
+		SetCanAim(AimController->GetCanAim() && !AimController->GetHideCrosshair());
 		SetIsAiming(AimController->IsAiming());
 	}
 	UE_MVVM_BROADCAST_FIELD_VALUE_CHANGED(GetCrosshairStyle);

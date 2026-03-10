@@ -10,7 +10,6 @@
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 #include "AbilitySystem/ElectricCastleAttributeSet.h"
 #include "Character/ElectricCastlePlayerCharacter.h"
-#include "DSP/BufferDiagnostics.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "GameFramework/Character.h"
@@ -140,13 +139,14 @@ void UPlayerFormChangeComponent::FormChange_UpdateAbilities_Implementation(const
 				UE_LOG(
 					LogElectricCastle,
 					Log,
-					TEXT("[%s:%s] Adding ability %s"),
+					TEXT("[%s:%s] Removing ability %s"),
 					*GetOwner()->GetName(),
 					*GetName(),
 					*AbilityTag.ToString()
 				);
 				AbilitySystemComponent->RemoveAbilitiesWithTag(AbilityTag);
 			}
+			OldFormConfig->OnFormDeactivated(GetOwner(), this);
 		}
 		if (const UPlayerFormPrimaryAsset* CurrentFormConfig = GetPlayerFormConfigRow(Payload.NewFormTag))
 		{
@@ -174,6 +174,7 @@ void UPlayerFormChangeComponent::FormChange_UpdateAbilities_Implementation(const
 				);
 				AbilitySystemComponent->GrantAbilitiesWithTag(AbilityTag);
 			}
+			CurrentFormConfig->OnFormActivated(GetOwner(), this);
 		}
 	}
 }

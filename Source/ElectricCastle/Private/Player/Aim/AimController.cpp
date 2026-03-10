@@ -24,6 +24,12 @@ void UAimController::HandleAbilitySystemReady(UElectricCastleAbilitySystemCompon
 	HandleTagChange_BlockAim(GameplayTags.Player_Block_Aim, InAbilitySystemComponent->GetTagCount(GameplayTags.Player_Block_Aim));
 }
 
+void UAimController::SetTraceParams(const float InTraceDistance, const float InTraceRadius)
+{
+	TraceDistance = InTraceDistance;
+	TraceRadius = InTraceRadius;
+}
+
 void UAimController::AimStart()
 {
 	if (bCanAim)
@@ -69,7 +75,7 @@ FRotator UAimController::CalculateRotationToFaceAimTarget(const FVector& Locatio
 
 void UAimController::TraceForTarget(const FVector& PlayerLocation, const FVector& CameraLocation, const FRotator& CameraRotation)
 {
-	if (!bCanAim)
+	if (!bCanAim || bHideCrosshair)
 	{
 		return;
 	}
@@ -131,17 +137,22 @@ void UAimController::HandleTagChange_BlockAim(FGameplayTag BlockAimTag, const in
 	SetCanAim(Count == 0);
 }
 
+
 void UAimController::SetCanAim(const bool bInCanAim)
 {
 	bCanAim = bInCanAim;
-	if (bCanAim)
-	{
-		OnCanAim.Broadcast();
-	}
-	else
-	{
-		OnCannotAim.Broadcast();
-	}
+	BroadcastCrosshairEvent();
+}
+
+bool UAimController::GetHideCrosshair() const
+{
+	return bHideCrosshair;
+}
+
+void UAimController::SetHideCrosshair(const bool bInHideCrosshair)
+{
+	bHideCrosshair = bInHideCrosshair;
+	BroadcastCrosshairEvent();
 }
 
 void UAimController::SetIsAiming(const bool bInIsAiming)
@@ -183,5 +194,18 @@ void UAimController::ClearTarget(const AActor* InOldTarget) const
 	{
 		IHighlightActorInterface::Unhighlight(InOldTarget);
 		OnTargetChanged.Broadcast(FTargetChangedPayload(nullptr));
+	}
+}
+
+
+void UAimController::BroadcastCrosshairEvent()
+{
+	if (bCanAim && !bHideCrosshair)
+	{
+		OnShowCrosshair.Broadcast();
+	}
+	else
+	{
+		OnHideCrosshair.Broadcast();
 	}
 }

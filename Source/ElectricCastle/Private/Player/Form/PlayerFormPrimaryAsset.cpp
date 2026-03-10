@@ -3,6 +3,7 @@
 
 #include "Player/Form/PlayerFormPrimaryAsset.h"
 #include "Player/Form/FormConfigTypes.h"
+#include "Player/Form/Config/FormConfig.h"
 
 FPrimaryAssetId UPlayerFormPrimaryAsset::GetPrimaryAssetId() const
 {
@@ -18,10 +19,26 @@ FPrimaryAssetId UPlayerFormPrimaryAsset::GetPrimaryAssetId() const
 	return Id;
 }
 
-
 void UPlayerFormPrimaryAsset::Initialize()
 {
 	MeshConfig.Initialize();
+}
+
+void UPlayerFormPrimaryAsset::OnFormActivated_Implementation(AActor* Actor, UPlayerFormChangeComponent* FormChangeComponent) const
+{
+	for (UFormConfig* FormConfig : FormConfigs)
+	{
+		FormConfig->OnFormActivated(Actor, FormChangeComponent);
+	}
+}
+
+
+void UPlayerFormPrimaryAsset::OnFormDeactivated_Implementation(AActor* Actor, UPlayerFormChangeComponent* FormChangeComponent) const
+{
+	for (UFormConfig* FormConfig : FormConfigs)
+	{
+		FormConfig->OnFormDeactivated(Actor, FormChangeComponent);
+	}
 }
 
 bool UPlayerFormPrimaryAsset::IsValid() const

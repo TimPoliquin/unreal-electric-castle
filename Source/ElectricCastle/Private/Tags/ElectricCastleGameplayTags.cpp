@@ -424,6 +424,7 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FName("Abilities.Passive.ManaSiphon"),
 		FString("Passive 3 ability tag")
 	);
+	Instance.Abilities_Other_Aim = TagManager.AddNativeGameplayTag(FName("Abilities.Other.Aim"), FString("Aim ability tag"));
 	Instance.Abilities_Other_Interact = TagManager.AddNativeGameplayTag(
 		FName("Abilities.Other.Interact"),
 		FString("Interact with objects in the world")

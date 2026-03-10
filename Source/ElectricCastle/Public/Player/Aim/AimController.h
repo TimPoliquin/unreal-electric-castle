@@ -6,6 +6,9 @@
 #include "ActiveGameplayEffectHandle.h"
 #include "GameplayTagContainer.h"
 #include "Components/ActorComponent.h"
+
+#include "Player/Form/Config/FormAimConfig.h"
+
 #include "AimController.generated.h"
 
 class UElectricCastleAbilitySystemComponent;
@@ -35,11 +38,12 @@ public:
 	UAimController();
 
 	void HandleAbilitySystemReady(UElectricCastleAbilitySystemComponent* InAbilitySystemComponent);
+	void SetTraceParams(const float TraceDistance, const float TraceRadius);
 
 	UPROPERTY(BlueprintAssignable)
-	FCanAimSignature OnCanAim;
+	FCanAimSignature OnShowCrosshair;
 	UPROPERTY(BlueprintAssignable)
-	FCanAimSignature OnCannotAim;
+	FCanAimSignature OnHideCrosshair;
 	UPROPERTY(BlueprintAssignable)
 	FAimStateChangeSignature OnAimStart;
 	UPROPERTY(BlueprintAssignable)
@@ -53,6 +57,12 @@ public:
 	void AimEnd();
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool GetCanAim() const;
+	UFUNCTION(BlueprintCallable)
+	void SetCanAim(bool bInCanAim);
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool GetHideCrosshair() const;
+	UFUNCTION(BlueprintCallable)
+	void SetHideCrosshair(const bool bInHideCrosshair);
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool IsAiming() const;
 	UFUNCTION(BlueprintCallable, BlueprintPure)
@@ -68,10 +78,11 @@ public:
 	FHitResult GetTraceResult() const { return TraceResult; }
 
 protected:
-	void SetCanAim(bool bInCanAim);
 	void SetIsAiming(bool bInIsAiming);
 	void SetTarget(AActor* InTarget) const;
 	void ClearTarget(const AActor* InOldTarget) const;
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Aim")
+	bool bHideCrosshair = true;
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Aim")
 	bool bCanAim = false;
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Aim")
@@ -93,4 +104,5 @@ private:
 	FActiveGameplayEffectHandle AimingEffectHandle;
 	static FVector CalculateTraceStartLocation(const FVector& PlayerLocation, const FVector& CameraLocation, const FVector& TraceEnd);
 	void HandleTagChange_BlockAim(FGameplayTag BlockAimTag, int Count);
+	void BroadcastCrosshairEvent();
 };
