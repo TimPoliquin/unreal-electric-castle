@@ -105,4 +105,5 @@ private:
 	static FVector CalculateTraceStartLocation(const FVector& PlayerLocation, const FVector& CameraLocation, const FVector& TraceEnd);
 	void HandleTagChange_BlockAim(FGameplayTag BlockAimTag, int Count);
 	void BroadcastCrosshairEvent();
+	void ClearTrace();
 };
