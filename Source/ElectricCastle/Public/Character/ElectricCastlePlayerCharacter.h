@@ -221,6 +221,10 @@ protected:
 	FSocketConfig LeftHandConfig;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties|Socket")
 	FSocketConfig RightHandConfig;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties|Movement")
+	float StandardMoveSpeed = 600.f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties|Movement")
+	float AimMoveSpeed = 250.f;
 
 private:
 	UPROPERTY()
