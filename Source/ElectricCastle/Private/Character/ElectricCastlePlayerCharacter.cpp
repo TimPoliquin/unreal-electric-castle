@@ -146,6 +146,7 @@ void AElectricCastlePlayerCharacter::BeginPlay()
 		this,
 		&AElectricCastlePlayerCharacter::OnFadeDetectionEndOverlap
 	);
+	GetCharacterMovement()->MaxWalkSpeed = StandardMoveSpeed;
 }
 
 void AElectricCastlePlayerCharacter::BeginDestroy()
@@ -229,6 +230,13 @@ void AElectricCastlePlayerCharacter::OnEquipmentAnimationRequest_Implementation(
 void AElectricCastlePlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	if (AimController->IsAiming())
+	{
+		FRotator ControlRot = GetControlRotation();
+		ControlRot.Pitch = 0.f;
+		ControlRot.Roll = 0.f;
+		SetActorRotation(ControlRot);
+	}
 	UpdatePlayerPositionInMaterialParameterCollections();
 }
 
@@ -389,13 +397,19 @@ UElectricCastleAbilitySystemComponent* AElectricCastlePlayerCharacter::GetElectr
 
 void AElectricCastlePlayerCharacter::AimStart_Implementation()
 {
-	// Nothing to do here right now
+	bUseControllerRotationYaw = false;
+	GetCharacterMovement()->MaxWalkSpeed = AimMoveSpeed;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+	GetCharacterMovement()->bUseControllerDesiredRotation = true;
 }
 
 
 void AElectricCastlePlayerCharacter::AimEnd_Implementation()
 {
-	// Nothing to do here right now
+	bUseControllerRotationYaw = true;
+	GetCharacterMovement()->MaxWalkSpeed = StandardMoveSpeed;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->bUseControllerDesiredRotation = false;
 }
 
 void AElectricCastlePlayerCharacter::Multicast_SetTimeDilation_Implementation(const float Magnitude)

@@ -24,6 +24,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float GroundSpeed = 0.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float StrafeSpeed = 0.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bIsMoving = false;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bIsFalling = false;
@@ -31,7 +34,10 @@ protected:
 	bool bIsDead = false;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bIsAiming = false;
-
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	bool bIsJumping = false;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float JumpThreshold = 100.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bIsTurning = false;
 

@@ -17,11 +17,11 @@
 void UElectricCastleAnimInstance::NativeUpdateAnimation(const float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
-	UpdateVelocity();
-	UpdateRotation(DeltaSeconds);
-	UpdateIsFalling();
 	UpdateIsDead();
 	UpdateIsAiming();
+	UpdateIsFalling();
+	UpdateVelocity();
+	UpdateRotation(DeltaSeconds);
 }
 
 ACharacter* UElectricCastleAnimInstance::TryGetCharacterOwner()
@@ -116,13 +116,28 @@ void UElectricCastleAnimInstance::UpdateVelocity_Implementation()
 {
 	if (const UCharacterMovementComponent* MovementComponent = TryGetCharacterMovementComponent())
 	{
-		Velocity = MovementComponent->Velocity;
-		GroundSpeed = Velocity.Length();
+		if (bIsAiming)
+		{
+			const FVector LocalVelocity = TryGetCharacterOwner()->GetActorTransform().InverseTransformVector(MovementComponent->Velocity);
+			const float ForwardSpeed = LocalVelocity.X;
+			const float RightSpeed = LocalVelocity.Y;
+			Velocity = MovementComponent->Velocity;
+			GroundSpeed = ForwardSpeed;
+			StrafeSpeed = RightSpeed;
+		}
+		else
+		{
+			Velocity = MovementComponent->Velocity;
+			GroundSpeed = Velocity.Length();
+			StrafeSpeed = 0.f;
+		}
 	}
 	else
 	{
 		Velocity = FVector::ZeroVector;
 		GroundSpeed = 0.f;
+		StrafeSpeed = 0.f;
 	}
-	bIsMoving = GroundSpeed > 0.f;
+	bIsMoving = GroundSpeed > 0.f || StrafeSpeed > 0.f;
+	bIsJumping = Velocity.Z >= JumpThreshold;
 }
