@@ -6,6 +6,9 @@
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/ElectricCastlePlayerController.h"
+#include "Player/PlayerEquipmentComponent.h"
+#include "Player/Aim/AimController.h"
+#include "Player/Equipment/EquipmentManagerInterface.h"
 
 AElectricCastlePlayerController* UPlayerFunctionLibrary::GetPlayerController(UObject* WorldContextObject)
 {
@@ -45,4 +48,22 @@ ULocalPlayer* UPlayerFunctionLibrary::GetLocalPlayer(UObject* WorldContextObject
 	}
 	UE_LOG(LogElectricCastle, Error, TEXT("[UPlayerFunctionLibrary::GetLocalPlayer] Unable to find local player from world context object"));
 	return nullptr;
+}
+
+bool UPlayerFunctionLibrary::IsPlayerAiming(const AActor* Actor)
+{
+	if (const UAimController* AimController = IAimActorInterface::GetAimController(Actor))
+	{
+		return AimController->IsAiming();
+	}
+	return false;
+}
+
+bool UPlayerFunctionLibrary::HasWeaponEquipped(const AActor* Actor)
+{
+	if (const UPlayerEquipmentComponent* EquipmentComponent = IEquipmentManagerInterface::GetEquipmentComponent(Actor))
+	{
+		return EquipmentComponent->HasAnyWeaponEquipped();
+	}
+	return false;
 }
