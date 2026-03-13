@@ -171,6 +171,8 @@ protected:
 	void LiveLink_SetUpdateAnimationInEditor();
 	UFUNCTION(BlueprintNativeEvent)
 	void EnableMasterPose(USkeletalMeshComponent* SkeletalMeshComponent);
+	UFUNCTION(BlueprintNativeEvent)
+	void HandleTagChange_EffectMovementTurnInPlace(FGameplayTag EffectMovementTurnInPlaceTag, int Count);
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components|Metahuman")
 	TObjectPtr<USkeletalMeshComponent> ClothingMesh;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components|Metahuman")
@@ -229,6 +231,8 @@ protected:
 private:
 	UPROPERTY()
 	FTimerHandle DeathTimer;
+	UPROPERTY()
+	FActiveGameplayEffectHandle AimGameplayEffectHandle;
 
 	virtual void InitializeAbilityActorInfo() override;
 

@@ -20,6 +20,11 @@ public:
 	static AElectricCastlePlayerController* GetPlayerController(UObject* WorldContextObject);
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static ULocalPlayer* GetLocalPlayer(UObject* WorldContextObject);
+	UFUNCTION(BlueprintCallable, BlueprintPure, meta=(DefaultToSelf="Actor"))
+	static bool HasWeaponEquipped(const AActor* Actor);
+	UFUNCTION(BlueprintCallable, BlueprintPure, meta=(DefaultToSelf="Actor"))
+	static bool IsPlayerAiming(const AActor* Actor);
+
 	template <typename TPlayerSubsystem>
 	static TPlayerSubsystem* GetPlayerSubsystem(UObject* WorldContextObject);
 };

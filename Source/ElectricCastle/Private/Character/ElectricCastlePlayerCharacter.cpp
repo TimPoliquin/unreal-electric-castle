@@ -27,6 +27,9 @@
 #include "GroomComponent.h"
 #include "LiveLinkInstance.h"
 #include "MetaHumanComponentUE.h"
+
+#include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
+
 #include "Actor/MagicTether/TetherAbilityComponent.h"
 #include "Actor/Mesh/SocketManagerComponent.h"
 #include "Components/LODSyncComponent.h"
@@ -159,6 +162,22 @@ void AElectricCastlePlayerCharacter::BeginDestroy()
 	}
 }
 
+void AElectricCastlePlayerCharacter::HandleTagChange_EffectMovementTurnInPlace_Implementation(FGameplayTag EffectMovementTurnInPlaceTag, int Count)
+{
+	if (Count > 0)
+	{
+		bUseControllerRotationYaw = false;
+		GetCharacterMovement()->bOrientRotationToMovement = false;
+		GetCharacterMovement()->bUseControllerDesiredRotation = true;
+	}
+	else
+	{
+		bUseControllerRotationYaw = true;
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+		GetCharacterMovement()->bUseControllerDesiredRotation = false;
+	}
+}
+
 void AElectricCastlePlayerCharacter::EnableMasterPose_Implementation(USkeletalMeshComponent* SkeletalMeshComponent)
 {
 	if (IsValid(SkeletalMeshComponent->GetSkeletalMeshAsset()))
@@ -230,7 +249,7 @@ void AElectricCastlePlayerCharacter::OnEquipmentAnimationRequest_Implementation(
 void AElectricCastlePlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (AimController->IsAiming())
+	if (GetCharacterMovement()->bUseControllerDesiredRotation)
 	{
 		FRotator ControlRot = GetControlRotation();
 		ControlRot.Pitch = 0.f;
@@ -367,6 +386,10 @@ void AElectricCastlePlayerCharacter::OnAbilitySystemReady_Implementation(
 		this,
 		&AElectricCastlePlayerCharacter::OnEquipmentAnimationRequest
 	);
+	InAbilitySystemComponent->RegisterGameplayTagEvent(FElectricCastleGameplayTags::Get().Effect_Movement_TurnInPlace, EGameplayTagEventType::NewOrRemoved).AddUObject(
+		this,
+		&AElectricCastlePlayerCharacter::HandleTagChange_EffectMovementTurnInPlace
+	);
 }
 
 void AElectricCastlePlayerCharacter::OnEffectAdd_LightningDamage_Implementation()
@@ -397,19 +420,22 @@ UElectricCastleAbilitySystemComponent* AElectricCastlePlayerCharacter::GetElectr
 
 void AElectricCastlePlayerCharacter::AimStart_Implementation()
 {
-	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->MaxWalkSpeed = AimMoveSpeed;
-	GetCharacterMovement()->bOrientRotationToMovement = false;
-	GetCharacterMovement()->bUseControllerDesiredRotation = true;
+	AimGameplayEffectHandle = UElectricCastleAbilitySystemLibrary::ApplyInfiniteEffectByTag(
+		this,
+		FElectricCastleGameplayTags::Get().Effect_Movement_TurnInPlace
+	);
 }
 
 
 void AElectricCastlePlayerCharacter::AimEnd_Implementation()
 {
-	bUseControllerRotationYaw = true;
 	GetCharacterMovement()->MaxWalkSpeed = StandardMoveSpeed;
-	GetCharacterMovement()->bOrientRotationToMovement = true;
-	GetCharacterMovement()->bUseControllerDesiredRotation = false;
+	UElectricCastleAbilitySystemLibrary::RemoveGameplayEffect(
+		this,
+		AimGameplayEffectHandle,
+		false
+	);
 }
 
 void AElectricCastlePlayerCharacter::Multicast_SetTimeDilation_Implementation(const float Magnitude)

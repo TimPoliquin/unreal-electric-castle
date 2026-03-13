@@ -7,8 +7,6 @@
 #include "GameplayTagContainer.h"
 #include "Components/ActorComponent.h"
 
-#include "Player/Form/Config/FormAimConfig.h"
-
 #include "AimController.generated.h"
 
 class UElectricCastleAbilitySystemComponent;

@@ -64,6 +64,11 @@ bool UPlayerEquipmentComponent::HasToolEquipped(const FGameplayTag& ItemType) co
 	return EquipmentUseMode == EEquipmentUseMode::Tool && EquipmentSlots[EEquipmentSlot::Tool] == ItemType;
 }
 
+bool UPlayerEquipmentComponent::HasAnyWeaponEquipped() const
+{
+	return GetWeaponType().IsValid();
+}
+
 bool UPlayerEquipmentComponent::IsUsingTool() const
 {
 	return EquipmentUseMode == EEquipmentUseMode::Tool;

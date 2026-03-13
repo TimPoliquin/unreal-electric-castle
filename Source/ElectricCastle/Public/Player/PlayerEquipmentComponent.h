@@ -62,9 +62,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool HasToolEquipped(const FGameplayTag& ItemType) const;
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool HasAnyWeaponEquipped() const;
 
-
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool IsUsingTool() const;
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool IsUsingWeapon() const;
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void UseEquipment(const EEquipmentSlot Slot);
