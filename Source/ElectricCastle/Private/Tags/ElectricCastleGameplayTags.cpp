@@ -248,6 +248,10 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FName("Effect.Magnitude"),
 		FString("Generic tag for specifying magnitude of effect across multiple effects")
 	);
+	Instance.Effect_Movement_TurnInPlace = TagManager.AddNativeGameplayTag(
+		FName("Effect.Movement.TurnInPlace"),
+		FString("Indicates that the player turns in place when the camera moves")
+	);
 	Instance.Effect_State = TagManager.AddNativeGameplayTag(
 		FName("Effect.State"),
 		FString("Root effect state tag")
