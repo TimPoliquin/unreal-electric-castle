@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "BasicEquipmentActor.h"
-#include "UObject/Object.h"
 #include "RomanSpear.generated.h"
 
 /**
