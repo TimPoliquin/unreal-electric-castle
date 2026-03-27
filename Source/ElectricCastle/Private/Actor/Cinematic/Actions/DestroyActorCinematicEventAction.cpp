@@ -3,6 +3,7 @@
 
 #include "Actor/Cinematic/Actions/DestroyActorCinematicEventAction.h"
 
+#include "Actor/Pool/PoolableActor.h"
 #include "Tags/ElectricCastleGameplayTags.h"
 
 UDestroyActorCinematicEventAction::UDestroyActorCinematicEventAction()
@@ -14,6 +15,6 @@ void UDestroyActorCinematicEventAction::Execute_Implementation(const UCinematicC
 {
 	if (IsValid(GetOwner()))
 	{
-		GetOwner()->Destroy();
+		IPoolableActor::ReturnToPoolOrDestroy(GetOwner());
 	}
 }

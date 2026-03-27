@@ -158,6 +158,14 @@ FVector UElectricCastleGameplayAbility::GetAvatarActorSocketLocation(const FGame
 	return GetAvatarActorFromActorInfo()->GetActorLocation();
 }
 
+FTransform UElectricCastleGameplayAbility::CalculateSpawnTransform_Implementation(const FVector SpawnLocation) const
+{
+	FTransform SpawnTransform;
+	SpawnTransform.SetLocation(SpawnLocation);
+	SpawnTransform.SetRotation(CalculateSpawnRotationFacingAimTarget(SpawnLocation).Quaternion());
+	return SpawnTransform;
+}
+
 void UElectricCastleGameplayAbility::RotateTowardAvatarActorAimTarget_Implementation(AActor* ActorToRotate) const
 {
 	if (const UAimController* AimController = IAimActorInterface::GetAimController(GetAvatarActorFromActorInfo()))
@@ -246,5 +254,6 @@ void UElectricCastleGameplayAbility::ApplyCustomCooldown() const
 		GetAvatarActorFromActorInfo(),
 		CooldownConfig.CooldownTag,
 		CooldownConfig.Duration.GetValueAtLevel(GetAbilityLevel()),
-		GetAbilityLevel());
+		GetAbilityLevel()
+	);
 }

@@ -7,7 +7,7 @@ public class ElectricCastleEditorTarget : TargetRules
 	public ElectricCastleEditorTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Editor;
-		DefaultBuildSettings = BuildSettingsVersion.V6;
+		DefaultBuildSettings = BuildSettingsVersion.Latest;
 
 		ExtraModuleNames.AddRange(new[] { "ElectricCastle" });
 	}

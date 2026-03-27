@@ -5,6 +5,7 @@
 
 #include "NiagaraFunctionLibrary.h"
 #include "Actor/Highlight/HighlightComponent.h"
+#include "Actor/Pool/PoolableActor.h"
 #include "ElectricCastle/ElectricCastle.h"
 #include "Components/CapsuleComponent.h"
 #include "Item/Component/SinusoidalMovementComponent.h"
@@ -70,7 +71,8 @@ void AItemPickupBase::PlayPickupEffect_Implementation(AActor* PickupActor, const
 		UGameplayStatics::PlaySoundAtLocation(
 			PickupActor,
 			PickupSound,
-			PickupActor->GetActorLocation());
+			PickupActor->GetActorLocation()
+		);
 	}
 	if (PickupEffect)
 	{
@@ -87,6 +89,6 @@ void AItemPickupBase::PlayPickupEffect_Implementation(AActor* PickupActor, const
 	}
 	if (bAutoDestroy)
 	{
-		Destroy();
+		IPoolableActor::ReturnToPoolOrDestroy(this);
 	}
 }

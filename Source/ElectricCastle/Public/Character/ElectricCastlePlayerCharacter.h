@@ -11,13 +11,18 @@
 #include "Player/Form/FormChangeActorInterface.h"
 #include "Player/Form/PlayerFormChangeComponent.h"
 #include "LiveLinkTypes.h"
+
+#include "Actor/Attack/Component/AttackWindowManagerActor.h"
 #include "Actor/MagicHand/MagicHandPossessorInterface.h"
 #include "Actor/MagicTether/TetherAbilityActorInterface.h"
 #include "Actor/Mesh/SocketManagerTypes.h"
+#include "Actor/MotionWarping/MotionWarpingActor.h"
 #include "Player/Equipment/EquipmentManagerInterface.h"
 #include "Player/Form/FormConfigTypes.h"
+#include "Player/LockOn/LockOnActor.h"
 #include "ElectricCastlePlayerCharacter.generated.h"
 
+struct FLockOnTargetPayload;
 class UTetherAbilityComponent;
 class AElectricCastlePlayerCharacter;
 class ULiveLinkRetargetAsset;
@@ -67,7 +72,10 @@ class ELECTRICCASTLE_API AElectricCastlePlayerCharacter : public AElectricCastle
                                                           public IEquipmentManagerInterface,
                                                           public ITetherAbilityActorInterface,
                                                           public IMagicHandPossessorInterface,
-                                                          public IAimActorInterface
+                                                          public IAimActorInterface,
+                                                          public IAttackWindowManagerActor,
+                                                          public ILockOnActor,
+                                                          public IMotionWarpingActor
 {
 	GENERATED_BODY()
 
@@ -139,6 +147,10 @@ public:
 	virtual UAimController* GetAimController_Implementation() const override;
 	/** End AimActorInterface **/
 
+	/** Start LockOnActorInterface **/
+	virtual ULockOnController* GetLockOnController_Implementation() const override;
+	/** End LockOnActorInterface **/
+
 	/** EquipmentManagerInterface Start */
 	virtual UPlayerEquipmentComponent* GetEquipmentComponent_Implementation() const override
 	{
@@ -152,6 +164,12 @@ public:
 	/** Start Magic Hand Possessor Interface **/
 	virtual USceneComponent* GetMagicHandAttachComponent_Implementation(FName& AttachBoneName) override;
 	/** End Magic Hand Possessor Interface **/
+	/** Start AttackWindowManagerActor Interface **/
+	virtual UAttackWindowManager* GetAttackWindowManager_Implementation() const override;
+	/** End AttackWindowManagerActor Interface **/
+	/** Start IMotionWarpingActor **/
+	virtual UMotionWarpingComponent* GetMotionWarpingComponent_Implementation() const override { return MotionWarpingComponent; };
+	/** End IMotionWarpingActor **/
 protected:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void Construction_SetupMetaHuman();
@@ -173,6 +191,10 @@ protected:
 	void EnableMasterPose(USkeletalMeshComponent* SkeletalMeshComponent);
 	UFUNCTION(BlueprintNativeEvent)
 	void HandleTagChange_EffectMovementTurnInPlace(FGameplayTag EffectMovementTurnInPlaceTag, int Count);
+	UFUNCTION(BlueprintNativeEvent)
+	void HandleLockOnTarget(const FLockOnTargetPayload& Payload);
+	UFUNCTION(BlueprintNativeEvent)
+	void HandleLockOnRelease();
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components|Metahuman")
 	TObjectPtr<USkeletalMeshComponent> ClothingMesh;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components|Metahuman")
@@ -207,10 +229,14 @@ protected:
 	TObjectPtr<UPlayerFormChangeComponent> FormChangeComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UAimController> AimController;
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Components")
+	TObjectPtr<ULockOnController> LockOnController;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UMetaHumanComponentUE> MetaHumanComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<ULODSyncComponent> LODSyncComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
+	TObjectPtr<UAttackWindowManager> AttackWindowManager;
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<USoundBase> LevelUpSound;
 	UPROPERTY(EditDefaultsOnly)

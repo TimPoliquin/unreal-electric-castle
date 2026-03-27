@@ -19,6 +19,11 @@ void UElectricCastleGameDataSubsystem::Initialize(FSubsystemCollectionBase& Coll
 	{
 		UElectricCastleAssetManager::LoadPlayerFormPrimaryAssets(FormAssetIds, FStreamableDelegate::CreateUObject(this, &UElectricCastleGameDataSubsystem::OnFormDataInitialized));
 	}
+	else
+	{
+		bIsGameDataLoaded = true;
+		OnGameDataLoaded.Broadcast();
+	}
 }
 
 UElectricCastleGameDataSubsystem* UElectricCastleGameDataSubsystem::Get(const UObject* WorldContextObject)
@@ -36,7 +41,7 @@ UPlayerFormPrimaryAsset* UElectricCastleGameDataSubsystem::GetPlayerFormConfigBy
 {
 	const TSoftObjectPtr<UPlayerFormPrimaryAsset>* FormAsset = PlayerFormPrimaryAssets.FindByPredicate([FormId](const TSoftObjectPtr<UPlayerFormPrimaryAsset> Config)
 	{
-		return Config.Get()->FormId == FormId;
+		return Config.LoadSynchronous()->FormId == FormId;
 	});
 	if (FormAsset && FormAsset->IsValid())
 	{

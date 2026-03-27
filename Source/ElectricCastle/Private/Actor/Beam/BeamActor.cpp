@@ -5,6 +5,7 @@
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 #include "Actor/BeamTargetInterface.h"
 #include "Actor/ReflectiveInterface.h"
+#include "Actor/Pool/PoolableActor.h"
 #include "Components/AudioComponent.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 
@@ -93,8 +94,13 @@ void ABeamActor::UpdateBeamDestination_Implementation(const FHitResult& HitResul
 
 	if (bDebug && !HitResult.IsValidBlockingHit())
 	{
-		UE_LOG(LogElectricCastle, Warning, TEXT("[%s] No blocking hit, using trace end: %s"),
-		       *GetName(), *BeamEnd.ToString());
+		UE_LOG(
+			LogElectricCastle,
+			Warning,
+			TEXT("[%s] No blocking hit, using trace end: %s"),
+			*GetName(),
+			*BeamEnd.ToString()
+		);
 	}
 
 	BeamComponent->SetVectorParameter(FName("Beam End"), BeamEnd);
@@ -209,9 +215,17 @@ void ABeamActor::SpawnChildBeam_Implementation(const FHitResult& OriginHit, cons
 
 	if (bDebug)
 	{
-		DrawDebugDirectionalArrow(GetWorld(), OriginHit.ImpactPoint,
-		                          OriginHit.ImpactPoint + ChildBeam->GetActorForwardVector() * 200.f,
-		                          10.f, FColor::Orange, false, 5.f, 0, 4.f);
+		DrawDebugDirectionalArrow(
+			GetWorld(),
+			OriginHit.ImpactPoint,
+			OriginHit.ImpactPoint + ChildBeam->GetActorForwardVector() * 200.f,
+			10.f,
+			FColor::Orange,
+			false,
+			5.f,
+			0,
+			4.f
+		);
 	}
 
 	ChildBeams.Add(ChildBeam);
@@ -331,7 +345,7 @@ void ABeamActor::Terminate_Implementation()
 		IBeamTargetInterface::Execute_HandleBeamRemoved(LastTraceHitResult.GetActor(), BeamTypeTag);
 	}
 	TerminateChildBeams();
-	Destroy();
+	IPoolableActor::ReturnToPoolOrDestroy(this);
 }
 
 FVector ABeamActor::CalculateReflectedDirection(const FHitResult& HitResult) const

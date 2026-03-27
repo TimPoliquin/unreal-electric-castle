@@ -437,8 +437,16 @@ FActiveGameplayEffectHandle UElectricCastleAbilitySystemLibrary::ApplyDamageEffe
 	const FDamageEffectParams& DamageEffectParams
 )
 {
-	checkf(DamageEffectParams.SourceAbilitySystemComponent, TEXT("No source ability system set on Damage Effect Params!"));
-	checkf(DamageEffectParams.TargetAbilitySystemComponent, TEXT("No target ability system set on Damage Effect Params!"));
+	if (!DamageEffectParams.SourceAbilitySystemComponent)
+	{
+		UE_LOG(LogElectricCastle, Error, TEXT("[UElectricCastleAbilitySystemLibrary::ApplyDamageEffect] No source ability system set on damage effect params!"))
+		return FActiveGameplayEffectHandle();
+	}
+	if (!DamageEffectParams.TargetAbilitySystemComponent)
+	{
+		UE_LOG(LogElectricCastle, Error, TEXT("[UElectricCastleAbilitySystemLibrary::ApplyDamageEffect] No target ability system set on damage effect params!"))
+		return FActiveGameplayEffectHandle();
+	}
 
 	const FElectricCastleGameplayTags& GameplayTags = FElectricCastleGameplayTags::Get();
 	const AActor* SourceAvatarActor = DamageEffectParams.SourceAbilitySystemComponent ? DamageEffectParams.SourceAbilitySystemComponent->GetAvatarActor() : nullptr;
@@ -598,6 +606,15 @@ bool UElectricCastleAbilitySystemLibrary::IsAbilityEquipped(
 	return GetStatusTagByAbilityTag(AbilitySystemComponent, AbilityTag).MatchesTagExact(
 		FElectricCastleGameplayTags::Get().Abilities_Status_Equipped
 	);
+}
+
+bool UElectricCastleAbilitySystemLibrary::DoesActorHaveGameplayTag(AActor* Actor, const FGameplayTag& Tag)
+{
+	if (const UAbilitySystemComponent* AbilitySystemComponent = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Actor))
+	{
+		return AbilitySystemComponent->HasMatchingGameplayTag(Tag);
+	}
+	return false;
 }
 
 AElectricCastleHUD* UElectricCastleAbilitySystemLibrary::GetElectricCastleHUD(const UObject* WorldContextObject)

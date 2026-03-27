@@ -9,6 +9,7 @@
 #include "Player/PlayerEquipmentComponent.h"
 #include "Player/Aim/AimController.h"
 #include "Player/Equipment/EquipmentManagerInterface.h"
+#include "Player/LockOn/LockOnController.h"
 
 AElectricCastlePlayerController* UPlayerFunctionLibrary::GetPlayerController(UObject* WorldContextObject)
 {
@@ -57,6 +58,20 @@ bool UPlayerFunctionLibrary::IsPlayerAiming(const AActor* Actor)
 		return AimController->IsAiming();
 	}
 	return false;
+}
+
+bool UPlayerFunctionLibrary::IsPlayerLockedOn(const AActor* Actor)
+{
+	if (const ULockOnController* LockOnController = ILockOnActor::GetLockOnController(Actor))
+	{
+		return LockOnController->IsLockedOn();
+	}
+	return false;
+}
+
+bool UPlayerFunctionLibrary::IsPlayerAimingOrLockedOn(const AActor* Actor)
+{
+	return IsPlayerAiming(Actor) || IsPlayerLockedOn(Actor);
 }
 
 bool UPlayerFunctionLibrary::HasWeaponEquipped(const AActor* Actor)

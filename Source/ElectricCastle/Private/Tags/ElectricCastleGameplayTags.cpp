@@ -429,6 +429,7 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FString("Passive 3 ability tag")
 	);
 	Instance.Abilities_Other_Aim = TagManager.AddNativeGameplayTag(FName("Abilities.Other.Aim"), FString("Aim ability tag"));
+	Instance.Abilities_Other_LockOn = TagManager.AddNativeGameplayTag(FName("Abilities.Other.LockOn"), FString("LockOn ability tag"));
 	Instance.Abilities_Other_Interact = TagManager.AddNativeGameplayTag(
 		FName("Abilities.Other.Interact"),
 		FString("Interact with objects in the world")
@@ -569,6 +570,9 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FString("Blocks player offensive abilities")
 	);
 	Instance.Player_Block_Aim = TagManager.AddNativeGameplayTag(FName("Player.Block.Aim"), FString("Blocks player aim"));
+	Instance.Player_Block_LockOn = TagManager.AddNativeGameplayTag(FName("Player.Block.LockOn"), FString("Blocks player lock on ability"));
+	Instance.Player_Block_Look = TagManager.AddNativeGameplayTag(FName("Player.Block.Look"), FString("Blocks player look ability"));
+	Instance.Player_Block_MotionWarpingUpdate = TagManager.AddNativeGameplayTag(FName("Player.Block.MotionWarpingUpdate"), FString("Blocks player from updating its motion warping target"));
 	Instance.Player_State_InteractionAvailable = TagManager.AddNativeGameplayTag(
 		FName("Player.State.InteractionAvailable"),
 		FString("Interaction is available for the player")

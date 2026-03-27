@@ -5,9 +5,11 @@
 #include "CoreMinimal.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemTypes.h"
 #include "Actor/DamageDealingActor.h"
+#include "Actor/Pool/PoolableActor.h"
 #include "GameFramework/Actor.h"
 #include "ProjectileActor.generated.h"
 
+struct FSpawnPoolEventPayload;
 class UCinematicHandlerComponent;
 class UCapsuleComponent;
 struct FGameplayEffectSpecHandle;
@@ -17,13 +19,14 @@ class UNiagaraSystem;
 class UAudioComponent;
 
 UCLASS(Abstract, Blueprintable)
-class ELECTRICCASTLE_API AProjectileActor : public AActor, public IDamageDealingActor
+class ELECTRICCASTLE_API AProjectileActor : public AActor, public IDamageDealingActor, public IPoolableActor
 {
 	GENERATED_BODY()
 
 public:
 	AProjectileActor();
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void PostInitializeComponents() override;
 	UPROPERTY(BlueprintReadWrite, meta = (ExposeOnSpawn = true), Replicated)
 	FDamageEffectParams DamageEffectParams;
 
@@ -50,13 +53,13 @@ public:
 	/** Start IDamageDealingActor **/
 	virtual void ApplyDamageEffectParams_Implementation(const FDamageEffectParams& InDamageEffectParams) override;
 	/** End IDamageDealingActor **/
+	/** Start IPoolableActor **/
+	virtual UPoolManagerComponent* GetPoolManager_Implementation() const override;
+	/** End IPoolableActor **/
 
 protected:
-	virtual void BeginPlay() override;
-	virtual void Destroyed() override;
-
-	UFUNCTION()
-	virtual void OnSphereOverlap(
+	UFUNCTION(BlueprintNativeEvent)
+	void OnSphereOverlap(
 		UPrimitiveComponent* OverlappedComponent,
 		AActor* OtherActor,
 		UPrimitiveComponent* OtherComponent,
@@ -71,6 +74,12 @@ protected:
 	void Explode();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void ExplodeOnTarget(AActor* TargetActor);
+	UFUNCTION(BlueprintNativeEvent)
+	void OnPool_BeginRetrieve(const FSpawnPoolEventPayload& Payload);
+	UFUNCTION(BlueprintNativeEvent)
+	void OnPool_FinishRetrieve(const FSpawnPoolEventPayload& Payload);
+	UFUNCTION(BlueprintNativeEvent)
+	void OnPool_Returned(const FSpawnPoolEventPayload& Payload);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UProjectileMovementComponent> ProjectileMovement;
@@ -80,20 +89,14 @@ protected:
 	TObjectPtr<UAudioComponent> TravelSoundComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UCinematicHandlerComponent> CinematicHandlerComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
+	TObjectPtr<UPoolManagerComponent> PoolManagerComponent;
 	UPROPERTY(EditAnywhere, Category="Properties")
 	TObjectPtr<UNiagaraSystem> ImpactEffect;
 	UPROPERTY(EditAnywhere, Category="Properties")
 	TObjectPtr<USoundBase> ImpactSound;
 	UPROPERTY(EditAnywhere, Category="Properties")
 	TObjectPtr<USoundBase> TravelSound;
-	UPROPERTY(EditDefaultsOnly, Category="Properties")
-	bool bAutoDestroy = true;
-	UPROPERTY(
-		EditDefaultsOnly,
-		Category="Properties",
-		meta=(EditCondition="bAutoDestroy", ClampMin = "0", UIMin = "0.01")
-	)
-	float LifeSpan = 2.f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties")
 	bool bExplodeOnImpact = false;
 	UPROPERTY(

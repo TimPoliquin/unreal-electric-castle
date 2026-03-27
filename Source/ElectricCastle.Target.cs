@@ -7,7 +7,7 @@ public class ElectricCastleTarget : TargetRules
 	public ElectricCastleTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Game;
-		DefaultBuildSettings = BuildSettingsVersion.V6;
+		DefaultBuildSettings = BuildSettingsVersion.Latest;
 
 		ExtraModuleNames.AddRange(new[] { "ElectricCastle" });
 	}

@@ -53,6 +53,8 @@ public:
 		bool bOverridePitch = false,
 		float PitchOverride = 0.f
 	) const;
+	UFUNCTION(BlueprintPure)
+	FDamageEffectParams MakeDamageEffectParams() const;
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void FaceTarget();
@@ -91,6 +93,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void ApplyDefaultDamageConfig(AActor* DamageDealingActor) const;
+	UFUNCTION(BlueprintCallable)
+	void SetOwnerAndInstigator(AActor* Actor) const;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Properties|Damage")

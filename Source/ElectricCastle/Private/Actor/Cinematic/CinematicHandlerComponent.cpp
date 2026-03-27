@@ -13,16 +13,23 @@ UCinematicHandlerComponent::UCinematicHandlerComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
+void UCinematicHandlerComponent::Cleanup()
+{
+	if (CinematicManager.IsValid())
+	{
+		CinematicManager->OnCinematicBegin.RemoveAll(this);
+		CinematicManager->OnCinematicEnd.RemoveAll(this);
+	}
+	CinematicActions.Empty();
+}
+
 void UCinematicHandlerComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	if (bDebug)
+	if (UCinematicManager* LocalCinematicManager = UCinematicManager::Get(GetOwner()))
 	{
-		UE_LOG(LogElectricCastle, Warning, TEXT("[%s] InitializeComponent"), *GetName())
-	}
-	if (UCinematicManager* CinematicManager = UCinematicManager::Get(GetOwner()))
-	{
-		CinematicManager->OnCinematicBegin.AddUniqueDynamic(this, &UCinematicHandlerComponent::OnCinematicBegin);
+		LocalCinematicManager->OnCinematicBegin.AddUniqueDynamic(this, &UCinematicHandlerComponent::OnCinematicBegin);
+		CinematicManager = LocalCinematicManager;
 	}
 	else
 	{
@@ -39,15 +46,21 @@ void UCinematicHandlerComponent::BeginPlay()
 
 void UCinematicHandlerComponent::BeginDestroy()
 {
-	if (bDebug)
-	{
-		UE_LOG(LogElectricCastle, Log, TEXT("[%s] BeginDestroy"), *GetName())
-	}
-	if (UCinematicManager* CinematicManager = UCinematicManager::Get(GetOwner()))
+	if (CinematicManager.IsValid())
 	{
 		CinematicManager->OnCinematicBegin.RemoveDynamic(this, &UCinematicHandlerComponent::OnCinematicBegin);
 	}
 	Super::BeginDestroy();
+}
+
+void UCinematicHandlerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (CinematicManager.IsValid())
+	{
+		CinematicManager->OnCinematicBegin.RemoveDynamic(this, &UCinematicHandlerComponent::OnCinematicBegin);
+		CinematicManager.Reset();
+	}
+	Super::EndPlay(EndPlayReason);
 }
 
 void UCinematicHandlerComponent::AddCinematicAction(UCinematicEventAction* Action)

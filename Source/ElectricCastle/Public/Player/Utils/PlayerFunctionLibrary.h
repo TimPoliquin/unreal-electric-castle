@@ -24,6 +24,10 @@ public:
 	static bool HasWeaponEquipped(const AActor* Actor);
 	UFUNCTION(BlueprintCallable, BlueprintPure, meta=(DefaultToSelf="Actor"))
 	static bool IsPlayerAiming(const AActor* Actor);
+	UFUNCTION(BlueprintCallable, BlueprintPure, meta=(DefaultToSelf="Actor"))
+	static bool IsPlayerLockedOn(const AActor* Actor);
+	UFUNCTION(BlueprintCallable, BlueprintPure, meta=(DefaultToSelf="Actor"))
+	static bool IsPlayerAimingOrLockedOn(const AActor* Actor);
 
 	template <typename TPlayerSubsystem>
 	static TPlayerSubsystem* GetPlayerSubsystem(UObject* WorldContextObject);

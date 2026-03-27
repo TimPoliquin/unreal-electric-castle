@@ -11,7 +11,7 @@
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 #include "Actor/ElectricCastleActorBlueprintFunctionLibrary.h"
 #include "Actor/Cinematic/CinematicHandlerComponent.h"
-#include "Actor/Cinematic/Actions/DestroyActorCinematicEventAction.h"
+#include "Actor/Pool/PoolManagerComponent.h"
 #include "ElectricCastle/ElectricCastle.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Components/AudioComponent.h"
@@ -41,7 +41,7 @@ AProjectileActor::AProjectileActor()
 	ProjectileMovement->ProjectileGravityScale = 0.f;
 
 	CinematicHandlerComponent = CreateDefaultSubobject<UCinematicHandlerComponent>(TEXT("CinematicHandlerComponent"));
-	CinematicHandlerComponent->AddCinematicAction(NewObject<UDestroyActorCinematicEventAction>(this, TEXT("DestroyActorCinematicEventAction")));
+	PoolManagerComponent = CreateDefaultSubobject<UPoolManagerComponent>(TEXT("PoolManagerComponent"));
 }
 
 void AProjectileActor::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
@@ -85,7 +85,7 @@ void AProjectileActor::OnTargetDead(AActor* DeadActor)
 		PlayImpactEffect();
 		if (HasAuthority())
 		{
-			Destroy();
+			ReturnToPoolOrDestroy(this);
 		}
 	}
 	else
@@ -137,27 +137,20 @@ void AProjectileActor::ApplyDamageEffectParams_Implementation(const FDamageEffec
 	DamageEffectParams = InDamageEffectParams;
 }
 
-void AProjectileActor::BeginPlay()
+UPoolManagerComponent* AProjectileActor::GetPoolManager_Implementation() const
 {
-	Super::BeginPlay();
-	SetReplicateMovement(true);
-	if (bAutoDestroy)
-	{
-		SetLifeSpan(LifeSpan);
-	}
-	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AProjectileActor::OnSphereOverlap);
-	if (TravelSound)
-	{
-		TravelSoundComponent = UGameplayStatics::SpawnSoundAttached(TravelSound, GetRootComponent());
-	}
-	if (TravelSoundComponent)
-	{
-		TravelSoundComponent->SetSound(TravelSound);
-		TravelSoundComponent->Play();
-	}
+	return PoolManagerComponent;
 }
 
-void AProjectileActor::OnSphereOverlap(
+void AProjectileActor::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	PoolManagerComponent->OnBeginRetrieve.AddUniqueDynamic(this, &AProjectileActor::OnPool_BeginRetrieve);
+	PoolManagerComponent->OnFinishRetrieve.AddUniqueDynamic(this, &AProjectileActor::OnPool_FinishRetrieve);
+	PoolManagerComponent->OnReturnToPool.AddDynamic(this, &AProjectileActor::OnPool_Returned);
+}
+
+void AProjectileActor::OnSphereOverlap_Implementation(
 	UPrimitiveComponent* OverlappedComponent,
 	AActor* OtherActor,
 	UPrimitiveComponent* OtherComponent,
@@ -195,7 +188,7 @@ void AProjectileActor::OnSphereOverlap(
 		{
 			Explode();
 		}
-		Destroy();
+		ReturnToPoolOrDestroy(this);
 	}
 }
 
@@ -248,6 +241,55 @@ void AProjectileActor::PlayImpactEffect()
 	bHit = true;
 }
 
+void AProjectileActor::OnPool_BeginRetrieve_Implementation(const FSpawnPoolEventPayload& Payload)
+{
+	// Nothing to do here - just in case!
+}
+
+void AProjectileActor::OnPool_FinishRetrieve_Implementation(const FSpawnPoolEventPayload& Payload)
+{
+	bHit = false;
+	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	CollisionComponent->OnComponentBeginOverlap.AddUniqueDynamic(this, &AProjectileActor::OnSphereOverlap);
+	ProjectileMovement->Velocity = ProjectileMovement->InitialSpeed * GetActorForwardVector();
+	SetReplicateMovement(true);
+	if (TravelSound)
+	{
+		TravelSoundComponent = UGameplayStatics::SpawnSoundAttached(TravelSound, GetRootComponent());
+	}
+	if (TravelSoundComponent)
+	{
+		TravelSoundComponent->SetSound(TravelSound);
+		TravelSoundComponent->Play();
+	}
+}
+
+void AProjectileActor::OnPool_Returned_Implementation(const FSpawnPoolEventPayload& Payload)
+{
+	// Stop sounds, clear timers, etc.
+	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	if (TravelSoundComponent)
+	{
+		TravelSoundComponent->Stop();
+		TravelSoundComponent->DestroyComponent();
+	}
+	if (ProjectileMovement->HomingTargetComponent.IsValid())
+	{
+		if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(ProjectileMovement->HomingTargetComponent->GetOwner()))
+		{
+			CombatInterface->GetOnDeathDelegate().RemoveAll(this);
+		}
+	}
+	if (CinematicHandlerComponent)
+	{
+		CinematicHandlerComponent->Cleanup();
+	}
+	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	CollisionComponent->OnComponentBeginOverlap.RemoveAll(this);
+	ProjectileMovement->StopMovementImmediately();
+	ProjectileMovement->HomingTargetComponent.Reset();
+}
+
 void AProjectileActor::Explode_Implementation()
 {
 	for (AActor* TargetActor : FindExplosionTargets())
@@ -275,18 +317,4 @@ void AProjectileActor::ExplodeOnTarget_Implementation(AActor* TargetActor)
 	UElectricCastleAbilitySystemLibrary::ApplyDamageEffect(
 		ExplosionDamageEffectParams
 	);
-}
-
-void AProjectileActor::Destroyed()
-{
-	if (!HasAuthority())
-	{
-		PlayImpactEffect();
-	}
-	if (TravelSoundComponent)
-	{
-		TravelSoundComponent->Stop();
-		TravelSoundComponent->DestroyComponent();
-	}
-	Super::Destroyed();
 }

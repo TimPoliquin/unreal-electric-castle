@@ -38,7 +38,7 @@ void AFireballProjectile::BeginPlay()
 	}
 }
 
-void AFireballProjectile::OnSphereOverlap(
+void AFireballProjectile::OnSphereOverlap_Implementation(
 	UPrimitiveComponent* OverlappedComponent,
 	AActor* OtherActor,
 	UPrimitiveComponent* OtherComponent,

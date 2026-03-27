@@ -56,6 +56,8 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	AProjectileActor* SpawnProjectile_Basic();
+	UFUNCTION(BlueprintNativeEvent)
+	void ConfigureProjectile(AProjectileActor* Projectile) const;
 
 	/**
 	 * Angle (y) for projectile to be fired.

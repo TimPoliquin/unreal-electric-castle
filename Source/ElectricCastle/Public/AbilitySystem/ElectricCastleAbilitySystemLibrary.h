@@ -235,6 +235,8 @@ public:
 		UElectricCastleAbilitySystemComponent* AbilitySystemComponent,
 		const FGameplayTag& AbilityTag
 	);
+	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystem|GameplayEffect")
+	static bool DoesActorHaveGameplayTag(AActor* Actor, const FGameplayTag& Tag);
 
 	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")
 	static int32 GetXPReward(const UObject* WorldContextObject, const ECharacterClass& CharacterClass, int32 Level);

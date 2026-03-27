@@ -55,6 +55,28 @@ void AArrowProjectile::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty
 	DOREPLIFETIME(AArrowProjectile, Pitch)
 }
 
+void AArrowProjectile::OnPool_Returned_Implementation(const FSpawnPoolEventPayload& Payload)
+{
+	Super::OnPool_Returned_Implementation(Payload);
+	TrailFX->Deactivate();
+	MeshComponent->Deactivate();
+	MeshComponent->SetVisibility(false);
+	ProjectileMovement->ProjectileGravityScale = 0.f;
+	ProjectileMovement->Deactivate();
+}
+
+void AArrowProjectile::OnPool_FinishRetrieve_Implementation(const FSpawnPoolEventPayload& Payload)
+{
+	Super::OnPool_FinishRetrieve_Implementation(Payload);
+	MeshComponent->Activate();
+	MeshComponent->SetVisibility(true);
+	bMatchOwnerForward = true;
+	Pitch = 0.f;
+	ProjectileMovement->StopMovementImmediately();
+	ProjectileMovement->ProjectileGravityScale = 0.f;
+	ProjectileMovement->Deactivate();
+}
+
 void AArrowProjectile::Release_Implementation()
 {
 	FSphereTraceParams Params;
@@ -86,11 +108,11 @@ void AArrowProjectile::Release_Implementation()
 	const FVector NewForward = RotationQuat.RotateVector(ForwardVector);
 	ProjectileMovement->Velocity = NewForward * ProjectileMovement->InitialSpeed;
 	ProjectileMovement->bRotationFollowsVelocity = true;
+	ProjectileMovement->ProjectileGravityScale = 1.f;
 	bMatchOwnerForward = false;
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	TrailFX->Activate();
 	ProjectileMovement->Activate();
-	SetLifeSpan(LifeSpan);
 	SetMatchOwnerForward(false);
 }
 

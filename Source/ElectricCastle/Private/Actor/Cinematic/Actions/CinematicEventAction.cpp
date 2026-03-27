@@ -23,17 +23,17 @@ void UCinematicEventAction::Initialize_Implementation(AActor* InOwner)
 
 AActor* UCinematicEventAction::GetOwner() const
 {
-	return Owner;
+	return Owner.Get();
 }
 
 FString UCinematicEventAction::GetOwnerName() const
 {
-	return Owner ? Owner->GetName() : TEXT("NULLPTR");
+	return Owner.IsValid() ? Owner->GetName() : TEXT("NULLPTR");
 }
 
 UWorld* UCinematicEventAction::GetWorld() const
 {
-	return Owner ? Owner->GetWorld() : nullptr;
+	return Owner.IsValid() ? Owner->GetWorld() : nullptr;
 }
 
 AController* UCinematicEventAction::GetOwnerController() const

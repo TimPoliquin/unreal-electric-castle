@@ -30,6 +30,7 @@
 
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 
+#include "Actor/Attack/Component/AttackWindowManager.h"
 #include "Actor/MagicTether/TetherAbilityComponent.h"
 #include "Actor/Mesh/SocketManagerComponent.h"
 #include "Components/LODSyncComponent.h"
@@ -39,6 +40,7 @@
 #include "Player/Aim/AimController.h"
 #include "Player/Equipment/WeaponInterface.h"
 #include "Player/Form/FormConfigTypes.h"
+#include "Player/LockOn/LockOnController.h"
 
 AElectricCastlePlayerCharacter::AElectricCastlePlayerCharacter()
 {
@@ -94,7 +96,9 @@ AElectricCastlePlayerCharacter::AElectricCastlePlayerCharacter()
 	MotionWarpingComponent = CreateDefaultSubobject<UMotionWarpingComponent>(TEXT("Motion Warping"));
 	FormChangeComponent = CreateDefaultSubobject<UPlayerFormChangeComponent>(TEXT("Form Change Component"));
 	AimController = CreateDefaultSubobject<UAimController>(TEXT("Aim Controller"));
+	LockOnController = CreateDefaultSubobject<ULockOnController>(TEXT("LockOn Controller"));
 	TetherComponent = CreateDefaultSubobject<UTetherAbilityComponent>(TEXT("Tether Component"));
+	AttackWindowManager = CreateDefaultSubobject<UAttackWindowManager>(TEXT("Attack Window Manager"));
 	MetaHumanComponent = CreateDefaultSubobject<UMetaHumanComponentUE>(TEXT("MetaHuman"));
 	LODSyncComponent = CreateDefaultSubobject<ULODSyncComponent>(TEXT("LODSync"));
 	LODSyncComponent->NumLODs = 8;
@@ -131,6 +135,11 @@ USceneComponent* AElectricCastlePlayerCharacter::GetMagicHandAttachComponent_Imp
 	return GetMesh();
 }
 
+UAttackWindowManager* AElectricCastlePlayerCharacter::GetAttackWindowManager_Implementation() const
+{
+	return AttackWindowManager;
+}
+
 void AElectricCastlePlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -149,6 +158,8 @@ void AElectricCastlePlayerCharacter::BeginPlay()
 		this,
 		&AElectricCastlePlayerCharacter::OnFadeDetectionEndOverlap
 	);
+	LockOnController->OnLockOnTarget.AddUniqueDynamic(this, &AElectricCastlePlayerCharacter::HandleLockOnTarget);
+	LockOnController->OnLockOnRelease.AddUniqueDynamic(this, &AElectricCastlePlayerCharacter::HandleLockOnRelease);
 	GetCharacterMovement()->MaxWalkSpeed = StandardMoveSpeed;
 }
 
@@ -160,6 +171,14 @@ void AElectricCastlePlayerCharacter::BeginDestroy()
 	{
 		AIDirectorSubsystem->UnregisterActivePlayer(this);
 	}
+}
+
+void AElectricCastlePlayerCharacter::HandleLockOnTarget_Implementation(const FLockOnTargetPayload& Payload)
+{
+}
+
+void AElectricCastlePlayerCharacter::HandleLockOnRelease_Implementation()
+{
 }
 
 void AElectricCastlePlayerCharacter::HandleTagChange_EffectMovementTurnInPlace_Implementation(FGameplayTag EffectMovementTurnInPlaceTag, int Count)
@@ -730,6 +749,11 @@ void AElectricCastlePlayerCharacter::SetAnimInstanceClass(const TSubclassOf<UAni
 UAimController* AElectricCastlePlayerCharacter::GetAimController_Implementation() const
 {
 	return AimController;
+}
+
+ULockOnController* AElectricCastlePlayerCharacter::GetLockOnController_Implementation() const
+{
+	return LockOnController;
 }
 
 void AElectricCastlePlayerCharacter::Construction_SetupMetaHuman_Implementation()

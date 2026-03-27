@@ -21,7 +21,7 @@ public class ElectricCastle : ModuleRules
 		PrivateDependencyModuleNames.AddRange(new[]
 		{
 			"GameplayTags", "GameplayTasks", "NavigationSystem", "Niagara", "AIModule",
-			"HairStrandsCore", "MetaHumanSDKRuntime", "LiveLinkAnimationCore"
+			"HairStrandsCore", "MetaHumanSDKRuntime", "LiveLinkAnimationCore", "DeveloperSettings"
 		});
 
 		// Uncomment if you are using Slate UI

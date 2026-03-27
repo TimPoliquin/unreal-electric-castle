@@ -173,6 +173,7 @@ struct FElectricCastleGameplayTags
 	FGameplayTag Abilities_Passive_LifeSiphon;
 	FGameplayTag Abilities_Passive_ManaSiphon;
 	FGameplayTag Abilities_Other_Aim;
+	FGameplayTag Abilities_Other_LockOn;
 	FGameplayTag Abilities_Other_Interact;
 	FGameplayTag Abilities_Other_Cancel;
 	FGameplayTag Abilities_Fishing;
@@ -212,6 +213,9 @@ struct FElectricCastleGameplayTags
 	FGameplayTag Player_Block_Interaction;
 	FGameplayTag Player_Block_ChangeForm;
 	FGameplayTag Player_Block_Aim;
+	FGameplayTag Player_Block_LockOn;
+	FGameplayTag Player_Block_Look;
+	FGameplayTag Player_Block_MotionWarpingUpdate;
 	FGameplayTag Player_Form;
 	FGameplayTag Player_Form_Barbarian;
 	FGameplayTag Player_Form_Egyptian;

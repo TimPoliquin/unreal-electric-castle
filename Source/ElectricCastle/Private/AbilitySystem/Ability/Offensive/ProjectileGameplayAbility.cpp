@@ -6,8 +6,10 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "Actor/Projectile/ProjectileActor.h"
+#include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Interaction/CombatInterface.h"
 #include "Templates/Function.h"
+#include "World/Pool/WorldPooledActorSubsystem.h"
 
 void UProjectileGameplayAbility::ActivateAbility(
 	const FGameplayAbilitySpecHandle Handle,
@@ -75,20 +77,22 @@ AProjectileActor* UProjectileGameplayAbility::SpawnProjectile(
 	SpawnTransform.SetLocation(SpawnLocation);
 	SpawnTransform.SetRotation(SpawnRotation.Quaternion());
 
-	AProjectileActor* SpawnedProjectile = GetWorld()->SpawnActorDeferred<AProjectileActor>(
-		ProjectileClass,
-		SpawnTransform,
-		GetAvatarActorFromActorInfo(),
-		Cast<APawn>(GetAvatarActorFromActorInfo()),
-		ESpawnActorCollisionHandlingMethod::AlwaysSpawn
-	);
-	ApplyDefaultDamageConfig(SpawnedProjectile);
-	SpawnedProjectile->SetOwner(GetAvatarActorFromActorInfo());
-	if (BeforeFinishSpawning)
+	AProjectileActor* SpawnedProjectile = nullptr;
+	if (UWorldPooledActorSubsystem* Pool = UWorldPooledActorSubsystem::Get(GetAvatarActorFromActorInfo()))
 	{
-		BeforeFinishSpawning->ExecuteIfBound(SpawnedProjectile);
+		SpawnedProjectile = Cast<AProjectileActor>(ISpawnPoolInterface::AcquireDeferred(Pool, GetAvatarActorFromActorInfo(), ProjectileClass));
+		ConfigureProjectile(SpawnedProjectile);
+		if (BeforeFinishSpawning)
+		{
+			BeforeFinishSpawning->ExecuteIfBound(SpawnedProjectile);
+		}
+		ISpawnPoolInterface::AcquireFinalize(Pool, SpawnedProjectile, SpawnTransform);
 	}
-	SpawnedProjectile->FinishSpawning(SpawnTransform);
+	else
+	{
+		UE_LOG(LogElectricCastle, Warning, TEXT("[%s] Failed to get projectile from spawn pool!"), *GetName());
+	}
+
 	return SpawnedProjectile;
 }
 
@@ -104,6 +108,13 @@ AProjectileActor* UProjectileGameplayAbility::SpawnProjectile_Basic()
 		GetAvatarActorFromActorInfo()->GetActorLocation(),
 		GetAvatarActorFromActorInfo()->GetActorForwardVector().Rotation()
 	);
+}
+
+void UProjectileGameplayAbility::ConfigureProjectile_Implementation(AProjectileActor* Projectile) const
+{
+	Projectile->SetInstigator(Cast<APawn>(GetAvatarActorFromActorInfo()));
+	Projectile->SetOwner(GetAvatarActorFromActorInfo());
+	ApplyDefaultDamageConfig(Projectile);
 }
 
 FGameplayEffectSpecHandle UProjectileGameplayAbility::MakeDamageEffectSpecHandle(

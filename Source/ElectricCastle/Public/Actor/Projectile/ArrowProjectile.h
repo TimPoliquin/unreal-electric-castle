@@ -22,6 +22,11 @@ public:
 	UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
 	void Release();
 
+	/** Start IPoolableActor **/
+	virtual void OnPool_Returned_Implementation(const FSpawnPoolEventPayload& Payload) override;
+	virtual void OnPool_FinishRetrieve_Implementation(const FSpawnPoolEventPayload& Payload) override;
+	/** End IPoolableActor **/
+
 protected:
 	UPROPERTY(BlueprintReadOnly, Replicated)
 	bool bMatchOwnerForward = true;

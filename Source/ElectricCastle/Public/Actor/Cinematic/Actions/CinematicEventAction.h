@@ -36,7 +36,7 @@ public:
 
 protected:
 	UPROPERTY(BlueprintReadOnly)
-	TObjectPtr<AActor> Owner;
+	TWeakObjectPtr<AActor> Owner;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties", meta=(Categories="Cinematic.Action.Trigger"))
 	FGameplayTagContainer Triggers = FGameplayTagContainer::EmptyContainer;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties")

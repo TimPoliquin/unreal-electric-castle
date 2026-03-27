@@ -57,6 +57,11 @@ void UDamageGameplayAbility::DamageTargets_Implementation(
 
 void UDamageGameplayAbility::DamageTarget_Implementation(AActor* Target, const FVector& ImpactLocation, const FGameplayTag& MontageTag)
 {
+	if (!IsValid(Target) || !ICombatInterface::IsAlive(Target))
+	{
+		UE_LOG(LogElectricCastle, Warning, TEXT("[%s] Target is invalid or not alive!"), *GetName());
+		return;
+	}
 	if (!DamageEffectClass)
 	{
 		UE_LOG(LogElectricCastle, Error, TEXT("[%s] DamageEffectClass not set!"), *GetName())
@@ -82,7 +87,7 @@ FTaggedMontage UDamageGameplayAbility::GetRandomAttackMontage() const
 	{
 		return UArrayUtils::GetRandomElement(AttackMontages);
 	}
-	UE_LOG(LogTemp, Warning, TEXT("No attack montage tags associated for %s"), *AvatarActor->GetName());
+	UE_LOG(LogElectricCastle, Warning, TEXT("No attack montage tags associated for %s"), *AvatarActor->GetName());
 	return FTaggedMontage();
 }
 
@@ -127,6 +132,11 @@ FDamageEffectParams UDamageGameplayAbility::MakeDamageEffectParamsFromClassDefau
 		bOverridePitch,
 		PitchOverride
 	);
+}
+
+FDamageEffectParams UDamageGameplayAbility::MakeDamageEffectParams() const
+{
+	return MakeDamageEffectParamsFromClassDefaults();
 }
 
 FVector UDamageGameplayAbility::GetFaceTargetLocation() const
@@ -247,6 +257,12 @@ void UDamageGameplayAbility::GetTargetsInAttackRange(
 void UDamageGameplayAbility::ApplyDefaultDamageConfig(AActor* DamageDealingActor) const
 {
 	IDamageDealingActor::ApplyDamageEffectParams(DamageDealingActor, MakeDamageEffectParamsFromClassDefaults());
+}
+
+void UDamageGameplayAbility::SetOwnerAndInstigator(AActor* Actor) const
+{
+	Actor->SetOwner(GetAvatarActorFromActorInfo());
+	Actor->SetInstigator(Cast<APawn>(GetAvatarActorFromActorInfo()));
 }
 
 void UDamageGameplayAbility::FaceTarget_Implementation()

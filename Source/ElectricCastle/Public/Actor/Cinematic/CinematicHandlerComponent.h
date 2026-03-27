@@ -9,6 +9,7 @@
 #include "CinematicHandlerComponent.generated.h"
 
 
+class UCinematicManager;
 class UCinematicEventAction;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -19,6 +20,8 @@ class ELECTRICCASTLE_API UCinematicHandlerComponent : public UActorComponent, pu
 public:
 	// Sets default values for this component's properties
 	UCinematicHandlerComponent();
+	virtual void Cleanup();
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void BeginDestroy() override;
 
 	void AddCinematicAction(UCinematicEventAction* Action);
@@ -38,4 +41,6 @@ protected:
 private:
 	UFUNCTION()
 	void OnCinematicBegin(const FCinematicLifeCycleEventPayload& Payload);
+	UPROPERTY()
+	TWeakObjectPtr<UCinematicManager> CinematicManager;
 };

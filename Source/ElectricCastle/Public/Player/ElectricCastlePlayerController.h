@@ -13,6 +13,8 @@
 #include "Aim/AimActorInterface.h"
 
 #include "GameFramework/PlayerController.h"
+#include "LockOn/LockOnActor.h"
+#include "LockOn/LockOnEvents.h"
 #include "SelectionWheel/SelectionWheelManagerActorInterface.h"
 #include "SelectionWheel/SelectionWheelManagerComponent.h"
 #include "ElectricCastlePlayerController.generated.h"
@@ -58,7 +60,10 @@ enum class EAttackMessageType : uint8
  * 
  */
 UCLASS()
-class ELECTRICCASTLE_API AElectricCastlePlayerController : public APlayerController, public ISelectionWheelManagerActorInterface, public IAimActorInterface
+class ELECTRICCASTLE_API AElectricCastlePlayerController : public APlayerController,
+                                                           public ISelectionWheelManagerActorInterface,
+                                                           public IAimActorInterface,
+                                                           public ILockOnActor
 {
 	GENERATED_BODY()
 
@@ -66,6 +71,9 @@ public:
 	AElectricCastlePlayerController();
 	virtual void PlayerTick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+
+	void LockPlayerRotationToCamera();
+	void FreePlayerRotationFromCamera();
 
 	UFUNCTION(Client, Reliable)
 	virtual void ShowDamageNumber(
@@ -102,6 +110,10 @@ public:
 	/** Start IAimActorInterface **/
 	virtual UAimController* GetAimController_Implementation() const override;
 	/** End IAimActorInterface **/
+
+	/** Start ILockOnActor **/
+	virtual ULockOnController* GetLockOnController_Implementation() const override;
+	/** End ILockOnActor **/
 protected:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputMappingContext> AuraContext;
@@ -142,6 +154,14 @@ protected:
 	void OnGameDataLoaded();
 	UFUNCTION(BlueprintNativeEvent)
 	void OnAbilitySystemReady(UElectricCastleAbilitySystemComponent* InAbilitySystemComponent);
+	UFUNCTION()
+	void HandleAimStart();
+	UFUNCTION()
+	void HandleAimEnd();
+	UFUNCTION(BlueprintNativeEvent)
+	void HandleLockOnTarget(const FLockOnTargetPayload& Payload);
+	UFUNCTION(BlueprintNativeEvent)
+	void HandleLockOnRelease();
 
 private:
 	FHighlightContext HighlightContext;
@@ -152,7 +172,6 @@ private:
 	void Look(const FInputActionValue& InputActionValue);
 	void JumpStart(const FInputActionValue& InputActionValue);
 	void JumpEnd(const FInputActionValue& InputActionValue);
-	void Aim_Rotation(const FInputActionValue& InputActionValue);
 	void CursorTrace();
 	UElectricCastleAbilitySystemComponent* GetAbilitySystemComponent();
 	void AbilityInputTagPressed(FGameplayTag InputTag);
@@ -173,7 +192,6 @@ private:
 	UFUNCTION()
 	void HandleSelectionWheelStateChanged(const FSelectionWheelStateChangedPayload& Payload);
 
-	bool IsAiming() const;
 	bool HasEffectiveGameplayTag(const FGameplayTag& Tag);
 
 	// Character Movement / Targeting
