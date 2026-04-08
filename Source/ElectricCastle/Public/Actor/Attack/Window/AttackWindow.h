@@ -19,9 +19,11 @@ class ELECTRICCASTLE_API UAttackWindow : public UObject
 	GENERATED_BODY()
 
 public:
+	void SetEventTag(const FGameplayTag& InEventTag);
 	void SetOwner(AActor* InOwner);
 	void SetDuration(const float InDuration);
-	void SweepForHits(const float DeltaTime, TArray<FHitResult>& OutHits);
+	bool SweepForHits(const float DeltaTime, TArray<FHitResult>& OutHits);
+	FGameplayTag GetEventTag() const;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Attack Window", meta=(Categories="Combat.Socket"))
@@ -44,6 +46,8 @@ protected:
 private:
 	FVector GetOffsetLocation(const FVector& InLocation) const;
 	void SweepCurveForHits(const FRuntimeVectorCurve& InSweepCurve, const float Alpha, TArray<FHitResult>& OutHits) const;
+	UPROPERTY()
+	FGameplayTag EventTag = FGameplayTag::EmptyTag;
 	UPROPERTY()
 	TWeakObjectPtr<AActor> Owner;
 	UPROPERTY()

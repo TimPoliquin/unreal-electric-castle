@@ -7,6 +7,7 @@
 #include "Engine/DataAsset.h"
 #include "InputConfiguration.generated.h"
 
+struct FInputConfigurationRow;
 class UInputAction;
 
 USTRUCT(BlueprintType)
@@ -16,7 +17,7 @@ struct FInputConfigurationRow
 
 	UPROPERTY(EditDefaultsOnly)
 	const UInputAction* InputAction = nullptr;
-	UPROPERTY(EditDefaultsOnly, meta=(Categories="InputTag"))
+	UPROPERTY(EditDefaultsOnly, meta=(Categories="Input"))
 	FGameplayTag InputTag = FGameplayTag::EmptyTag;
 };
 

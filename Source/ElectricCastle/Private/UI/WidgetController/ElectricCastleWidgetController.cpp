@@ -20,10 +20,6 @@ void UElectricCastleWidgetController::SetWidgetControllerParams(const FWidgetCon
 
 void UElectricCastleWidgetController::BroadcastAbilityInfo()
 {
-	if (!GetAbilitySystemComponent()->HasFiredOnAbilitiesGivenDelegate())
-	{
-		return;
-	}
 	if (!AbilityInfo)
 	{
 		UE_LOG(LogElectricCastle, Error, TEXT("Ability Info needs to be set in Widget Controller [%s]"), *GetName());

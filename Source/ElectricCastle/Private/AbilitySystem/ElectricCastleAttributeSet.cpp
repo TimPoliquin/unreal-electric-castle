@@ -200,6 +200,8 @@ void UElectricCastleAttributeSet::HandleIncomingDamage(const FEffectProperties& 
 	HandleOutgoingDamage(Props, IncomingDamage);
 	const bool bIsCriticalHit = UElectricCastleAbilitySystemLibrary::IsCriticalHit(Props.EffectContextHandle);
 	const bool bIsMiss = UElectricCastleAbilitySystemLibrary::IsEvadedAttack(Props.EffectContextHandle);
+	const bool bIsBlocked = UElectricCastleAbilitySystemLibrary::IsBlockedHit(Props.EffectContextHandle);
+	const bool bIsParried = UElectricCastleAbilitySystemLibrary::IsParriedAttack(Props.EffectContextHandle);
 	const float NewHealth = GetHealth() - IncomingDamage;
 	const bool bFatal = NewHealth <= 0.f;
 	SetHealth(FMath::Clamp(NewHealth, 0.f, GetMaxHealth()));
@@ -242,6 +244,14 @@ void UElectricCastleAttributeSet::HandleIncomingDamage(const FEffectProperties& 
 		}
 		// grant xp on death
 		SendXPEvent(Props);
+	}
+	if (bIsParried)
+	{
+		SendParriedEvent(Props);
+	}
+	else if (bIsBlocked)
+	{
+		SendBlockedEvent(Props);
 	}
 	// show damage results
 	ShowDamageText(Props, IncomingDamage);
@@ -371,6 +381,51 @@ void UElectricCastleAttributeSet::ShowDamageText(const FEffectProperties& Props,
 			);
 		}
 	}
+}
+
+void UElectricCastleAttributeSet::SendParriedEvent(const FEffectProperties& Props)
+{
+	UE_LOG(LogElectricCastle, Warning, TEXT("Parried!"))
+	const FElectricCastleGameplayTags& GameplayTags = FElectricCastleGameplayTags::Get();
+	// tell the target that they successfully parried
+	FGameplayEventData ParryAttackPayload;
+	ParryAttackPayload.EventTag = GameplayTags.Event_Montage_Common_ParryAttack;
+	ParryAttackPayload.Target = Props.Target.AvatarActor;
+	ParryAttackPayload.Instigator = Props.Source.AvatarActor;
+	ParryAttackPayload.ContextHandle = Props.Target.AbilitySystemComponent->MakeEffectContext();
+	UElectricCastleAbilitySystemLibrary::CopyEffectContextHandleProperties(Props.EffectContextHandle, ParryAttackPayload.ContextHandle);
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Props.Target.AvatarActor, GameplayTags.Event_Montage_Common_ParryAttack, ParryAttackPayload);
+	// tell the source that their attack was parried and that they've been staggered
+	FGameplayEventData StaggerPayload;
+	StaggerPayload.EventTag = GameplayTags.Event_Montage_Common_Staggered;
+	StaggerPayload.Instigator = Props.Target.AvatarActor;
+	StaggerPayload.Target = Props.Source.AvatarActor;
+	StaggerPayload.ContextHandle = Props.Source.AbilitySystemComponent->MakeEffectContext();
+	UElectricCastleAbilitySystemLibrary::CopyEffectContextHandleProperties(Props.EffectContextHandle, StaggerPayload.ContextHandle);
+
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Props.Source.AvatarActor, GameplayTags.Event_Montage_Common_Staggered, StaggerPayload);
+}
+
+void UElectricCastleAttributeSet::SendBlockedEvent(const FEffectProperties& Props)
+{
+	UE_LOG(LogElectricCastle, Warning, TEXT("Blocked!"))
+	const FElectricCastleGameplayTags& GameplayTags = FElectricCastleGameplayTags::Get();
+	// tell the target that they successfully blocked
+	FGameplayEventData BlockAttackPayload;
+	BlockAttackPayload.EventTag = GameplayTags.Event_Montage_Common_BlockAttack;
+	BlockAttackPayload.Target = Props.Target.AvatarActor;
+	BlockAttackPayload.Instigator = Props.Source.AvatarActor;
+	BlockAttackPayload.ContextHandle = Props.Target.AbilitySystemComponent->MakeEffectContext();
+	UElectricCastleAbilitySystemLibrary::CopyEffectContextHandleProperties(Props.EffectContextHandle, BlockAttackPayload.ContextHandle);
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Props.Target.AvatarActor, GameplayTags.Event_Montage_Common_BlockAttack, BlockAttackPayload);
+	// tell the source that their attack was blocked
+	FGameplayEventData BlockedPayload;
+	BlockedPayload.EventTag = GameplayTags.Event_Montage_Common_Blocked;
+	BlockedPayload.Instigator = Props.Target.AvatarActor;
+	BlockedPayload.Target = Props.Source.AvatarActor;
+	BlockedPayload.ContextHandle = Props.Source.AbilitySystemComponent->MakeEffectContext();
+	UElectricCastleAbilitySystemLibrary::CopyEffectContextHandleProperties(Props.EffectContextHandle, BlockedPayload.ContextHandle);
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Props.Source.AvatarActor, GameplayTags.Event_Montage_Common_Blocked, BlockedPayload);
 }
 
 void UElectricCastleAttributeSet::SendXPEvent(const FEffectProperties& Props) const

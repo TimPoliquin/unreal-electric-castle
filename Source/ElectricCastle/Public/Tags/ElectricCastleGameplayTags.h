@@ -21,7 +21,6 @@ struct FElectricCastleGameplayTags
 	}
 
 	static void InitializeNativeGameplayTags();
-	static bool IsLeftMouseButton(const FGameplayTag&);
 
 	bool bInitialized = false;
 
@@ -73,20 +72,28 @@ struct FElectricCastleGameplayTags
 	FGameplayTag Cinematic_Type_Dialog;
 
 	/** Input Tags **/
+	FGameplayTag Input;
+	FGameplayTag Input_Common_Block;
+	FGameplayTag Input_Common_Dodge;
+	FGameplayTag Input_Common_Interact;
+	FGameplayTag Input_Ability_Aim;
+	FGameplayTag Input_Ability_LockOn;
+	FGameplayTag Input_Ability_Primary;
+	FGameplayTag Input_Ability_Secondary;
+	FGameplayTag Input_Ability_Spell_01;
+	FGameplayTag Input_Ability_Spell_02;
+	/** Legacy Input Tags **/
 	FGameplayTag InputTag;
-	FGameplayTag InputTag_LeftMouseButton;
-	FGameplayTag InputTag_AttackTarget;
-	FGameplayTag InputTag_RightMouseButton;
 	FGameplayTag InputTag_Action1;
 	FGameplayTag InputTag_Action2;
 	FGameplayTag InputTag_Action3;
 	FGameplayTag InputTag_Action4;
 	FGameplayTag InputTag_Passive1;
 	FGameplayTag InputTag_Passive2;
-	FGameplayTag InputTag_Interact;
 	FGameplayTag InputTag_Fishing_Reel;
 	FGameplayTag InputTag_Cancel;
 	FGameplayTag InputTag_Dialog;
+	FGameplayTag InputTag_Interact;
 
 	/** Effect Tags **/
 	FGameplayTag Effect;
@@ -109,6 +116,11 @@ struct FElectricCastleGameplayTags
 	FGameplayTag Effect_Magnitude;
 	FGameplayTag Effect_State;
 	FGameplayTag Effect_State_Aiming;
+	FGameplayTag Effect_State_Blocking;
+	FGameplayTag Effect_State_Dodging;
+	FGameplayTag Effect_State_Jumping;
+	FGameplayTag Effect_State_LockedOn;
+	FGameplayTag Effect_State_Parrying;
 	FGameplayTag Effect_Movement_TurnInPlace;
 	FGameplayTag Effect_State_ChronoShift;
 	FGameplayTag Effect_State_PsychedelicVision;
@@ -132,6 +144,7 @@ struct FElectricCastleGameplayTags
 	FGameplayTag Effect_Debuff_Type_Shock;
 	FGameplayTag Effect_Debuff_Type_Curse;
 	FGameplayTag Effect_Debuff_Type_Bleed;
+	FGameplayTag Effect_Debuff_Type_Staggered;
 	FGameplayTag Effect_Debuff_Stat;
 	FGameplayTag Effect_Debuff_Level;
 	FGameplayTag Effect_Debuff_Stat_Chance;
@@ -178,6 +191,8 @@ struct FElectricCastleGameplayTags
 	FGameplayTag Abilities_Other_Cancel;
 	FGameplayTag Abilities_Fishing;
 	FGameplayTag Abilities_Fishing_Reel;
+	FGameplayTag Abilities_Parameters_CanBeBlocked;
+	FGameplayTag Abilities_Parameters_CanBeParried;
 	FGameplayTag Abilities_Status;
 	FGameplayTag Abilities_Status_Locked;
 	FGameplayTag Abilities_Status_Eligible;
@@ -190,6 +205,10 @@ struct FElectricCastleGameplayTags
 
 	/** Event Tags **/
 	FGameplayTag Event_Montage_Electrocute;
+	FGameplayTag Event_Montage_Common_BlockAttack;
+	FGameplayTag Event_Montage_Common_Blocked;
+	FGameplayTag Event_Montage_Common_ParryAttack;
+	FGameplayTag Event_Montage_Common_Staggered;
 
 	/** Cooldown **/
 	FGameplayTag Cooldown_Form;
@@ -208,6 +227,7 @@ struct FElectricCastleGameplayTags
 	/** Player Tags **/
 	FGameplayTag Player_Block_CursorTrace;
 	FGameplayTag Player_Block_Movement;
+	FGameplayTag Player_Block_Jump;
 	FGameplayTag Player_Block_Rotation;
 	FGameplayTag Player_Block_Ability_Offensive;
 	FGameplayTag Player_Block_Interaction;

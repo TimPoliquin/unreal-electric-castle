@@ -116,6 +116,7 @@ bool ULockOnController::ActivateLockOn()
 	{
 		EngageNewTarget(NewTarget);
 		UPlayerInputFunctionLibrary::AddInputMappingContext(PlayerController.Get(), LockOnContext);
+		LockedOnEffectHandle = UElectricCastleAbilitySystemLibrary::ApplyInfiniteEffectByTag(GetOwner(), FElectricCastleGameplayTags::Get().Effect_State_LockedOn);
 		bLockOnActivated = true;
 		return true;
 	}
@@ -127,7 +128,17 @@ void ULockOnController::DeactivateLockOn()
 	bLockOnActivated = false;
 	DisengageCurrentTarget();
 	UPlayerInputFunctionLibrary::RemoveInputMappingContext(PlayerController.Get(), LockOnContext);
+	UElectricCastleAbilitySystemLibrary::RemoveGameplayEffect(GetOwner(), LockedOnEffectHandle);
 	OnLockOnRelease.Broadcast();
+}
+
+float ULockOnController::GetDistanceToTarget() const
+{
+	if (TargetActor.IsValid())
+	{
+		return FVector::Distance(GetOwner()->GetActorLocation(), TargetActor->GetActorLocation());
+	}
+	return 0.f;
 }
 
 bool ULockOnController::ShouldUpdateTarget() const

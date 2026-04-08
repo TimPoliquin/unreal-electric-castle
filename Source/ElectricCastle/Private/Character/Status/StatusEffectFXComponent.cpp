@@ -6,7 +6,9 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
+#include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemInterface.h"
+#include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 #include "GameFramework/Character.h"
 
 
@@ -21,7 +23,7 @@ void UStatusEffectFXComponent::BeginPlay()
 	Super::BeginPlay();
 	if (IElectricCastleAbilitySystemInterface::IsAbilitySystemReady(GetOwner()))
 	{
-		AddStatusEffectTagListeners(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetOwner()));
+		AddStatusEffectTagListeners(UElectricCastleAbilitySystemLibrary::GetAbilitySystemComponent(GetOwner()));
 	}
 	else if (IElectricCastleAbilitySystemInterface* AbilitySystemInterface = Cast<IElectricCastleAbilitySystemInterface>(GetOwner()))
 	{
@@ -29,7 +31,7 @@ void UStatusEffectFXComponent::BeginPlay()
 	}
 }
 
-void UStatusEffectFXComponent::AddStatusEffectTagListeners(UAbilitySystemComponent* AbilitySystemComponent)
+void UStatusEffectFXComponent::AddStatusEffectTagListeners(UElectricCastleAbilitySystemComponent* AbilitySystemComponent)
 {
 	for (const auto& Pair : StatusEffectFX)
 	{
@@ -39,18 +41,22 @@ void UStatusEffectFXComponent::AddStatusEffectTagListeners(UAbilitySystemCompone
 
 bool UStatusEffectFXComponent::HasFXInstanceByTag(const FGameplayTag& StatusEffectTag) const
 {
-	return StatusEffectFXInstances.ContainsByPredicate([StatusEffectTag](const FStatusEffectFXInstance& Instance)
-	{
-		return Instance.StatusEffectTag.MatchesTagExact(StatusEffectTag);
-	});
+	return StatusEffectFXInstances.ContainsByPredicate(
+		[StatusEffectTag](const FStatusEffectFXInstance& Instance)
+		{
+			return Instance.StatusEffectTag.MatchesTagExact(StatusEffectTag);
+		}
+	);
 }
 
 FStatusEffectFXInstance UStatusEffectFXComponent::FindFXInstanceByTag(const FGameplayTag& StatusEffectTag) const
 {
-	const FStatusEffectFXInstance* FXInstance = StatusEffectFXInstances.FindByPredicate([StatusEffectTag](const FStatusEffectFXInstance& Instance)
-	{
-		return Instance.StatusEffectTag.MatchesTagExact(StatusEffectTag);
-	});
+	const FStatusEffectFXInstance* FXInstance = StatusEffectFXInstances.FindByPredicate(
+		[StatusEffectTag](const FStatusEffectFXInstance& Instance)
+		{
+			return Instance.StatusEffectTag.MatchesTagExact(StatusEffectTag);
+		}
+	);
 	if (FXInstance)
 	{
 		return *FXInstance;
@@ -66,19 +72,22 @@ void UStatusEffectFXComponent::SpawnStatusEffectFX_Implementation(const FGamepla
 	}
 	if (const ACharacter* Character = Cast<ACharacter>(GetOwner()))
 	{
-		StatusEffectFXInstances.Add(FStatusEffectFXInstance(
-			InStatusEffectTag,
-			UNiagaraFunctionLibrary::SpawnSystemAttached(
-				StatusEffectFX[InStatusEffectTag],
-				// DEVNOTE: Attaching to the character mesh is perhaps an incomplete solution, as it does not include clothing or the head.
-				Character->GetMesh(),
-				NAME_None,
-				FVector::ZeroVector,
-				FRotator::ZeroRotator,
-				EAttachLocation::Type::SnapToTarget,
-				true,
-				true
-			)));
+		StatusEffectFXInstances.Add(
+			FStatusEffectFXInstance(
+				InStatusEffectTag,
+				UNiagaraFunctionLibrary::SpawnSystemAttached(
+					StatusEffectFX[InStatusEffectTag],
+					// DEVNOTE: Attaching to the character mesh is perhaps an incomplete solution, as it does not include clothing or the head.
+					Character->GetMesh(),
+					NAME_None,
+					FVector::ZeroVector,
+					FRotator::ZeroRotator,
+					EAttachLocation::Type::SnapToTarget,
+					true,
+					true
+				)
+			)
+		);
 	}
 }
 
@@ -90,10 +99,12 @@ void UStatusEffectFXComponent::DestroyStatusEffectFX_Implementation(const FGamep
 		{
 			StatusEffectFXInstance.FXInstance->DestroyComponent();
 		}
-		StatusEffectFXInstances.RemoveAll([InStatusEffectTag](const FStatusEffectFXInstance& Instance)
-		{
-			return Instance.StatusEffectTag.MatchesTagExact(InStatusEffectTag);
-		});
+		StatusEffectFXInstances.RemoveAll(
+			[InStatusEffectTag](const FStatusEffectFXInstance& Instance)
+			{
+				return Instance.StatusEffectTag.MatchesTagExact(InStatusEffectTag);
+			}
+		);
 	}
 }
 

@@ -6,6 +6,7 @@
 #include "Engine/GameInstance.h"
 #include "ElectricCastleGameInstance.generated.h"
 
+class UTimeManager;
 class UCinematicManager;
 class UMusicManagerSubsystem;
 class UPlayerManager;
@@ -40,4 +41,6 @@ protected:
 	TSubclassOf<UPlayerManager> PlayerManager;
 	UPROPERTY(EditDefaultsOnly, Category = "Subsystem")
 	TSubclassOf<USaveGameManager> SaveGameSubsystem;
+	UPROPERTY(EditDefaultsOnly, Category = "Subsystem")
+	TSubclassOf<UTimeManager> TimeManager;
 };

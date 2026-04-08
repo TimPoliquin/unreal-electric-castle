@@ -72,8 +72,8 @@ public:
 	virtual void PlayerTick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
-	void LockPlayerRotationToCamera();
-	void FreePlayerRotationFromCamera();
+	void LockPlayerRotationToCamera() const;
+	void FreePlayerRotationFromCamera() const;
 
 	UFUNCTION(Client, Reliable)
 	virtual void ShowDamageNumber(
@@ -152,8 +152,6 @@ protected:
 	virtual void SetupInputComponent() override;
 	UFUNCTION(BlueprintNativeEvent)
 	void OnGameDataLoaded();
-	UFUNCTION(BlueprintNativeEvent)
-	void OnAbilitySystemReady(UElectricCastleAbilitySystemComponent* InAbilitySystemComponent);
 	UFUNCTION()
 	void HandleAimStart();
 	UFUNCTION()

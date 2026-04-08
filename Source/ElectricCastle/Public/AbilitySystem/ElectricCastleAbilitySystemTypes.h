@@ -4,9 +4,10 @@
 #include "ScalableFloat.h"
 #include "ElectricCastleAbilitySystemTypes.generated.h"
 
+class UElectricCastleAbilitySystemComponent;
 struct FRadialDamageParams;
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnAbilitySystemComponentRegisteredSignature, UAbilitySystemComponent*);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnAbilitySystemComponentRegisteredSignature, UElectricCastleAbilitySystemComponent*);
 
 USTRUCT(BlueprintType)
 struct FElectricCastleGameplayEffectContext : public FGameplayEffectContext
@@ -48,6 +49,16 @@ struct FElectricCastleGameplayEffectContext : public FGameplayEffectContext
 	void SetIsBlockedHit(const bool bIn)
 	{
 		this->bIsBlockedHit = bIn;
+	}
+
+	bool IsParriedAttack() const
+	{
+		return bIsParriedAttack;
+	}
+
+	void SetIsParriedAttack(const bool bInParried)
+	{
+		bIsParriedAttack = bInParried;
 	}
 
 	bool IsSuccessfulDebuff() const
@@ -204,6 +215,8 @@ protected:
 	bool bIsBlockedHit = false;
 	UPROPERTY()
 	bool bIsEvadedAttack = false;
+	UPROPERTY()
+	bool bIsParriedAttack = false;
 	UPROPERTY()
 	bool bIsCriticalHit = false;
 	UPROPERTY()

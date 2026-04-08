@@ -52,7 +52,7 @@ void UCrosshairWidget::TransitionTo_StyleDefault_Implementation()
 	// nothing to do right now
 }
 
-void UCrosshairWidget::SetCrosshairState_Implementation(ECrosshairState InCrosshairState)
+void UCrosshairWidget::SetCrosshairState_Implementation(const ECrosshairState InCrosshairState)
 {
 	if (InCrosshairState == CrosshairState)
 	{

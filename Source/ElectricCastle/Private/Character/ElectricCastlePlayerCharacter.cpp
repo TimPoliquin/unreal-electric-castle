@@ -31,6 +31,7 @@
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 
 #include "Actor/Attack/Component/AttackWindowManager.h"
+#include "Actor/Block/Components/BlockController.h"
 #include "Actor/MagicTether/TetherAbilityComponent.h"
 #include "Actor/Mesh/SocketManagerComponent.h"
 #include "Components/LODSyncComponent.h"
@@ -83,9 +84,9 @@ AElectricCastlePlayerCharacter::AElectricCastlePlayerCharacter()
 	SpringArmComponent->SetupAttachment(GetRootComponent());
 	SpringArmComponent->SetUsingAbsoluteRotation(true);
 	SpringArmComponent->bDoCollisionTest = true;
-	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera Component"));
-	CameraComponent->SetupAttachment(SpringArmComponent, USpringArmComponent::SocketName);
-	CameraComponent->bUsePawnControlRotation = true;
+	PlayerCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Player Camera Component"));
+	PlayerCameraComponent->SetupAttachment(SpringArmComponent, USpringArmComponent::SocketName);
+	PlayerCameraComponent->bUsePawnControlRotation = true;
 	FadeDetectionComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Fade Detection Component"));
 	FadeDetectionComponent->SetupAttachment(SpringArmComponent);
 	FadeDetectionComponent->SetBoxExtent(FVector(370.f, 26.f, 32.f));
@@ -97,6 +98,7 @@ AElectricCastlePlayerCharacter::AElectricCastlePlayerCharacter()
 	FormChangeComponent = CreateDefaultSubobject<UPlayerFormChangeComponent>(TEXT("Form Change Component"));
 	AimController = CreateDefaultSubobject<UAimController>(TEXT("Aim Controller"));
 	LockOnController = CreateDefaultSubobject<ULockOnController>(TEXT("LockOn Controller"));
+	BlockController = CreateDefaultSubobject<UBlockController>(TEXT("Block Controller"));
 	TetherComponent = CreateDefaultSubobject<UTetherAbilityComponent>(TEXT("Tether Component"));
 	AttackWindowManager = CreateDefaultSubobject<UAttackWindowManager>(TEXT("Attack Window Manager"));
 	MetaHumanComponent = CreateDefaultSubobject<UMetaHumanComponentUE>(TEXT("MetaHuman"));
@@ -140,6 +142,34 @@ UAttackWindowManager* AElectricCastlePlayerCharacter::GetAttackWindowManager_Imp
 	return AttackWindowManager;
 }
 
+void AElectricCastlePlayerCharacter::Falling()
+{
+	Super::Falling();
+	if (!JumpEffectHandle.IsValid())
+	{
+		JumpEffectHandle = UElectricCastleAbilitySystemLibrary::ApplyInfiniteEffectByTag(this, FElectricCastleGameplayTags::Get().Effect_State_Jumping);
+	}
+}
+
+void AElectricCastlePlayerCharacter::Jump()
+{
+	Super::Jump();
+	if (!JumpEffectHandle.IsValid())
+	{
+		JumpEffectHandle = UElectricCastleAbilitySystemLibrary::ApplyInfiniteEffectByTag(this, FElectricCastleGameplayTags::Get().Effect_State_Jumping);
+	}
+}
+
+void AElectricCastlePlayerCharacter::Landed(const FHitResult& Hit)
+{
+	Super::Landed(Hit);
+	if (JumpEffectHandle.IsValid())
+	{
+		UElectricCastleAbilitySystemLibrary::RemoveGameplayEffect(this, JumpEffectHandle);
+		JumpEffectHandle.Invalidate();
+	}
+}
+
 void AElectricCastlePlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -161,6 +191,8 @@ void AElectricCastlePlayerCharacter::BeginPlay()
 	LockOnController->OnLockOnTarget.AddUniqueDynamic(this, &AElectricCastlePlayerCharacter::HandleLockOnTarget);
 	LockOnController->OnLockOnRelease.AddUniqueDynamic(this, &AElectricCastlePlayerCharacter::HandleLockOnRelease);
 	GetCharacterMovement()->MaxWalkSpeed = StandardMoveSpeed;
+	AimGameplayEffectHandle.Invalidate();
+	JumpEffectHandle.Invalidate();
 }
 
 void AElectricCastlePlayerCharacter::BeginDestroy()
@@ -183,17 +215,16 @@ void AElectricCastlePlayerCharacter::HandleLockOnRelease_Implementation()
 
 void AElectricCastlePlayerCharacter::HandleTagChange_EffectMovementTurnInPlace_Implementation(FGameplayTag EffectMovementTurnInPlaceTag, int Count)
 {
-	if (Count > 0)
+	if (const AElectricCastlePlayerController* PlayerController = Cast<AElectricCastlePlayerController>(GetController()))
 	{
-		bUseControllerRotationYaw = false;
-		GetCharacterMovement()->bOrientRotationToMovement = false;
-		GetCharacterMovement()->bUseControllerDesiredRotation = true;
-	}
-	else
-	{
-		bUseControllerRotationYaw = true;
-		GetCharacterMovement()->bOrientRotationToMovement = true;
-		GetCharacterMovement()->bUseControllerDesiredRotation = false;
+		if (Count > 0)
+		{
+			PlayerController->LockPlayerRotationToCamera();
+		}
+		else
+		{
+			PlayerController->FreePlayerRotationFromCamera();
+		}
 	}
 }
 
@@ -254,6 +285,7 @@ void AElectricCastlePlayerCharacter::OnFormChange_Implementation(const FPlayerFo
 {
 	FormChangeComponent->FormChange_PlayEffect(Payload);
 	FormChangeComponent->FormChange_UpdateCharacterMesh(Payload);
+	FormChangeComponent->FormChange_UpdateInputMappingContext(Payload);
 	FormChangeComponent->FormChange_UpdateAttributes(Payload);
 	FormChangeComponent->FormChange_UpdateAbilities(Payload);
 }
@@ -268,13 +300,10 @@ void AElectricCastlePlayerCharacter::OnEquipmentAnimationRequest_Implementation(
 void AElectricCastlePlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (GetCharacterMovement()->bUseControllerDesiredRotation)
-	{
-		FRotator ControlRot = GetControlRotation();
-		ControlRot.Pitch = 0.f;
-		ControlRot.Roll = 0.f;
-		SetActorRotation(ControlRot);
-	}
+	FRotator RotationAdjustment = GetCharacterMovement()->bUseControllerDesiredRotation ? GetControlRotation() : GetActorRotation();
+	RotationAdjustment.Pitch = 0.f;
+	RotationAdjustment.Roll = 0.f;
+	SetActorRotation(RotationAdjustment);
 	UpdatePlayerPositionInMaterialParameterCollections();
 }
 
@@ -295,6 +324,7 @@ void AElectricCastlePlayerCharacter::PostInitializeComponents()
 	SocketManagerComponent->RegisterSocket(GetMesh(), RightHandConfig.SocketTag, RightHandConfig.SocketName);
 	AimController->OnAimStart.AddUniqueDynamic(this, &AElectricCastlePlayerCharacter::AimStart);
 	AimController->OnAimEnd.AddUniqueDynamic(this, &AElectricCastlePlayerCharacter::AimEnd);
+	BlockController->InitializeParryCamera(PlayerCameraComponent);
 }
 
 void AElectricCastlePlayerCharacter::FaceRotation(const FRotator NewControlRotation, const float DeltaTime)
@@ -324,8 +354,7 @@ void AElectricCastlePlayerCharacter::PossessedBy(AController* NewController)
 		PlayerManager->RegisterPlayer(Cast<AElectricCastlePlayerController>(NewController), this);
 	}
 	InitializeAbilityActorInfo();
-	if (UElectricCastleLevelManager* LevelManager = UElectricCastleLevelManager::Get(this); LevelManager->
-		IsTransitioningLevels())
+	if (UElectricCastleLevelManager* LevelManager = UElectricCastleLevelManager::Get(this); LevelManager->IsTransitioningLevels())
 	{
 		LevelManager->OnLevelTransitionComplete.AddWeakLambda(
 			this,
@@ -455,6 +484,7 @@ void AElectricCastlePlayerCharacter::AimEnd_Implementation()
 		AimGameplayEffectHandle,
 		false
 	);
+	AimGameplayEffectHandle.Invalidate();
 }
 
 void AElectricCastlePlayerCharacter::Multicast_SetTimeDilation_Implementation(const float Magnitude)
@@ -586,7 +616,10 @@ void AElectricCastlePlayerCharacter::Die()
 		}
 	);
 	GetWorldTimerManager().SetTimer(DeathTimer, DeathTimerDelegate, DeathTime, false);
-	CameraComponent->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+	if (PlayerCameraComponent)
+	{
+		PlayerCameraComponent->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+	}
 }
 
 AActor* AElectricCastlePlayerCharacter::GetWeapon_Implementation() const
@@ -629,7 +662,7 @@ void AElectricCastlePlayerCharacter::Multicast_LevelUpParticles_Implementation()
 {
 	if (IsValid(LevelUpNiagaraComponent))
 	{
-		const FVector CameraLocation = CameraComponent->GetComponentLocation();
+		const FVector CameraLocation = PlayerCameraComponent->GetComponentLocation();
 		const FVector EffectLocation = LevelUpNiagaraComponent->GetComponentLocation();
 		const FRotator ToCameraRotation = (CameraLocation - EffectLocation).Rotation();
 		LevelUpNiagaraComponent->Activate(true);

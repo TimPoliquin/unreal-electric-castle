@@ -72,11 +72,8 @@ void UPassiveNiagaraComponent::OnPassiveActivate(const FGameplayTag& AbilityTag,
 
 void UPassiveNiagaraComponent::ActivateIfAbilityIsAlreadyActive(UElectricCastleAbilitySystemComponent* AbilitySystemComponent)
 {
-	if (AbilitySystemComponent->HasFiredOnAbilitiesGivenDelegate())
+	if (UElectricCastleAbilitySystemLibrary::IsAbilityEquipped(AbilitySystemComponent, PassiveSpellTag))
 	{
-		if (UElectricCastleAbilitySystemLibrary::IsAbilityEquipped(AbilitySystemComponent, PassiveSpellTag))
-		{
-			Activate();
-		}
+		Activate();
 	}
 }

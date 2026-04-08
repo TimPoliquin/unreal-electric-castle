@@ -98,6 +98,14 @@ AElectricCastlePlayerController* UPlayerManager::GetPlayerController(const AActo
 	return nullptr;
 }
 
+void UPlayerManager::SetPlayerTimeDilation_Implementation(const float PlayerMagnitude)
+{
+	for (const auto& [PlayerController, PlayerCharacter] : PlayerPairs)
+	{
+		PlayerCharacter->Multicast_SetTimeDilation(PlayerMagnitude);
+	}
+}
+
 void UPlayerManager::RegisterPlayer(AElectricCastlePlayerController* PlayerController, AElectricCastlePlayerCharacter* PlayerCharacter)
 {
 	if (!IsValid(PlayerController))
@@ -111,8 +119,15 @@ void UPlayerManager::RegisterPlayer(AElectricCastlePlayerController* PlayerContr
 		return;
 	}
 	PlayerPairs.Add({PlayerController, PlayerCharacter});
-	UE_LOG(LogElectricCastle, Log, TEXT("[%s][%s] Registered PlayerController: %s, PlayerCharacter: %s"), *GetNetModeName(GetWorld()->GetNetMode()), *GetName(), *PlayerController->GetName(),
-	       *PlayerCharacter->GetName());
+	UE_LOG(
+		LogElectricCastle,
+		Log,
+		TEXT("[%s][%s] Registered PlayerController: %s, PlayerCharacter: %s"),
+		*GetNetModeName(GetWorld()->GetNetMode()),
+		*GetName(),
+		*PlayerController->GetName(),
+		*PlayerCharacter->GetName()
+	);
 }
 
 void UPlayerManager::UnregisterPlayer(AElectricCastlePlayerController* PlayerController)
@@ -129,20 +144,22 @@ void UPlayerManager::SetTimeDilation_Implementation(const float WorldMagnitude, 
 {
 	UE_LOG(LogElectricCastle, Log, TEXT("[%s][%s] Setting time dilation to %f"), *GetNetModeName(GetWorld()->GetNetMode()), *GetName(), WorldMagnitude)
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), WorldMagnitude);
-	for (const auto& [PlayerController, PlayerCharacter] : PlayerPairs)
-	{
-		PlayerCharacter->Multicast_SetTimeDilation(PlayerMagnitude);
-	}
+	SetPlayerTimeDilation(PlayerMagnitude);
 }
 
 FString UPlayerManager::GetNetModeName(const ENetMode& NetMode)
 {
 	switch (NetMode)
 	{
-	case NM_Standalone: return TEXT("Standalone");
-	case NM_Client: return TEXT("Client");
-	case NM_ListenServer: return TEXT("ListenServer");
-	case NM_DedicatedServer: return TEXT("DedicatedServer");
-	default: return TEXT("Unknown");
+	case NM_Standalone:
+		return TEXT("Standalone");
+	case NM_Client:
+		return TEXT("Client");
+	case NM_ListenServer:
+		return TEXT("ListenServer");
+	case NM_DedicatedServer:
+		return TEXT("DedicatedServer");
+	default:
+		return TEXT("Unknown");
 	}
 }

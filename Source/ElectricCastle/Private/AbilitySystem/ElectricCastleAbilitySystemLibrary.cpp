@@ -6,6 +6,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "KismetTraceUtils.h"
+#include "NiagaraTypes.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemTypes.h"
 #include "AbilitySystem/ElectricCastleAttributeSet.h"
@@ -148,6 +149,26 @@ bool UElectricCastleAbilitySystemLibrary::IsInstantEffect(const FGameplayEffectS
 		EGameplayEffectDurationType::Instant;
 }
 
+void UElectricCastleAbilitySystemLibrary::CopyEffectContextHandleProperties(const FGameplayEffectContextHandle& Source, FGameplayEffectContextHandle& Target)
+{
+	SetIsBlockedHit(Target, IsBlockedHit(Source));
+	SetIsCriticalHit(Target, IsCriticalHit(Source));
+	SetIsEvadedAttack(Target, IsEvadedAttack(Source));
+	SetIsParriedAttack(Target, IsParriedAttack(Source));
+	SetDamageTypeTag(Target, GetDamageTypeTag(Source));
+	SetDeathImpulse(Target, GetDeathImpulse(Source));
+	SetDebuffTypeTag(Target, GetDebuffTypeTag(Source));
+	SetDebuffDamage(Target, GetDebuffDamage(Source));
+	SetDebuffDuration(Target, GetDebuffDuration(Source));
+	SetDebuffFrequency(Target, GetDebuffFrequency(Source));
+	SetIsSuccessfulDebuff(Target, IsSuccessfulDebuff(Source));
+	SetIsRadialDamage(Target, IsRadialDamage(Source));
+	SetKnockbackVector(Target, GetKnockbackVector(Source));
+	SetRadialDamageInnerRadius(Target, GetRadialDamageInnerRadius(Source));
+	SetRadialDamageOrigin(Target, GetRadialDamageOrigin(Source));
+	SetRadialDamageOuterRadius(Target, GetRadialDamageOuterRadius(Source));
+}
+
 int UElectricCastleAbilitySystemLibrary::GetCharacterLevel(UAbilitySystemComponent* AbilitySystemComponent)
 {
 	return IElectricCastleAbilitySystemInterface::GetCharacterLevel(AbilitySystemComponent->GetAvatarActor());
@@ -211,7 +232,7 @@ int32 UElectricCastleAbilitySystemLibrary::GetXPReward(
 	{
 		return GameDataSubsystem->GetCharacterClassInfo()->GetXPReward(CharacterClass, Level);
 	}
-	UE_LOG(LogElectricCastle, Error, TEXT("Game mode is not set to AuraGameMode!"))
+	UE_LOG(LogElectricCastle, Error, TEXT("Game mode is not set to ElectricCastleGameMode!"))
 	return 0;
 }
 
@@ -459,10 +480,10 @@ FActiveGameplayEffectHandle UElectricCastleAbilitySystemLibrary::ApplyDamageEffe
 	);
 	SetDeathImpulse(EffectContextHandle, DamageEffectParams.DeathImpulse);
 	SetKnockbackVector(EffectContextHandle, DamageEffectParams.KnockbackForce);
+	SetRadialDamageOrigin(EffectContextHandle, DamageEffectParams.RadialDamageOrigin);
 	if (DamageEffectParams.bIsRadialDamage)
 	{
 		SetIsRadialDamage(EffectContextHandle, DamageEffectParams.bIsRadialDamage);
-		SetRadialDamageOrigin(EffectContextHandle, DamageEffectParams.RadialDamageOrigin);
 		SetRadialDamageInnerRadius(EffectContextHandle, DamageEffectParams.RadialDamageInnerRadius);
 		SetRadialDamageOuterRadius(EffectContextHandle, DamageEffectParams.RadialDamageOuterRadius);
 	}
@@ -615,6 +636,90 @@ bool UElectricCastleAbilitySystemLibrary::DoesActorHaveGameplayTag(AActor* Actor
 		return AbilitySystemComponent->HasMatchingGameplayTag(Tag);
 	}
 	return false;
+}
+
+bool UElectricCastleAbilitySystemLibrary::CanActorBlockByAngle(
+	const FVector& AttackOrigin,
+	const FVector& TargetLocation,
+	const FVector& TargetForwardVector,
+	const float BlockAllowedAngle,
+	const bool bDebug
+)
+{
+	UWorld* World = GEngine->GetCurrentPlayWorld();
+
+	const FVector ToAttack = (AttackOrigin - TargetLocation).GetSafeNormal();
+	const float Dot = FVector::DotProduct(TargetForwardVector, ToAttack);
+
+	// Convert allowed angle to a dot threshold
+	const float HalfAngleRadians = FMath::DegreesToRadians(BlockAllowedAngle * 0.5f);
+	const float DotThreshold = FMath::Cos(HalfAngleRadians);
+
+	// --- Debug Visualization ---
+	if (bDebug)
+	{
+		// Forward vector
+		DrawDebugLine(
+			World,
+			TargetLocation,
+			TargetLocation + TargetForwardVector * 150.f,
+			FColor::Green,
+			false,
+			1.f,
+			0,
+			2.f
+		);
+
+		// ToAttack vector
+		DrawDebugLine(
+			World,
+			TargetLocation,
+			TargetLocation + ToAttack * 150.f,
+			FColor::Red,
+			false,
+			1.f,
+			0,
+			2.f
+		);
+		// Cone boundaries
+		const FVector LeftBoundary =
+			TargetForwardVector.RotateAngleAxis(BlockAllowedAngle * 0.5f, FVector::UpVector);
+
+		const FVector RightBoundary =
+			TargetForwardVector.RotateAngleAxis(-BlockAllowedAngle * 0.5f, FVector::UpVector);
+
+		DrawDebugLine(
+			World,
+			TargetLocation,
+			TargetLocation + LeftBoundary * 150.f,
+			FColor::Blue,
+			false,
+			1.f,
+			0,
+			1.f
+		);
+
+		DrawDebugLine(
+			World,
+			TargetLocation,
+			TargetLocation + RightBoundary * 150.f,
+			FColor::Blue,
+			false,
+			1.f,
+			0,
+			1.f
+		);
+
+		// Dot + threshold
+		GEngine->AddOnScreenDebugMessage(
+			-1,
+			1.f,
+			FColor::Yellow,
+			FString::Printf(TEXT("Dot: %.3f | Threshold: %.3f"), Dot, DotThreshold)
+		);
+	}
+
+	return Dot >= DotThreshold;
 }
 
 AElectricCastleHUD* UElectricCastleAbilitySystemLibrary::GetElectricCastleHUD(const UObject* WorldContextObject)
@@ -832,8 +937,9 @@ FActiveGameplayEffectHandle UElectricCastleAbilitySystemLibrary::ApplyBasicGamep
 
 void UElectricCastleAbilitySystemLibrary::RemoveGameplayEffect(
 	AActor* TargetActor,
-	const FActiveGameplayEffectHandle& GameplayEffectHandle,
-	bool bRemoveAll
+	FActiveGameplayEffectHandle& GameplayEffectHandle,
+	const bool bRemoveAll,
+	const bool bInvalidate
 )
 {
 	if (!GameplayEffectHandle.IsValid())
@@ -850,6 +956,10 @@ void UElectricCastleAbilitySystemLibrary::RemoveGameplayEffect(
 				? -1
 				: 1
 		);
+		if (bInvalidate)
+		{
+			GameplayEffectHandle.Invalidate();
+		}
 	}
 }
 
@@ -980,6 +1090,41 @@ bool UElectricCastleAbilitySystemLibrary::CalculatePitchToHitTarget(
 	return true;
 }
 
+bool UElectricCastleAbilitySystemLibrary::GetActorGroundLocation(AActor* Actor, FVector& OutGroundLocation)
+{
+	if (!IsValid(Actor))
+	{
+		UE_LOG(LogElectricCastle, Warning, TEXT("[UElectricCastleAbilitySystemLibrary::GetActorGroundLocation] Provided invalid actor"))
+		return false;
+	}
+	// Start and End points of the line trace
+	FVector Start = Actor->GetActorLocation();
+	FVector End = Start + FVector::DownVector * 10000;
+
+	// Hit result to store information about what the line trace hits
+	FHitResult HitResult;
+
+	// Collision query parameters
+	FCollisionQueryParams CollisionParams;
+	CollisionParams.AddIgnoredActor(Actor); // Ignore self
+
+	// Perform the line trace
+	bool bHit = Actor->GetWorld()->LineTraceSingleByChannel(
+		HitResult,
+		Start,
+		End,
+		ECC_Visibility,
+		CollisionParams
+	);
+
+	// Debug line to visualize the trace
+	DrawDebugLine(Actor->GetWorld(), Start, End, FColor::Green, false, 2.0f);
+
+	// Check if something was hit
+	OutGroundLocation = HitResult.ImpactPoint;
+	return bHit;
+}
+
 bool UElectricCastleAbilitySystemLibrary::IsBlockedHit(const FGameplayEffectContextHandle& EffectContextHandle)
 {
 	if (const FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<const
@@ -998,6 +1143,17 @@ bool UElectricCastleAbilitySystemLibrary::IsEvadedAttack(const FGameplayEffectCo
 		EffectContextHandle.Get()))
 	{
 		return AuraEffectContext->IsEvadedAttack();
+	}
+	return false;
+}
+
+bool UElectricCastleAbilitySystemLibrary::IsParriedAttack(const FGameplayEffectContextHandle& EffectContextHandle)
+{
+	if (const FElectricCastleGameplayEffectContext* LocalEffectContextHandle = static_cast<const
+		FElectricCastleGameplayEffectContext*>(
+		EffectContextHandle.Get()))
+	{
+		return LocalEffectContextHandle->IsParriedAttack();
 	}
 	return false;
 }
@@ -1219,19 +1375,28 @@ void UElectricCastleAbilitySystemLibrary::SetIsBlockedHit(
 	const bool bInIsBlocked
 )
 {
-	if (FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<FElectricCastleGameplayEffectContext*>(
+	if (FElectricCastleGameplayEffectContext* LocalEffectContextHandle = static_cast<FElectricCastleGameplayEffectContext*>(
 		EffectContextHandle.Get()))
 	{
-		AuraEffectContext->SetIsBlockedHit(bInIsBlocked);
+		LocalEffectContextHandle->SetIsBlockedHit(bInIsBlocked);
 	}
 }
 
 void UElectricCastleAbilitySystemLibrary::SetIsEvadedAttack(FGameplayEffectContextHandle& EffectContextHandle, bool bInIsEvaded)
 {
-	if (FElectricCastleGameplayEffectContext* AuraEffectContext = static_cast<FElectricCastleGameplayEffectContext*>(
+	if (FElectricCastleGameplayEffectContext* LocalEffectContextHandle = static_cast<FElectricCastleGameplayEffectContext*>(
 		EffectContextHandle.Get()))
 	{
-		AuraEffectContext->SetIsEvadedAttack(bInIsEvaded);
+		LocalEffectContextHandle->SetIsEvadedAttack(bInIsEvaded);
+	}
+}
+
+void UElectricCastleAbilitySystemLibrary::SetIsParriedAttack(FGameplayEffectContextHandle& EffectContextHandle, bool bInIsParried)
+{
+	if (FElectricCastleGameplayEffectContext* LocalEffectContextHandle = static_cast<FElectricCastleGameplayEffectContext*>(
+		EffectContextHandle.Get()))
+	{
+		LocalEffectContextHandle->SetIsParriedAttack(bInIsParried);
 	}
 }
 

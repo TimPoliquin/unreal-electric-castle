@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ActiveGameplayEffectHandle.h"
 #include "GameplayTagContainer.h"
 #include "InputActionValue.h"
 #include "LockOnEvents.h"
@@ -39,6 +40,8 @@ public:
 	bool ActivateLockOn();
 	UFUNCTION(BlueprintCallable)
 	void DeactivateLockOn();
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	float GetDistanceToTarget() const;
 
 	UPROPERTY(BlueprintAssignable)
 	FLockOnTargetSignature OnLockOnTarget;
@@ -72,6 +75,7 @@ protected:
 private:
 	UPROPERTY()
 	TWeakObjectPtr<AElectricCastlePlayerController> PlayerController;
+	FActiveGameplayEffectHandle LockedOnEffectHandle;
 	void UpdateLockOnTarget();
 	bool ShouldUpdateTarget() const;
 	TArray<AActor*> FindPotentialTargets() const;

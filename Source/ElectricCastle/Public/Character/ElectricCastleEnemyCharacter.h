@@ -9,6 +9,7 @@
 #include "AbilitySystem/Data/CharacterClassInfo.h"
 #include "Actor/Spawn/TrackableInterface.h"
 #include "AI/ElectricCastleAIController.h"
+#include "Actor/Attack/Component/AttackWindowManagerActor.h"
 #include "Components/TimelineComponent.h"
 #include "ElectricCastleEnemyCharacter.generated.h"
 
@@ -20,7 +21,7 @@ class AElectricCastleAIController;
 class UWidgetComponent;
 
 UCLASS(Abstract, Blueprintable)
-class ELECTRICCASTLE_API AElectricCastleEnemyCharacter : public AElectricCastleCharacter, public IEnemyInterface, public ITrackableInterface
+class ELECTRICCASTLE_API AElectricCastleEnemyCharacter : public AElectricCastleCharacter, public IEnemyInterface, public ITrackableInterface, public IAttackWindowManagerActor
 {
 	GENERATED_BODY()
 
@@ -73,6 +74,10 @@ public:
 	/** Start ITrackableInterface **/
 	virtual FOnTrackableStopTrackingSignature& GetStopTrackingDelegate() override;
 	/** End ITrackableInterface **/
+	/** Start IAttackWindowActor **/
+	virtual UAttackWindowManager* GetAttackWindowManager_Implementation() const override;
+	/** End IAttackWindowActor **/
+
 
 	UPROPERTY(BlueprintAssignable, Category = "GAS|Attributes")
 	FOnAttributeChangedSignature OnHealthChanged;
@@ -89,6 +94,14 @@ protected:
 	virtual void InitializeDefaultAttributes();
 	virtual void OnStatusShockAdded() override;
 	virtual void OnStatusShockRemoved() override;
+	virtual void OnStatusStaggeredAdded_Implementation() override;
+	virtual void OnStatusStaggeredRemoved_Implementation() override;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	float GetStaggerLaunchForce() const;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	float GetStaggerLaunchUpwardForce() const;
+	UFUNCTION(BlueprintNativeEvent)
+	void HandleGameDataLoaded();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Spawn")
 	void SpawnAnimation();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Spawn")
@@ -101,6 +114,8 @@ protected:
 	void SpawnLoot();
 	UFUNCTION(BlueprintNativeEvent, Category="Socket Manager")
 	void RegisterSockets(USocketManagerComponent* InSocketManagerComponent);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Stagger")
+	UAnimMontage* GetStaggerMontage() const;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Highlight")
 	bool bHighlighted;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
@@ -113,6 +128,8 @@ protected:
 	TObjectPtr<ULootSpawnComponent> LootSpawnComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UChildActorComponent> WeaponChildActorComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
+	TObjectPtr<UAttackWindowManager> AttackWindowManager;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character Class Defaults")
 	int32 Level = 1;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character Class Defaults")
@@ -149,6 +166,11 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, Category = "AI")
 	TObjectPtr<AActor> CombatTarget;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Properties|Status Effects|Stagger")
+	float StaggerLaunchForce = 250.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Properties|Status Effects|Stagger")
+	float StaggerLaunchUpwardForce = 100.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties")
 	bool bDebug = false;
@@ -161,6 +183,7 @@ private:
 
 	void InitializeAttributeDelegates();
 	void InitializeStartupAbilities();
+	void InitializeAIController();
 	UPROPERTY()
 	TObjectPtr<UTimelineComponent> SpawnTimelineComponent;
 	FOnTimelineFloat OnSpawnTimelineTick;

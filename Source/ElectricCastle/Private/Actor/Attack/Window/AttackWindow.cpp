@@ -8,6 +8,11 @@
 #include "Actor/Mesh/SocketManagerActor.h"
 #include "Actor/Mesh/SocketManagerComponent.h"
 
+void UAttackWindow::SetEventTag(const FGameplayTag& InEventTag)
+{
+	EventTag = InEventTag;
+}
+
 void UAttackWindow::SetOwner(AActor* InOwner)
 {
 	Owner = InOwner;
@@ -20,11 +25,12 @@ void UAttackWindow::SetDuration(const float InDuration)
 	PreviousAlpha = 0.f;
 }
 
-void UAttackWindow::SweepForHits(const float DeltaTime, TArray<FHitResult>& OutHits)
+bool UAttackWindow::SweepForHits(const float DeltaTime, TArray<FHitResult>& OutHits)
 {
+	bool bNewHits = false;
 	if (!Owner.IsValid())
 	{
-		return;
+		return bNewHits;
 	}
 	Elapsed = FMath::Clamp(Elapsed + DeltaTime, 0.f, Duration);
 	const float Alpha = FMath::Clamp(Elapsed / Duration, 0.f, 1.f);
@@ -40,14 +46,22 @@ void UAttackWindow::SweepForHits(const float DeltaTime, TArray<FHitResult>& OutH
 			if (!HitActors.ContainsByPredicate([Hit](const TWeakObjectPtr<AActor> Actor) { return Actor.Get() == Hit.GetActor(); }))
 			{
 				OutHits.Add(Hit);
+				bNewHits = true;
 			}
 		}
 	}
 	else
 	{
 		OutHits = CurrentHits;
+		bNewHits = !CurrentHits.IsEmpty();
 	}
 	PreviousAlpha = Alpha;
+	return bNewHits;
+}
+
+FGameplayTag UAttackWindow::GetEventTag() const
+{
+	return EventTag;
 }
 
 FVector UAttackWindow::GetOffsetLocation(const FVector& InLocation) const

@@ -4,6 +4,7 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
+#include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemInterface.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 #include "Character/Status/StatusEffectConfig.h"
@@ -20,14 +21,14 @@ void UStatusEffectManagerComponent::BeginPlay()
 	Super::BeginPlay();
 	if (IElectricCastleAbilitySystemInterface::IsAbilitySystemReady(GetOwner()))
 	{
-		AddStatusEffectListeners(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetOwner()));
+		AddStatusEffectListeners(UElectricCastleAbilitySystemLibrary::GetAbilitySystemComponent(GetOwner()));
 	} else if (IElectricCastleAbilitySystemInterface* AbilitySystemInterface = Cast<IElectricCastleAbilitySystemInterface>(GetOwner()))
 	{
 		AbilitySystemInterface->GetOnAbilitySystemRegisteredDelegate().AddUObject(this, &UStatusEffectManagerComponent::AddStatusEffectListeners);
 	}
 }
 
-void UStatusEffectManagerComponent::AddStatusEffectListeners(UAbilitySystemComponent* AbilitySystemComponent)
+void UStatusEffectManagerComponent::AddStatusEffectListeners(UElectricCastleAbilitySystemComponent* AbilitySystemComponent)
 {
 	AbilitySystemComponent->OnActiveGameplayEffectAddedDelegateToSelf.AddUObject(this, &UStatusEffectManagerComponent::OnEffectAdded);
 	AbilitySystemComponent->OnAnyGameplayEffectRemovedDelegate().AddUObject(this, &UStatusEffectManagerComponent::OnEffectRemoved);

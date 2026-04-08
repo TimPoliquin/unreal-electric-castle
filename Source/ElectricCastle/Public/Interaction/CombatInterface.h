@@ -69,7 +69,11 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	FVector GetCombatSocketLocation(const FGameplayTag& MontageTag) const;
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	UAnimMontage* GetHitReactMontage(const FGameplayTag& HitReactTypeTag);
+	UAnimMontage* GetHitReactMontage(const FGameplayTag& HitReactTypeTag) const;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void Stagger();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	bool IsStaggered() const;
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	UNiagaraSystem* GetBloodEffect();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)

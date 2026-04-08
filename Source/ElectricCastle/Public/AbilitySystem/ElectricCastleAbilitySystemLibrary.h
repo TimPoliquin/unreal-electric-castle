@@ -82,10 +82,14 @@ public:
 	UFUNCTION(BlueprintPure, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")
 	static bool IsInstantEffect(const FGameplayEffectSpecHandle& SpecHandle);
 
+	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")
+	static void CopyEffectContextHandleProperties(const FGameplayEffectContextHandle& Source, UPARAM(ref) FGameplayEffectContextHandle& Target);
 	UFUNCTION(BlueprintPure, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")
 	static bool IsBlockedHit(const FGameplayEffectContextHandle& EffectContextHandle);
 	UFUNCTION(BlueprintPure, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")
 	static bool IsEvadedAttack(const FGameplayEffectContextHandle& EffectContextHandle);
+	UFUNCTION(BlueprintPure, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")
+	static bool IsParriedAttack(const FGameplayEffectContextHandle& EffectContextHandle);
 
 	UFUNCTION(BlueprintPure, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")
 	static bool IsCriticalHit(const FGameplayEffectContextHandle& EffectContextHandle);
@@ -148,6 +152,14 @@ public:
 		FGameplayEffectContextHandle& EffectContextHandle,
 		bool bInIsEvaded
 	);
+
+	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")
+	static void SetIsParriedAttack(
+		UPARAM(ref)
+		FGameplayEffectContextHandle& EffectContextHandle,
+		bool bInIsParried
+	);
+
 	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")
 	static void SetIsCriticalHit(
 		UPARAM(ref)
@@ -373,8 +385,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayMechanics")
 	static void RemoveGameplayEffect(
 		AActor* TargetActor,
-		const FActiveGameplayEffectHandle& GameplayEffectHandle,
-		bool bRemoveAll = true
+		UPARAM(ref) FActiveGameplayEffectHandle& GameplayEffectHandle,
+		bool bRemoveAll = true,
+		bool bInvalidate = false
 	);
 	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayMechanics")
 	static int32 GetAbilityLevelByAbilityTag(AActor* Actor, const FGameplayTag& AbilityTag);
@@ -390,6 +403,10 @@ public:
 		const float ProjectileSpeed,
 		float& OutPitchDegrees
 	);
+	UFUNCTION(BlueprintCallable)
+	static bool GetActorGroundLocation(AActor* Actor, FVector& OutGroundLocation);
+	UFUNCTION(BlueprintCallable)
+	static bool CanActorBlockByAngle(const FVector& AttackOrigin, const FVector& TargetLocation, const FVector& TargetForwardVector, float BlockAllowedAngle, bool bDebug = false);
 
 private:
 	static AElectricCastleHUD* GetElectricCastleHUD(const UObject* WorldContextObject);

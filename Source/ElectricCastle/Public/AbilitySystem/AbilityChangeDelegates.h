@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
+#include "Data/AbilityInfo.h"
 #include "AbilityChangeDelegates.generated.h"
 
 USTRUCT(BlueprintType)
@@ -14,6 +15,15 @@ struct ELECTRICCASTLE_API FOnAbilityChangedPayload
 	FGameplayTag AbilityTag = FGameplayTag::EmptyTag;
 	UPROPERTY(BlueprintReadWrite)
 	FGameplayTag InputTag = FGameplayTag::EmptyTag;
+	UPROPERTY(BlueprintReadWrite)
+	FElectricCastleAbilityInfo AbilityInfo;
+};
+
+struct FRemoveAbilityTracker
+{
+	FGameplayTag AbilityTag = FGameplayTag::EmptyTag;
+	FGameplayTag InputTag = FGameplayTag::EmptyTag;
+	FGameplayAbilitySpecHandle Handle = FGameplayAbilitySpecHandle();
 };
 
 UDELEGATE()

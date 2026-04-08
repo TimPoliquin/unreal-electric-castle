@@ -69,6 +69,19 @@ void AElectricCastlePlayerController::BeginPlay()
 			OnGameDataLoaded();
 		}
 	}
+	if (UAimController* AimController = GetAimController(GetPawn()))
+	{
+		AimController->HandleAbilitySystemReady(GetAbilitySystemComponent());
+		AimController->OnAimStart.AddUniqueDynamic(this, &AElectricCastlePlayerController::HandleAimStart);
+		AimController->OnAimEnd.AddUniqueDynamic(this, &AElectricCastlePlayerController::HandleAimEnd);
+	}
+	if (ULockOnController* LockOnController = GetLockOnController(GetPawn()))
+	{
+		LockOnController->SetPlayerController(this);
+		LockOnController->HandleAbilitySystemReady(GetAbilitySystemComponent());
+		LockOnController->OnLockOnTarget.AddUniqueDynamic(this, &AElectricCastlePlayerController::HandleLockOnTarget);
+		LockOnController->OnLockOnRelease.AddUniqueDynamic(this, &AElectricCastlePlayerController::HandleLockOnRelease);
+	}
 }
 
 void AElectricCastlePlayerController::PlayerTick(float DeltaTime)
@@ -92,7 +105,7 @@ void AElectricCastlePlayerController::GetLifetimeReplicatedProps(
 	DOREPLIFETIME(AElectricCastlePlayerController, InputType);
 }
 
-void AElectricCastlePlayerController::LockPlayerRotationToCamera()
+void AElectricCastlePlayerController::LockPlayerRotationToCamera() const
 {
 	if (const ACharacter* PlayerCharacter = Cast<ACharacter>(GetPawn()))
 	{
@@ -107,7 +120,7 @@ void AElectricCastlePlayerController::LockPlayerRotationToCamera()
 	}
 }
 
-void AElectricCastlePlayerController::FreePlayerRotationFromCamera()
+void AElectricCastlePlayerController::FreePlayerRotationFromCamera() const
 {
 	if (const ACharacter* PlayerCharacter = Cast<ACharacter>(GetPawn()))
 	{
@@ -155,7 +168,8 @@ void AElectricCastlePlayerController::SetupInputComponent()
 		MoveAction,
 		ETriggerEvent::Completed,
 		this,
-		&AElectricCastlePlayerController::MoveEnd);
+		&AElectricCastlePlayerController::MoveEnd
+	);
 	ElectricCastleInputComponent->BindAction(
 		MoveAction,
 		ETriggerEvent::Triggered,
@@ -164,15 +178,27 @@ void AElectricCastlePlayerController::SetupInputComponent()
 	);
 	if (LookAction)
 	{
-		ElectricCastleInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this,
-		                                         &AElectricCastlePlayerController::Look);
+		ElectricCastleInputComponent->BindAction(
+			LookAction,
+			ETriggerEvent::Triggered,
+			this,
+			&AElectricCastlePlayerController::Look
+		);
 	}
 	if (JumpAction)
 	{
-		ElectricCastleInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this,
-		                                         &AElectricCastlePlayerController::JumpStart);
-		ElectricCastleInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this,
-		                                         &AElectricCastlePlayerController::JumpEnd);
+		ElectricCastleInputComponent->BindAction(
+			JumpAction,
+			ETriggerEvent::Started,
+			this,
+			&AElectricCastlePlayerController::JumpStart
+		);
+		ElectricCastleInputComponent->BindAction(
+			JumpAction,
+			ETriggerEvent::Completed,
+			this,
+			&AElectricCastlePlayerController::JumpEnd
+		);
 	}
 
 	ElectricCastleInputComponent->BindAction(
@@ -197,7 +223,9 @@ void AElectricCastlePlayerController::SetupInputComponent()
 	{
 		SelectionWheelManager->SetupInputComponent(ElectricCastleInputComponent);
 		SelectionWheelManager->OnSelectionWheelStateChanged.AddUniqueDynamic(
-			this, &AElectricCastlePlayerController::HandleSelectionWheelStateChanged);
+			this,
+			&AElectricCastlePlayerController::HandleSelectionWheelStateChanged
+		);
 	}
 }
 
@@ -211,42 +239,10 @@ void AElectricCastlePlayerController::HandleAimEnd()
 	FreePlayerRotationFromCamera();
 }
 
-void AElectricCastlePlayerController::OnAbilitySystemReady_Implementation(
-	UElectricCastleAbilitySystemComponent* InAbilitySystemComponent)
-{
-	if (UAimController* AimController = GetAimController(GetPawn()))
-	{
-		AimController->HandleAbilitySystemReady(InAbilitySystemComponent);
-		AimController->OnAimStart.AddUniqueDynamic(this, &AElectricCastlePlayerController::HandleAimStart);
-		AimController->OnAimEnd.AddUniqueDynamic(this, &AElectricCastlePlayerController::HandleAimEnd);
-	}
-	if (ULockOnController* LockOnController = GetLockOnController(GetPawn()))
-	{
-		LockOnController->SetPlayerController(this);
-		LockOnController->HandleAbilitySystemReady(InAbilitySystemComponent);
-		LockOnController->OnLockOnTarget.AddUniqueDynamic(this, &AElectricCastlePlayerController::HandleLockOnTarget);
-		LockOnController->OnLockOnRelease.AddUniqueDynamic(this, &AElectricCastlePlayerController::HandleLockOnRelease);
-	}
-}
-
 void AElectricCastlePlayerController::OnGameDataLoaded_Implementation()
 {
 	EnableInput(this);
 	FreePlayerRotationFromCamera();
-	if (UElectricCastleAbilitySystemComponent* LocalAbilitySystem = GetAbilitySystemComponent())
-	{
-		if (LocalAbilitySystem->HasFiredOnAbilitiesGivenDelegate())
-		{
-			OnAbilitySystemReady(LocalAbilitySystem);
-		}
-		else
-		{
-			LocalAbilitySystem->OnAbilitiesGivenDelegate.AddLambda([this]()
-			{
-				OnAbilitySystemReady(GetAbilitySystemComponent());
-			});
-		}
-	}
 }
 
 void AElectricCastlePlayerController::HandleLockOnTarget_Implementation(const FLockOnTargetPayload& Payload)
@@ -282,7 +278,9 @@ void AElectricCastlePlayerController::Move(const FInputActionValue& Value)
 		if (MovementEffect && !MovementEffectHandle.IsValid())
 		{
 			MovementEffectHandle = UElectricCastleAbilitySystemLibrary::ApplyBasicGameplayEffect(
-				GetPawn(), MovementEffect);
+				GetPawn(),
+				MovementEffect
+			);
 		}
 		const FVector2D InputAxisVector = Value.Get<FVector2D>();
 		const FRotator Rotation = ControlledPawn->FindComponentByClass<UCameraComponent>()->GetComponentRotation();
@@ -326,12 +324,16 @@ void AElectricCastlePlayerController::Look(const FInputActionValue& InputActionV
 	}
 	const bool bIsAiming = UPlayerFunctionLibrary::IsPlayerAimingOrLockedOn(ControlledPawn);
 	const FVector2D InputAxisVector = InputActionValue.Get<FVector2D>();
-	ControlledPawn->AddControllerYawInput(bIsAiming
-		                                      ? FMath::Clamp(InputAxisVector.X, AimClampMin, AimClampMax)
-		                                      : InputAxisVector.X);
-	ControlledPawn->AddControllerPitchInput(bIsAiming
-		                                        ? FMath::Clamp(InputAxisVector.Y, AimClampMin, AimClampMax)
-		                                        : InputAxisVector.Y);
+	ControlledPawn->AddControllerYawInput(
+		bIsAiming
+			? FMath::Clamp(InputAxisVector.X, AimClampMin, AimClampMax)
+			: InputAxisVector.X
+	);
+	ControlledPawn->AddControllerPitchInput(
+		bIsAiming
+			? FMath::Clamp(InputAxisVector.Y, AimClampMin, AimClampMax)
+			: InputAxisVector.Y
+	);
 }
 
 void AElectricCastlePlayerController::JumpStart(const FInputActionValue& InputActionValue)
@@ -342,7 +344,10 @@ void AElectricCastlePlayerController::JumpStart(const FInputActionValue& InputAc
 	{
 		return;
 	}
-	if (!LocalAbilitySystemComponent->HasMatchingGameplayTag(GameplayTags.Player_Block_Movement))
+	FGameplayTagContainer BlockJumpTags = FGameplayTagContainer();
+	BlockJumpTags.AddTag(GameplayTags.Player_Block_Movement);
+	BlockJumpTags.AddTag(GameplayTags.Player_Block_Jump);
+	if (!LocalAbilitySystemComponent->HasAnyMatchingGameplayTags(BlockJumpTags))
 	{
 		if (ACharacter* ControlledPawn = GetPawn<ACharacter>())
 		{
@@ -501,15 +506,19 @@ void AElectricCastlePlayerController::SetupInputMode()
 FInputModeGameAndUI AElectricCastlePlayerController::BuildGameAndUIInputMode() const
 {
 	FInputModeGameAndUI InputModeData;
-	InputModeData.SetLockMouseToViewportBehavior(SelectionWheelManager->IsSelectionWheelActive()
-		                                             ? EMouseLockMode::LockAlways
-		                                             : EMouseLockMode::DoNotLock);
+	InputModeData.SetLockMouseToViewportBehavior(
+		SelectionWheelManager->IsSelectionWheelActive()
+			? EMouseLockMode::LockAlways
+			: EMouseLockMode::DoNotLock
+	);
 	InputModeData.SetHideCursorDuringCapture(true);
 	return InputModeData;
 }
 
-void AElectricCastlePlayerController::GetMovementVectors(const AController* Controller, FVector& OutForward,
-                                                         FVector& OutRight)
+void AElectricCastlePlayerController::GetMovementVectors(
+	const AController* Controller, FVector& OutForward,
+	FVector& OutRight
+)
 {
 	if (!Controller)
 	{
@@ -571,7 +580,8 @@ void AElectricCastlePlayerController::OnInputTypeChange(const ECommonInputType N
 }
 
 void AElectricCastlePlayerController::HandleSelectionWheelStateChanged(
-	const FSelectionWheelStateChangedPayload& Payload)
+	const FSelectionWheelStateChangedPayload& Payload
+)
 {
 	SetupInputMode();
 }

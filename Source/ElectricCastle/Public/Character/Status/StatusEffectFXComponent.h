@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
+#include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
 #include "Components/ActorComponent.h"
 #include "StatusEffectFXComponent.generated.h"
 
@@ -50,7 +51,7 @@ private:
 	void DestroyStatusEffectFX(const FGameplayTag& InStatusEffectTag);
 	UFUNCTION()
 	void OnStatusEffectTagCountChanged(FGameplayTag InStatusEffectTag, int32 InCount);
-	void AddStatusEffectTagListeners(UAbilitySystemComponent* AbilitySystemComponent);
+	void AddStatusEffectTagListeners(UElectricCastleAbilitySystemComponent* AbilitySystemComponent);
 	UPROPERTY()
 	TArray<FStatusEffectFXInstance> StatusEffectFXInstances;
 };

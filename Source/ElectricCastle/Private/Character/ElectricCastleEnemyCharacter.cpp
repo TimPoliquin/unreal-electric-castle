@@ -9,6 +9,7 @@
 #include "AbilitySystem/ElectricCastleAttributeSet.h"
 #include "Actor/Effect/DissolveEffectComponent.h"
 #include "AI/ElectricCastleAIController.h"
+#include "Actor/Attack/Component/AttackWindowManager.h"
 #include "Actor/Highlight/HighlightComponent.h"
 #include "ElectricCastle/ElectricCastle.h"
 #include "BehaviorTree/BehaviorTree.h"
@@ -20,7 +21,9 @@
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/TimelineComponent.h"
+#include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "Item/Component/LootSpawnComponent.h"
+#include "Navigation/PathFollowingComponent.h"
 #include "Tags/ElectricCastleGameplayTags.h"
 
 AElectricCastleEnemyCharacter::AElectricCastleEnemyCharacter()
@@ -48,6 +51,7 @@ AElectricCastleEnemyCharacter::AElectricCastleEnemyCharacter()
 	OnSpawnTimelineFinished.BindDynamic(this, &AElectricCastleEnemyCharacter::SpawnAnimation_Finalize);
 	CharacterDissolveComponent = CreateDefaultSubobject<UDissolveEffectComponent>(TEXT("Character Dissolve Component"));
 	LootSpawnComponent = CreateDefaultSubobject<ULootSpawnComponent>(TEXT("Loot Spawn Component"));
+	AttackWindowManager = CreateDefaultSubobject<UAttackWindowManager>(TEXT("Attack Window Manager"));
 	Tags.Add(TAG_ENEMY);
 	HighlightComponent->SetHighlightType(EHighlightType::Enemy);
 }
@@ -156,6 +160,51 @@ void AElectricCastleEnemyCharacter::OnStatusShockRemoved()
 	}
 }
 
+void AElectricCastleEnemyCharacter::OnStatusStaggeredAdded_Implementation()
+{
+	Super::OnStatusStaggeredAdded_Implementation();
+	if (AuraAIController && AuraAIController->GetBlackboardComponent())
+	{
+		AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("IsStaggered"), true);
+		AuraAIController->StopMovement();
+	}
+	GetMovementComponent()->StopMovementImmediately();
+	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
+	{
+		AnimInstance->StopAllMontages(0.f);
+	}
+	LaunchCharacter(GetActorForwardVector() * -1 * GetStaggerLaunchForce() + FVector::UpVector * GetStaggerLaunchUpwardForce(), true, true);
+}
+
+void AElectricCastleEnemyCharacter::OnStatusStaggeredRemoved_Implementation()
+{
+	Super::OnStatusStaggeredRemoved_Implementation();
+	if (AuraAIController && AuraAIController->GetBlackboardComponent())
+	{
+		AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("IsStaggered"), false);
+	}
+}
+
+float AElectricCastleEnemyCharacter::GetStaggerLaunchUpwardForce_Implementation() const
+{
+	return StaggerLaunchUpwardForce;
+}
+
+float AElectricCastleEnemyCharacter::GetStaggerLaunchForce_Implementation() const
+{
+	return StaggerLaunchForce;
+}
+
+UAnimMontage* AElectricCastleEnemyCharacter::GetStaggerMontage_Implementation() const
+{
+	return Execute_GetHitReactMontage(this, FElectricCastleGameplayTags::Get().Effect_HitReact);
+}
+
+void AElectricCastleEnemyCharacter::HandleGameDataLoaded_Implementation()
+{
+	InitializeAIController();
+}
+
 void AElectricCastleEnemyCharacter::RegisterSockets_Implementation(USocketManagerComponent* InSocketManagerComponent)
 {
 	// nothing here for now
@@ -230,19 +279,8 @@ void AElectricCastleEnemyCharacter::InitializeStartupAbilities()
 	}
 }
 
-void AElectricCastleEnemyCharacter::Tick(float DeltaTime)
+void AElectricCastleEnemyCharacter::InitializeAIController()
 {
-	Super::Tick(DeltaTime);
-}
-
-void AElectricCastleEnemyCharacter::PossessedBy(AController* NewController)
-{
-	Super::PossessedBy(NewController);
-	if (!HasAuthority())
-	{
-		return;
-	}
-	AuraAIController = CastChecked<AElectricCastleAIController>(NewController);
 	if (AuraAIController->GetBlackboardComponent() && BehaviorTree)
 	{
 		AuraAIController->GetBlackboardComponent()->InitializeBlackboard(*BehaviorTree->BlackboardAsset);
@@ -270,6 +308,32 @@ void AElectricCastleEnemyCharacter::PossessedBy(AController* NewController)
 		FName("AttackWaitDeviation"),
 		AttackWaitDeviation
 	);
+}
+
+void AElectricCastleEnemyCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+}
+
+void AElectricCastleEnemyCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	if (!HasAuthority())
+	{
+		return;
+	}
+	AuraAIController = CastChecked<AElectricCastleAIController>(NewController);
+	if (UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(this))
+	{
+		if (GameDataSubsystem->IsGameDataLoaded())
+		{
+			InitializeAIController();
+		}
+		else
+		{
+			GameDataSubsystem->OnGameDataLoaded.AddUniqueDynamic(this, &AElectricCastleEnemyCharacter::HandleGameDataLoaded);
+		}
+	}
 }
 
 void AElectricCastleEnemyCharacter::SetVisible_Implementation(const bool bInVisible)
@@ -331,6 +395,11 @@ void AElectricCastleEnemyCharacter::Die()
 FOnTrackableStopTrackingSignature& AElectricCastleEnemyCharacter::GetStopTrackingDelegate()
 {
 	return OnTrackableStopTracking;
+}
+
+UAttackWindowManager* AElectricCastleEnemyCharacter::GetAttackWindowManager_Implementation() const
+{
+	return AttackWindowManager;
 }
 
 void AElectricCastleEnemyCharacter::PostInitializeComponents()

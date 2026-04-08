@@ -13,6 +13,7 @@
 #include "LiveLinkTypes.h"
 
 #include "Actor/Attack/Component/AttackWindowManagerActor.h"
+#include "Actor/Block/BlockingActorInterface.h"
 #include "Actor/MagicHand/MagicHandPossessorInterface.h"
 #include "Actor/MagicTether/TetherAbilityActorInterface.h"
 #include "Actor/Mesh/SocketManagerTypes.h"
@@ -22,6 +23,7 @@
 #include "Player/LockOn/LockOnActor.h"
 #include "ElectricCastlePlayerCharacter.generated.h"
 
+class UBlockController;
 struct FLockOnTargetPayload;
 class UTetherAbilityComponent;
 class AElectricCastlePlayerCharacter;
@@ -75,7 +77,8 @@ class ELECTRICCASTLE_API AElectricCastlePlayerCharacter : public AElectricCastle
                                                           public IAimActorInterface,
                                                           public IAttackWindowManagerActor,
                                                           public ILockOnActor,
-                                                          public IMotionWarpingActor
+                                                          public IMotionWarpingActor,
+                                                          public IBlockingActorInterface
 {
 	GENERATED_BODY()
 
@@ -170,6 +173,13 @@ public:
 	/** Start IMotionWarpingActor **/
 	virtual UMotionWarpingComponent* GetMotionWarpingComponent_Implementation() const override { return MotionWarpingComponent; };
 	/** End IMotionWarpingActor **/
+	/** Start IBlockingActorInterface **/
+	virtual UBlockController* GetBlockController_Implementation() const override { return BlockController; };
+	/** End IBlockingActorInterface **/
+	virtual void Falling() override;
+	virtual void Jump() override;
+	virtual void Landed(const FHitResult& Hit) override;
+
 protected:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void Construction_SetupMetaHuman();
@@ -216,7 +226,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UPlayerEquipmentComponent> EquipmentComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
-	TObjectPtr<UCameraComponent> CameraComponent;
+	TObjectPtr<UCameraComponent> PlayerCameraComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<USpringArmComponent> SpringArmComponent;
 	UPROPERTY(EditDefaultsOnly, Category="Components")
@@ -231,6 +241,8 @@ protected:
 	TObjectPtr<UAimController> AimController;
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Components")
 	TObjectPtr<ULockOnController> LockOnController;
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Components")
+	TObjectPtr<UBlockController> BlockController;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UMetaHumanComponentUE> MetaHumanComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
@@ -259,6 +271,9 @@ private:
 	FTimerHandle DeathTimer;
 	UPROPERTY()
 	FActiveGameplayEffectHandle AimGameplayEffectHandle;
+	UPROPERTY()
+	FActiveGameplayEffectHandle JumpEffectHandle;
+
 
 	virtual void InitializeAbilityActorInfo() override;
 

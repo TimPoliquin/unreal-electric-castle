@@ -27,15 +27,15 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties")
 	bool bDebug = false;
-	
+
 private:
 	UFUNCTION()
-	void AddStatusEffectListeners(UAbilitySystemComponent* AbilitySystemComponent);
+	void AddStatusEffectListeners(UElectricCastleAbilitySystemComponent* AbilitySystemComponent);
 	UFUNCTION()
-	void OnEffectAdded(UAbilitySystemComponent* AbilitySystemComponent,	const FGameplayEffectSpec& Spec, 	FActiveGameplayEffectHandle Handle) const;
+	void OnEffectAdded(UAbilitySystemComponent* AbilitySystemComponent, const FGameplayEffectSpec& Spec, FActiveGameplayEffectHandle Handle) const;
 	UFUNCTION()
 	void OnEffectRemoved(const FActiveGameplayEffect& ActiveGameplayEffect) const;
 };

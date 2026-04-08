@@ -8,7 +8,6 @@
 #include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
 #include "AbilitySystem/Data/AbilityInfo.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
-#include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "GameFramework/PlayerState.h"
 #include "Tags/ElectricCastleGameplayTags.h"
 
@@ -242,18 +241,7 @@ void UMVVM_AbilityState::OnPlayerAbilityAdded(const FOnAbilityChangedPayload& Pa
 	if (Payload.InputTag.MatchesTagExact(InputTag))
 	{
 		AbilityTag = Payload.AbilityTag;
-		if (const UElectricCastleGameDataSubsystem* GameData = UElectricCastleGameDataSubsystem::Get(Payload.Owner))
-		{
-			SetAbilityInfo(
-				GameData->GetAbilityInfo()->FindAbilityInfoForTag(
-					AbilityTag
-				)
-			);
-		}
-		else
-		{
-			UE_LOG(LogElectricCastle, Warning, TEXT("[%s] No GameData Subsystem available!"), *GetName())
-		}
+		SetAbilityInfo(Payload.AbilityInfo);
 	}
 }
 

@@ -2,6 +2,9 @@
 
 
 #include "Player/Form/PlayerFormPrimaryAsset.h"
+
+#include "AbilitySystem/Data/AbilityInfo.h"
+#include "Input/InputConfiguration.h"
 #include "Player/Form/FormConfigTypes.h"
 #include "Player/Form/Config/FormConfig.h"
 
@@ -39,6 +42,21 @@ void UPlayerFormPrimaryAsset::OnFormDeactivated_Implementation(AActor* Actor, UP
 	{
 		FormConfig->OnFormDeactivated(Actor, FormChangeComponent);
 	}
+}
+
+UInputMappingContext* UPlayerFormPrimaryAsset::GetInputMappingContext() const
+{
+	return InputMappingContext.LoadSynchronous();
+}
+
+UInputConfiguration* UPlayerFormPrimaryAsset::GetInputConfiguration() const
+{
+	return InputConfiguration.LoadSynchronous();
+}
+
+UAbilityInfo* UPlayerFormPrimaryAsset::GetAbilityInfo() const
+{
+	return Abilities.LoadSynchronous();
 }
 
 bool UPlayerFormPrimaryAsset::IsValid() const

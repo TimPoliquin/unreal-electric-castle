@@ -49,6 +49,8 @@ public:
 	AElectricCastlePlayerController* GetPlayerController(const AActor* Actor) const;
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 	void SetTimeDilation(const float WorldMagnitude, const float PlayerMagnitude);
+	UFUNCTION(BlueprintCallable, Server, Reliable)
+	void SetPlayerTimeDilation(const float PlayerMagnitude);
 
 	void RegisterPlayer(AElectricCastlePlayerController* PlayerController, AElectricCastlePlayerCharacter* PlayerCharacter);
 	void UnregisterPlayer(AElectricCastlePlayerController* PlayerController);

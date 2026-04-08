@@ -38,6 +38,13 @@ private:
 		const FAggregatorEvaluateParameters& EvaluateParameters
 	);
 
+	static bool IsAttackBlockedByTarget(const FGameplayEffectCustomExecutionParameters& ExecutionParams, const FAggregatorEvaluateParameters& EvaluateParameters);
+
+	static bool IsAttackParriedByTarget(
+		const FGameplayEffectCustomExecutionParameters& ExecutionParams,
+		const FAggregatorEvaluateParameters& EvaluateParameters
+	);
+
 	static float GetTargetEffectiveArmor(
 		const FGameplayEffectCustomExecutionParameters& ExecutionParams,
 		const FAggregatorEvaluateParameters& EvaluateParameters

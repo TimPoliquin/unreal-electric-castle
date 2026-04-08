@@ -18,19 +18,7 @@ void USpellMenuWidgetController::BroadcastInitialValues()
 	{
 		return;
 	}
-	if (GetAbilitySystemComponent()->HasFiredOnAbilitiesGivenDelegate())
-	{
-		BroadcastAbilityInfo();
-	}
-	else
-	{
-		GetAbilitySystemComponent()->OnAbilitiesGivenDelegate.AddLambda(
-			[this]()
-			{
-				BroadcastAbilityInfo();
-			}
-		);
-	}
+	BroadcastAbilityInfo();
 	if (const UProgressionComponent* ProgressionComponent = UProgressionComponent::Get(GetPlayerState()))
 	{
 		OnSpellPointsChanged(

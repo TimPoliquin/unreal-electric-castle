@@ -3,6 +3,7 @@
 
 #include "AbilitySystem/ElectricCastleAbilitySystemInterface.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 
@@ -19,9 +20,5 @@ int32 IElectricCastleAbilitySystemInterface::GetCharacterLevel(const UObject* Ch
 
 bool IElectricCastleAbilitySystemInterface::IsAbilitySystemReady(AActor* Actor)
 {
-	if (const UElectricCastleAbilitySystemComponent* AbilitySystemComponent = UElectricCastleAbilitySystemLibrary::GetAbilitySystemComponent(Actor))
-	{
-		return AbilitySystemComponent->HasFiredOnAbilitiesGivenDelegate();
-	}
-	return false;
+	return IsValid(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Actor));
 }

@@ -7,30 +7,28 @@
 #include "Engine/World.h"
 #include "UI/Widget/Fade/FadeWidgetLatentAction.h"
 
-void UFadeWidgetLibrary::FadeWidget(
+int32 UFadeWidgetLibrary::FadeWidget(
 	UObject* WorldContextObject,
 	UWidget* Widget,
 	const float TargetOpacity,
 	const float Duration,
-	const FLatentActionInfo LatentInfo)
+	const FLatentActionInfo LatentInfo
+)
 {
 	if (!WorldContextObject || !Widget)
 	{
-		return;
+		return -1;
 	}
 
 	UWorld* World = WorldContextObject->GetWorld();
 	if (!World)
 	{
-		return;
+		return -1;
 	}
 
 	FLatentActionManager& Manager = World->GetLatentActionManager();
 
-	if (Manager.FindExistingAction<FFadeWidgetLatentAction>(LatentInfo.CallbackTarget, LatentInfo.UUID))
-	{
-		Manager.RemoveActionsForObject(LatentInfo.CallbackTarget);
-	}
+	Manager.RemoveActionsForObject(LatentInfo.CallbackTarget);
 
 	const float StartOpacity = Widget->GetRenderOpacity();
 
@@ -42,5 +40,8 @@ void UFadeWidgetLibrary::FadeWidget(
 			StartOpacity,
 			TargetOpacity,
 			Duration,
-			LatentInfo));
+			LatentInfo
+		)
+	);
+	return LatentInfo.UUID;
 }

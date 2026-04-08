@@ -12,6 +12,7 @@
 #include "Interaction/CombatInterface.h"
 #include "ElectricCastleCharacter.generated.h"
 
+class UAbilityInfo;
 class UCinematicHandlerComponent;
 class UStatusEffectManagerComponent;
 class UDissolveEffectComponent;
@@ -60,7 +61,7 @@ public:
 
 	/** Combat Interface **/
 	virtual AActor* GetAvatar_Implementation() override;
-	virtual UAnimMontage* GetHitReactMontage_Implementation(const FGameplayTag& HitReactTypeTag) override;
+	virtual UAnimMontage* GetHitReactMontage_Implementation(const FGameplayTag& HitReactTypeTag) const override;
 	virtual TArray<FTaggedMontage> GetAttackMontages_Implementation() const override;
 	virtual FTaggedMontage GetTagMontageByTag_Implementation(const FGameplayTag& MontageTag) override;
 	virtual FVector GetCombatSocketLocation_Implementation(const FGameplayTag& MontageTag) const override;
@@ -102,8 +103,8 @@ public:
 		ActiveAbilityTag = FGameplayTag::EmptyTag;
 	}
 
-	virtual FGameplayTag
-	GetHitReactAbilityTagByDamageType_Implementation(const FGameplayTag& DamageTypeTag) const override;
+	virtual FGameplayTag GetHitReactAbilityTagByDamageType_Implementation(const FGameplayTag& DamageTypeTag) const override;
+	virtual bool IsStaggered_Implementation() const override;
 
 	/** Combat Interface End **/
 
@@ -185,6 +186,8 @@ protected:
 	TObjectPtr<UPassiveNiagaraComponent> LifeSiphonNiagaraComponent;
 	UPROPERTY(VisibleAnywhere, Category = "Combat|Passive")
 	TObjectPtr<UPassiveNiagaraComponent> ManaSiphonNiagaraComponent;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Abilities")
+	TArray<TObjectPtr<UAbilityInfo>> Abilities;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing=OnRep_ActiveAbilityTag, Category = "Combat")
 	FGameplayTag ActiveAbilityTag;
@@ -216,6 +219,10 @@ protected:
 	virtual void OnStatusBurnRemoved()
 	{
 	};
+	UFUNCTION(BlueprintNativeEvent)
+	void OnStatusStaggeredAdded();
+	UFUNCTION(BlueprintNativeEvent)
+	void OnStatusStaggeredRemoved();
 
 	UFUNCTION(BlueprintNativeEvent)
 	void OnAbilitySystemReady(UElectricCastleAbilitySystemComponent* InAbilitySystemComponent);
@@ -245,5 +252,7 @@ private:
 	UFUNCTION()
 	void OnDebuffTypeShockChanged(FGameplayTag StunTag, int32 Count);
 	UFUNCTION()
-	void RegisterStatusEffectTags(UAbilitySystemComponent* InAbilitySystemComponent);
+	void OnEffectChange_Staggered(FGameplayTag StaggeredTag, int Count);
+	UFUNCTION()
+	void RegisterStatusEffectTags(UElectricCastleAbilitySystemComponent* InAbilitySystemComponent);
 };

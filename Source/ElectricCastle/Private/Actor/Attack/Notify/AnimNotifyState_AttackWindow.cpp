@@ -16,6 +16,7 @@ void UAnimNotifyState_AttackWindow::NotifyBegin(USkeletalMeshComponent* MeshComp
 	const AActor* Owner = MeshComp ? MeshComp->GetOwner() : nullptr;
 	if (UAttackWindowManager* AttackWindowManager = IAttackWindowManagerActor::GetAttackWindowManager(Owner))
 	{
+		AttackWindowConfig->SetEventTag(EventTag);
 		AttackWindowConfig->SetDuration(TotalDuration);
 		AttackWindowConfig->SetOwner(MeshComp->GetOwner());
 		AttackWindowManager->StartAttackWindow(AttackWindowConfig);

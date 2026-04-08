@@ -11,6 +11,8 @@
 #include "AbilityChangeDelegates.h"
 #include "ElectricCastleAbilitySystemComponent.generated.h"
 
+struct FElectricCastleAbilityInfo;
+class UAbilityInfo;
 class UElectricCastleAbilitySystemComponent;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FEffectAssetTags, const FGameplayTagContainer& /*Asset Tags*/)
@@ -59,26 +61,16 @@ class ELECTRICCASTLE_API UElectricCastleAbilitySystemComponent : public UAbility
 
 public:
 	FEffectAssetTags OnEffectAssetTagsDelegate;
+	virtual void BeginPlay() override;
 
-	void AddCharacterAbilities(
-		const TArray<TSubclassOf<UGameplayAbility>>& StartupAbilities,
-		const TArray<TSubclassOf<UGameplayAbility>>& StartupPassiveAbilities
-	);
-
-	void AbilityInputTagPressed(const FGameplayTag& InputTag);
-	void AbilityInputTagHeld(const FGameplayTag& InputTag);
-	void AbilityInputTagReleased(const FGameplayTag& InputTag);
-	virtual void OnRep_ActivateAbilities() override;
-	virtual void OnGiveAbility(FGameplayAbilitySpec& AbilitySpec) override;
-	virtual void OnRemoveAbility(FGameplayAbilitySpec& AbilitySpec) override;
+	void AbilityInputTagPressed(FGameplayTag InputTag);
+	void AbilityInputTagHeld(FGameplayTag InputTag);
+	void AbilityInputTagReleased(FGameplayTag InputTag);
 	void GrantAbilitiesWithTag(const FGameplayTag& AbilityTag);
 	void RemoveAbilitiesWithTag(const FGameplayTag& AbilityTag);
-	FAbilitiesGiven OnAbilitiesGivenDelegate;
-	FORCEINLINE bool HasFiredOnAbilitiesGivenDelegate() const
-	{
-		return bAbilitiesGiven;
-	}
-
+	void GrantAbilities(const TArray<UAbilityInfo*>& AbilityInfos);
+	void GrantAbilities(const UAbilityInfo* AbilityInfo);
+	void RemoveAbilities(const UAbilityInfo* AbilityInfo);
 	void ForEachAbility(const FForEachAbility& ForEachAbilityDelegate);
 	void ServerUpdateAbilityStatuses(const int32 Level);
 	UFUNCTION(NetMulticast, Unreliable)
@@ -118,22 +110,14 @@ public:
 	FOnAbilityChangedSignature OnAbilityRemoved;
 
 protected:
-	virtual void BeginPlay() override;
-
 	UFUNCTION(Client, Reliable)
 	void Client_EffectApplied(
 		UAbilitySystemComponent* AbilitySystemComponent,
 		const FGameplayEffectSpec& EffectSpec,
 		FActiveGameplayEffectHandle ActiveEffectHandle
 	);
-	UFUNCTION(NetMulticast, Reliable)
-	void Client_NotifyAbilityAdded(const FOnAbilityChangedPayload& Payload) const;
-	UFUNCTION(NetMulticast, Reliable)
-	void Client_NotifyAbilityRemoved(const FOnAbilityChangedPayload& Payload) const;
 
 private:
-	bool bAbilitiesGiven = false;
-
 	UFUNCTION(Client, Reliable)
 	void ClientUpdateAbilityStatus(
 		const int32 PlayerLevel,
@@ -147,6 +131,7 @@ private:
 	TArray<uint8> SerializeActorComponent();
 	bool DeserializeActorComponent(const TArray<uint8>& Data);
 
+	FGameplayAbilitySpecHandle GiveAbilityByAbilityInfo(const FElectricCastleAbilityInfo& AbilityInfo);
 	FGameplayAbilitySpecHandle GiveActiveAbility(
 		const TSubclassOf<UGameplayAbility>& AbilityClass,
 		const int32 AbilityLevel = 1

@@ -71,7 +71,9 @@ bool UPlayerFunctionLibrary::IsPlayerLockedOn(const AActor* Actor)
 
 bool UPlayerFunctionLibrary::IsPlayerAimingOrLockedOn(const AActor* Actor)
 {
-	return IsPlayerAiming(Actor) || IsPlayerLockedOn(Actor);
+	const bool bIsAiming = IsPlayerAiming(Actor);
+	const bool bIsLockedOn = IsPlayerLockedOn(Actor);
+	return bIsAiming || bIsLockedOn;
 }
 
 bool UPlayerFunctionLibrary::HasWeaponEquipped(const AActor* Actor)

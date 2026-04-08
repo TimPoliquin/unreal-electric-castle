@@ -131,22 +131,17 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 	Instance.Cinematic_Type_UI = TagManager.AddNativeGameplayTag(FName("Cinematic.Type.UI"), FString("Sequences used in menus/UI"));
 
 	// Input Tags
-	Instance.InputTag = TagManager.AddNativeGameplayTag(
-		FName("InputTag"),
-		FString("Input tag root")
-	);
-	Instance.InputTag_LeftMouseButton = TagManager.AddNativeGameplayTag(
-		FName("InputTag.LeftMouseButton"),
-		FString("Input tag for the Left Mouse Button")
-	);
-	Instance.InputTag_AttackTarget = TagManager.AddNativeGameplayTag(
-		FName("InputTag.AttackTarget"),
-		FString("Input tag for the Attack Target (Shift + LMB)")
-	);
-	Instance.InputTag_RightMouseButton = TagManager.AddNativeGameplayTag(
-		FName("InputTag.RightMouseButton"),
-		FString("Input tag for the Right Mouse Button")
-	);
+	Instance.Input = TagManager.AddNativeGameplayTag(FName("Input"), FString("Input root tag"));
+	Instance.Input_Common_Block = TagManager.AddNativeGameplayTag(FName("Input.Common.Block"), FString("Input tag for blocking"));
+	Instance.Input_Common_Dodge = TagManager.AddNativeGameplayTag(FName("Input.Common.Dodge"), FString("Input tag for dodging"));
+	Instance.Input_Common_Interact = TagManager.AddNativeGameplayTag(FName("Input.Common.Interact"), FString("Input tag for interacting with world objects"));
+	Instance.Input_Ability_Aim = TagManager.AddNativeGameplayTag(FName("Input.Ability.Aim"), FString("Input tag for aiming"));
+	Instance.Input_Ability_LockOn = TagManager.AddNativeGameplayTag(FName("Input.Ability.LockOn"), FString("Input tag for locking on to targets"));
+	Instance.Input_Ability_Primary = TagManager.AddNativeGameplayTag(FName("Input.Ability.Primary"), FString("Input tag for primary attack"));
+	Instance.Input_Ability_Secondary = TagManager.AddNativeGameplayTag(FName("Input.Ability.Secondary"), FString("Input tag for secondary attack"));
+	Instance.Input_Ability_Spell_01 = TagManager.AddNativeGameplayTag(FName("Input.Ability.Spell.01"), FString("Input tag for executing spell ability 1"));
+	Instance.Input_Ability_Spell_02 = TagManager.AddNativeGameplayTag(FName("Input.Ability.Spell.02"), FString("Input tag for executing spell ability 2"));
+	Instance.InputTag = TagManager.AddNativeGameplayTag(FName("InputTag"));
 	Instance.InputTag_Action1 = TagManager.AddNativeGameplayTag(
 		FName("InputTag.Action1"),
 		FString("Input tag for Action 1")
@@ -260,6 +255,20 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FName("Effect.State.Aiming"),
 		FString("Indicates that the character is aiming")
 	);
+	Instance.Effect_State_Blocking = TagManager.AddNativeGameplayTag(
+		FName("Effect.State.Blocking"),
+		FString("Indicates that the character is blocking")
+	);
+	Instance.Effect_State_Dodging = TagManager.AddNativeGameplayTag(FName("Effect.State.Dodging"), FString("Indicates that the character is dodging"));
+	Instance.Effect_State_Jumping = TagManager.AddNativeGameplayTag(FName("Effect.State.Jumping"), FString("Indicates that the character is jumping"));
+	Instance.Effect_State_LockedOn = TagManager.AddNativeGameplayTag(
+		FName("Effect.State.LockedOn"),
+		FString("Indicates that the character is locked on to a target")
+	);
+	Instance.Effect_State_Parrying = TagManager.AddNativeGameplayTag(
+		FName("Effect.State.Parrying"),
+		FString("Indicates that the character is within the parry window for an attack")
+	);
 	Instance.Effect_State_ChronoShift = TagManager.AddNativeGameplayTag(
 		FName("Effect.State.ChronoShift"),
 		FString("Indicates that the character is in the chrono shift state")
@@ -336,6 +345,7 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FName("Effect.Debuff.Type.Bleed"),
 		FString("Bleed target for damage for a duration")
 	);
+	Instance.Effect_Debuff_Type_Staggered = TagManager.AddNativeGameplayTag(FName("Effect.Debuff.Type.Staggered"), FString("Staggered status effect"));
 
 	Instance.Effect_Debuff_Stat = TagManager.AddNativeGameplayTag(
 		FName("Effect.Debuff.Stat"),
@@ -446,6 +456,8 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FName("Abilities.Fishing.Reel"),
 		FString("Player's fishing reel ability.")
 	);
+	Instance.Abilities_Parameters_CanBeBlocked = TagManager.AddNativeGameplayTag(FName("Abilities.Parameters.CanBeBlocked"), FString("Denotes whether the ability can be blocked"));
+	Instance.Abilities_Parameters_CanBeParried = TagManager.AddNativeGameplayTag(FName("Abilities.Parameters.CanBeParried"), FString("Denotes whether the ability can be parried"));
 	Instance.Abilities_Status = TagManager.AddNativeGameplayTag(
 		FName("Abilities.Status"),
 		FString("Status Ability root")
@@ -487,6 +499,10 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FName("Event.Montage.Electrocute"),
 		FString("Event fired during electrocute montage")
 	);
+	Instance.Event_Montage_Common_BlockAttack = TagManager.AddNativeGameplayTag(FName("Event.Montage.Common.BlockAttack"), FString("Indicates that the target successfully blocked an attack"));
+	Instance.Event_Montage_Common_Blocked = TagManager.AddNativeGameplayTag(FName("Event.Montage.Common.Blocked"), FString("Indicates that the target's attack was blocked by the instigator"));
+	Instance.Event_Montage_Common_ParryAttack = TagManager.AddNativeGameplayTag(FName("Event.Montage.Common.ParryAttack"), FString("Indicates that the target successfully parried an attack"));
+	Instance.Event_Montage_Common_Staggered = TagManager.AddNativeGameplayTag(FName("Event.Montage.Common.Staggered"), FString("Indicates that the target was staggered by the instigator"));
 	/** Cooldown Tags **/
 	Instance.Cooldown_Form = TagManager.AddNativeGameplayTag(
 		FName("Cooldown.Form"),
@@ -548,6 +564,10 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 	Instance.Player_Block_CursorTrace = TagManager.AddNativeGameplayTag(
 		FName("Player.Block.CursorTrace"),
 		FString("Block tracing under the cursor")
+	);
+	Instance.Player_Block_Jump = TagManager.AddNativeGameplayTag(
+		FName("Player.Block.Jump"),
+		FString("Blocks player jumping")
 	);
 	Instance.Player_Block_Movement = TagManager.AddNativeGameplayTag(
 		FName("Player.Block.Movement"),
@@ -752,11 +772,6 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 	Instance.DebuffTypes.Add(Instance.Effect_Debuff_Type_Burn);
 	Instance.DebuffTypes.Add(Instance.Effect_Debuff_Type_Curse);
 	Instance.DebuffTypes.Add(Instance.Effect_Debuff_Type_Shock);
-}
-
-bool FElectricCastleGameplayTags::IsLeftMouseButton(const FGameplayTag& InputTag)
-{
-	return InputTag.MatchesTagExact(Instance.InputTag_LeftMouseButton);
 }
 
 TArray<FGameplayTag> FElectricCastleGameplayTags::GetDamageTypes() const

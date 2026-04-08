@@ -48,3 +48,13 @@ FElectricCastleAbilityInfo UAbilityInfo::FindAbilityInfoByAbilityClass(TSubclass
 	}
 	return FElectricCastleAbilityInfo();
 }
+
+FGameplayTagContainer UAbilityInfo::GetAbilityTags() const
+{
+	FGameplayTagContainer AbilityTags;
+	for (const FElectricCastleAbilityInfo& AbilityInfo : AbilityInformation)
+	{
+		AbilityTags.AddTag(AbilityInfo.AbilityTag);
+	}
+	return AbilityTags;
+}

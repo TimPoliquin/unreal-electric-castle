@@ -4,6 +4,7 @@
 #include "Player/Form/PlayerFormChangeComponent.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
+#include "InputMappingContext.h"
 #include "NiagaraFunctionLibrary.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemInterface.h"
@@ -13,6 +14,8 @@
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "GameFramework/Character.h"
+#include "Input/ElectricCastleInputComponent.h"
+#include "Input/Utils/PlayerInputFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Player/PlayerEquipmentComponent.h"
@@ -78,6 +81,33 @@ void UPlayerFormChangeComponent::FormChange_UpdateCharacterMesh(const FPlayerFor
 	}
 }
 
+void UPlayerFormChangeComponent::FormChange_UpdateInputMappingContext(const FPlayerFormChangeEventPayload& Payload)
+{
+	UElectricCastleAbilitySystemComponent* AbilitySystemComponent = UElectricCastleAbilitySystemLibrary::GetAbilitySystemComponent(GetOwner());
+	if (const UPlayerFormPrimaryAsset* OldFormConfig = GetPlayerFormConfigRow(Payload.OldFormTag))
+	{
+		UPlayerInputFunctionLibrary::RemoveInputMappingContext(GetOwner(), OldFormConfig->GetInputMappingContext());
+		if (UElectricCastleInputComponent* InputComponent = UPlayerInputFunctionLibrary::GetPlayerInputComponent(GetOwner()))
+		{
+			InputComponent->UnbindAbilityActions(OldFormConfig->GetInputConfiguration());
+		}
+	}
+	if (const UPlayerFormPrimaryAsset* NewFormConfig = GetPlayerFormConfigRow(Payload.NewFormTag))
+	{
+		UPlayerInputFunctionLibrary::AddInputMappingContext(GetOwner(), NewFormConfig->GetInputMappingContext());
+		if (UElectricCastleInputComponent* InputComponent = UPlayerInputFunctionLibrary::GetPlayerInputComponent(GetOwner()); IsValid(InputComponent) && IsValid(AbilitySystemComponent))
+		{
+			InputComponent->BindAbilityActions(
+				NewFormConfig->GetInputConfiguration(),
+				AbilitySystemComponent,
+				&UElectricCastleAbilitySystemComponent::AbilityInputTagPressed,
+				&UElectricCastleAbilitySystemComponent::AbilityInputTagReleased,
+				&UElectricCastleAbilitySystemComponent::AbilityInputTagHeld
+			);
+		}
+	}
+}
+
 void UPlayerFormChangeComponent::OnRep_CurrentFormTag(const FGameplayTag& OldValue) const
 {
 	if (!CurrentFormTag.IsValid())
@@ -114,66 +144,16 @@ void UPlayerFormChangeComponent::FormChange_UpdateAbilities_Implementation(const
 	{
 		return;
 	}
-	if (UElectricCastleAbilitySystemComponent* AbilitySystemComponent = Cast<UElectricCastleAbilitySystemComponent>(
-		UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(
-			GetOwner()
-		)
-	))
+	if (UElectricCastleAbilitySystemComponent* AbilitySystemComponent = UElectricCastleAbilitySystemLibrary::GetAbilitySystemComponent(GetOwner()))
 	{
 		if (const UPlayerFormPrimaryAsset* OldFormConfig = GetPlayerFormConfigRow(Payload.OldFormTag))
 		{
-			for (const FGameplayTag& AbilityTag : OldFormConfig->Abilities)
-			{
-				UE_LOG(
-					LogElectricCastle,
-					Log,
-					TEXT("[%s:%s] Removing ability %s"),
-					*GetOwner()->GetName(),
-					*GetName(),
-					*AbilityTag.ToString()
-				);
-				AbilitySystemComponent->RemoveAbilitiesWithTag(AbilityTag);
-			}
-			for (const FGameplayTag& AbilityTag : Payload.FormData->PassiveAbilities)
-			{
-				UE_LOG(
-					LogElectricCastle,
-					Log,
-					TEXT("[%s:%s] Removing ability %s"),
-					*GetOwner()->GetName(),
-					*GetName(),
-					*AbilityTag.ToString()
-				);
-				AbilitySystemComponent->RemoveAbilitiesWithTag(AbilityTag);
-			}
+			AbilitySystemComponent->RemoveAbilities(OldFormConfig->GetAbilityInfo());
 			OldFormConfig->OnFormDeactivated(GetOwner(), this);
 		}
 		if (const UPlayerFormPrimaryAsset* CurrentFormConfig = GetPlayerFormConfigRow(Payload.NewFormTag))
 		{
-			for (const FGameplayTag& AbilityTag : CurrentFormConfig->Abilities)
-			{
-				UE_LOG(
-					LogElectricCastle,
-					Log,
-					TEXT("[%s:%s] Adding ability %s"),
-					*GetOwner()->GetName(),
-					*GetName(),
-					*AbilityTag.ToString()
-				);
-				AbilitySystemComponent->GrantAbilitiesWithTag(AbilityTag);
-			}
-			for (const FGameplayTag& AbilityTag : CurrentFormConfig->PassiveAbilities)
-			{
-				UE_LOG(
-					LogElectricCastle,
-					Log,
-					TEXT("[%s:%s] Adding ability %s"),
-					*GetOwner()->GetName(),
-					*GetName(),
-					*AbilityTag.ToString()
-				);
-				AbilitySystemComponent->GrantAbilitiesWithTag(AbilityTag);
-			}
+			AbilitySystemComponent->GrantAbilities(CurrentFormConfig->GetAbilityInfo());
 			CurrentFormConfig->OnFormActivated(GetOwner(), this);
 		}
 	}
@@ -187,14 +167,11 @@ void UPlayerFormChangeComponent::FormChange_UpdateAttributes_Implementation(
 	{
 		return;
 	}
-	if (const UElectricCastleAbilitySystemComponent* AbilitySystemComponent = Cast<UElectricCastleAbilitySystemComponent>(
-		UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetOwner())
-	))
+	if (const UElectricCastleAbilitySystemComponent* AbilitySystemComponent = UElectricCastleAbilitySystemLibrary::GetAbilitySystemComponent(GetOwner()))
 	{
 		bool AttributeFound;
 		const int32 CharacterLevel = IElectricCastleAbilitySystemInterface::GetCharacterLevel(GetOwner());
-		const float OldHealth = AbilitySystemComponent->GetGameplayAttributeValue
-			(UElectricCastleAttributeSet::GetHealthAttribute(), AttributeFound);
+		const float OldHealth = AbilitySystemComponent->GetGameplayAttributeValue(UElectricCastleAttributeSet::GetHealthAttribute(), AttributeFound);
 		const float OldMaxHealth = AbilitySystemComponent->GetGameplayAttributeValue(
 			UElectricCastleAttributeSet::GetMaxHealthAttribute(),
 			AttributeFound

@@ -14,6 +14,10 @@
 #include "Tags/ElectricCastleGameplayTags.h"
 #include "Utils/ArrayUtils.h"
 
+UDamageGameplayAbility::UDamageGameplayAbility()
+{
+}
+
 void UDamageGameplayAbility::ActivateAbility(
 	const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo,

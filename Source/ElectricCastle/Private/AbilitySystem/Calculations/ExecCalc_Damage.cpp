@@ -5,7 +5,6 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 #include "AbilitySystem/ElectricCastleAttributeSet.h"
-#include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Interaction/CombatInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "Tags/ElectricCastleGameplayTags.h"
@@ -21,6 +20,7 @@ struct AuraDamageStatics
 	DECLARE_ATTRIBUTE_CAPTUREDEF(EvadeChance);
 
 	TMap<FGameplayTag, FGameplayEffectAttributeCaptureDefinition> TagsToCaptureDefs;
+	FGameplayTagContainer AutoEvadeTags;
 
 	AuraDamageStatics()
 	{
@@ -41,6 +41,8 @@ struct AuraDamageStatics
 		TagsToCaptureDefs.Add(Tags.Attributes_Secondary_HitChance, HitChanceDef);
 		TagsToCaptureDefs.Add(Tags.Attributes_Secondary_EvadeChance, EvadeChanceDef);
 		TagsToCaptureDefs.Add(Tags.Attributes_Secondary_CriticalHitChance, CriticalHitChanceDef);
+		AutoEvadeTags.AddTag(Tags.Effect_State_Dodging);
+		AutoEvadeTags.AddTag(Tags.Effect_Block_Damage);
 	}
 };
 
@@ -61,6 +63,86 @@ UExecCalc_Damage::UExecCalc_Damage()
 	RelevantAttributesToCapture.Add(DamageStatics().EvadeChanceDef);
 	RelevantAttributesToCapture.Add(DamageStatics().CriticalHitChanceDef);
 }
+
+void UExecCalc_Damage::Execute_Implementation(
+	const FGameplayEffectCustomExecutionParameters& ExecutionParams,
+	FGameplayEffectCustomExecutionOutput& OutExecutionOutput
+) const
+{
+	// Note: As implemented, this exec-calc is not safe for use as a duration-based effect. It should only be used on Instant effects.
+	// This is because the GameplayEffectContext used is shared and persisted across the lifetime of the effect,
+	// which can cause values to bleed across multiple executions if they are not properly reset/overridden each execution.
+	const FGameplayEffectSpec& Spec = ExecutionParams.GetOwningSpec();
+	FGameplayEffectContextHandle EffectContextHandle = Spec.GetContext();
+	FAggregatorEvaluateParameters EvaluateParameters;
+	EvaluateParameters.SourceTags = Spec.CapturedSourceTags.GetAggregatedTags();
+	EvaluateParameters.TargetTags = Spec.CapturedTargetTags.GetAggregatedTags();
+
+	UElectricCastleAbilitySystemLibrary::SetIsEvadedAttack(EffectContextHandle, IsAttackEvadedByTarget(ExecutionParams, EvaluateParameters));
+	UElectricCastleAbilitySystemLibrary::SetIsBlockedHit(EffectContextHandle, IsAttackBlockedByTarget(ExecutionParams, EvaluateParameters));
+	UElectricCastleAbilitySystemLibrary::SetIsParriedAttack(EffectContextHandle, IsAttackParriedByTarget(ExecutionParams, EvaluateParameters));
+	UElectricCastleAbilitySystemLibrary::SetIsCriticalHit(EffectContextHandle, IsCriticalHitOnTarget(ExecutionParams, EvaluateParameters));
+
+	// If the attack was evaded (based on evade chance), ignore all damage! nice!
+	if (UElectricCastleAbilitySystemLibrary::IsEvadedAttack(EffectContextHandle))
+	{
+		UElectricCastleAbilitySystemLibrary::SetIsCriticalHit(EffectContextHandle, false);
+		const FGameplayModifierEvaluatedData EvaluatedData(
+			UElectricCastleAttributeSet::GetMeta_IncomingDamageAttribute(),
+			EGameplayModOp::Additive,
+			0.f
+		);
+		OutExecutionOutput.AddOutputModifier(EvaluatedData);
+		return;
+	}
+
+	// if the attack was parried, ignore all damage
+	if (UElectricCastleAbilitySystemLibrary::IsBlockedHit(EffectContextHandle) && UElectricCastleAbilitySystemLibrary::IsParriedAttack(EffectContextHandle))
+	{
+		UElectricCastleAbilitySystemLibrary::SetIsCriticalHit(EffectContextHandle, false);
+		const FGameplayModifierEvaluatedData EvaluatedData(
+			UElectricCastleAttributeSet::GetMeta_IncomingDamageAttribute(),
+			EGameplayModOp::Additive,
+			0.f
+		);
+		OutExecutionOutput.AddOutputModifier(EvaluatedData);
+		return;
+	}
+	UElectricCastleAbilitySystemLibrary::SetIsParriedAttack(EffectContextHandle, false);
+	// Get Damage Set by Caller Magnitude
+	float Damage = CalculateBaseDamage(ExecutionParams, EvaluateParameters);
+
+	// Radial damage
+	if (IsRadialDamage(ExecutionParams))
+	{
+		ApplyRadialDamage(ExecutionParams, Damage);
+	}
+	// Reduce damage by a percentage based on target's effective armor and level of protection
+	const float TargetEffectiveArmor = GetTargetEffectiveArmor(ExecutionParams, EvaluateParameters);
+	Damage *= (DefenseRatioConstant / (DefenseRatioConstant + TargetEffectiveArmor));
+
+	if (UElectricCastleAbilitySystemLibrary::IsBlockedHit(EffectContextHandle))
+	{
+		// reduce damage if the attack was blocked
+		UElectricCastleAbilitySystemLibrary::SetIsCriticalHit(EffectContextHandle, false);
+		Damage = .1f * Damage;
+	}
+	else if (UElectricCastleAbilitySystemLibrary::IsCriticalHit(EffectContextHandle))
+	{
+		// double damage if the attack is a critical hit
+		Damage *= 2.f;
+	}
+	// determine debuff
+	DetermineDebuff(ExecutionParams, EvaluateParameters);
+
+	const FGameplayModifierEvaluatedData EvaluatedData(
+		UElectricCastleAttributeSet::GetMeta_IncomingDamageAttribute(),
+		EGameplayModOp::Additive,
+		Damage
+	);
+	OutExecutionOutput.AddOutputModifier(EvaluatedData);
+}
+
 
 float UExecCalc_Damage::CalculateBaseDamage(
 	const FGameplayEffectCustomExecutionParameters& ExecutionParams,
@@ -94,68 +176,15 @@ float UExecCalc_Damage::CalculateBaseDamage(
 	return Damage;
 }
 
-void UExecCalc_Damage::Execute_Implementation(
-	const FGameplayEffectCustomExecutionParameters& ExecutionParams,
-	FGameplayEffectCustomExecutionOutput& OutExecutionOutput
-) const
-{
-	// Note: As implemented, this exec-calc is not safe for use as a duration-based effect. It should only be used on Instant effects.
-	// This is because the GameplayEffectContext used is shared and persisted across the lifetime of the effect,
-	// which can cause values to bleed across multiple executions if they are not properly reset/overridden each execution.
-	const FGameplayEffectSpec& Spec = ExecutionParams.GetOwningSpec();
-	FGameplayEffectContextHandle EffectContextHandle = Spec.GetContext();
-	FAggregatorEvaluateParameters EvaluateParameters;
-	EvaluateParameters.SourceTags = Spec.CapturedSourceTags.GetAggregatedTags();
-	EvaluateParameters.TargetTags = Spec.CapturedTargetTags.GetAggregatedTags();
-
-	// If the attack was blocked (based on BlockChance), cut the damage in half.
-	if (IsAttackEvadedByTarget(ExecutionParams, EvaluateParameters))
-	{
-		UElectricCastleAbilitySystemLibrary::SetIsEvadedAttack(EffectContextHandle, true);
-		UElectricCastleAbilitySystemLibrary::SetIsCriticalHit(EffectContextHandle, false);
-		const FGameplayModifierEvaluatedData EvaluatedData(
-			UElectricCastleAttributeSet::GetMeta_IncomingDamageAttribute(),
-			EGameplayModOp::Additive,
-			0.f
-		);
-		OutExecutionOutput.AddOutputModifier(EvaluatedData);
-		return;
-	}
-	UElectricCastleAbilitySystemLibrary::SetIsEvadedAttack(EffectContextHandle, false);
-	// Get Damage Set by Caller Magnitude
-	float Damage = CalculateBaseDamage(ExecutionParams, EvaluateParameters);
-	// Debuff
-	DetermineDebuff(ExecutionParams, EvaluateParameters);
-	if (IsRadialDamage(ExecutionParams))
-	{
-		ApplyRadialDamage(ExecutionParams, Damage);
-	}
-	// Reduce damage by a percentage based on target's effective armor and level of protection
-	const float TargetEffectiveArmor = GetTargetEffectiveArmor(ExecutionParams, EvaluateParameters);
-	Damage *= (DefenseRatioConstant / (DefenseRatioConstant + TargetEffectiveArmor));
-	// if the attack is a critical hit, increase the damage by the critical hit damage
-	if (IsCriticalHitOnTarget(ExecutionParams, EvaluateParameters))
-	{
-		Damage *= 2.f;
-		UElectricCastleAbilitySystemLibrary::SetIsCriticalHit(EffectContextHandle, true);
-	}
-	else
-	{
-		UElectricCastleAbilitySystemLibrary::SetIsCriticalHit(EffectContextHandle, false);
-	}
-	const FGameplayModifierEvaluatedData EvaluatedData(
-		UElectricCastleAttributeSet::GetMeta_IncomingDamageAttribute(),
-		EGameplayModOp::Additive,
-		Damage
-	);
-	OutExecutionOutput.AddOutputModifier(EvaluatedData);
-}
-
 bool UExecCalc_Damage::IsAttackEvadedByTarget(
 	const FGameplayEffectCustomExecutionParameters& ExecutionParams,
 	const FAggregatorEvaluateParameters& EvaluateParameters
 )
 {
+	if (ExecutionParams.GetTargetAbilitySystemComponent()->HasAnyMatchingGameplayTags(DamageStatics().AutoEvadeTags))
+	{
+		return true;
+	}
 	float EvadeChance = 0.f;
 	float HitChance = 0.f;
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(
@@ -171,6 +200,37 @@ bool UExecCalc_Damage::IsAttackEvadedByTarget(
 	const float EvadeCalc = (HitChance / (HitChance + EvadeChance)) * 100.f;
 	const float EvadeRoll = FMath::RandRange(1, 100);
 	return EvadeRoll > EvadeCalc;
+}
+
+bool UExecCalc_Damage::IsAttackBlockedByTarget(const FGameplayEffectCustomExecutionParameters& ExecutionParams, const FAggregatorEvaluateParameters& EvaluateParameters)
+{
+	const FElectricCastleGameplayTags& GameplayTags = FElectricCastleGameplayTags::Get();
+	FGameplayTagContainer AbilityTags;
+	ExecutionParams.GetOwningSpec().GetAllAssetTags(AbilityTags);
+	const bool bCanBeBlocked = AbilityTags.HasTagExact(GameplayTags.Abilities_Parameters_CanBeBlocked);
+	const bool bTargetIsBlocking = ExecutionParams.GetTargetAbilitySystemComponent()->HasMatchingGameplayTag(GameplayTags.Effect_State_Blocking);
+	if (bCanBeBlocked && bTargetIsBlocking)
+	{
+		const FGameplayEffectSpec Spec = ExecutionParams.GetOwningSpec();
+		const FGameplayEffectContextHandle EffectContextHandle = Spec.GetContext();
+		const FVector AttackOrigin = UElectricCastleAbilitySystemLibrary::GetRadialDamageOrigin(EffectContextHandle);
+		const AActor* TargetActor = ExecutionParams.GetTargetAbilitySystemComponent()->GetAvatarActor();
+		// check to see if the attack is coming from a blockable direction
+		return UElectricCastleAbilitySystemLibrary::CanActorBlockByAngle(AttackOrigin, TargetActor->GetActorLocation(), TargetActor->GetActorForwardVector(), 180);
+	}
+	return false;
+}
+
+bool UExecCalc_Damage::IsAttackParriedByTarget(const FGameplayEffectCustomExecutionParameters& ExecutionParams, const FAggregatorEvaluateParameters& EvaluateParameters)
+{
+	const FElectricCastleGameplayTags& GameplayTags = FElectricCastleGameplayTags::Get();
+	FGameplayTagContainer AbilityTags;
+	ExecutionParams.GetOwningSpec().GetAllAssetTags(AbilityTags);
+	if (AbilityTags.HasTagExact(GameplayTags.Abilities_Parameters_CanBeParried))
+	{
+		return ExecutionParams.GetTargetAbilitySystemComponent()->HasMatchingGameplayTag(GameplayTags.Effect_State_Parrying);
+	}
+	return false;
 }
 
 float UExecCalc_Damage::GetTargetEffectiveArmor(
@@ -252,7 +312,8 @@ void UExecCalc_Damage::DetermineDebuff(
 				DebuffTag,
 				Spec.GetLevel(),
 				Spec.GetSetByCallerMagnitude(GameplayTags.Effect_Debuff_Stat_Damage, false, -1.f),
-				Spec.GetSetByCallerMagnitude(GameplayTags.Effect_Debuff_Stat_Duration, false, -1.f), Spec.GetSetByCallerMagnitude(GameplayTags.Effect_Debuff_Stat_Frequency, false, -1.f)
+				Spec.GetSetByCallerMagnitude(GameplayTags.Effect_Debuff_Stat_Duration, false, -1.f),
+				Spec.GetSetByCallerMagnitude(GameplayTags.Effect_Debuff_Stat_Frequency, false, -1.f)
 			);
 			break;
 		}

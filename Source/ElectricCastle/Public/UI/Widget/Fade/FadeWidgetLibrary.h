@@ -17,10 +17,11 @@ class ELECTRICCASTLE_API UFadeWidgetLibrary : public UBlueprintFunctionLibrary
 
 public:
 	UFUNCTION(BlueprintCallable, meta=(Latent, LatentInfo="LatentInfo", WorldContext="WorldContextObject"))
-	static void FadeWidget(
+	static int32 FadeWidget(
 		UObject* WorldContextObject,
 		UWidget* Widget,
 		float TargetOpacity,
 		float Duration,
-		FLatentActionInfo LatentInfo);
+		FLatentActionInfo LatentInfo
+	);
 };

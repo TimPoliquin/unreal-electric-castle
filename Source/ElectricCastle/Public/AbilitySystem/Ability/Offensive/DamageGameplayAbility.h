@@ -19,6 +19,7 @@ class ELECTRICCASTLE_API UDamageGameplayAbility : public UElectricCastleGameplay
 	GENERATED_BODY()
 
 public:
+	UDamageGameplayAbility();
 	virtual void ActivateAbility(
 		const FGameplayAbilitySpecHandle Handle,
 		const FGameplayAbilityActorInfo* ActorInfo,

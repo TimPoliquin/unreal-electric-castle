@@ -240,6 +240,8 @@ private:
 		const FEffectProperties& Props,
 		const float& IncomingDamage
 	) const;
+	void SendParriedEvent(const FEffectProperties& Props);
+	void SendBlockedEvent(const FEffectProperties& Props);
 	void SendXPEvent(const FEffectProperties& Props) const;
 	void SendReplenishVitalsEvent(AActor* AvatarActor);
 };

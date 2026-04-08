@@ -66,25 +66,12 @@ void UOverlayWidgetController::BroadcastInitialValues()
 			)
 		);
 	}
-	if (GetAbilitySystemComponent()->HasFiredOnAbilitiesGivenDelegate())
-	{
-		BroadcastAbilityInfo();
-	}
-	else
-	{
-		GetAbilitySystemComponent()->OnAbilitiesGivenDelegate.AddUObject(
-			this,
-			&UOverlayWidgetController::BroadcastAbilityInfo
-		);
-	}
+	BroadcastAbilityInfo();
 }
 
 void UOverlayWidgetController::BindCallbacksToDependencies()
 {
 	Super::BindCallbacksToDependencies();
-	if constexpr (true)
-	{
-	}
 }
 
 bool UOverlayWidgetController::IsBroadcastPayload(const FIntAttributeChangedPayload& Payload)

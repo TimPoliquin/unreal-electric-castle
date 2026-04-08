@@ -7,6 +7,7 @@
 #include "AttackWindowManager.generated.h"
 
 
+class UAbilitySystemComponent;
 class UAttackWindowManager;
 class UAttackWindow;
 
@@ -32,19 +33,21 @@ class ELECTRICCASTLE_API UAttackWindowManager : public UActorComponent
 
 public:
 	UAttackWindowManager();
+	virtual void BeginPlay() override;
+	virtual void SetAbilitySystemComponent(UAbilitySystemComponent* InAbilitySystemComponent);
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	void StartAttackWindow(UAttackWindow* AttackWindow);
 	void EndAttackWindow(UAttackWindow* AttackWindow);
-
-	UPROPERTY(BlueprintAssignable)
-	FAttackWindowHitSignature OnAttackHit;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bDebug = false;
 
 private:
+	void HandleAttackWindowHit(const UAttackWindow* AttackWindow, const FHitResult& HitResult) const;
+	UPROPERTY()
+	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 	UPROPERTY()
 	TArray<UAttackWindow*> ActiveAttackWindows;
 };

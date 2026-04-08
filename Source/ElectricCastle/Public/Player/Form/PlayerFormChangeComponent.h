@@ -59,6 +59,8 @@ public:
 	void FormChange_PlayEffect(const FPlayerFormChangeEventPayload& Payload);
 	UFUNCTION(BlueprintCallable)
 	void FormChange_UpdateCharacterMesh(const FPlayerFormChangeEventPayload& Payload);
+	UFUNCTION(BlueprintCallable)
+	void FormChange_UpdateInputMappingContext(const FPlayerFormChangeEventPayload& Payload);
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 	void FormChange_UpdateAbilities(const FPlayerFormChangeEventPayload& Payload);
 	UFUNCTION(BlueprintCallable, Server, Reliable)

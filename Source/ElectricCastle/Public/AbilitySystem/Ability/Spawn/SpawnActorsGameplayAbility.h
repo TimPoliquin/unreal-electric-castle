@@ -15,7 +15,7 @@ class ELECTRICCASTLE_API USpawnActorsGameplayAbility : public UElectricCastleGam
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "AuraSummonAbility")
+	UFUNCTION(BlueprintCallable, Category = "SummonAbility")
 	TArray<FVector> GetSpawnLocations() const;
 	UFUNCTION(BlueprintCallable, Category = "Summoning")
 	TSubclassOf<APawn> GetRandomSpawnClass() const;

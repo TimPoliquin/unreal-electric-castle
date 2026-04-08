@@ -11,7 +11,6 @@
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Game/Save/SaveGameTypes.h"
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
-#include "Interaction/CombatInterface.h"
 #include "Interaction/PlayerInterface.h"
 #include "Tags/ElectricCastleGameplayTags.h"
 
@@ -231,10 +230,10 @@ bool UElectricCastleAbilitySystemComponent::GetDescriptionsByAbilityTag(
 	}
 	if (const FGameplayAbilitySpec* AbilitySpec = GetSpecFromAbilityTag(AbilityTag))
 	{
-		if (UElectricCastleGameplayAbility* AuraAbility = Cast<UElectricCastleGameplayAbility>(AbilitySpec->Ability))
+		if (const UElectricCastleGameplayAbility* Ability = Cast<UElectricCastleGameplayAbility>(AbilitySpec->Ability))
 		{
-			OutDescription.Description = AuraAbility->GetDescription(AbilitySpec->Level);
-			OutDescription.NextLevelDescription = AuraAbility->GetDescription(AbilitySpec->Level + 1);
+			OutDescription.Description = Ability->GetDescription(AbilitySpec->Level);
+			OutDescription.NextLevelDescription = Ability->GetDescription(AbilitySpec->Level + 1);
 			return true;
 		}
 		UE_LOG(
@@ -276,20 +275,6 @@ void UElectricCastleAbilitySystemComponent::BeginPlay()
 	);
 }
 
-void UElectricCastleAbilitySystemComponent::Client_NotifyAbilityRemoved_Implementation(
-	const FOnAbilityChangedPayload& Payload
-) const
-{
-	OnAbilityRemoved.Broadcast(Payload);
-}
-
-void UElectricCastleAbilitySystemComponent::Client_NotifyAbilityAdded_Implementation(
-	const FOnAbilityChangedPayload& Payload
-) const
-{
-	OnAbilityAdded.Broadcast(Payload);
-}
-
 bool UElectricCastleAbilitySystemComponent::IsSlotEmpty(const FGameplayTag& SlotTag)
 {
 	bool HasTagExact = false;
@@ -328,11 +313,6 @@ void UElectricCastleAbilitySystemComponent::AssignSlotTagToAbilitySpec(
 {
 	ClearAbilitySlot(AbilitySpec);
 	AbilitySpec.GetDynamicSpecSourceTags().AddTag(SlotTag);
-	if (SlotTag.MatchesTagExact(FElectricCastleGameplayTags::Get().InputTag_LeftMouseButton))
-	{
-		// This is a special tag that binds to Shift + Left Click.
-		AbilitySpec.GetDynamicSpecSourceTags().AddTag(FElectricCastleGameplayTags::Get().InputTag_AttackTarget);
-	}
 }
 
 TArray<uint8> UElectricCastleAbilitySystemComponent::SerializeActorComponent()
@@ -422,9 +402,6 @@ bool UElectricCastleAbilitySystemComponent::DeserializeActorComponent(const TArr
 			}
 			MarkAbilitySpecDirty(AbilitySpec);
 		}
-		bAbilitiesGiven = true;
-		OnAbilitiesGivenDelegate.Broadcast();
-
 		return true;
 	}
 	catch (...)
@@ -432,6 +409,39 @@ bool UElectricCastleAbilitySystemComponent::DeserializeActorComponent(const TArr
 		UE_LOG(LogTemp, Error, TEXT("[%s:%s] Failed to deserialize data"), *GetOwner()->GetName(), *GetName());
 		return false;
 	}
+}
+
+FGameplayAbilitySpecHandle UElectricCastleAbilitySystemComponent::GiveAbilityByAbilityInfo(const FElectricCastleAbilityInfo& AbilityInfo)
+{
+	FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityInfo.Ability, 1);
+	AbilitySpec.GetDynamicSpecSourceTags().AddTag(AbilityInfo.AbilityTag);
+	if (AbilityInfo.InputTag.IsValid())
+	{
+		AbilitySpec.GetDynamicSpecSourceTags().AddTag(AbilityInfo.InputTag);
+	}
+	if (AbilityInfo.AbilityType.IsValid())
+	{
+		AbilitySpec.GetDynamicSpecSourceTags().AddTag(AbilityInfo.AbilityType);
+	}
+	AbilitySpec.GetDynamicSpecSourceTags().AddTag(FElectricCastleGameplayTags::Get().Abilities_Status_Equipped);
+	FGameplayAbilitySpecHandle AbilitySpecHandle;
+	if (AbilityInfo.bAutoActivate)
+	{
+		AbilitySpecHandle = GiveAbilityAndActivateOnce(AbilitySpec);
+	}
+	else
+	{
+		AbilitySpecHandle = GiveAbility(AbilitySpec);
+	}
+	OnAbilityAdded.Broadcast(
+		FOnAbilityChangedPayload(
+			GetOwner(),
+			AbilityInfo.AbilityTag,
+			AbilityInfo.InputTag,
+			AbilityInfo
+		)
+	);
+	return AbilitySpecHandle;
 }
 
 FGameplayAbilitySpecHandle UElectricCastleAbilitySystemComponent::GiveActiveAbility(
@@ -489,25 +499,7 @@ void UElectricCastleAbilitySystemComponent::Client_EffectApplied_Implementation(
 	OnEffectAssetTagsDelegate.Broadcast(TagContainer);
 }
 
-void UElectricCastleAbilitySystemComponent::AddCharacterAbilities(
-	const TArray<TSubclassOf<UGameplayAbility>>& StartupAbilities,
-	const TArray<TSubclassOf<UGameplayAbility>>& StartupPassiveAbilities
-)
-{
-	for (TSubclassOf AbilityClass : StartupAbilities)
-	{
-		GiveActiveAbility(AbilityClass, 1);
-	}
-	for (const TSubclassOf PassiveAbilityClass : StartupPassiveAbilities)
-	{
-		GivePassiveAbility(PassiveAbilityClass);
-	}
-	// NOTE: This is client-side only! OnRep_ActivateAbilities handles server-side.
-	bAbilitiesGiven = true;
-	OnAbilitiesGivenDelegate.Broadcast();
-}
-
-void UElectricCastleAbilitySystemComponent::AbilityInputTagPressed(const FGameplayTag& InputTag)
+void UElectricCastleAbilitySystemComponent::AbilityInputTagPressed(FGameplayTag InputTag)
 {
 	if (!InputTag.IsValid())
 	{
@@ -534,7 +526,7 @@ void UElectricCastleAbilitySystemComponent::AbilityInputTagPressed(const FGamepl
 	ForEachAbility(Delegate);
 }
 
-void UElectricCastleAbilitySystemComponent::AbilityInputTagHeld(const FGameplayTag& InputTag)
+void UElectricCastleAbilitySystemComponent::AbilityInputTagHeld(FGameplayTag InputTag)
 {
 	if (!InputTag.IsValid())
 	{
@@ -557,7 +549,7 @@ void UElectricCastleAbilitySystemComponent::AbilityInputTagHeld(const FGameplayT
 	ForEachAbility(Delegate);
 }
 
-void UElectricCastleAbilitySystemComponent::AbilityInputTagReleased(const FGameplayTag& InputTag)
+void UElectricCastleAbilitySystemComponent::AbilityInputTagReleased(FGameplayTag InputTag)
 {
 	if (!InputTag.IsValid())
 	{
@@ -580,60 +572,6 @@ void UElectricCastleAbilitySystemComponent::AbilityInputTagReleased(const FGamep
 		}
 	);
 	ForEachAbility(Delegate);
-}
-
-void UElectricCastleAbilitySystemComponent::OnRep_ActivateAbilities()
-{
-	Super::OnRep_ActivateAbilities();
-	if (!bAbilitiesGiven)
-	{
-		bAbilitiesGiven = true;
-		OnAbilitiesGivenDelegate.Broadcast();
-	}
-}
-
-void UElectricCastleAbilitySystemComponent::OnGiveAbility(FGameplayAbilitySpec& AbilitySpec)
-{
-	Super::OnGiveAbility(AbilitySpec);
-	if (const UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(
-		GetOwnerActor()
-	))
-	{
-		const UAbilityInfo* AbilityInfos = GameDataSubsystem->GetAbilityInfo();
-		for (const FGameplayTag& AbilityTag : AbilitySpec.Ability->GetAssetTags())
-		{
-			if (const FElectricCastleAbilityInfo& AbilityInfo = AbilityInfos->FindAbilityInfoForTag(AbilityTag);
-				AbilityInfo.
-				IsValid())
-			{
-				Client_NotifyAbilityAdded(FOnAbilityChangedPayload(GetOwnerActor(), AbilityTag, AbilityInfo.InputTag));
-				break;
-			}
-		}
-	}
-}
-
-void UElectricCastleAbilitySystemComponent::OnRemoveAbility(FGameplayAbilitySpec& AbilitySpec)
-{
-	Super::OnRemoveAbility(AbilitySpec);
-	if (const UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(
-		GetOwnerActor()
-	))
-	{
-		const UAbilityInfo* AbilityInfos = GameDataSubsystem->GetAbilityInfo();
-		for (const FGameplayTag& AbilityTag : AbilitySpec.Ability->GetAssetTags())
-		{
-			if (const FElectricCastleAbilityInfo& AbilityInfo = AbilityInfos->FindAbilityInfoForTag(AbilityTag);
-				AbilityInfo.
-				IsValid())
-			{
-				Client_NotifyAbilityRemoved(
-					FOnAbilityChangedPayload(GetOwnerActor(), AbilityTag, AbilityInfo.InputTag)
-				);
-				break;
-			}
-		}
-	}
 }
 
 void UElectricCastleAbilitySystemComponent::GrantAbilitiesWithTag(const FGameplayTag& AbilityTag)
@@ -672,5 +610,59 @@ void UElectricCastleAbilitySystemComponent::RemoveAbilitiesWithTag(const FGamepl
 	for (const FGameplayAbilitySpecHandle& Handle : HandlesToRemove)
 	{
 		ClearAbility(Handle);
+	}
+}
+
+void UElectricCastleAbilitySystemComponent::GrantAbilities(const TArray<UAbilityInfo*>& AbilityInfos)
+{
+	for (const UAbilityInfo* AbilityInfo : AbilityInfos)
+	{
+		GrantAbilities(AbilityInfo);
+	}
+}
+
+void UElectricCastleAbilitySystemComponent::GrantAbilities(const UAbilityInfo* AbilityInfo)
+{
+	if (!IsValid(AbilityInfo))
+	{
+		UE_LOG(LogElectricCastle, Warning, TEXT("[%s:%s] Invalid AbilityInfo provided to GrantAbilities!"), *GetOwner()->GetName(), *GetName())
+		return;
+	}
+	for (const FElectricCastleAbilityInfo& Row : AbilityInfo->AbilityInformation)
+	{
+		GiveAbilityByAbilityInfo(Row);
+	}
+}
+
+void UElectricCastleAbilitySystemComponent::RemoveAbilities(const UAbilityInfo* AbilityInfo)
+{
+	if (!IsValid(AbilityInfo))
+	{
+		UE_LOG(LogElectricCastle, Warning, TEXT("[%s:%s] Invalid AbilityInfo provided to RemoveAbilities!"), *GetOwner()->GetName(), *GetName())
+		return;
+	}
+	const FElectricCastleGameplayTags GameplayTags = FElectricCastleGameplayTags::Get();
+	const FGameplayTagContainer InputTags = FElectricCastleGameplayTags::Get().Input.GetSingleTagContainer();
+	const FGameplayTagContainer& AbilityTagsToRemove = AbilityInfo->GetAbilityTags();
+	TArray<FRemoveAbilityTracker> HandlesToRemove;
+	FForEachAbility AbilityIterator;
+	AbilityIterator.BindLambda(
+		[&, this](const FGameplayAbilitySpec& Spec)
+		{
+			if (Spec.GetDynamicSpecSourceTags().HasAnyExact(AbilityTagsToRemove))
+			{
+				FRemoveAbilityTracker Tracker;
+				Tracker.AbilityTag = Spec.GetDynamicSpecSourceTags().FilterExact(AbilityTagsToRemove).First();
+				Tracker.InputTag = Spec.GetDynamicSpecSourceTags().Filter(InputTags).First();
+				Tracker.Handle = Spec.Handle;
+				HandlesToRemove.Add(Tracker);
+			}
+		}
+	);
+	ForEachAbility(AbilityIterator);
+	for (const FRemoveAbilityTracker& Tracker : HandlesToRemove)
+	{
+		ClearAbility(Tracker.Handle);
+		OnAbilityRemoved.Broadcast(FOnAbilityChangedPayload(GetOwner(), Tracker.AbilityTag, Tracker.InputTag));
 	}
 }

@@ -6,6 +6,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
+#include "Input/ElectricCastleInputComponent.h"
 #include "Player/Utils/PlayerFunctionLibrary.h"
 
 UEnhancedInputLocalPlayerSubsystem* UPlayerInputFunctionLibrary::GetEnhancedInputSubsystem(UObject* WorldContextObject)
@@ -45,4 +46,17 @@ void UPlayerInputFunctionLibrary::RemoveInputMappingContext(UObject* WorldContex
 	{
 		UE_LOG(LogElectricCastle, Warning, TEXT("[UPlayerInputFunctionLibrary::RemoveInputMappingContext] Unable to find input subsystem"));
 	}
+}
+
+UElectricCastleInputComponent* UPlayerInputFunctionLibrary::GetPlayerInputComponent(AActor* PlayerActor)
+{
+	if (!IsValid(PlayerActor))
+	{
+		return nullptr;
+	}
+	if (UElectricCastleInputComponent* InputComponent = Cast<UElectricCastleInputComponent>(PlayerActor->InputComponent))
+	{
+		return InputComponent;
+	}
+	return nullptr;
 }

@@ -25,12 +25,14 @@ struct FElectricCastleAbilityInfo
 	TObjectPtr<UTexture2D> Icon = nullptr;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UMaterialInterface> BackgroundMaterial = nullptr;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(Categories="InputTag"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(Categories="Input"))
 	FGameplayTag InputTag = FGameplayTag();
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 LevelRequirement = 1;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<UGameplayAbility> Ability;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	bool bAutoActivate = false;
 
 	bool IsValid() const
 	{
@@ -52,4 +54,5 @@ public:
 
 	FElectricCastleAbilityInfo FindAbilityInfoForTag(const FGameplayTag AbilityTag, bool bLogNotFound = false) const;
 	FElectricCastleAbilityInfo FindAbilityInfoByAbilityClass(TSubclassOf<UGameplayAbility> AbilityClass, bool bLogNotFound = false) const;
+	FGameplayTagContainer GetAbilityTags() const;
 };

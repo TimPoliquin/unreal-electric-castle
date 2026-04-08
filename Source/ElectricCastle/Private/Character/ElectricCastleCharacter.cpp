@@ -5,6 +5,7 @@
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
+#include "AbilitySystem/Data/AbilityInfo.h"
 #include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
 #include "AbilitySystem/Passive/PassiveNiagaraComponent.h"
 #include "Actor/Cinematic/CinematicHandlerComponent.h"
@@ -87,6 +88,11 @@ FGameplayTag AElectricCastleCharacter::GetHitReactAbilityTagByDamageType_Impleme
 	return FElectricCastleGameplayTags::Get().Effect_HitReact_Default;
 }
 
+bool AElectricCastleCharacter::IsStaggered_Implementation() const
+{
+	return StatusEffectTags.Contains(FElectricCastleGameplayTags::Get().Effect_Debuff_Type_Staggered);
+}
+
 UShapeComponent* AElectricCastleCharacter::GetPrimaryCollisionComponent() const
 {
 	return GetCapsuleComponent();
@@ -163,10 +169,7 @@ void AElectricCastleCharacter::AddCharacterAbilities()
 	{
 		return;
 	}
-	if (!AbilitySystemComponent->HasFiredOnAbilitiesGivenDelegate())
-	{
-		AbilitySystemComponent->AddCharacterAbilities(StartingAbilities, StartingPassiveAbilities);
-	}
+	AbilitySystemComponent->GrantAbilities(Abilities);
 	AbilitySystemComponent->RegisterGameplayTagEvent(
 		FElectricCastleGameplayTags::Get().Effect_HitReact_Default,
 		EGameplayTagEventType::NewOrRemoved
@@ -234,7 +237,7 @@ AActor* AElectricCastleCharacter::GetAvatar_Implementation()
 	return this;
 }
 
-UAnimMontage* AElectricCastleCharacter::GetHitReactMontage_Implementation(const FGameplayTag& HitReactTypeTag)
+UAnimMontage* AElectricCastleCharacter::GetHitReactMontage_Implementation(const FGameplayTag& HitReactTypeTag) const
 {
 	if (HitReactionMontageByMontageTag.Contains(HitReactTypeTag))
 	{
@@ -352,6 +355,16 @@ void AElectricCastleCharacter::OnEffectAdd_LightningDamage_Implementation()
 	// TODO
 }
 
+void AElectricCastleCharacter::OnStatusStaggeredAdded_Implementation()
+{
+	// TODO
+}
+
+void AElectricCastleCharacter::OnStatusStaggeredRemoved_Implementation()
+{
+	// TOD
+}
+
 void AElectricCastleCharacter::Dissolve(
 	UMeshComponent* InMesh,
 	UMaterialInstance* MaterialInstance,
@@ -398,8 +411,22 @@ void AElectricCastleCharacter::OnDebuffTypeShockChanged(FGameplayTag StunTag, in
 	}
 }
 
+void AElectricCastleCharacter::OnEffectChange_Staggered(FGameplayTag StaggeredTag, int Count)
+{
+	if (Count > 0)
+	{
+		StatusEffectTags.AddUnique(StaggeredTag);
+		OnStatusStaggeredAdded();
+	}
+	else
+	{
+		StatusEffectTags.Remove(StaggeredTag);
+		OnStatusStaggeredRemoved();
+	}
+}
 
-void AElectricCastleCharacter::RegisterStatusEffectTags(UAbilitySystemComponent* InAbilitySystemComponent)
+
+void AElectricCastleCharacter::RegisterStatusEffectTags(UElectricCastleAbilitySystemComponent* InAbilitySystemComponent)
 {
 	InAbilitySystemComponent->RegisterGameplayTagEvent(
 		FElectricCastleGameplayTags::Get().Effect_Debuff_Type_Shock,
@@ -418,6 +445,10 @@ void AElectricCastleCharacter::RegisterStatusEffectTags(UAbilitySystemComponent*
 			OnEffectChange_LightningDamage(Tag, Count);
 		}
 	);
+	InAbilitySystemComponent->RegisterGameplayTagEvent(
+		FElectricCastleGameplayTags::Get().Effect_Debuff_Type_Staggered,
+		EGameplayTagEventType::NewOrRemoved
+	).AddUObject(this, &AElectricCastleCharacter::OnEffectChange_Staggered);
 }
 
 void AElectricCastleCharacter::ApplyEffectToSelf(TSubclassOf<UGameplayEffect> Attributes, const float Level) const

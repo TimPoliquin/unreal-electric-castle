@@ -16,18 +16,18 @@ class ELECTRICCASTLE_API USaveGameBlueprintFunctionLibrary : public UBlueprintFu
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "AuraSaveGameBlueprintFunctionLibrary|WorldData")
+	UFUNCTION(BlueprintCallable, Category = "SaveGameBlueprintFunctionLibrary|WorldData")
 	static void AddActorData(const FActorSaveData& ActorData, FWorldSaveData& WorldSaveData);
 
-	UFUNCTION(BlueprintCallable, Category = "AuraSaveGameBlueprintFunctionLibrary|WorldData")
+	UFUNCTION(BlueprintCallable, Category = "SaveGameBlueprintFunctionLibrary|WorldData")
 	static bool RemoveActorData(const FString& ActorName, FWorldSaveData& WorldSaveData);
 
-	UFUNCTION(BlueprintCallable, Category = "AuraSaveGameBlueprintFunctionLibrary|WorldData")
+	UFUNCTION(BlueprintCallable, Category = "SaveGameBlueprintFunctionLibrary|WorldData")
 	static bool FindActorData(const FString& ActorName, const FWorldSaveData& WorldSaveData, FActorSaveData& ActorSaveData);
 
-	UFUNCTION(BlueprintCallable, Category = "AuraSaveGameBlueprintFunctionLibrary|WorldData")
+	UFUNCTION(BlueprintCallable, Category = "SaveGameBlueprintFunctionLibrary|WorldData")
 	static int32 GetActorCount(FWorldSaveData& WorldSaveData);
 
-	UFUNCTION(BlueprintCallable, Category = "AuraSaveGameBlueprintFunctionLibrary|SaveId")
+	UFUNCTION(BlueprintCallable, Category = "SaveGameBlueprintFunctionLibrary|SaveId")
 	static FString GenerateSaveID(const UObject* Object);
 };
