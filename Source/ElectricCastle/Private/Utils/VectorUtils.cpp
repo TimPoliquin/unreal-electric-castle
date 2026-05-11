@@ -55,3 +55,20 @@ FVector UVectorUtils::ComputeOrbitTarget(const FVector& StartingLocation, const 
 	// Final warp target
 	return StartingLocation + TangentDir * Distance;
 }
+
+FVector UVectorUtils::GetPointBetween(const FVector& A, const FVector& B, const float Distance, const bool bClampToBetween)
+{
+	const FVector AB = B - A;
+	const float Length = AB.Size();
+	if (Length <= KINDA_SMALL_NUMBER)
+	{
+		return A;
+	}
+	const FVector Direction = AB / Length;
+	if (bClampToBetween)
+	{
+		const float ClampedDistance = FMath::Min(Distance, Length);
+		return A + Direction * ClampedDistance;
+	}
+	return A + Direction * Distance;
+}

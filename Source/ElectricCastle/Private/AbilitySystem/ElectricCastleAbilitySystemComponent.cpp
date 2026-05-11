@@ -39,10 +39,9 @@ void UElectricCastleAbilitySystemComponent::ServerUpdateAbilityStatuses(const in
 		{
 			continue;
 		}
-		if (GetSpecFromAbilityTag(Info.AbilityTag) == nullptr)
+		if (!GetSpecFromAbilityTag(Info.AbilityTag))
 		{
-			// TODO - this level is wrong. 
-			FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(Info.Ability, 1);
+			FGameplayAbilitySpec AbilitySpec = UElectricCastleAbilitySystemLibrary::MakeAbilitySpecFromAbilityInfo(Info, Level);
 			AbilitySpec.GetDynamicSpecSourceTags().AddTag(EligibleStatusTag);
 			GiveAbility(AbilitySpec);
 			// Force replication immediately
@@ -208,12 +207,9 @@ FGameplayAbilitySpec* UElectricCastleAbilitySystemComponent::GetSpecFromAbilityT
 	FScopedAbilityListLock ActiveScopeLock(*this);
 	for (FGameplayAbilitySpec& AbilitySpec : GetActivatableAbilities())
 	{
-		for (const FGameplayTag& Tag : AbilitySpec.Ability.Get()->GetAssetTags())
+		if (UElectricCastleAbilitySystemLibrary::DoesGameplayAbilitySpecHaveTag(AbilitySpec, AbilityTag))
 		{
-			if (Tag.MatchesTagExact(AbilityTag))
-			{
-				return &AbilitySpec;
-			}
+			return &AbilitySpec;
 		}
 	}
 	return nullptr;
@@ -413,17 +409,10 @@ bool UElectricCastleAbilitySystemComponent::DeserializeActorComponent(const TArr
 
 FGameplayAbilitySpecHandle UElectricCastleAbilitySystemComponent::GiveAbilityByAbilityInfo(const FElectricCastleAbilityInfo& AbilityInfo)
 {
-	FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityInfo.Ability, 1);
-	AbilitySpec.GetDynamicSpecSourceTags().AddTag(AbilityInfo.AbilityTag);
-	if (AbilityInfo.InputTag.IsValid())
-	{
-		AbilitySpec.GetDynamicSpecSourceTags().AddTag(AbilityInfo.InputTag);
-	}
-	if (AbilityInfo.AbilityType.IsValid())
-	{
-		AbilitySpec.GetDynamicSpecSourceTags().AddTag(AbilityInfo.AbilityType);
-	}
+	// set properties on AbilitySpec
+	FGameplayAbilitySpec AbilitySpec = UElectricCastleAbilitySystemLibrary::MakeAbilitySpecFromAbilityInfo(AbilityInfo, 1);
 	AbilitySpec.GetDynamicSpecSourceTags().AddTag(FElectricCastleGameplayTags::Get().Abilities_Status_Equipped);
+	// Grant ability (and activate if auto-activate is configured)
 	FGameplayAbilitySpecHandle AbilitySpecHandle;
 	if (AbilityInfo.bAutoActivate)
 	{
@@ -445,6 +434,7 @@ FGameplayAbilitySpecHandle UElectricCastleAbilitySystemComponent::GiveAbilityByA
 }
 
 FGameplayAbilitySpecHandle UElectricCastleAbilitySystemComponent::GiveActiveAbility(
+	const FGameplayTag& AbilityTag,
 	const TSubclassOf<UGameplayAbility>& AbilityClass,
 	const int32 AbilityLevel
 )
@@ -469,15 +459,6 @@ FGameplayAbilitySpecHandle UElectricCastleAbilitySystemComponent::GiveActiveAbil
 	const FGameplayTag EquippedTag = FElectricCastleGameplayTags::Get().Abilities_Status_Equipped;
 	AbilitySpec.GetDynamicSpecSourceTags().AddTag(EquippedTag);
 	return GiveAbility(AbilitySpec);
-}
-
-FGameplayAbilitySpecHandle UElectricCastleAbilitySystemComponent::GivePassiveAbility(
-	const TSubclassOf<UGameplayAbility>& AbilityClass
-)
-{
-	FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass, 1);
-	AbilitySpec.GetDynamicSpecSourceTags().AddTag(FElectricCastleGameplayTags::Get().Abilities_Status_Equipped);
-	return GiveAbilityAndActivateOnce(AbilitySpec);
 }
 
 void UElectricCastleAbilitySystemComponent::ClientUpdateAbilityStatus_Implementation(
@@ -520,6 +501,10 @@ void UElectricCastleAbilitySystemComponent::AbilityInputTagPressed(FGameplayTag 
 						UElectricCastleAbilitySystemLibrary::GetPredictionKeyFromAbilitySpec(AbilitySpec)
 					);
 				}
+				else
+				{
+					TryActivateAbility(AbilitySpec.Handle);
+				}
 			}
 		}
 	);
@@ -538,8 +523,9 @@ void UElectricCastleAbilitySystemComponent::AbilityInputTagHeld(FGameplayTag Inp
 		{
 			if (AbilitySpec.GetDynamicSpecSourceTags().HasTagExact(InputTag))
 			{
+				const bool bWasInitiallyActive = AbilitySpec.IsActive();
 				AbilitySpecInputPressed(AbilitySpec);
-				if (!AbilitySpec.IsActive())
+				if (!bWasInitiallyActive)
 				{
 					TryActivateAbility(AbilitySpec.Handle);
 				}
@@ -584,7 +570,7 @@ void UElectricCastleAbilitySystemComponent::GrantAbilitiesWithTag(const FGamepla
 		const FElectricCastleAbilityInfo& AbilityInfo = AbilityInfos->FindAbilityInfoForTag(AbilityTag);
 		if (AbilityInfo.IsValid())
 		{
-			GiveActiveAbility(AbilityInfo.Ability, 1);
+			GiveAbilityByAbilityInfo(AbilityInfo);
 		}
 	}
 }

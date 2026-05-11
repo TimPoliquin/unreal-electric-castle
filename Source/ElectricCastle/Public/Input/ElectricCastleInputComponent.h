@@ -56,20 +56,20 @@ void UElectricCastleInputComponent::BindAbilityActions(
 		return;
 	}
 	UE_LOG(LogElectricCastle, Log, TEXT("[%s:%s] Applying input config %s to object: %s"), *GetOwner()->GetName(), *GetName(), *InputConfig->GetName(), *Object->GetName())
-	for (const auto& [InputAction, InputTag] : InputConfig->AbilityInputActions)
+	for (const auto& [InputAction, InputTag, TriggerEvents] : InputConfig->AbilityInputActions)
 	{
 		if (InputAction && InputTag.IsValid())
 		{
 			TArray<FInputBindingHandle> Handles;
-			if (PressedFunc)
+			if (PressedFunc && TriggerEvents.Contains(ETriggerEvent::Started))
 			{
 				Handles.Add(BindAction(InputAction, ETriggerEvent::Started, Object, PressedFunc, InputTag));
 			}
-			if (ReleasedFunc)
+			if (ReleasedFunc && TriggerEvents.Contains(ETriggerEvent::Completed))
 			{
 				Handles.Add(BindAction(InputAction, ETriggerEvent::Completed, Object, ReleasedFunc, InputTag));
 			}
-			if (HeldFunc)
+			if (HeldFunc && TriggerEvents.Contains(ETriggerEvent::Triggered))
 			{
 				Handles.Add(BindAction(InputAction, ETriggerEvent::Triggered, Object, HeldFunc, InputTag));
 			}

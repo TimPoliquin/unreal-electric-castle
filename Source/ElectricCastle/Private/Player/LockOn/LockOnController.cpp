@@ -7,6 +7,7 @@
 #include "EnhancedInputSubsystemInterface.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
+#include "AbilitySystem/ElectricCastleAttributeSet.h"
 #include "Actor/MotionWarping/MotionWarpingActor.h"
 #include "Character/ElectricCastleEnemyCharacter.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
@@ -331,11 +332,12 @@ void ULockOnController::UpdateWarpTarget() const
 	}
 	if (TargetActor.IsValid())
 	{
+		const float MaxLungeDistance = UElectricCastleAbilitySystemLibrary::GetLungeDistance(GetOwner());
 		FVector TargetLocation = TargetActor->GetActorLocation();
-		if (FVector::DistSquared(GetOwner()->GetActorLocation(), TargetLocation) > MaxWarpingDistance * MaxWarpingDistance)
+		if (FVector::DistSquared(GetOwner()->GetActorLocation(), TargetLocation) > (MaxLungeDistance * MaxLungeDistance))
 		{
 			const FVector Direction = (TargetLocation - GetOwner()->GetActorLocation()).GetSafeNormal();
-			TargetLocation = GetOwner()->GetActorLocation() + MaxWarpingDistance * Direction;
+			TargetLocation = GetOwner()->GetActorLocation() + MaxLungeDistance * Direction;
 		}
 		ICombatInterface::UpdateFacingTarget(GetOwner(), TargetLocation);
 	}

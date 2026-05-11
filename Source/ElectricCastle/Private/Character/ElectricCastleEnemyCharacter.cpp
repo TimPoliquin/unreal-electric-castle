@@ -9,8 +9,11 @@
 #include "AbilitySystem/ElectricCastleAttributeSet.h"
 #include "Actor/Effect/DissolveEffectComponent.h"
 #include "AI/ElectricCastleAIController.h"
+#include "AI/Alert/AIAlertComponent.h"
+#include "AI/Engagement/AIEngagementController.h"
 #include "Actor/Attack/Component/AttackWindowManager.h"
 #include "Actor/Highlight/HighlightComponent.h"
+#include "Actor/Patrol/PatrolComponent.h"
 #include "ElectricCastle/ElectricCastle.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -24,11 +27,13 @@
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "Item/Component/LootSpawnComponent.h"
 #include "Navigation/PathFollowingComponent.h"
+#include "Perception/AIPerceptionComponent.h"
 #include "Tags/ElectricCastleGameplayTags.h"
 
 AElectricCastleEnemyCharacter::AElectricCastleEnemyCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	TeamAffiliation = ETeamAffiliation::Enemy;
 	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 	GetMesh()->SetRenderCustomDepth(false);
 	GetCharacterMovement()->bUseControllerDesiredRotation = true;
@@ -41,6 +46,10 @@ AElectricCastleEnemyCharacter::AElectricCastleEnemyCharacter()
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
 	AbilitySystemComponent->bShouldSave = false;
+	PerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>("AI Perception Component");
+	AIAlertComponent = CreateDefaultSubobject<UAIAlertComponent>("AI Alert Component");
+	AIEngagementController = CreateDefaultSubobject<UAIEngagementController>("AI Engagement Controller");
+	PatrolComponent = CreateDefaultSubobject<UPatrolComponent>("Patrol Component");
 	MotionWarpingComponent = CreateDefaultSubobject<UMotionWarpingComponent>(TEXT("Motion Warping Component"));
 	AttributeSet = CreateDefaultSubobject<UElectricCastleAttributeSet>(TEXT("Enemy Attributes"));
 	HealthWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthBar"));
@@ -145,28 +154,28 @@ void AElectricCastleEnemyCharacter::InitializeDefaultAttributes()
 void AElectricCastleEnemyCharacter::OnStatusShockAdded()
 {
 	Super::OnStatusShockAdded();
-	if (AuraAIController && AuraAIController->GetBlackboardComponent())
+	if (AIController && AIController->GetBlackboardComponent())
 	{
-		AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("IsStunned"), true);
+		AIController->GetBlackboardComponent()->SetValueAsBool(FName("IsStunned"), true);
 	}
 }
 
 void AElectricCastleEnemyCharacter::OnStatusShockRemoved()
 {
 	Super::OnStatusShockRemoved();
-	if (AuraAIController && AuraAIController->GetBlackboardComponent())
+	if (AIController && AIController->GetBlackboardComponent())
 	{
-		AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("IsStunned"), false);
+		AIController->GetBlackboardComponent()->SetValueAsBool(FName("IsStunned"), false);
 	}
 }
 
 void AElectricCastleEnemyCharacter::OnStatusStaggeredAdded_Implementation()
 {
 	Super::OnStatusStaggeredAdded_Implementation();
-	if (AuraAIController && AuraAIController->GetBlackboardComponent())
+	if (AIController && AIController->GetBlackboardComponent())
 	{
-		AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("IsStaggered"), true);
-		AuraAIController->StopMovement();
+		AIController->GetBlackboardComponent()->SetValueAsBool(FName("IsStaggered"), true);
+		AIController->StopMovement();
 	}
 	GetMovementComponent()->StopMovementImmediately();
 	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
@@ -179,9 +188,9 @@ void AElectricCastleEnemyCharacter::OnStatusStaggeredAdded_Implementation()
 void AElectricCastleEnemyCharacter::OnStatusStaggeredRemoved_Implementation()
 {
 	Super::OnStatusStaggeredRemoved_Implementation();
-	if (AuraAIController && AuraAIController->GetBlackboardComponent())
+	if (AIController && AIController->GetBlackboardComponent())
 	{
-		AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("IsStaggered"), false);
+		AIController->GetBlackboardComponent()->SetValueAsBool(FName("IsStaggered"), false);
 	}
 }
 
@@ -269,42 +278,37 @@ void AElectricCastleEnemyCharacter::InitializeStartupAbilities()
 {
 	if (HasAuthority())
 	{
-		UElectricCastleAbilitySystemLibrary::GrantStartupAbilities(
-			this,
-			AbilitySystemComponent,
-			CharacterClass,
-			GetCharacterLevel(this)
-		);
 		AddCharacterAbilities();
 	}
 }
 
 void AElectricCastleEnemyCharacter::InitializeAIController()
 {
-	if (AuraAIController->GetBlackboardComponent() && BehaviorTree)
+	if (AIController->GetBlackboardComponent() && BehaviorTree)
 	{
-		AuraAIController->GetBlackboardComponent()->InitializeBlackboard(*BehaviorTree->BlackboardAsset);
+		AIController->GetBlackboardComponent()->InitializeBlackboard(*BehaviorTree->BlackboardAsset);
 	}
-	AuraAIController->RunBehaviorTree(BehaviorTree);
-	AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("HitReacting"), false);
-	AuraAIController->GetBlackboardComponent()->SetValueAsBool(
+	AIController->RunBehaviorTree(BehaviorTree);
+	AIController->InitializeDependencies();
+	AIController->GetBlackboardComponent()->SetValueAsBool(FName("HitReacting"), false);
+	AIController->GetBlackboardComponent()->SetValueAsBool(
 		FName("IsRanged"),
 		CharacterClassUtils::IsRangedAttacker(CharacterClass)
 	);
-	AuraAIController->GetBlackboardComponent()->SetValueAsFloat(FName("TargetingRange"), TargetingRange);
-	AuraAIController->GetBlackboardComponent()->SetValueAsFloat(
+	AIController->GetBlackboardComponent()->SetValueAsFloat(FName("TargetingRange"), TargetingRange);
+	AIController->GetBlackboardComponent()->SetValueAsFloat(
 		FName("AttackRange_Min"),
 		AttackRange - AttackRangeTolerance
 	);
-	AuraAIController->GetBlackboardComponent()->SetValueAsFloat(
+	AIController->GetBlackboardComponent()->SetValueAsFloat(
 		FName("AttackRange_Max"),
 		AttackRange + AttackRangeTolerance
 	);
-	AuraAIController->GetBlackboardComponent()->SetValueAsFloat(
+	AIController->GetBlackboardComponent()->SetValueAsFloat(
 		FName("AttackWaitTime"),
 		AttackWaitTime
 	);
-	AuraAIController->GetBlackboardComponent()->SetValueAsFloat(
+	AIController->GetBlackboardComponent()->SetValueAsFloat(
 		FName("AttackWaitDeviation"),
 		AttackWaitDeviation
 	);
@@ -322,7 +326,7 @@ void AElectricCastleEnemyCharacter::PossessedBy(AController* NewController)
 	{
 		return;
 	}
-	AuraAIController = CastChecked<AElectricCastleAIController>(NewController);
+	AIController = CastChecked<AElectricCastleAIController>(NewController);
 	if (UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(this))
 	{
 		if (GameDataSubsystem->IsGameDataLoaded())
@@ -379,10 +383,6 @@ void AElectricCastleEnemyCharacter::UpdateFacingTarget_Implementation(const FVec
 void AElectricCastleEnemyCharacter::Die()
 {
 	Super::Die();
-	if (AuraAIController && AuraAIController->GetBlackboardComponent())
-	{
-		AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("IsDead"), true);
-	}
 	if (HealthWidget)
 	{
 		HealthWidget->SetVisibility(false);
@@ -411,8 +411,8 @@ void AElectricCastleEnemyCharacter::PostInitializeComponents()
 void AElectricCastleEnemyCharacter::OnHitReactTagChanged(const FGameplayTag CallbackTag, int32 NewCount)
 {
 	Super::OnHitReactTagChanged(CallbackTag, NewCount);
-	if (AuraAIController && AuraAIController->GetBlackboardComponent())
+	if (AIController && AIController->GetBlackboardComponent())
 	{
-		AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("HitReacting"), bHitReacting);
+		AIController->GetBlackboardComponent()->SetValueAsBool(FName("HitReacting"), bHitReacting);
 	}
 }

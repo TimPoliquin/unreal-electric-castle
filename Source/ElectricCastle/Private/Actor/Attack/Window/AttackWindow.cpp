@@ -46,6 +46,7 @@ bool UAttackWindow::SweepForHits(const float DeltaTime, TArray<FHitResult>& OutH
 			if (!HitActors.ContainsByPredicate([Hit](const TWeakObjectPtr<AActor> Actor) { return Actor.Get() == Hit.GetActor(); }))
 			{
 				OutHits.Add(Hit);
+				HitActors.Add(Hit.GetActor());
 				bNewHits = true;
 			}
 		}
@@ -62,6 +63,13 @@ bool UAttackWindow::SweepForHits(const float DeltaTime, TArray<FHitResult>& OutH
 FGameplayTag UAttackWindow::GetEventTag() const
 {
 	return EventTag;
+}
+
+void UAttackWindow::Reset()
+{
+	EventTag = FGameplayTag::EmptyTag;
+	Owner.Reset();
+	HitActors.Empty();
 }
 
 FVector UAttackWindow::GetOffsetLocation(const FVector& InLocation) const

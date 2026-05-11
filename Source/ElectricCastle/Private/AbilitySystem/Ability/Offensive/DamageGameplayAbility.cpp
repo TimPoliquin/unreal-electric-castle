@@ -59,7 +59,7 @@ void UDamageGameplayAbility::DamageTargets_Implementation(
 	}
 }
 
-void UDamageGameplayAbility::DamageTarget_Implementation(AActor* Target, const FVector& ImpactLocation, const FGameplayTag& MontageTag)
+void UDamageGameplayAbility::DamageTarget_Implementation(AActor* Target, const FVector& ImpactLocation, const FGameplayTag& MontageTag, const float DamageMagnitudeMultiplier)
 {
 	if (!IsValid(Target) || !ICombatInterface::IsAlive(Target))
 	{
@@ -71,7 +71,8 @@ void UDamageGameplayAbility::DamageTarget_Implementation(AActor* Target, const F
 		UE_LOG(LogElectricCastle, Error, TEXT("[%s] DamageEffectClass not set!"), *GetName())
 		return;
 	}
-	const FDamageEffectParams DamageEffectParams = MakeDamageEffectParamsFromClassDefaults(Target, ImpactLocation);
+	FDamageEffectParams DamageEffectParams = MakeDamageEffectParamsFromClassDefaults(Target, ImpactLocation);
+	DamageEffectParams.DamageMagnitude *= DamageMagnitudeMultiplier;
 	UElectricCastleAbilitySystemLibrary::ApplyDamageEffect(DamageEffectParams);
 	if (ImpactCueTag.IsValid())
 	{

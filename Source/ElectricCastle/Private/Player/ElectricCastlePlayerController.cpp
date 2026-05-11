@@ -550,6 +550,21 @@ ULockOnController* AElectricCastlePlayerController::GetLockOnController_Implemen
 	return GetLockOnController(GetPawn());
 }
 
+void AElectricCastlePlayerController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+	if (IsValid(InPawn) && InPawn->Implements<UGenericTeamAgentInterface>())
+	{
+		SetGenericTeamId(Cast<IGenericTeamAgentInterface>(InPawn)->GetGenericTeamId());
+	}
+}
+
+void AElectricCastlePlayerController::OnUnPossess()
+{
+	Super::OnUnPossess();
+	SetGenericTeamId(FGenericTeamId::NoTeam);
+}
+
 void AElectricCastlePlayerController::OnInputTypeChange(const ECommonInputType NewInputType)
 {
 	if (bDebug)

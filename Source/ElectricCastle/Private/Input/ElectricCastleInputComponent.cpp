@@ -11,7 +11,7 @@ UElectricCastleInputComponent::UElectricCastleInputComponent()
 
 void UElectricCastleInputComponent::UnbindAbilityActions(UInputConfiguration* InputConfiguration)
 {
-	for (const auto& [InputAction, InputTag] : InputConfiguration->AbilityInputActions)
+	for (const auto& [InputAction, InputTag, TriggerEvent] : InputConfiguration->AbilityInputActions)
 	{
 		if (InputBindings.Contains(InputTag))
 		{

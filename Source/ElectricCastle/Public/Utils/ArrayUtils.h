@@ -32,6 +32,8 @@ public:
 		UPARAM(ref)
 		TArray<T>& Array
 	);
+	template <typename T>
+	static bool ContainsAny(const TArray<T>& Source, const TArray<T>& Elements);
 };
 
 template <typename T>
@@ -87,4 +89,17 @@ template <typename T>
 T UArrayUtils::Pop(TArray<T>& Array)
 {
 	return Array.Pop();
+}
+
+template <typename T>
+bool UArrayUtils::ContainsAny(const TArray<T>& Source, const TArray<T>& Elements)
+{
+	for (const T& Element : Elements)
+	{
+		if (Source.Contains(Element))
+		{
+			return true;
+		}
+	}
+	return false;
 }

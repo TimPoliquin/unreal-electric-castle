@@ -8,6 +8,8 @@
 #include "Engine/DataAsset.h"
 #include "AbilityInfo.generated.h"
 
+class UAbilityEngagementConfig;
+
 USTRUCT(BlueprintType)
 struct FElectricCastleAbilityInfo
 {

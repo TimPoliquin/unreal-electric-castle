@@ -375,7 +375,7 @@ struct FElectricCastleDamageConfig
 	float DeathImpulseMagnitude = 6000.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float KnockbackForceMagnitude = 500.f;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(ClampMin=0, ClampMax=100, UIMin=0, UIMax=100))
 	float KnockbackChance = 0.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bIsRadialDamage = false;
@@ -436,7 +436,7 @@ struct FDamageEffectParams
 	float DeathImpulseMagnitude = 0.f;
 	UPROPERTY(BlueprintReadWrite)
 	FVector DeathImpulse = FVector::ZeroVector;
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite, meta=(ClampMin=0, ClampMax=100, UIMin=0, UIMax=100))
 	float KnockbackChance = 0.f;
 	UPROPERTY(BlueprintReadWrite)
 	float KnockbackForceMagnitude = 0.f;

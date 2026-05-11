@@ -30,4 +30,6 @@ public:
 	static EVectorDirection GetInputVectorDirection(AActor* Actor, const FVector& InputDirection);
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static FVector ComputeOrbitTarget(const FVector& StartingLocation, const FVector& Center, const FVector& DodgeDirection, float Distance);
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static FVector GetPointBetween(const FVector& A, const FVector& B, const float Distance, const bool bClampToBetween = true);
 };

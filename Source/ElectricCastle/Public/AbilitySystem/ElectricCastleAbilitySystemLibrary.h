@@ -3,7 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ElectricCastleAbilitySystemComponent.h"
 #include "ElectricCastleAbilitySystemTypes.h"
+#include "ElectricCastleAttributeSet.h"
 #include "GameplayAbilitySpec.h"
 #include "GameplayTagContainer.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
@@ -12,6 +14,9 @@
 #include "Utils/TraceParams.h"
 #include "ElectricCastleAbilitySystemLibrary.generated.h"
 
+enum class EEngagementAbilityMode : uint8;
+enum class EEngagementRange : uint8;
+class UElectricCastleAttributeSet;
 class ULootTiers;
 DECLARE_DELEGATE_OneParam(FMakeEffectSpecSignature, FGameplayEffectSpecHandle&);
 
@@ -60,21 +65,17 @@ public:
 	static UElectricCastleAbilitySystemComponent* GetAbilitySystemComponent(AActor* Actor);
 
 	UFUNCTION(BlueprintCallable, Category = "ElectricCastleAbilitySystemLibrary|CharacterClassDefaults")
-	static void GrantStartupAbilities(
-		const UObject* WorldContextObject,
-		UAbilitySystemComponent* AbilitySystemComponent,
-		ECharacterClass CharacterClass,
-		int Level
-	);
-	UFUNCTION(BlueprintCallable, Category = "ElectricCastleAbilitySystemLibrary|CharacterClassDefaults")
 	static UCharacterClassInfo* GetCharacterClassInfo(const UObject* WorldContextObject);
 	UFUNCTION(BlueprintCallable, Category = "ElectricCastleAbilitySystemLibrary|AbilityInfo")
 	static UAbilityInfo* GetAbilityInfo(const UObject* WorldContextObject);
-
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="ElectricCastleAbiltiySystemLibrary|Attributes")
+	static UElectricCastleAttributeSet* GetAttributeSet(const UObject* Actor);
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ElectricCastleAbilitySystemLibrary|Attributes")
 	static bool IsFullHealth(AActor* Actor);
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ElectricCastleAbilitySystemLibrary|Attributes")
 	static bool IsFullMana(AActor* Actor);
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="ElectricCastleAbilitySystemLibrary|Attributes")
+	static float GetLungeDistance(const AActor* Owner);
 
 	UFUNCTION(BlueprintPure, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")
 	static bool IsInfiniteEffect(const FGameplayEffectSpecHandle& SpecHandle);
@@ -247,8 +248,18 @@ public:
 		UElectricCastleAbilitySystemComponent* AbilitySystemComponent,
 		const FGameplayTag& AbilityTag
 	);
+	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystem|GameplayAbility")
+	static float GetAbilityPreferredDistanceByAbilityTag(AActor* Actor, const FGameplayTag& AbilityTag);
+	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystem|GameplayAbility")
+	static FFloatRange GetAbilityPreferredDistanceRangeByAbilityTag(AActor* Actor, const FGameplayTag& AbilityTag);
+	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystem|GameplayAbility")
+	static bool IsAbilitySupportedInEngagementRange(const FGameplayAbilitySpec& AbilitySpec, const EEngagementRange Range);
+	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystem|GameplayAbility")
+	static bool IsAbilitySupportedInEngagementModes(const FGameplayAbilitySpec& AbilitySpec, const TArray<EEngagementAbilityMode> AbilityModes);
 	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystem|GameplayEffect")
 	static bool DoesActorHaveGameplayTag(AActor* Actor, const FGameplayTag& Tag);
+	static FGameplayAbilitySpec MakeAbilitySpecFromAbilityInfo(const FElectricCastleAbilityInfo& AbilityInfo, const int32 Level = 1);
+	static bool DoesGameplayAbilitySpecHaveTag(const FGameplayAbilitySpec& Spec, const FGameplayTag& Tag);
 
 	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")
 	static int32 GetXPReward(const UObject* WorldContextObject, const ECharacterClass& CharacterClass, int32 Level);
@@ -410,12 +421,6 @@ public:
 
 private:
 	static AElectricCastleHUD* GetElectricCastleHUD(const UObject* WorldContextObject);
-
-	static void GrantAbilities(
-		UAbilitySystemComponent* AbilitySystemComponent,
-		const TArray<TSubclassOf<UGameplayAbility>>& Abilities,
-		int Level
-	);
 };
 
 template <typename HitResult>

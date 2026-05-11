@@ -24,6 +24,7 @@ public:
 	void SetDuration(const float InDuration);
 	bool SweepForHits(const float DeltaTime, TArray<FHitResult>& OutHits);
 	FGameplayTag GetEventTag() const;
+	void Reset();
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Attack Window", meta=(Categories="Combat.Socket"))

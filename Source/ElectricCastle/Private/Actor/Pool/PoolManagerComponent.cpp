@@ -30,6 +30,23 @@ void UPoolManagerComponent::SetSpawnPool(UObject* InSpawnPoolComponent)
 	}
 }
 
+void UPoolManagerComponent::StartManualAutoReturn()
+{
+	if (AutoReturn == EPoolAutoReturnMode::Manual && AutoReturnTime > 0.f)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(ReturnTimer);
+		GetWorld()->GetTimerManager().SetTimer(
+			ReturnTimer,
+			[this]()
+			{
+				ReturnToPool();
+			},
+			AutoReturnTime,
+			false
+		);
+	}
+}
+
 void UPoolManagerComponent::HandleBeginRetrieveFromPool()
 {
 	OnBeginRetrieve.Broadcast(FSpawnPoolEventPayload(GetOwner(), this));
@@ -49,7 +66,7 @@ void UPoolManagerComponent::HandleFinishRetrieveFromPool()
 	{
 		GetOwner()->SetActorTickEnabled(true);
 	}
-	if (bAutoReturn && AutoReturnTime > 0.f)
+	if (AutoReturn == EPoolAutoReturnMode::Automatic && AutoReturnTime > 0.f)
 	{
 		GetWorld()->GetTimerManager().SetTimer(
 			ReturnTimer,

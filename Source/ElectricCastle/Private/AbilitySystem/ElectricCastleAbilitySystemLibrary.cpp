@@ -6,10 +6,10 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "KismetTraceUtils.h"
-#include "NiagaraTypes.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemTypes.h"
 #include "AbilitySystem/ElectricCastleAttributeSet.h"
+#include "AbilitySystem/Ability/ElectricCastleGameplayAbility.h"
 #include "AbilitySystem/Data/AbilityInfo.h"
 #include "AbilitySystem/Data/CharacterClassInfo.h"
 #include "AbilitySystem/Effect/DurationGameplayEffect.h"
@@ -56,41 +56,6 @@ UElectricCastleAbilitySystemComponent* UElectricCastleAbilitySystemLibrary::GetA
 	return nullptr;
 }
 
-void UElectricCastleAbilitySystemLibrary::GrantStartupAbilities(
-	const UObject* WorldContextObject,
-	UAbilitySystemComponent* AbilitySystemComponent,
-	const ECharacterClass CharacterClass,
-	const int Level
-)
-{
-	if (const UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(
-		WorldContextObject
-	))
-	{
-		UCharacterClassInfo* CharacterClassInfo = GameDataSubsystem->GetCharacterClassInfo();
-		GrantAbilities(AbilitySystemComponent, CharacterClassInfo->CommonAbilities, 1);
-		GrantAbilities(
-			AbilitySystemComponent,
-			CharacterClassInfo->CharacterClassInformation[CharacterClass].
-			ClassAbilities,
-			Level
-		);
-	}
-}
-
-void UElectricCastleAbilitySystemLibrary::GrantAbilities(
-	UAbilitySystemComponent* AbilitySystemComponent,
-	const TArray<TSubclassOf<UGameplayAbility>>& Abilities,
-	const int Level
-)
-{
-	for (const TSubclassOf AbilityClass : Abilities)
-	{
-		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass, Level);
-		AbilitySystemComponent->GiveAbility(AbilitySpec);
-	}
-}
-
 UCharacterClassInfo* UElectricCastleAbilitySystemLibrary::GetCharacterClassInfo(const UObject* WorldContextObject)
 {
 	if (const UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(
@@ -109,6 +74,15 @@ UAbilityInfo* UElectricCastleAbilitySystemLibrary::GetAbilityInfo(const UObject*
 	))
 	{
 		return GameDataSubsystem->GetAbilityInfo();
+	}
+	return nullptr;
+}
+
+UElectricCastleAttributeSet* UElectricCastleAbilitySystemLibrary::GetAttributeSet(const UObject* Actor)
+{
+	if (const AElectricCastleCharacter* Character = Cast<AElectricCastleCharacter>(Actor))
+	{
+		return Character->GetAttributeSet();
 	}
 	return nullptr;
 }
@@ -135,6 +109,15 @@ bool UElectricCastleAbilitySystemLibrary::IsFullMana(AActor* Actor)
 		}
 	}
 	return false;
+}
+
+float UElectricCastleAbilitySystemLibrary::GetLungeDistance(const AActor* Owner)
+{
+	if (const UElectricCastleAttributeSet* AttributeSet = GetAttributeSet(Owner))
+	{
+		return AttributeSet->GetLungeDistance();
+	}
+	return 0.f;
 }
 
 bool UElectricCastleAbilitySystemLibrary::IsInfiniteEffect(const FGameplayEffectSpecHandle& SpecHandle)
@@ -468,7 +451,11 @@ FActiveGameplayEffectHandle UElectricCastleAbilitySystemLibrary::ApplyDamageEffe
 		UE_LOG(LogElectricCastle, Error, TEXT("[UElectricCastleAbilitySystemLibrary::ApplyDamageEffect] No target ability system set on damage effect params!"))
 		return FActiveGameplayEffectHandle();
 	}
-
+	if (!DamageEffectParams.DamageGameplayEffectClass)
+	{
+		UE_LOG(LogElectricCastle, Error, TEXT("[UElectricCastleAbilitySystemLibrary::ApplyDamageEffect] No damage effect class system set on damage effect params!"))
+		return FActiveGameplayEffectHandle();
+	}
 	const FElectricCastleGameplayTags& GameplayTags = FElectricCastleGameplayTags::Get();
 	const AActor* SourceAvatarActor = DamageEffectParams.SourceAbilitySystemComponent ? DamageEffectParams.SourceAbilitySystemComponent->GetAvatarActor() : nullptr;
 	FGameplayEffectContextHandle EffectContextHandle = DamageEffectParams.SourceAbilitySystemComponent->MakeEffectContext();
@@ -629,6 +616,42 @@ bool UElectricCastleAbilitySystemLibrary::IsAbilityEquipped(
 	);
 }
 
+float UElectricCastleAbilitySystemLibrary::GetAbilityPreferredDistanceByAbilityTag(AActor* Actor, const FGameplayTag& AbilityTag)
+{
+	return URandRangeBlueprintLibrary::GetRandomFloatInRange(GetAbilityPreferredDistanceRangeByAbilityTag(Actor, AbilityTag));
+}
+
+FFloatRange UElectricCastleAbilitySystemLibrary::GetAbilityPreferredDistanceRangeByAbilityTag(AActor* Actor, const FGameplayTag& AbilityTag)
+{
+	if (UElectricCastleAbilitySystemComponent* AbilitySystemComponent = GetAbilitySystemComponent(Actor))
+	{
+		const FGameplayAbilitySpec* Spec = AbilitySystemComponent->GetSpecFromAbilityTag(AbilityTag);
+		if (const UElectricCastleGameplayAbility* Ability = Spec ? Cast<UElectricCastleGameplayAbility>(Spec->Ability) : nullptr)
+		{
+			return Ability->GetPreferredDistanceRange();
+		}
+	}
+	return FFloatRange();
+}
+
+bool UElectricCastleAbilitySystemLibrary::IsAbilitySupportedInEngagementRange(const FGameplayAbilitySpec& AbilitySpec, const EEngagementRange Range)
+{
+	if (const UElectricCastleGameplayAbility* Ability = Cast<UElectricCastleGameplayAbility>(AbilitySpec.Ability))
+	{
+		return Ability->IsSupportedEngagementRange(Range);
+	}
+	return true;
+}
+
+bool UElectricCastleAbilitySystemLibrary::IsAbilitySupportedInEngagementModes(const FGameplayAbilitySpec& AbilitySpec, const TArray<EEngagementAbilityMode> AbilityModes)
+{
+	if (const UElectricCastleGameplayAbility* Ability = Cast<UElectricCastleGameplayAbility>(AbilitySpec.Ability))
+	{
+		return Ability->IsSupportedEngagementMode(AbilityModes);
+	}
+	return true;
+}
+
 bool UElectricCastleAbilitySystemLibrary::DoesActorHaveGameplayTag(AActor* Actor, const FGameplayTag& Tag)
 {
 	if (const UAbilitySystemComponent* AbilitySystemComponent = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Actor))
@@ -636,6 +659,25 @@ bool UElectricCastleAbilitySystemLibrary::DoesActorHaveGameplayTag(AActor* Actor
 		return AbilitySystemComponent->HasMatchingGameplayTag(Tag);
 	}
 	return false;
+}
+
+FGameplayAbilitySpec UElectricCastleAbilitySystemLibrary::MakeAbilitySpecFromAbilityInfo(const FElectricCastleAbilityInfo& AbilityInfo, const int32 Level)
+{
+	FGameplayAbilitySpec Spec = FGameplayAbilitySpec(AbilityInfo.Ability, Level);
+	const TArray TagsToAdd = {AbilityInfo.AbilityTag, AbilityInfo.AbilityType, AbilityInfo.InputTag, AbilityInfo.StatusTag, AbilityInfo.CooldownTag};
+	for (const FGameplayTag& Tag : TagsToAdd)
+	{
+		if (Tag.IsValid())
+		{
+			Spec.GetDynamicSpecSourceTags().AddTag(Tag);
+		}
+	}
+	return Spec;
+}
+
+bool UElectricCastleAbilitySystemLibrary::DoesGameplayAbilitySpecHaveTag(const FGameplayAbilitySpec& Spec, const FGameplayTag& Tag)
+{
+	return Spec.GetDynamicSpecSourceTags().HasTagExact(Tag);
 }
 
 bool UElectricCastleAbilitySystemLibrary::CanActorBlockByAngle(
@@ -972,7 +1014,10 @@ int32 UElectricCastleAbilitySystemLibrary::GetAbilityLevelByAbilityTag(
 		UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Actor)
 	))
 	{
-		return AbilitySystemComponent->GetSpecFromAbilityTag(AbilityTag)->Level;
+		if (const FGameplayAbilitySpec* AbilitySpec = AbilitySystemComponent->GetSpecFromAbilityTag(AbilityTag))
+		{
+			return AbilitySpec->Level;
+		}
 	}
 	return 0;
 }

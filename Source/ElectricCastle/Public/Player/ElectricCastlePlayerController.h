@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "ActiveGameplayEffectHandle.h"
+#include "GenericTeamAgentInterface.h"
 #include "InputActionValue.h"
 #include "InputEvents.h"
 #include "InputMappingContext.h"
@@ -61,6 +62,7 @@ enum class EAttackMessageType : uint8
  */
 UCLASS()
 class ELECTRICCASTLE_API AElectricCastlePlayerController : public APlayerController,
+                                                           public IGenericTeamAgentInterface,
                                                            public ISelectionWheelManagerActorInterface,
                                                            public IAimActorInterface,
                                                            public ILockOnActor
@@ -102,6 +104,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static void GetMovementVectors(const AController* Controller, FVector& OutForward, FVector& OutRight);
+	/** Start IGenericTeamAgentInterface **/
+	virtual FGenericTeamId GetGenericTeamId() const override { return TeamId; }
+	virtual void SetGenericTeamId(const FGenericTeamId& InTeamID) override { TeamId = InTeamID; }
+	/** End IGenericTeamAgentInterface **/
 
 	/** Start SelectionWheelManagerActor Interface **/
 	virtual USelectionWheelManagerComponent* GetSelectionWheelManagerComponent_Implementation() const override;
@@ -115,6 +121,9 @@ public:
 	virtual ULockOnController* GetLockOnController_Implementation() const override;
 	/** End ILockOnActor **/
 protected:
+	virtual void OnPossess(APawn* InPawn) override;
+	virtual void OnUnPossess() override;
+
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputMappingContext> AuraContext;
 	UPROPERTY(EditAnywhere, Category = "Input")
@@ -164,6 +173,7 @@ protected:
 private:
 	FHighlightContext HighlightContext;
 	FActiveGameplayEffectHandle MovementEffectHandle;
+	FGenericTeamId TeamId = FGenericTeamId::NoTeam;
 
 	void Move(const FInputActionValue& Value);
 	void MoveEnd(const FInputActionValue& Value);

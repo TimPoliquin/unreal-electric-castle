@@ -62,6 +62,8 @@ void UElectricCastleAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimePro
 	// vital attributes
 	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, Health, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, Mana, COND_None, REPNOTIFY_Always);
+	// functional attributes
+	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, LungeDistance, COND_None, REPNOTIFY_Always);
 }
 
 void UElectricCastleAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)

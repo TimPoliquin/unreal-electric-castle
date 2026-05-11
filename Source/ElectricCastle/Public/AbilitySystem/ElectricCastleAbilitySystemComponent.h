@@ -8,7 +8,6 @@
 #include "AttributeChangeDelegates.h"
 #include "ElectricCastleAbilitySystemTypes.h"
 #include "Game/Save/SaveableInterface.h"
-#include "AbilityChangeDelegates.h"
 #include "ElectricCastleAbilitySystemComponent.generated.h"
 
 struct FElectricCastleAbilityInfo;
@@ -133,8 +132,7 @@ private:
 
 	FGameplayAbilitySpecHandle GiveAbilityByAbilityInfo(const FElectricCastleAbilityInfo& AbilityInfo);
 	FGameplayAbilitySpecHandle GiveActiveAbility(
-		const TSubclassOf<UGameplayAbility>& AbilityClass,
-		const int32 AbilityLevel = 1
+		const FGameplayTag& AbilityTag,
+		const TSubclassOf<UGameplayAbility>& AbilityClass, int32 AbilityLevel = 1
 	);
-	FGameplayAbilitySpecHandle GivePassiveAbility(const TSubclassOf<UGameplayAbility>& AbilityClass);
 };

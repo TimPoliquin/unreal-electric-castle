@@ -18,6 +18,14 @@ struct FSpawnPoolEventPayload
 	TObjectPtr<UPoolManagerComponent> PoolManagerComponent;
 };
 
+UENUM(BlueprintType)
+enum class EPoolAutoReturnMode : uint8
+{
+	None,
+	Manual,
+	Automatic
+};
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSpawnPoolEventSignature, const FSpawnPoolEventPayload&, Payload);
 
 class USpawnPoolComponent;
@@ -33,6 +41,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetSpawnPool(UObject* InSpawnPoolComponent);
+	UFUNCTION(BlueprintCallable)
+	void StartManualAutoReturn();
 
 	void HandleBeginRetrieveFromPool();
 	void HandleFinishRetrieveFromPool();
@@ -50,8 +60,8 @@ public:
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties")
-	bool bAutoReturn = false;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties", meta=(EditCondition="bAutoReturn", EditConditionHides))
+	EPoolAutoReturnMode AutoReturn = EPoolAutoReturnMode::None;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties", meta=(EditCondition="AutoReturn != EPoolAutoReturnMode::None", EditConditionHides))
 	float AutoReturnTime = 0.f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties|Retrieve")
 	bool bMakeVisibleOnRetrieve = true;

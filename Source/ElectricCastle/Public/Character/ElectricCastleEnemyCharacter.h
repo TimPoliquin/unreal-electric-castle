@@ -9,10 +9,15 @@
 #include "AbilitySystem/Data/CharacterClassInfo.h"
 #include "Actor/Spawn/TrackableInterface.h"
 #include "AI/ElectricCastleAIController.h"
+#include "AI/Alert/AIAlertActor.h"
+#include "AI/Engagement/AIEngagementActor.h"
+#include "AI/Perception/AIPerceptionActor.h"
 #include "Actor/Attack/Component/AttackWindowManagerActor.h"
+#include "Actor/Patrol/PatrollingActor.h"
 #include "Components/TimelineComponent.h"
 #include "ElectricCastleEnemyCharacter.generated.h"
 
+class UAIAlertComponent;
 class ULootSpawnComponent;
 class UTimelineComponent;
 class UMotionWarpingComponent;
@@ -21,7 +26,14 @@ class AElectricCastleAIController;
 class UWidgetComponent;
 
 UCLASS(Abstract, Blueprintable)
-class ELECTRICCASTLE_API AElectricCastleEnemyCharacter : public AElectricCastleCharacter, public IEnemyInterface, public ITrackableInterface, public IAttackWindowManagerActor
+class ELECTRICCASTLE_API AElectricCastleEnemyCharacter : public AElectricCastleCharacter,
+                                                         public IEnemyInterface,
+                                                         public ITrackableInterface,
+                                                         public IAttackWindowManagerActor,
+                                                         public IAIPerceptionActor,
+                                                         public IAIAlertActor,
+                                                         public IAIEngagementActor,
+                                                         public IPatrollingActor
 {
 	GENERATED_BODY()
 
@@ -78,6 +90,37 @@ public:
 	virtual UAttackWindowManager* GetAttackWindowManager_Implementation() const override;
 	/** End IAttackWindowActor **/
 
+	/** Start IAIPerceptionActor **/
+	virtual UAIPerceptionComponent* GetAIPerceptionComponent_Implementation() const override
+	{
+		return PerceptionComponent;
+	}
+
+	/** End IAIPerceptionActor **/
+
+	/** Start IAIAlertActor **/
+	virtual UAIAlertComponent* GetAIAlertComponent_Implementation() const override
+	{
+		return AIAlertComponent;
+	}
+
+	/** End IAIAlertActor **/
+
+	/** Start AIEngagementActor **/
+	virtual UAIEngagementController* GetAIEngagementController_Implementation() const override
+	{
+		return AIEngagementController;
+	}
+
+	/** End AIEngagementActor **/
+
+	/** Start IPatrollingActor **/
+	virtual UPatrolComponent* GetPatrolComponent_Implementation() const override
+	{
+		return PatrolComponent;
+	}
+
+	/** End IPatrollingActor **/
 
 	UPROPERTY(BlueprintAssignable, Category = "GAS|Attributes")
 	FOnAttributeChangedSignature OnHealthChanged;
@@ -122,6 +165,14 @@ protected:
 	bool bShouldAnimateSpawn = false;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn", meta=(EditCondition="bShouldAnimateSpawn", EditConditionHides=true))
 	TObjectPtr<UCurveFloat> SpawnAnimationCurve;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
+	TObjectPtr<UAIPerceptionComponent> PerceptionComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
+	TObjectPtr<UAIAlertComponent> AIAlertComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
+	TObjectPtr<UAIEngagementController> AIEngagementController;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
+	TObjectPtr<UPatrolComponent> PatrolComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UMotionWarpingComponent> MotionWarpingComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -145,7 +196,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "AI")
 	TObjectPtr<UBehaviorTree> BehaviorTree;
 	UPROPERTY()
-	TObjectPtr<AElectricCastleAIController> AuraAIController;
+	TObjectPtr<AElectricCastleAIController> AIController;
 	/** Attack range for the enemy. Note: This should probably be in the ability instead of the enemy. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 	float MaxAIProcessingRange = 2000;
@@ -166,7 +217,7 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, Category = "AI")
 	TObjectPtr<AActor> CombatTarget;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Properties|Status Effects|Stagger")
 	float StaggerLaunchForce = 250.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Properties|Status Effects|Stagger")

@@ -22,7 +22,7 @@ void IPoolableActor::ReturnToPoolOrDestroy(AActor* Object)
 	{
 		return;
 	}
-	if (UPoolManagerComponent* PoolManagerComponent = GetPoolManager(Object))
+	if (const UPoolManagerComponent* PoolManagerComponent = GetPoolManager(Object))
 	{
 		PoolManagerComponent->ReturnToPool();
 	}

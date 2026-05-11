@@ -7,6 +7,11 @@
 #include "Utils/RichTextMacros.h"
 #include "ElectricCastleGameplayAbility.generated.h"
 
+enum class EEngagementAbilityMode : uint8;
+enum class EEngagementRange : uint8;
+class UAbilityRangeConfig;
+class UAbilityEngagementConfig;
+
 USTRUCT(BlueprintType)
 struct ELECTRICCASTLE_API FAbilityCooldownConfig
 {
@@ -77,10 +82,21 @@ public:
 	float GetCooldown(const float InLevel = 1.f) const;
 	UFUNCTION(BlueprintCallable)
 	void ApplyCustomCooldown() const;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	FFloatRange GetPreferredDistanceRange() const;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	bool IsSupportedEngagementRange(const EEngagementRange InEngagementRange) const;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	bool IsSupportedEngagementMode(const TArray<EEngagementAbilityMode>& InEngagementAbilityModes) const;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties")
 	FAbilityCooldownConfig CooldownConfig;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Instanced, Category="Properties")
+	TObjectPtr<UAbilityRangeConfig> AbilityRangeConfig;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Instanced, Category="Properties")
+	TObjectPtr<UAbilityEngagementConfig> AbilityEngagementConfig;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties")
 	bool bAutoApplyCooldownOnAbilityEnd = true;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties")
@@ -132,9 +148,11 @@ protected:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FRotator CalculateRotationToTarget(const AActor* Target, FVector StartingLocation, float ProjectileSpeed = 0, bool bAffectedByGravity = false) const;
 	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FVector GetAvatarActorForwardVector() const;
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FRotator GetAvatarActorForwardRotator() const;
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FVector GetAvatarActorSocketLocation(const FGameplayTag& SocketTag) const;
+	FVector GetAvatarActorSocketLocation(const FGameplayTag& SocketTag, bool bIsWeaponSocket = false) const;
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	FRotator CalculateSpawnRotationFacingAimTarget(const FVector SpawnLocation) const;
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)

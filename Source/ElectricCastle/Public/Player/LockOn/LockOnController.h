@@ -11,6 +11,7 @@
 #include "LockOnController.generated.h"
 
 
+class UElectricCastleAttributeSet;
 class UInputMappingContext;
 class UInputAction;
 class AElectricCastlePlayerController;
@@ -59,8 +60,6 @@ protected:
 	float LockOnRotationSpeed = 10.f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float LockOnPitchOverride = -30.f;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float MaxWarpingDistance = 50.f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bDebug = false;
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)

@@ -37,7 +37,7 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void DamageTargets(const TArray<AActor*>& Targets, const FVector& ImpactLocation, const FGameplayTag& MontageTag);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void DamageTarget(AActor* Target, const FVector& ImpactLocation, const FGameplayTag& MontageTag);
+	void DamageTarget(AActor* Target, const FVector& ImpactLocation, const FGameplayTag& MontageTag, const float DamageMagnitudeMultiplier = 1.0f);
 
 
 	UFUNCTION(BlueprintCallable)

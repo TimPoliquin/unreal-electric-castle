@@ -208,6 +208,18 @@ public:
 	}
 
 	/**
+	 * Functional Attributes
+	 */
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing= OnRep_LungeDistance, Category="Functional Attributes")
+	FGameplayAttributeData LungeDistance;
+	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, LungeDistance);
+	UFUNCTION()
+	FORCEINLINE void OnRep_LungeDistance(const FGameplayAttributeData& OldValue) const
+	{
+		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, LungeDistance, OldValue);
+	}
+
+	/**
 	 *Meta Attributes
 	 */
 	UPROPERTY(BlueprintReadOnly, Category="Meta Attributes")

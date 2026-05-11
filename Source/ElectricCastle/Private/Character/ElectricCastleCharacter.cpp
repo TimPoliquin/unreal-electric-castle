@@ -5,9 +5,6 @@
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
-#include "AbilitySystem/Data/AbilityInfo.h"
-#include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
-#include "AbilitySystem/Passive/PassiveNiagaraComponent.h"
 #include "Actor/Cinematic/CinematicHandlerComponent.h"
 #include "Actor/Effect/DissolvableActor.h"
 #include "Actor/Effect/DissolveEffectComponent.h"
@@ -40,33 +37,11 @@ AElectricCastleCharacter::AElectricCastleCharacter()
 	EffectAttachComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Effect Attach Component"));
 	EffectAttachComponent->SetupAttachment(GetRootComponent());
 	EffectAttachComponent->SetAbsolute(false, true, false);
-	BurnDebuffComponent = CreateDefaultSubobject<UDebuffNiagaraComponent>(TEXT("Burn Debuff Niagara Component"));
-	BurnDebuffComponent->SetupAttachment(EffectAttachComponent);
-	BurnDebuffComponent->DebuffTag = FElectricCastleGameplayTags::Get().Effect_Debuff_Type_Burn;
-	ShockDebuffComponent = CreateDefaultSubobject<UDebuffNiagaraComponent>(TEXT("Shock Debuff Niagara Component"));
-	ShockDebuffComponent->SetupAttachment(EffectAttachComponent);
-	ShockDebuffComponent->DebuffTag = FElectricCastleGameplayTags::Get().Effect_Debuff_Type_Shock;
 	SocketManagerComponent = CreateDefaultSubobject<USocketManagerComponent>(TEXT("Socket Manager Component"));
 	StatusEffectManagerComponent = CreateDefaultSubobject<UStatusEffectManagerComponent>(TEXT("Status Effect Manager Component"));
 	HighlightComponent = CreateDefaultSubobject<UHighlightComponent>(TEXT("Highlight Component"));
 	HighlightComponent->SetHighlightType(EHighlightType::Friendly);
 	CinematicHandlerComponent = CreateDefaultSubobject<UCinematicHandlerComponent>(TEXT("Cinematic Handler Component"));
-	HaloOfProtectionNiagaraComponent = CreateDefaultSubobject<UPassiveNiagaraComponent>(
-		TEXT("Halo of Protection Niagara Component")
-	);
-	HaloOfProtectionNiagaraComponent->SetupAttachment(EffectAttachComponent);
-	HaloOfProtectionNiagaraComponent->PassiveSpellTag = FElectricCastleGameplayTags::Get().
-		Abilities_Passive_HaloOfProtection;
-	LifeSiphonNiagaraComponent = CreateDefaultSubobject<UPassiveNiagaraComponent>(
-		TEXT("Life Siphon Niagara Component")
-	);
-	LifeSiphonNiagaraComponent->SetupAttachment(EffectAttachComponent);
-	LifeSiphonNiagaraComponent->PassiveSpellTag = FElectricCastleGameplayTags::Get().Abilities_Passive_LifeSiphon;
-	ManaSiphonNiagaraComponent = CreateDefaultSubobject<UPassiveNiagaraComponent>(
-		TEXT("Mana Siphon Niagara Component")
-	);
-	ManaSiphonNiagaraComponent->SetupAttachment(EffectAttachComponent);
-	ManaSiphonNiagaraComponent->PassiveSpellTag = FElectricCastleGameplayTags::Get().Abilities_Passive_ManaSiphon;
 }
 
 void AElectricCastleCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
@@ -503,6 +478,11 @@ float AElectricCastleCharacter::TakeDamage(
 	const float Damage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	OnDamageDelegate.Broadcast(Damage);
 	return Damage;
+}
+
+FGenericTeamId AElectricCastleCharacter::GetGenericTeamId() const
+{
+	return FGenericTeamId(static_cast<uint8>(TeamAffiliation));
 }
 
 UHighlightComponent* AElectricCastleCharacter::GetHighlightComponent_Implementation() const

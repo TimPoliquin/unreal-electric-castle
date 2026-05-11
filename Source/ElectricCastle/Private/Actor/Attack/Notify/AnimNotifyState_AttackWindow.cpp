@@ -33,6 +33,7 @@ void UAnimNotifyState_AttackWindow::NotifyEnd(USkeletalMeshComponent* MeshComp, 
 	if (UAttackWindowManager* AttackWindowManager = IAttackWindowManagerActor::GetAttackWindowManager(MeshComp->GetOwner()))
 	{
 		AttackWindowManager->EndAttackWindow(AttackWindowConfig);
+		AttackWindowConfig->Reset();
 	}
 	Super::NotifyEnd(MeshComp, Animation, EventReference);
 }

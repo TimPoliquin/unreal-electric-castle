@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "AbilitySystemInterface.h"
+#include "GenericTeamAgentInterface.h"
+#include "AI/Affiliation/TeamAffiliation.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemInterface.h"
 #include "Actor/CollidableInterface.h"
 #include "Actor/Highlight/HighlightActorInterface.h"
@@ -22,13 +24,17 @@ class UPassiveNiagaraComponent;
 class UDebuffNiagaraComponent;
 class UNiagaraSystem;
 struct FGameplayTag;
+struct FElectricCastleAbilityInfo;
 class UGameplayAbility;
 class UGameplayEffect;
 class UAttributeSet;
 class UAbilitySystemComponent;
+struct FElectricCastleAbilitySpec;
 
 UCLASS(Abstract, Blueprintable)
-class ELECTRICCASTLE_API AElectricCastleCharacter : public ACharacter, public IAbilitySystemInterface,
+class ELECTRICCASTLE_API AElectricCastleCharacter : public ACharacter,
+                                                    public IAbilitySystemInterface,
+                                                    public IGenericTeamAgentInterface,
                                                     public IElectricCastleAbilitySystemInterface,
                                                     public IHighlightActorInterface,
                                                     public ICombatInterface,
@@ -53,6 +59,10 @@ public:
 		class AController* EventInstigator,
 		AActor* DamageCauser
 	) override;
+
+	/** Start GenericTeamAgentInterface **/
+	virtual FGenericTeamId GetGenericTeamId() const override;
+	/** End GenericTeamAgentInterface **/
 
 	/** Start HighlightActorInterface **/
 	virtual UHighlightComponent* GetHighlightComponent_Implementation() const override;
@@ -160,6 +170,8 @@ protected:
 	void Dissolve() const;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Combat")
 	TMap<FGameplayTag, FGameplayTag> HitReactionsByDamageType;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Combat")
+	ETeamAffiliation TeamAffiliation = ETeamAffiliation::None;
 	UPROPERTY(BlueprintReadOnly, Category = "Combat")
 	bool bHitReacting;
 	UPROPERTY(EditAnywhere, Category = "Combat")
@@ -174,18 +186,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Combat")
 	TObjectPtr<USoundBase> DeathSound;
 
-	UPROPERTY(VisibleAnywhere, Category="Combat|Debuff")
-	TObjectPtr<UDebuffNiagaraComponent> BurnDebuffComponent;
-	UPROPERTY(VisibleAnywhere, Category="Combat|Debuff")
-	TObjectPtr<UDebuffNiagaraComponent> ShockDebuffComponent;
 	UPROPERTY(VisibleAnywhere, Category="Combat|Passive")
 	TObjectPtr<USceneComponent> EffectAttachComponent;
-	UPROPERTY(VisibleAnywhere, Category = "Combat|Passive")
-	TObjectPtr<UPassiveNiagaraComponent> HaloOfProtectionNiagaraComponent;
-	UPROPERTY(VisibleAnywhere, Category = "Combat|Passive")
-	TObjectPtr<UPassiveNiagaraComponent> LifeSiphonNiagaraComponent;
-	UPROPERTY(VisibleAnywhere, Category = "Combat|Passive")
-	TObjectPtr<UPassiveNiagaraComponent> ManaSiphonNiagaraComponent;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Abilities")
 	TArray<TObjectPtr<UAbilityInfo>> Abilities;
 

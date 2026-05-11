@@ -7,12 +7,12 @@
 #include "Abilities/Tasks/AbilityTask.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 #include "AbilitySystem/ElectricCastleAttributeSet.h"
+#include "AbilitySystem/Data/Config/AbilityEngagementConfig.h"
+#include "AbilitySystem/Data/Config/AbilityRangeConfig.h"
 #include "AbilitySystem/Effect/DurationGameplayEffect.h"
 #include "Actor/Mesh/SocketManagerActor.h"
 #include "Actor/Mesh/SocketManagerComponent.h"
-#include "Cinematic/CinematicManager.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
-#include "GameFramework/Character.h"
 #include "Interaction/CombatInterface.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Player/ElectricCastlePlayerController.h"
@@ -149,9 +149,11 @@ FRotator UElectricCastleGameplayAbility::GetAvatarActorForwardRotator() const
 	return UKismetMathLibrary::MakeRotFromX(GetAvatarActorFromActorInfo()->GetActorForwardVector());
 }
 
-FVector UElectricCastleGameplayAbility::GetAvatarActorSocketLocation(const FGameplayTag& SocketTag) const
+FVector UElectricCastleGameplayAbility::GetAvatarActorSocketLocation(const FGameplayTag& SocketTag, const bool bIsWeaponSocket) const
 {
-	if (USocketManagerComponent* SocketManagerComponent = ISocketManagerActor::GetSocketManagerComponent(GetAvatarActorFromActorInfo()))
+	if (const USocketManagerComponent* SocketManagerComponent = ISocketManagerActor::GetSocketManagerComponent(
+		bIsWeaponSocket ? ICombatInterface::GetWeapon(GetAvatarActorFromActorInfo()) : GetAvatarActorFromActorInfo()
+	))
 	{
 		return SocketManagerComponent->GetSocketLocation(SocketTag);
 	}
@@ -200,6 +202,11 @@ FRotator UElectricCastleGameplayAbility::CalculateRotationToTarget(const AActor*
 		return GetAvatarActorForwardRotator();
 	}
 	return Rotation;
+}
+
+FVector UElectricCastleGameplayAbility::GetAvatarActorForwardVector() const
+{
+	return GetAvatarActorFromActorInfo()->GetActorForwardVector();
 }
 
 void UElectricCastleGameplayAbility::FaceHitTarget_Implementation(const FHitResult& HitResult)
@@ -256,4 +263,31 @@ void UElectricCastleGameplayAbility::ApplyCustomCooldown() const
 		CooldownConfig.Duration.GetValueAtLevel(GetAbilityLevel()),
 		GetAbilityLevel()
 	);
+}
+
+FFloatRange UElectricCastleGameplayAbility::GetPreferredDistanceRange_Implementation() const
+{
+	if (AbilityRangeConfig)
+	{
+		return AbilityRangeConfig->GetPreferredDistanceRange();
+	}
+	return FFloatRange();
+}
+
+bool UElectricCastleGameplayAbility::IsSupportedEngagementRange_Implementation(const EEngagementRange InEngagementRange) const
+{
+	if (AbilityEngagementConfig)
+	{
+		return AbilityEngagementConfig->IsAbilitySupportedInRange(InEngagementRange);
+	}
+	return true;
+}
+
+bool UElectricCastleGameplayAbility::IsSupportedEngagementMode_Implementation(const TArray<EEngagementAbilityMode>& InEngagementAbilityModes) const
+{
+	if (AbilityEngagementConfig)
+	{
+		return AbilityEngagementConfig->IsAbilitySupportedInModes(InEngagementAbilityModes);
+	}
+	return true;
 }

@@ -17,6 +17,9 @@ class ELECTRICCASTLE_API UElectricCastleAIDirectorGameInstanceSubsystem : public
 public:
 	static UElectricCastleAIDirectorGameInstanceSubsystem* Get(const UObject* WorldContextObject);
 
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+	virtual void Deinitialize() override;
+
 	void RegisterActivePlayer(AActor* Actor)
 	{
 		ActivePlayerActors.Add(Actor);

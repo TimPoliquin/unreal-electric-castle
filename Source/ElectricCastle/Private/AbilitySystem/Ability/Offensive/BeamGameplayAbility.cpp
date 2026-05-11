@@ -65,7 +65,7 @@ void UBeamGameplayAbility::SpawnBeam_Implementation()
 	{
 		SourceObject = GetAvatarActorFromActorInfo();
 	}
-	const FVector StartLocation = GetAvatarActorSocketLocation(SocketTag);
+	const FVector StartLocation = GetAvatarActorSocketLocation(SocketTag, false);
 	const FRotator StartRotation = CalculateSpawnRotationFacingAimTarget(StartLocation);
 	const FTransform StartTransform = FTransform(StartRotation, StartLocation);
 	BeamActor = GetWorld()->SpawnActorDeferred<ABeamActor>(
@@ -73,7 +73,8 @@ void UBeamGameplayAbility::SpawnBeam_Implementation()
 		StartTransform,
 		SourceObject,
 		Cast<APawn>(GetAvatarActorFromActorInfo()),
-		ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+		ESpawnActorCollisionHandlingMethod::AlwaysSpawn
+	);
 	if (!BeamActor)
 	{
 		UE_LOG(LogElectricCastle, Warning, TEXT("[%s] Failed to spawn beam actor. Check ability config to ensure beam type is set!"), *GetName());

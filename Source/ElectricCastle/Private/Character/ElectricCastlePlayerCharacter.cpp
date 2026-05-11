@@ -46,6 +46,7 @@
 AElectricCastlePlayerCharacter::AElectricCastlePlayerCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	TeamAffiliation = ETeamAffiliation::Player;
 	Tags.Add(TAG_PLAYER);
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0, 400.f, 0);
@@ -404,24 +405,6 @@ void AElectricCastlePlayerCharacter::OnRep_StatusEffectTags()
 		BlockedTags.AddTag(GameplayTags.Player_Block_Rotation);
 		BlockedTags.AddTag(GameplayTags.Player_Block_Ability_Offensive);
 		BlockedTags.AddTag(GameplayTags.Player_Block_Interaction);
-		if (IsShocked())
-		{
-			ElectricCastleAbilitySystemComponent->AddLooseGameplayTags(BlockedTags);
-			ShockDebuffComponent->Activate();
-		}
-		else
-		{
-			ElectricCastleAbilitySystemComponent->RemoveLooseGameplayTags(BlockedTags);
-			ShockDebuffComponent->Deactivate();
-		}
-		if (IsBurned())
-		{
-			BurnDebuffComponent->Activate();
-		}
-		else
-		{
-			BurnDebuffComponent->Deactivate();
-		}
 	}
 }
 

@@ -132,6 +132,15 @@ void AProjectileActor::SetupExplosionConfig(
 	ExplosionDamageConfig = InExplosionDamageConfig;
 }
 
+void AProjectileActor::Fire_Implementation()
+{
+	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	ProjectileMovement->Velocity = ProjectileMovement->InitialSpeed * GetActorForwardVector();
+	ProjectileMovement->Activate(true);
+	PoolManagerComponent->StartManualAutoReturn();
+}
+
 void AProjectileActor::ApplyDamageEffectParams_Implementation(const FDamageEffectParams& InDamageEffectParams)
 {
 	DamageEffectParams = InDamageEffectParams;
@@ -241,6 +250,11 @@ void AProjectileActor::PlayImpactEffect()
 	bHit = true;
 }
 
+void AProjectileActor::OverrideDamageMagnitude(const float InDamageMagnitudeOverride)
+{
+	DamageEffectParams.DamageMagnitude = InDamageMagnitudeOverride;
+}
+
 void AProjectileActor::OnPool_BeginRetrieve_Implementation(const FSpawnPoolEventPayload& Payload)
 {
 	// Nothing to do here - just in case!
@@ -251,16 +265,19 @@ void AProjectileActor::OnPool_FinishRetrieve_Implementation(const FSpawnPoolEven
 	bHit = false;
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	CollisionComponent->OnComponentBeginOverlap.AddUniqueDynamic(this, &AProjectileActor::OnSphereOverlap);
-	ProjectileMovement->Velocity = ProjectileMovement->InitialSpeed * GetActorForwardVector();
 	SetReplicateMovement(true);
-	if (TravelSound)
+	if (bAutoLaunchProjectile)
 	{
-		TravelSoundComponent = UGameplayStatics::SpawnSoundAttached(TravelSound, GetRootComponent());
-	}
-	if (TravelSoundComponent)
-	{
-		TravelSoundComponent->SetSound(TravelSound);
-		TravelSoundComponent->Play();
+		ProjectileMovement->Velocity = ProjectileMovement->InitialSpeed * GetActorForwardVector();
+		if (TravelSound)
+		{
+			TravelSoundComponent = UGameplayStatics::SpawnSoundAttached(TravelSound, GetRootComponent());
+		}
+		if (TravelSoundComponent)
+		{
+			TravelSoundComponent->SetSound(TravelSound);
+			TravelSoundComponent->Play();
+		}
 	}
 }
 

@@ -49,6 +49,8 @@ public:
 		const TSubclassOf<UGameplayEffect>& InExplosionDamageEffectClass,
 		const FElectricCastleDamageConfig& InExplosionDamageConfig
 	);
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void Fire();
 
 	/** Start IDamageDealingActor **/
 	virtual void ApplyDamageEffectParams_Implementation(const FDamageEffectParams& InDamageEffectParams) override;
@@ -80,6 +82,8 @@ protected:
 	void OnPool_FinishRetrieve(const FSpawnPoolEventPayload& Payload);
 	UFUNCTION(BlueprintNativeEvent)
 	void OnPool_Returned(const FSpawnPoolEventPayload& Payload);
+	UFUNCTION(BlueprintCallable)
+	void OverrideDamageMagnitude(const float InDamageMagnitudeOverride);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UProjectileMovementComponent> ProjectileMovement;
@@ -101,12 +105,12 @@ protected:
 	bool bExplodeOnImpact = false;
 	UPROPERTY(
 		EditAnywhere,
-		BlueprintReadOnly,
+		BlueprintReadWrite,
 		Category="Properties|Explosion",
 		meta=(EditCondition="bExplodeOnImpact", EditConditionHides)
 	)
 	float ImpactRadius = 1.f;
-	UPROPERTY(BlueprintReadWrite, meta=(EditCondition="bExplodeOnImpact", EditConditionHides, ExposeOnSpawn))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(EditCondition="bExplodeOnImpact", EditConditionHides, ExposeOnSpawn))
 	TSubclassOf<UGameplayEffect> ExplosionDamageEffectClass;
 	UPROPERTY(
 		Replicated,
@@ -114,6 +118,8 @@ protected:
 		meta=(EditCondition="bExplodeOnImpact", EditConditionHides, ExposeOnSpawn)
 	)
 	FElectricCastleDamageConfig ExplosionDamageConfig;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties")
+	bool bAutoLaunchProjectile = true;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Properties")
 	bool bDebug = false;
 

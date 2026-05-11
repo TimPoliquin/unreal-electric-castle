@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "EnhancedInputComponent.h"
 #include "GameplayTagContainer.h"
 #include "Engine/DataAsset.h"
 #include "InputConfiguration.generated.h"
@@ -19,6 +20,8 @@ struct FInputConfigurationRow
 	const UInputAction* InputAction = nullptr;
 	UPROPERTY(EditDefaultsOnly, meta=(Categories="Input"))
 	FGameplayTag InputTag = FGameplayTag::EmptyTag;
+	UPROPERTY(EditDefaultsOnly)
+	TArray<ETriggerEvent> TriggerEvents = {ETriggerEvent::Started, ETriggerEvent::Triggered, ETriggerEvent::Completed};
 };
 
 /**

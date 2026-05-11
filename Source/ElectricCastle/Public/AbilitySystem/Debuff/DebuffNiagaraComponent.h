@@ -20,8 +20,12 @@ public:
 	UDebuffNiagaraComponent();
 
 	virtual void BeginPlay() override;
-	UPROPERTY(VisibleAnywhere)
-	FGameplayTag DebuffTag;
+	FGameplayTag GetDebuffTag() const;
+	void SetDebuffTag(const FGameplayTag& InDebuffTag);
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(Categories="Effect.Debuff.Type"))
+	FGameplayTag DebuffTag = FGameplayTag::EmptyTag;
 
 private:
 	UFUNCTION()
