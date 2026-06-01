@@ -23,4 +23,6 @@ public:
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(Categories="Abilities"))
 	FGameplayTag LockOnAbilityTag = FGameplayTag::EmptyTag;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(Categories="Abilities"))
+	bool bAutoGrantAndRemove = false;
 };

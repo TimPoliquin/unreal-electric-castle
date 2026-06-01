@@ -49,4 +49,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static float GetRandomFloatInRange(const FFloatRange Range);
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static float GetRandomInt32InRange(const FInt32Range Range);
+
+	template <typename T>
+	static T AorB(const T& A, const T& B)
+	{
+		return ShouldAct(.5f) ? A : B;
+	}
 };

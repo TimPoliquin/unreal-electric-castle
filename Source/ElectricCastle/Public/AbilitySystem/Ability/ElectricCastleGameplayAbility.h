@@ -153,12 +153,16 @@ protected:
 	FRotator GetAvatarActorForwardRotator() const;
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FVector GetAvatarActorSocketLocation(const FGameplayTag& SocketTag, bool bIsWeaponSocket = false) const;
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FRotator GetAvatarActorSocketRotation(const FGameplayTag& SocketTag, bool bIsWeaponSocket = false) const;
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	FRotator CalculateSpawnRotationFacingAimTarget(const FVector SpawnLocation) const;
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	FTransform CalculateSpawnTransform(const FVector SpawnLocation) const;
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void RotateTowardAvatarActorAimTarget(AActor* ActorToRotate) const;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	AActor* GetAimTarget() const;
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category="Properties")

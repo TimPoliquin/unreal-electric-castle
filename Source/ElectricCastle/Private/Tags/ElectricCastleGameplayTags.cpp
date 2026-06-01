@@ -182,6 +182,9 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 
 	// Effect Tags
 	Instance.Effect = TagManager.AddNativeGameplayTag(FName("Effect"), FString("Root effect tag"));
+	Instance.Effect_Block_Abilities = TagManager.AddNativeGameplayTag(FName("Effect.Block.Abilities"), FString("When this tag is active, the character will not be able to use any abilities"));
+	Instance.Effect_Block_AI = TagManager.AddNativeGameplayTag(FName("Effect.Block.AI"), FString("When this tag is active, the Behavior Tree for the character will stop processing"));
+	Instance.Effect_Block_Movement = TagManager.AddNativeGameplayTag(FName("Effect.Block.Movement"), FString("When this tag is active, the character will be unable to move"));
 	Instance.Effect_Block_Damage = TagManager.AddNativeGameplayTag(FName("Effect.Block.Damage"), FString("When this tag is active, the character will not receive any damage"));
 	Instance.Effect_Damage = TagManager.AddNativeGameplayTag(
 		FName("Effect.Damage"),
@@ -495,6 +498,8 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FString("None Type")
 	);
 	/** Event Tags **/
+	Instance.Event_Alert = TagManager.AddNativeGameplayTag(FName("Event.Alert"), FString("Parent tag for alert events"));
+	Instance.Event_Alert_Damage = TagManager.AddNativeGameplayTag(FName("Event.Alert"), FString("Indicates that the target should become alerted due to damage"));
 	Instance.Event_Montage_Electrocute = TagManager.AddNativeGameplayTag(
 		FName("Event.Montage.Electrocute"),
 		FString("Event fired during electrocute montage")
@@ -746,6 +751,14 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FName("Message.Default.Item.Use"),
 		FString("Use item message tag")
 	);
+	Instance.Significance_Category_Enemy = TagManager.AddNativeGameplayTag(FName("Significance.Category.Enemy"), FString("Significance Category for Enemy actors"));
+	Instance.Significance_Category_Encounter = TagManager.AddNativeGameplayTag(FName("Significance.Category.Encounter"), FString("Significance Category for Enemy Encounters"));
+	Instance.Significance_Level_Insignificant = TagManager.AddNativeGameplayTag(FName("Significance.Level.Insignificant"), FString("Significance Level for insignificant actors"));
+	Instance.Significance_Level_PartiallySignificant = TagManager.AddNativeGameplayTag(
+		FName("Significance.Level.PartiallySignificant"),
+		FString("Significance Level for partially significant actors")
+	);
+	Instance.Significance_Level_FullySignificant = TagManager.AddNativeGameplayTag(FName("Significance.Level.FullySignificant"), FString("Significance Level for fully significant actors"));
 
 	Instance.DamageTypes.Add(Instance.Effect_Damage_Magic_Arcane);
 	Instance.DamageTypes.Add(Instance.Effect_Damage_Magic_Dark);

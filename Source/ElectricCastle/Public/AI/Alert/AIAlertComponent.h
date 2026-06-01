@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "AlertTypes.h"
 #include "ScalableFloat.h"
+#include "Abilities/GameplayAbilityTypes.h"
 #include "Components/ActorComponent.h"
 #include "Perception/AIPerceptionTypes.h"
 #include "AIAlertComponent.generated.h"
@@ -21,6 +22,14 @@ public:
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	virtual void BeginDestroy() override;
+	virtual void OverrideAlertLevel(const EAlertLevel InAlertLevel);
+	virtual void OverrideAlertTarget(AActor* InAlertTarget);
+	virtual void SetAlertLevelDecays(const bool bInAlertLevelDecays);
+	virtual void Activate(bool bReset = false) override;
+	virtual void Deactivate() override;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	EAlertLevel GetCurrentAlertLevel() const { return AlertLevel; }
 
 	/** Fires when the alert level enum changes **/
 	UPROPERTY(BlueprintAssignable)
@@ -36,12 +45,19 @@ protected:
 	void HandleTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
 	UFUNCTION(BlueprintNativeEvent)
 	void HandleGameDataLoaded();
+	UFUNCTION(BlueprintNativeEvent)
+	void HandleOwnerDeath(AActor* DeadActor);
+	void HandleAlertByDamage(const FGameplayEventData* GameplayEventData);
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FScalableFloat PerceptionDelayByDistance = .5f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FScalableFloat PerceptionCurve = 33.f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bAlertLevelDecays = true;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(EditCondition=bAlertLevelDecays, EditConditionHides))
 	FScalableFloat AlertDecayRate = 5.f;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(EditCondition=bAlertLevelDecays, EditConditionHides))
 	FScalableFloat AlertDecayDelay = 10.f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float SuspiciousThreshold = 75.f;
@@ -65,5 +81,7 @@ private:
 	EAlertLevel GetAlertLevelByValue(const float InAlertLevel) const;
 	void SetAlertLevel(const float InAlertLevel);
 
+	UPROPERTY(VisibleInstanceOnly)
+	float PerceptionCountdown = -1.f;
 	FTimerHandle DecayTimer;
 };

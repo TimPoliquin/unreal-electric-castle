@@ -7,13 +7,31 @@
 #include "LockOnFunctionLibrary.generated.h"
 
 USTRUCT()
-struct FCandidateEntry
+struct FLockOnCandidateScreenSpaceData
+{
+	GENERATED_BODY()
+	UPROPERTY()
+	bool bIsOnScreen = false;
+	UPROPERTY()
+	FVector2D ScreenPosition = FVector2D::ZeroVector;
+	UPROPERTY()
+	float ScreenScore = 0.f;
+};
+
+USTRUCT()
+struct FLockOnCandidateEntry
 {
 	GENERATED_BODY()
 	UPROPERTY()
 	TObjectPtr<AActor> Target;
 	UPROPERTY()
 	float Distance = FLT_MAX;
+	UPROPERTY()
+	float DistanceScore = 0.f;
+	UPROPERTY()
+	float TotalScore = 0.f;
+	UPROPERTY()
+	FLockOnCandidateScreenSpaceData ScreenSpaceData;
 };
 
 /**
@@ -26,21 +44,24 @@ class ELECTRICCASTLE_API ULockOnFunctionLibrary : public UBlueprintFunctionLibra
 
 public:
 	UFUNCTION(BlueprintCallable)
-	static AActor* FindClosestTarget(const AActor* TargetingActor, float LockOnRadius, float MaxLockOnDistance, bool bRequireLineOfSight = true);
+	static AActor* FindClosestTarget(
+		const APlayerController* PlayerController, const float LockOnRadius, const bool bRequireLineOfSight = true, const bool bDebug = false
+	);
 	UFUNCTION(BlueprintCallable)
 	static AActor* SwitchTarget(
-		const AActor* TargetingActor,
+		const APlayerController* PlayerController,
 		const AActor* CurrentTarget,
 		const FVector2D& StickInput,
-		const FRotator& CameraRotation,
-		float LockOnRadius,
-		float MaxLockOnDistance,
-		bool bRequireLineOfSight,
-		bool bDebug = true
+		float LockOnRadius, bool bRequireLineOfSight, bool bDebug = true
 	);
 	static bool IsTargetValid(const AActor* Target);
 
 protected:
-	static TArray<FCandidateEntry> GatherCandidates(const AActor* TargetingActor, float TargetingRadius, float MaxLockOnDistance, bool bRequireLineOfSight);
+	static TArray<FLockOnCandidateEntry> GatherCandidates(const APlayerController* PlayerController, float TargetingRadius, bool bScore, const TArray<const AActor*>& IgnoreActors, bool bDebug);
+	static FLockOnCandidateScreenSpaceData CalculateScreenSpaceData(const APlayerController* PlayerController, const AActor* TargetActor, bool bScore);
 	static bool HasLineOfSight(const AActor* TargetingActor, const AActor* Target);
+	static bool GetCameraDistance(const FVector& TargetLocation, const FVector& CameraLocation, const FVector& CameraForward, float& OutCameraDistance);
+
+private:
+	static TArray<const AActor*> EMPTY_IGNORE;
 };

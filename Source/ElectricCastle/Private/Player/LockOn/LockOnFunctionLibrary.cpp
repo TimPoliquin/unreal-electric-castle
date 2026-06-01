@@ -3,198 +3,251 @@
 
 #include "Player/LockOn/LockOnFunctionLibrary.h"
 
+#include "Actor/Significance/WorldSignificanceSubsystem.h"
 #include "ElectricCastle/ElectricCastle.h"
+#include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Engine/OverlapResult.h"
 #include "Interaction/CombatInterface.h"
+#include "Tags/ElectricCastleGameplayTags.h"
 
-AActor* ULockOnFunctionLibrary::FindClosestTarget(const AActor* TargetingActor, const float LockOnRadius, const float MaxLockOnDistance, const bool bRequireLineOfSight)
+TArray<const AActor*> ULockOnFunctionLibrary::EMPTY_IGNORE = TArray<const AActor*>();
+
+AActor* ULockOnFunctionLibrary::FindClosestTarget(
+	const APlayerController* PlayerController,
+	const float LockOnRadius,
+	const bool bRequireLineOfSight,
+	const bool bDebug
+)
 {
-	if (!IsValid(TargetingActor))
+	if (!IsValid(PlayerController) || !IsValid(PlayerController->GetPawnOrSpectator()))
 	{
 		return nullptr;
 	}
-	TArray<FCandidateEntry> Candidates = GatherCandidates(TargetingActor, LockOnRadius, MaxLockOnDistance, bRequireLineOfSight);
+	TArray<FLockOnCandidateEntry> Candidates = GatherCandidates(PlayerController, LockOnRadius, true, EMPTY_IGNORE, bDebug);
+	if (Candidates.IsEmpty())
+	{
+		return nullptr;
+	}
+	if (bRequireLineOfSight)
+	{
+		for (const FLockOnCandidateEntry& CandidateEntry : Candidates)
+		{
+			if (HasLineOfSight(PlayerController->GetPawnOrSpectator(), CandidateEntry.Target))
+			{
+				return CandidateEntry.Target;
+			}
+		}
+		return nullptr;
+	}
+
+	return Candidates[0].Target;
+}
+
+AActor* ULockOnFunctionLibrary::SwitchTarget(
+	const APlayerController* PlayerController,
+	const AActor* CurrentTarget,
+	const FVector2D& StickInput,
+	const float LockOnRadius,
+	const bool bRequireLineOfSight,
+	const bool bDebug
+)
+{
+	// 1. Guard against invalid controllers
+	if (!PlayerController) { return nullptr; }
+
+	// If there is no current target, we can't "switch" directionally; gather normal candidates
+	if (!CurrentTarget)
+	{
+		TArray<FLockOnCandidateEntry> Candidates = GatherCandidates(PlayerController, LockOnRadius, true, {}, bDebug);
+		return Candidates.Num() > 0 ? Candidates[0].Target : nullptr;
+	}
+
+	// 2. Project current target to screen space to get our shifting origin
+	FVector2D CurrentTargetScreenPos;
+	if (!PlayerController->ProjectWorldLocationToScreen(CurrentTarget->GetActorLocation(), CurrentTargetScreenPos))
+	{
+		// If the current target mysteriously isn't on screen, clear ignores and grab the best overall target
+		TArray<FLockOnCandidateEntry> Candidates = GatherCandidates(PlayerController, LockOnRadius, true, {}, bDebug);
+		return Candidates.Num() > 0 ? Candidates[0].Target : nullptr;
+	}
+
+	// 3. Gather all candidates, explicitly ignoring the current target
+	TArray<const AActor*> IgnoreList;
+	IgnoreList.Add(CurrentTarget);
+
+	// We pass bScore as false because we are rolling a custom directional scoring pass below
+	TArray<FLockOnCandidateEntry> Candidates = GatherCandidates(PlayerController, LockOnRadius, false, IgnoreList, bDebug);
 	if (Candidates.IsEmpty())
 	{
 		return nullptr;
 	}
 
-	AActor* Closest = nullptr;
-	float ClosestDist = BIG_NUMBER;
+	// --- BEFORE THE LOOP: Get Viewport Sizes once ---
+	int32 ViewportSizeX, ViewportSizeY;
+	PlayerController->GetViewportSize(ViewportSizeX, ViewportSizeY);
 
-	for (const FCandidateEntry& Candidate : Candidates)
+	// Convert dimensions to floats
+	const float VpX = static_cast<float>(ViewportSizeX);
+	const float VpY = static_cast<float>(ViewportSizeY);
+
+	// Normalize Current Target position to a 0.0 - 1.0 range
+	const FVector2D NormalizedCurrentTargetPos(CurrentTargetScreenPos.X / VpX, CurrentTargetScreenPos.Y / VpY);
+	const FVector2D NormalizedStick = StickInput.GetSafeNormal();
+	// ------------------------------------------------
+
+	for (FLockOnCandidateEntry& Candidate : Candidates)
 	{
-		if (Candidate.Distance < ClosestDist)
+		if (!Candidate.ScreenSpaceData.bIsOnScreen) { continue; }
+
+		// 1. Normalize Candidate Position to 0.0 - 1.0 range
+		FVector2D NormalizedCandidatePos(
+			Candidate.ScreenSpaceData.ScreenPosition.X / VpX,
+			Candidate.ScreenSpaceData.ScreenPosition.Y / VpY
+		);
+
+		// 2. Calculate the aspect-ratio-independent direction vector
+		const FVector2D DirectionToCandidate = NormalizedCandidatePos - NormalizedCurrentTargetPos;
+		const float NormalizedDistance = DirectionToCandidate.Size();
+
+		if (NormalizedDistance < 0.001f) { continue; } // Avoid division by zero
+
+		FVector2D NormalizedDir = DirectionToCandidate / NormalizedDistance;
+
+		// 4. Update the Proximity Weight to use Normalized Distance
+		// Since NormalizedDistance ranges roughly from 0.0 to 1.414 (corner to corner),
+		// we use a multiplier (like 5.0f) to properly scale down distant targets.
+
+		// 1. Project the target's relative direction onto your normalized stick vector
+		const float ComponentAlongStick = FVector2D::DotProduct(DirectionToCandidate, NormalizedStick);
+
+		// If ComponentAlongStick is negative or zero, they are in the opposite hemisphere 
+		// of your flick (e.g., you pushed UP, they are BELOW the current target)
+		if (ComponentAlongStick <= 0.001f) { continue; }
+
+		// 2. Calculate the perpendicular deviation (how far away they are from the stick's straight line)
+		// This is the "Cross Product" magnitude in 2D
+		const float PerpendicularDeviation = FMath::Abs(FVector2D::CrossProduct(NormalizedDir, NormalizedStick));
+
+		// 3. Build a smart alignment score: 
+		// High progress along the stick axis is rewarded, heavy off-axis drift is penalized
+		const float AlignmentScore = ComponentAlongStick * (1.0f - (PerpendicularDeviation * 0.5f));
+
+		// 4. Update the final flick score combining it with proximity
+		const float ProximityWeight = 1.0f / (1.0f + (NormalizedDistance * 4.0f));
+		Candidate.TotalScore = AlignmentScore * ProximityWeight;
+	}
+	Candidates.Sort(
+		[](const FLockOnCandidateEntry& A, const FLockOnCandidateEntry& B)
 		{
-			ClosestDist = Candidate.Distance;
-			Closest = Candidate.Target;
+			return A.TotalScore > B.TotalScore;
 		}
+	);
+	if (bRequireLineOfSight)
+	{
+		for (const FLockOnCandidateEntry& Candidate : Candidates)
+		{
+			if (HasLineOfSight(PlayerController->GetPawnOrSpectator(), Candidate.Target))
+			{
+				return Candidate.Target;
+			}
+		}
+		return nullptr;
 	}
 
-	return Closest;
+	return Candidates[0].Target;
 }
 
-AActor* ULockOnFunctionLibrary::SwitchTarget(
-	const AActor* TargetingActor,
-	const AActor* CurrentTarget,
-	const FVector2D& StickInput,
-	const FRotator& CameraRotation,
-	const float LockOnRadius,
-	const float MaxLockOnDistance,
-	const bool bRequireLineOfSight,
+TArray<FLockOnCandidateEntry> ULockOnFunctionLibrary::GatherCandidates(
+	const APlayerController* PlayerController,
+	const float TargetingRadius,
+	const bool bScore,
+	const TArray<const AActor*>& IgnoreActors,
 	const bool bDebug
 )
 {
-	constexpr float MinSwitchDotThreshold = 0.34f;
-	constexpr float DistanceWeight = .1f;
-	// --- 1. Build world-space search direction from stick + camera axes ----
-	//
-	// We project the camera's Right and Forward vectors onto the world XY
-	// plane so that vertical camera pitch does not distort horizontal flicks.
-	// The resulting SearchDir is always a flat, horizontal world vector.
-
-	const FVector CamFwd = FRotationMatrix(CameraRotation).GetScaledAxis(EAxis::X);
-	const FVector CamRight = FRotationMatrix(CameraRotation).GetScaledAxis(EAxis::Y);
-
-	// Project onto XY and re-normalise so vertical camera tilt is ignored.
-	const FVector FwdXY = FVector(CamFwd.X, CamFwd.Y, 0.f).GetSafeNormal();
-	const FVector RightXY = FVector(CamRight.X, CamRight.Y, 0.f).GetSafeNormal();
-
-	// StickInput.X = right/left,  StickInput.Y = forward/back
-	const FVector SearchDir = (RightXY * StickInput.X + FwdXY * StickInput.Y).GetSafeNormal();
-
-	if (SearchDir.IsNearlyZero()) { return nullptr; }
-
-	// --- 2. Gather valid candidates (excludes current target) --------------
-
-	const FVector CurrentTargetLoc = IsValid(CurrentTarget)
-		                                 ? CurrentTarget->GetActorLocation()
-		                                 : TargetingActor->GetActorLocation();
-
-	TArray<FCandidateEntry> Candidates = GatherCandidates(TargetingActor, LockOnRadius, MaxLockOnDistance, bRequireLineOfSight);
-	Candidates.RemoveAll([&](const FCandidateEntry& A) { return A.Target == CurrentTarget; });
-
-	if (Candidates.IsEmpty()) { return nullptr; }
-
-	// --- 3. Score every candidate ------------------------------------------
-	//
-	// score = lerp(dot^2, 1/distance, DistanceWeight)
-	//
-	// "dot" is the cosine of the angle between the flat vector pointing from
-	// the current target to the candidate, and the camera-relative stick dir.
-	// Squaring it makes the score drop off sharply outside ±~45 degrees while
-	// remaining smooth near zero degrees.
-
-	AActor* BestCandidate = nullptr;
-	float BestScore = -BIG_NUMBER;
-
-	for (const FCandidateEntry& Candidate : Candidates)
+	if (!PlayerController) { return {}; }
+	if (UWorldSignificanceSubsystem* SignificanceSubsystem = UWorldSignificanceSubsystem::Get(PlayerController))
 	{
-		if (Candidate.Distance < SMALL_NUMBER) { continue; }
-
-		const FVector ToCandidate3D = Candidate.Target->GetActorLocation() - CurrentTargetLoc;
-		// Flatten to XY for consistent angular scoring regardless of height.
-		const FVector ToCandidateXY = FVector(ToCandidate3D.X, ToCandidate3D.Y, 0.f).GetSafeNormal();
-
-		const float Dot = FVector::DotProduct(ToCandidateXY, SearchDir);
-
-		// Reject candidates clearly outside the acceptance cone.
-		if (Dot < MinSwitchDotThreshold) { continue; }
-
-		// Angular component: dot^2 emphasises alignment without being binary.
-		const float AngularScore = Dot * Dot;
-
-		// Distance component: closer is better, normalised to [0,1] roughly.
-		// Using MaxLockOnDistance as a soft normaliser so the two terms are
-		// in a comparable range.
-		const float InvDistScore = FMath::Clamp(1.f - (Candidate.Distance / MaxLockOnDistance), 0.f, 1.f);
-
-		const float Score = FMath::Lerp(AngularScore, InvDistScore, DistanceWeight);
-
-		if (Score > BestScore)
+		// DEVNOTE - Limit candidates to enemies for now
+		if (!SignificanceSubsystem->HasAnySignificantActors(FElectricCastleGameplayTags::Get().Significance_Category_Enemy))
 		{
-			BestScore = Score;
-			BestCandidate = Candidate.Target;
+			if (bDebug)
+			{
+				UE_LOG(LogElectricCastle, Warning, TEXT("[ULockOnFunctionLibrary] Fast bailout - no significant actors"))
+			}
+			return {};
 		}
-
-#if ENABLE_DRAW_DEBUG
-		if (bDebug)
-		{
-			const FVector TextLoc = Candidate.Target->GetActorLocation() + FVector(0.f, 0.f, 60.f);
-			const FString Text = FString::Printf(TEXT("Score: %.3f"), Score);
-
-			DrawDebugString(
-				TargetingActor->GetWorld(),
-				TextLoc,
-				Text,
-				nullptr,
-				FColor::Cyan,
-				5.f,
-				// Duration
-				true // Draw shadow for readability
-			);
-		}
-#endif
 	}
-
-#if ENABLE_DRAW_DEBUG
-	// Optional: visualise the search direction in editor/dev builds.
-	if (bDebug)
-	{
-		DrawDebugDirectionalArrow(
-			TargetingActor->GetWorld(),
-			CurrentTargetLoc,
-			CurrentTargetLoc + SearchDir * 200.f,
-			20.f,
-			FColor::Yellow,
-			false,
-			0.5f,
-			0,
-			2.f
-		);
-	}
-#endif
-	return BestCandidate;
-}
-
-TArray<FCandidateEntry> ULockOnFunctionLibrary::GatherCandidates(const AActor* TargetingActor, const float TargetingRadius, const float MaxLockOnDistance, const bool bRequireLineOfSight)
-{
-	if (!TargetingActor) { return {}; }
 
 	// Sphere overlap to collect nearby actors cheaply.
+	const APawn* TargetingPawn = PlayerController->GetPawnOrSpectator();
 	TArray<FOverlapResult> Overlaps;
 	FCollisionQueryParams Params;
-	Params.AddIgnoredActor(TargetingActor);
+	Params.AddIgnoredActor(TargetingPawn);
+	Params.AddIgnoredActors(IgnoreActors);
 
-	TargetingActor->GetWorld()->OverlapMultiByChannel(
+	TargetingPawn->GetWorld()->OverlapMultiByChannel(
 		Overlaps,
-		TargetingActor->GetActorLocation(),
+		TargetingPawn->GetActorLocation(),
 		FQuat::Identity,
 		ECC_Target,
 		FCollisionShape::MakeSphere(TargetingRadius),
 		Params
 	);
-
-	TArray<FCandidateEntry> Result;
+	TArray<FLockOnCandidateEntry> Result;
 	Result.Reserve(Overlaps.Num());
-
+	TSet<AActor*> ProcessedActors;
 	for (const FOverlapResult& Overlap : Overlaps)
 	{
 		AActor* PotentialTarget = Overlap.GetActor();
-		if (!IsTargetValid(PotentialTarget)) { continue; }
-
-		// Hard distance cap (the overlap radius may be slightly larger).
-		const float Dist = FVector::Dist(TargetingActor->GetActorLocation(), PotentialTarget->GetActorLocation());
-		if (Dist > MaxLockOnDistance) { continue; }
-
-		// Line-of-sight check.
-		if (bRequireLineOfSight && !HasLineOfSight(TargetingActor, PotentialTarget)) { continue; }
-
-		Result.Add(FCandidateEntry(PotentialTarget, Dist));
+		if (ProcessedActors.Contains(PotentialTarget) || !IsTargetValid(PotentialTarget)) { continue; }
+		ProcessedActors.Add(PotentialTarget);
+		FLockOnCandidateEntry CandidateEntry = FLockOnCandidateEntry(PotentialTarget);
+		CandidateEntry.Distance = FVector::Dist(TargetingPawn->GetActorLocation(), Overlap.OverlapObjectHandle.GetLocation());
+		CandidateEntry.ScreenSpaceData = CalculateScreenSpaceData(PlayerController, PotentialTarget, bScore);
+		if (bScore)
+		{
+			CandidateEntry.DistanceScore = FMath::Pow(FMath::Clamp(1.f - (CandidateEntry.Distance / TargetingRadius), 0.f, 1.f), 2.f);
+			CandidateEntry.TotalScore = FMath::Pow(CandidateEntry.DistanceScore, 2.f) + FMath::Pow(CandidateEntry.ScreenSpaceData.ScreenScore, 2);
+			// dramatically reduce the score of candidates that are off-screen.
+			if (!CandidateEntry.ScreenSpaceData.bIsOnScreen)
+			{
+				CandidateEntry.TotalScore *= .01f;
+			}
+		}
+		Result.Add(CandidateEntry);
 	}
-
+	if (bScore)
+	{
+		Result.Sort(
+			[](const FLockOnCandidateEntry& A, const FLockOnCandidateEntry& B)
+			{
+				return A.TotalScore > B.TotalScore;
+			}
+		);
+	}
 	return Result;
 }
+
+FLockOnCandidateScreenSpaceData ULockOnFunctionLibrary::CalculateScreenSpaceData(const APlayerController* PlayerController, const AActor* TargetActor, const bool bScore)
+{
+	FLockOnCandidateScreenSpaceData Result;
+	Result.bIsOnScreen = PlayerController->ProjectWorldLocationToScreen(TargetActor->GetActorLocation(), Result.ScreenPosition);
+	if (Result.bIsOnScreen && bScore)
+	{
+		int32 ViewportSizeX, ViewportSizeY;
+		PlayerController->GetViewportSize(ViewportSizeX, ViewportSizeY);
+		const FVector2D ScreenCenter(ViewportSizeX * 0.5f, ViewportSizeY * 0.5f);
+		const FVector2D TargetOffset = Result.ScreenPosition - ScreenCenter;
+		const float NormalizedX = FMath::Abs(TargetOffset.X) / ScreenCenter.X;
+		const float NormalizedY = FMath::Abs(TargetOffset.Y) / ScreenCenter.Y;
+		// Find the maximum normalized penalty (will be 0.0 at center, 1.0 at screen edge)
+		const float MaxNormalizedOffset = FMath::Max(NormalizedX, NormalizedY);
+		Result.ScreenScore = FMath::Clamp(1.f - MaxNormalizedOffset, 0.f, 1.f);
+	}
+	return Result;
+}
+
 
 bool ULockOnFunctionLibrary::IsTargetValid(const AActor* Target)
 {
@@ -209,6 +262,27 @@ bool ULockOnFunctionLibrary::IsTargetValid(const AActor* Target)
 			return false;
 		}
 	}
+	return true;
+}
+
+bool ULockOnFunctionLibrary::GetCameraDistance(const FVector& TargetLocation, const FVector& CameraLocation, const FVector& CameraForward, float& OutCameraDistance)
+{
+	// Vector from camera to the potential target
+	const FVector ToTarget = TargetLocation - CameraLocation;
+
+	// Optional: If you want to calculate distance regardless of height/pitch, 
+	// you could clear the Z components here (e.g., ToTarget.Z = 0; CameraForward.Z = 0; and re-normalize)
+
+	// Project ToTarget onto the Camera Forward vector to find the closest point along the camera line
+	const float DirectDistance = FVector::DotProduct(ToTarget, CameraForward);
+
+	// If DirectDistance is negative, the target is actually BEHIND the camera view
+	if (DirectDistance < 0.0f) { return false; }
+
+	const FVector ProjectPoint = CameraLocation + (CameraForward * DirectDistance);
+
+	// This gives you the absolute perpendicular distance (in centimeters) from the center line of the camera view
+	OutCameraDistance = FVector::Dist(TargetLocation, ProjectPoint);
 	return true;
 }
 

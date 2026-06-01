@@ -3,6 +3,7 @@
 
 #include "Actor/Spawn/SpawnManager.h"
 
+#include "AI/Alert/AIAlertComponent.h"
 #include "Actor/Spawn/ActorTrackerComponent.h"
 #include "Actor/Spawn/EnemySpawnConfig.h"
 #include "Actor/Summon/SummonComponent.h"
@@ -81,6 +82,17 @@ void ASpawnManager::FinishSpawningEnemy(AElectricCastleEnemyCharacter* Enemy)
 	if (USummonComponent* SummonComponent = ISummoningActor::GetSummonComponent(Enemy))
 	{
 		SummonComponent->OnCountChanged.AddUniqueDynamic(this, &ASpawnManager::OnSummonCountChanged);
+	}
+	if (bOverrideAlertLevel)
+	{
+		if (UAIAlertComponent* AlertComponent = IAIAlertActor::GetAIAlertComponent(Enemy))
+		{
+			AlertComponent->OverrideAlertLevel(EAlertLevel::Alerted);
+			if (bPinAlertLevel)
+			{
+				AlertComponent->SetAlertLevelDecays(false);
+			}
+		}
 	}
 }
 

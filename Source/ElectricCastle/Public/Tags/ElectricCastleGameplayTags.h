@@ -97,7 +97,10 @@ struct FElectricCastleGameplayTags
 
 	/** Effect Tags **/
 	FGameplayTag Effect;
+	FGameplayTag Effect_Block_Abilities;
+	FGameplayTag Effect_Block_AI;
 	FGameplayTag Effect_Block_Damage;
+	FGameplayTag Effect_Block_Movement;
 	FGameplayTag Effect_Damage;
 	FGameplayTag Effect_Damage_Magic;
 	FGameplayTag Effect_Damage_Magic_Arcane;
@@ -204,6 +207,8 @@ struct FElectricCastleGameplayTags
 	FGameplayTag Abilities_Type_None;
 
 	/** Event Tags **/
+	FGameplayTag Event_Alert;
+	FGameplayTag Event_Alert_Damage;
 	FGameplayTag Event_Montage_Electrocute;
 	FGameplayTag Event_Montage_Common_BlockAttack;
 	FGameplayTag Event_Montage_Common_Blocked;
@@ -292,6 +297,13 @@ struct FElectricCastleGameplayTags
 	/** Message Tags **/
 	FGameplayTag Message_Default_Item_Pickup;
 	FGameplayTag Message_Default_Item_Use;
+
+	/** Significance Tags **/
+	FGameplayTag Significance_Category_Enemy;
+	FGameplayTag Significance_Category_Encounter;
+	FGameplayTag Significance_Level_Insignificant;
+	FGameplayTag Significance_Level_PartiallySignificant;
+	FGameplayTag Significance_Level_FullySignificant;
 
 
 	/**

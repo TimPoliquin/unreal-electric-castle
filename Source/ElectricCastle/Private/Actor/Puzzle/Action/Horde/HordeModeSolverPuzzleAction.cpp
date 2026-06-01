@@ -3,7 +3,7 @@
 
 #include "Actor/Puzzle/Action/Horde/HordeModeSolverPuzzleAction.h"
 
-#include "Actor/TriggerInterface.h"
+#include "Actor/Trigger/TriggerableInterface.h"
 #include "Actor/Horde/HordeModeActorInterface.h"
 #include "Actor/Horde/HordeModeComponent.h"
 #include "Actor/Puzzle/Manager/PuzzleManagerComponent.h"
@@ -25,9 +25,9 @@ void UHordeModeSolverPuzzleAction::Execute_Implementation() const
 	}
 	// if the horde mode actor is a trigger, use the trigger interface to activate.
 	// otherwise, just start the round.
-	if (ITriggerInterface::IsTrigger(HordeModeActor))
+	if (ITriggerableInterface::IsTrigger(HordeModeActor))
 	{
-		ITriggerInterface::Trigger(HordeModeActor, true);
+		ITriggerableInterface::Trigger(HordeModeActor, true);
 	}
 	else if (UHordeModeComponent* HordeModeComponent = IHordeModeActorInterface::GetHordeModeComponent(HordeModeActor))
 	{

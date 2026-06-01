@@ -64,7 +64,7 @@ bool UPlayerFunctionLibrary::IsPlayerLockedOn(const AActor* Actor)
 {
 	if (const ULockOnController* LockOnController = ILockOnActor::GetLockOnController(Actor))
 	{
-		return LockOnController->IsLockedOn();
+		return LockOnController->IsHardLockedOn();
 	}
 	return false;
 }

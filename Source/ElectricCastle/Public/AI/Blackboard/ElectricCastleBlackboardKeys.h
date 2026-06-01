@@ -9,6 +9,13 @@ namespace ElectricCastleBlackboardKeys::Alert
 	const FName LastKnownLocation = TEXT("LastKnownLocation");
 }
 
+namespace ElectricCastleBlackboardKeys::Effect
+{
+	const FName EffectBlockAbilities = TEXT("EffectBlockAbilities");
+	const FName EffectBlockAI = TEXT("EffectBlockAI");
+	const FName EffectBlockMovement = TEXT("EffectBlockMovement");
+}
+
 namespace ElectricCastleBlackboardKeys::Engagement
 {
 	const FName EngagementControlMode = TEXT("EngagementControlMode");
@@ -30,4 +37,9 @@ namespace ElectricCastleBlackboardKeys::Patrol
 namespace ElectricCastleBlackboardKeys::Status
 {
 	const FName IsDead = TEXT("IsDead");
+}
+
+namespace ElectricCastleBlackboardKeys::Significance
+{
+	const FName SignificanceLevel = TEXT("SignificanceLevel");
 }

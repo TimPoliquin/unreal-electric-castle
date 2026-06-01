@@ -4,13 +4,12 @@
 #include "Actor/Projectile/ArrowProjectile.h"
 
 #include "NiagaraComponent.h"
-#include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 #include "Components/CapsuleComponent.h"
+#include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "GameFramework/ProjectileMovementComponent.h"
-#include "Net/UnrealNetwork.h"
-
-#include "Player/Aim/AimActorInterface.h"
-#include "Player/Aim/AimController.h"
+#include "Kismet/GameplayStatics.h"
+#include "Player/LockOn/LockOnActor.h"
+#include "Player/LockOn/LockOnController.h"
 
 
 // Sets default values
@@ -33,26 +32,14 @@ AArrowProjectile::AArrowProjectile()
 void AArrowProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (bMatchOwnerForward && GetOwner())
-	{
-		const FRotator OwnerRotation = GetOwner()->GetActorRotation();
-		const FRotator NewRotation(Pitch, OwnerRotation.Yaw, OwnerRotation.Roll);
-		SetActorRotation(NewRotation);
-	}
-	else
+	// update the projectile vertical angle to match the velocity
+	if (ProjectileMovement->IsActive())
 	{
 		if (const FVector Vel = GetVelocity(); !Vel.IsNearlyZero())
 		{
 			SetActorRotation(FRotationMatrix::MakeFromX(Vel).Rotator());
 		}
 	}
-}
-
-void AArrowProjectile::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(AArrowProjectile, bMatchOwnerForward)
-	DOREPLIFETIME(AArrowProjectile, Pitch)
 }
 
 void AArrowProjectile::OnPool_Returned_Implementation(const FSpawnPoolEventPayload& Payload)
@@ -70,8 +57,6 @@ void AArrowProjectile::OnPool_FinishRetrieve_Implementation(const FSpawnPoolEven
 	Super::OnPool_FinishRetrieve_Implementation(Payload);
 	MeshComponent->Activate();
 	MeshComponent->SetVisibility(true);
-	bMatchOwnerForward = true;
-	Pitch = 0.f;
 	ProjectileMovement->StopMovementImmediately();
 	ProjectileMovement->ProjectileGravityScale = 0.f;
 	ProjectileMovement->Deactivate();
@@ -79,44 +64,69 @@ void AArrowProjectile::OnPool_FinishRetrieve_Implementation(const FSpawnPoolEven
 
 void AArrowProjectile::Release_Implementation()
 {
-	FSphereTraceParams Params;
-	Params.TraceRadius = CollisionComponent->GetScaledCapsuleRadius();
-	float ReleasePitch = Pitch;
 	FVector TargetLocation;
-	if (const UAimController* AimController = IAimActorInterface::GetAimController(GetInstigator()))
+	const AActor* TargetActor = nullptr;
+	TArray<AActor*> ActorsToIgnore;
+	ActorsToIgnore.Add(this);
+	ActorsToIgnore.Add(GetInstigator());
+	if (const ULockOnController* AimController = ILockOnActor::GetLockOnController(GetInstigator()))
 	{
-		TargetLocation = AimController->GetHitLocation();
-		SetActorRotation(AimController->CalculateRotationToFaceAimTarget(GetActorLocation()));
+		TargetActor = AimController->GetLockOnTarget();
+	}
+	if (IsValid(TargetActor))
+	{
+		TargetLocation = TargetActor->GetActorLocation();
 	}
 	else
 	{
 		FHitResult HitResult;
-		UElectricCastleAbilitySystemLibrary::FindHitBySphereTrace(bMatchOwnerForward ? GetOwner() : this, Params, HitResult);
-		TargetLocation = HitResult.ImpactPoint;
+		FCollisionQueryParams Params;
+		Params.AddIgnoredActors(ActorsToIgnore);
+		GetWorld()->LineTraceSingleByChannel(HitResult, GetActorLocation(), GetActorLocation() + GetActorForwardVector() * ProjectileMovement->InitialSpeed, ECC_Visibility, Params);
+		if (HitResult.bBlockingHit)
+		{
+			TargetLocation = HitResult.ImpactPoint;
+		}
+		else
+		{
+			TargetLocation = GetActorLocation() + GetActorForwardVector() * ProjectileMovement->InitialSpeed;
+		}
 	}
-	UElectricCastleAbilitySystemLibrary::CalculatePitchToHitTarget(GetActorLocation(), TargetLocation, ProjectileMovement->InitialSpeed, ReleasePitch);
 	if (bDebug)
 	{
-		DrawDebugSphere(GetWorld(), TargetLocation, 100.f, 10, FColor::Red, false, 1.f, 0, 1);
+		DrawDebugSphere(GetWorld(), TargetLocation, 20, 12, FColor::Red, false, 1, 0, 1);
 	}
-	const FVector ForwardVector = GetActorForwardVector();
-	// Get the actor's right vector (axis to rotate around)
-	const FVector RightVector = GetActorRightVector();
-	// Create a rotation of +10 degrees around the right axis
-	const FQuat RotationQuat = FQuat(RightVector, FMath::DegreesToRadians(-1 * ReleasePitch));
-	// Apply the rotation to the forward vector
-	const FVector NewForward = RotationQuat.RotateVector(ForwardVector);
-	ProjectileMovement->Velocity = NewForward * ProjectileMovement->InitialSpeed;
+	FVector NewVelocity;
+	if (!UGameplayStatics::SuggestProjectileVelocity(
+		this,
+		NewVelocity,
+		GetActorLocation(),
+		TargetLocation,
+		ProjectileMovement->InitialSpeed,
+		false,
+		CollisionComponent->GetScaledCapsuleRadius(),
+		0,
+		ESuggestProjVelocityTraceOption::OnlyTraceWhileAscending,
+		FCollisionResponseParams::DefaultResponseParam,
+		ActorsToIgnore,
+		bDebug,
+		true
+	))
+	{
+		if (bDebug)
+		{
+			UE_LOG(LogElectricCastle, Warning, TEXT("[%s] No valid velocity found - creating one based on forward vector"), *GetName())
+		}
+		NewVelocity = ProjectileMovement->InitialSpeed * GetActorForwardVector();
+	}
+	ProjectileMovement->Velocity = NewVelocity;
+	if (bDebug)
+	{
+		UE_LOG(LogElectricCastle, Warning, TEXT("[%s] fire velocity: %s"), *GetName(), *NewVelocity.ToString());
+	}
 	ProjectileMovement->bRotationFollowsVelocity = true;
 	ProjectileMovement->ProjectileGravityScale = 1.f;
-	bMatchOwnerForward = false;
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	TrailFX->Activate();
 	ProjectileMovement->Activate();
-	SetMatchOwnerForward(false);
-}
-
-void AArrowProjectile::SetMatchOwnerForward_Implementation(const bool bInMatchOwnerPitch)
-{
-	bMatchOwnerForward = bInMatchOwnerPitch;
 }

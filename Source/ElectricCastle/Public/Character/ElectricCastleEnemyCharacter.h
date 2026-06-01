@@ -10,13 +10,16 @@
 #include "Actor/Spawn/TrackableInterface.h"
 #include "AI/ElectricCastleAIController.h"
 #include "AI/Alert/AIAlertActor.h"
+#include "AI/Behavior/AIBehaviorTreeActor.h"
 #include "AI/Engagement/AIEngagementActor.h"
 #include "AI/Perception/AIPerceptionActor.h"
 #include "Actor/Attack/Component/AttackWindowManagerActor.h"
 #include "Actor/Patrol/PatrollingActor.h"
+#include "Actor/Significance/SignificanceSensitiveActor.h"
 #include "Components/TimelineComponent.h"
 #include "ElectricCastleEnemyCharacter.generated.h"
 
+class UActorSignificanceComponent;
 class UAIAlertComponent;
 class ULootSpawnComponent;
 class UTimelineComponent;
@@ -30,21 +33,21 @@ class ELECTRICCASTLE_API AElectricCastleEnemyCharacter : public AElectricCastleC
                                                          public IEnemyInterface,
                                                          public ITrackableInterface,
                                                          public IAttackWindowManagerActor,
+                                                         public IAIBehaviorTreeActor,
                                                          public IAIPerceptionActor,
                                                          public IAIAlertActor,
                                                          public IAIEngagementActor,
-                                                         public IPatrollingActor
+                                                         public IPatrollingActor,
+                                                         public ISignificanceSensitiveActor
 {
 	GENERATED_BODY()
 
 public:
 	AElectricCastleEnemyCharacter();
 	virtual void Tick(float DeltaTime) override;
-	virtual void PossessedBy(AController* NewController) override;
 	virtual UElectricCastleAttributeSet* GetAttributeSet() const override { return AttributeSet; }
 	virtual void PostInitializeComponents() override;
 
-	virtual void OnHitReactTagChanged(const FGameplayTag CallbackTag, int32 NewCount) override;
 	void SetTargetingRange(const float InTargetingRange) { TargetingRange = InTargetingRange; }
 	void SetMaxAIProcessingRange(const float InMaxProcessingRange) { MaxAIProcessingRange = InMaxProcessingRange; }
 
@@ -68,15 +71,8 @@ public:
 	/** End ICombatInterface **/
 
 	// IEnemyInterface
-	FORCEINLINE virtual AActor* GetCombatTarget_Implementation() const override
-	{
-		return CombatTarget;
-	}
-
-	FORCEINLINE virtual void SetCombatTarget_Implementation(AActor* InCombatTarget) override
-	{
-		CombatTarget = InCombatTarget;
-	}
+	virtual AActor* GetCombatTarget_Implementation() const override;
+	virtual void SetCombatTarget_Implementation(AActor* InCombatTarget) override;
 
 	virtual float GetMaxAIProcessingRange() const override
 	{
@@ -89,6 +85,11 @@ public:
 	/** Start IAttackWindowActor **/
 	virtual UAttackWindowManager* GetAttackWindowManager_Implementation() const override;
 	/** End IAttackWindowActor **/
+
+	/** Start IAIBehaviorTreeActor **/
+	virtual UBehaviorTree* GetBehaviorTree_Implementation() const override;
+	virtual bool ShouldAutoRunBehaviorTree_Implementation() const override;
+	/** End IAIBehaviorTreeActor **/
 
 	/** Start IAIPerceptionActor **/
 	virtual UAIPerceptionComponent* GetAIPerceptionComponent_Implementation() const override
@@ -122,27 +123,23 @@ public:
 
 	/** End IPatrollingActor **/
 
+	/** Start ISignificanceSensitiveActor **/
+	virtual void EnterSignificance_FullySignificant_Implementation() override;
+	virtual void EnterSignificance_PartiallySignificant_Implementation() override;
+	virtual void EnterSignificance_Insignificant_Implementation() override;
+	/** End ISignificanceSensitiveActor **/
+
 	UPROPERTY(BlueprintAssignable, Category = "GAS|Attributes")
 	FOnAttributeChangedSignature OnHealthChanged;
 	UPROPERTY(BlueprintAssignable, Category = "GAS|Attributes")
 	FOnAttributeChangedSignature OnMaxHealthChanged;
 
 	void SetLevel(const int32 InLevel) { Level = InLevel; }
-	ECharacterClass GetCharacterClass() const;
-	void SetCharacterClass(const ECharacterClass InCharacterClass);
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void InitializeAbilityActorInfo() override;
 	virtual void InitializeDefaultAttributes();
-	virtual void OnStatusShockAdded() override;
-	virtual void OnStatusShockRemoved() override;
-	virtual void OnStatusStaggeredAdded_Implementation() override;
-	virtual void OnStatusStaggeredRemoved_Implementation() override;
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	float GetStaggerLaunchForce() const;
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	float GetStaggerLaunchUpwardForce() const;
 	UFUNCTION(BlueprintNativeEvent)
 	void HandleGameDataLoaded();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Spawn")
@@ -159,8 +156,7 @@ protected:
 	void RegisterSockets(USocketManagerComponent* InSocketManagerComponent);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Stagger")
 	UAnimMontage* GetStaggerMontage() const;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Highlight")
-	bool bHighlighted;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
 	bool bShouldAnimateSpawn = false;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn", meta=(EditCondition="bShouldAnimateSpawn", EditConditionHides=true))
@@ -181,6 +177,8 @@ protected:
 	TObjectPtr<UChildActorComponent> WeaponChildActorComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UAttackWindowManager> AttackWindowManager;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
+	TObjectPtr<UActorSignificanceComponent> SignificanceComponent;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character Class Defaults")
 	int32 Level = 1;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character Class Defaults")
@@ -195,8 +193,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "AI")
 	TObjectPtr<UBehaviorTree> BehaviorTree;
-	UPROPERTY()
-	TObjectPtr<AElectricCastleAIController> AIController;
+
 	/** Attack range for the enemy. Note: This should probably be in the ability instead of the enemy. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 	float MaxAIProcessingRange = 2000;
@@ -215,14 +212,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI")
 	float AttackWaitDeviation = .5f;
 
-	UPROPERTY(BlueprintReadWrite, Category = "AI")
-	TObjectPtr<AActor> CombatTarget;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Properties|Status Effects|Stagger")
-	float StaggerLaunchForce = 250.f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Properties|Status Effects|Stagger")
-	float StaggerLaunchUpwardForce = 100.f;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties")
 	bool bDebug = false;
 
@@ -234,11 +223,12 @@ private:
 
 	void InitializeAttributeDelegates();
 	void InitializeStartupAbilities();
-	void InitializeAIController();
 	UPROPERTY()
 	TObjectPtr<UTimelineComponent> SpawnTimelineComponent;
 	FOnTimelineFloat OnSpawnTimelineTick;
 	FOnTimelineEvent OnSpawnTimelineFinished;
 	FOnTimelineFloat OnDissolveTimelineTick;
 	FOnTimelineEvent OnDissolveTimelineFinished;
+	TArray<TFunction<void()>> OnReadyForAIController;
+	FActiveGameplayEffectHandle SignificanceEffectHandle;
 };

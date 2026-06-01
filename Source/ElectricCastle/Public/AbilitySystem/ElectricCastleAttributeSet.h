@@ -256,4 +256,5 @@ private:
 	void SendBlockedEvent(const FEffectProperties& Props);
 	void SendXPEvent(const FEffectProperties& Props) const;
 	void SendReplenishVitalsEvent(AActor* AvatarActor);
+	void SendAlertEvent(const FEffectProperties& Props) const;
 };

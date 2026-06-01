@@ -15,13 +15,19 @@ UCLASS()
 class ELECTRICCASTLE_API UStatusEffectWidget : public UUserWidget
 {
 	GENERATED_BODY()
-	
+
 public:
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 	FGameplayTag GetStatusEffectTag() const;
 	void SetStatusEffectTag(const FGameplayTag& InStatusEffectTag);
 	void SetDuration(const float InDuration);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void SetIconFromTexture2D(UTexture2D* Icon);
+	UFUNCTION(BlueprintNativeEvent)
+	void SetBackgroundColor(FLinearColor InBackgroundColor);
+
 protected:
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(ExposeOnSpawn))
 	FGameplayTag StatusEffectTag;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(ExposeOnSpawn))
@@ -34,8 +40,7 @@ protected:
 	UMaterialInstanceDynamic* CreateDynamicMaterial(UImage* Image);
 	UFUNCTION(BlueprintImplementableEvent)
 	void SetIcon(FSlateBrush IconBrush);
-	UFUNCTION(BlueprintNativeEvent)
-	void SetBackgroundColor(FLinearColor InBackgroundColor);
+
 private:
 	float Runtime = 0.f;
 	UPROPERTY()

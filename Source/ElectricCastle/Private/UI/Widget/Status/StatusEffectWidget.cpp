@@ -4,10 +4,7 @@
 #include "UI/Widget/Status/StatusEffectWidget.h"
 
 #include "Blueprint/WidgetBlueprintLibrary.h"
-#include "Character/Status/StatusEffectConfig.h"
 #include "Components/Image.h"
-#include "ElectricCastle/ElectricCastleLogChannels.h"
-#include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMaterialLibrary.h"
 
@@ -22,7 +19,7 @@ void UStatusEffectWidget::NativeTick(const FGeometry& MyGeometry, const float In
 	if (Duration > 0 && Runtime <= Duration && IsValid(ProgressMaterialDynamic))
 	{
 		Runtime += InDeltaTime;
-		ProgressMaterialDynamic->SetScalarParameterValue(MaterialProgressParameter, FMath::Lerp(1.f, 0.f, Runtime/Duration));
+		ProgressMaterialDynamic->SetScalarParameterValue(MaterialProgressParameter, FMath::Lerp(1.f, 0.f, Runtime / Duration));
 	}
 }
 
@@ -34,23 +31,23 @@ FGameplayTag UStatusEffectWidget::GetStatusEffectTag() const
 void UStatusEffectWidget::SetStatusEffectTag(const FGameplayTag& InStatusEffectTag)
 {
 	StatusEffectTag = InStatusEffectTag;
-	const UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(GetWorld());
-	const UStatusEffectConfig* StatusEffectConfig = GameDataSubsystem ? GameDataSubsystem->GetStatusEffectConfig() : nullptr;
-	if (!StatusEffectConfig)
-	{
-		UE_LOG(LogElectricCastle, Error, TEXT("[%s] Could not get status effect config"), *GetName());
-		return;
-	}
-	if (FStatusEffectRow StatusEffectRow; StatusEffectConfig->FindStatusEffectByTag(InStatusEffectTag, StatusEffectRow))
-	{
-		SetIcon(UWidgetBlueprintLibrary::MakeBrushFromTexture(StatusEffectRow.Icon));
-		SetBackgroundColor(StatusEffectRow.EffectColor);
-	}
 }
 
 void UStatusEffectWidget::SetDuration(const float InDuration)
 {
 	Duration = InDuration;
+}
+
+void UStatusEffectWidget::SetIconFromTexture2D_Implementation(UTexture2D* Icon)
+{
+	if (IsValid(Icon))
+	{
+		SetIcon(UWidgetBlueprintLibrary::MakeBrushFromTexture(Icon));
+	}
+	else
+	{
+		SetIcon(FSlateBrush());
+	}
 }
 
 UMaterialInstanceDynamic* UStatusEffectWidget::CreateDynamicMaterial(UImage* Image)

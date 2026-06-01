@@ -6,6 +6,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "IContentBrowserSingleton.h"
+#include "ElectricCastle/ElectricCastle.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Input/ElectricCastleInputComponent.h"
 #include "Input/Utils/PlayerInputFunctionLibrary.h"
@@ -41,7 +42,7 @@ void USelectionWheelManagerComponent::AddListener(UObject* Listener)
 	}
 	if (!bHasAddedContext && Listeners.Num() > 0)
 	{
-		UPlayerInputFunctionLibrary::AddInputMappingContext(GetOwner(), InputMappingContext);
+		UPlayerInputFunctionLibrary::AddInputMappingContext(GetOwner(), InputMappingContext, MAPPING_CONTEXT_PRIORITY_UI);
 		bHasAddedContext = true;
 		OnSelectionWheelStateChanged.Broadcast(FSelectionWheelStateChangedPayload(true));
 	}

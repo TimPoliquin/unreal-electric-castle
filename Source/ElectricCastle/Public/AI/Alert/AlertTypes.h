@@ -11,7 +11,7 @@ enum class EAlertLevel : uint8
 	Idle,
 	Suspicious,
 	Alerted,
-	Count
+	Count UMETA(Hidden)
 };
 
 USTRUCT(BlueprintType)

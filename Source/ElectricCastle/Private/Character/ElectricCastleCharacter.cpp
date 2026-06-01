@@ -10,7 +10,7 @@
 #include "Actor/Effect/DissolveEffectComponent.h"
 #include "Actor/Highlight/HighlightComponent.h"
 #include "Actor/Mesh/SocketManagerComponent.h"
-#include "Character/Status/StatusEffectManagerComponent.h"
+#include "Actor/Status/StatusEffectManagerComponent.h"
 #include "ElectricCastle/ElectricCastle.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Components/CapsuleComponent.h"
@@ -61,11 +61,6 @@ FGameplayTag AElectricCastleCharacter::GetHitReactAbilityTagByDamageType_Impleme
 		return HitReactionsByDamageType[DamageTypeTag];
 	}
 	return FElectricCastleGameplayTags::Get().Effect_HitReact_Default;
-}
-
-bool AElectricCastleCharacter::IsStaggered_Implementation() const
-{
-	return StatusEffectTags.Contains(FElectricCastleGameplayTags::Get().Effect_Debuff_Type_Staggered);
 }
 
 UShapeComponent* AElectricCastleCharacter::GetPrimaryCollisionComponent() const
@@ -145,56 +140,8 @@ void AElectricCastleCharacter::AddCharacterAbilities()
 		return;
 	}
 	AbilitySystemComponent->GrantAbilities(Abilities);
-	AbilitySystemComponent->RegisterGameplayTagEvent(
-		FElectricCastleGameplayTags::Get().Effect_HitReact_Default,
-		EGameplayTagEventType::NewOrRemoved
-	).AddUObject(
-		this,
-		&AElectricCastleCharacter::OnHitReactTagChanged
-	);
 	TArray<FGameplayTag> HitReactionKeys;
 	HitReactionMontageByMontageTag.GetKeys(HitReactionKeys);
-	for (const FGameplayTag& HitReactionTag : HitReactionKeys)
-	{
-		AbilitySystemComponent->RegisterGameplayTagEvent(
-			HitReactionTag,
-			EGameplayTagEventType::NewOrRemoved
-		).AddUObject(
-			this,
-			&AElectricCastleCharacter::OnHitReactTagChanged
-		);
-	}
-}
-
-void AElectricCastleCharacter::OnHitReactTagChanged(const FGameplayTag CallbackTag, int32 NewCount)
-{
-	bHitReacting = NewCount > 0;
-	GetCharacterMovement()->MaxWalkSpeed = bHitReacting
-		                                       ? 0
-		                                       : BaseWalkSpeed;
-	if (bHitReacting)
-	{
-		GetCharacterMovement()->DisableMovement();
-	}
-	else
-	{
-		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-	}
-}
-
-bool AElectricCastleCharacter::IsHitReacting_Implementation() const
-{
-	return bHitReacting;
-}
-
-bool AElectricCastleCharacter::IsShocked() const
-{
-	return StatusEffectTags.Contains(FElectricCastleGameplayTags::Get().Effect_Debuff_Type_Shock);
-}
-
-bool AElectricCastleCharacter::IsBurned() const
-{
-	return StatusEffectTags.Contains(FElectricCastleGameplayTags::Get().Effect_Debuff_Type_Burn);
 }
 
 void AElectricCastleCharacter::Dissolve_Implementation() const
@@ -295,6 +242,7 @@ void AElectricCastleCharacter::MulticastHandleDeath_Implementation()
 	GetMesh()->SetEnableAnimation(false);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	Dissolve();
+	HandleDeathLocal();
 	OnDeathDelegate.Broadcast(this);
 }
 
@@ -332,12 +280,26 @@ void AElectricCastleCharacter::OnEffectAdd_LightningDamage_Implementation()
 
 void AElectricCastleCharacter::OnStatusStaggeredAdded_Implementation()
 {
-	// TODO
+	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
+	{
+		AnimInstance->StopAllMontages(0.f);
+	}
+	LaunchCharacter(GetActorForwardVector() * -1 * GetStaggerLaunchForce() + FVector::UpVector * GetStaggerLaunchUpwardForce(), true, true);
 }
 
 void AElectricCastleCharacter::OnStatusStaggeredRemoved_Implementation()
 {
 	// TOD
+}
+
+float AElectricCastleCharacter::GetStaggerLaunchUpwardForce_Implementation() const
+{
+	return StaggerLaunchUpwardForce;
+}
+
+float AElectricCastleCharacter::GetStaggerLaunchForce_Implementation() const
+{
+	return StaggerLaunchForce;
 }
 
 void AElectricCastleCharacter::Dissolve(
@@ -354,35 +316,6 @@ void AElectricCastleCharacter::Dissolve(
 		);
 		InMesh->SetMaterial(0, DynamicMaterialInstance);
 		(this->*Callback)(DynamicMaterialInstance);
-	}
-}
-
-void AElectricCastleCharacter::OnDebuffTypeBurnChanged(FGameplayTag GameplayTag, int StackCount)
-{
-	if (StackCount > 0)
-	{
-		StatusEffectTags.AddUnique(GameplayTag);
-		OnStatusBurnAdded();
-	}
-	else
-	{
-		StatusEffectTags.Remove(GameplayTag);
-		OnStatusBurnRemoved();
-	}
-}
-
-void AElectricCastleCharacter::OnDebuffTypeShockChanged(FGameplayTag StunTag, int32 Count)
-{
-	if (Count > 0)
-	{
-		StatusEffectTags.AddUnique(StunTag);
-		UE_LOG(LogElectricCastle, Warning, TEXT("[%s] is Stunned!"), *GetName());
-		OnStatusShockAdded();
-	}
-	else
-	{
-		StatusEffectTags.Remove(StunTag);
-		OnStatusShockRemoved();
 	}
 }
 
@@ -403,14 +336,6 @@ void AElectricCastleCharacter::OnEffectChange_Staggered(FGameplayTag StaggeredTa
 
 void AElectricCastleCharacter::RegisterStatusEffectTags(UElectricCastleAbilitySystemComponent* InAbilitySystemComponent)
 {
-	InAbilitySystemComponent->RegisterGameplayTagEvent(
-		FElectricCastleGameplayTags::Get().Effect_Debuff_Type_Shock,
-		EGameplayTagEventType::NewOrRemoved
-	).AddUObject(this, &AElectricCastleCharacter::OnDebuffTypeShockChanged);
-	InAbilitySystemComponent->RegisterGameplayTagEvent(
-		FElectricCastleGameplayTags::Get().Effect_Debuff_Type_Burn,
-		EGameplayTagEventType::NewOrRemoved
-	).AddUObject(this, &AElectricCastleCharacter::OnDebuffTypeBurnChanged);
 	InAbilitySystemComponent->RegisterGameplayTagEvent(
 		FElectricCastleGameplayTags::Get().Effect_Damage_Magic_Lightning,
 		EGameplayTagEventType::NewOrRemoved

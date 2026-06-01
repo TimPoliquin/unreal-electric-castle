@@ -32,22 +32,20 @@ public:
 	) override;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	bool IsLockedOn() const;
+	bool IsHardLockedOn() const;
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool HasLockOnTarget() const;
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool GetCanLockOn() const;
 	UFUNCTION(BlueprintCallable)
 	void SetLockOnSupported(const bool bInLockOnSupported);
-	UFUNCTION(BlueprintCallable)
-	bool ActivateLockOn();
-	UFUNCTION(BlueprintCallable)
-	void DeactivateLockOn();
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	float GetDistanceToTarget() const;
+	AActor* GetLockOnTarget() const;
 
 	UPROPERTY(BlueprintAssignable)
-	FLockOnTargetSignature OnLockOnTarget;
-	UPROPERTY(BLueprintAssignable)
-	FLockOnReleaseSignature OnLockOnRelease;
+	FLockOnTargetSignature OnLockOnTargetChanged;
+	UPROPERTY(BlueprintAssignable)
+	FLockOnTargetSignature OnLockOnLevelChanged;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -67,17 +65,22 @@ protected:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
 	bool bLockOnBlocked = false;
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
-	bool bLockOnActivated = false;
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
 	TWeakObjectPtr<AActor> TargetActor;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	ELockOnLevel LockOnLevel = ELockOnLevel::Soft;
 
 private:
 	UPROPERTY()
 	TWeakObjectPtr<AElectricCastlePlayerController> PlayerController;
-	FActiveGameplayEffectHandle LockedOnEffectHandle;
+	UFUNCTION()
+	void HandleTagChange_Effect_LockedOn(FGameplayTag LockedOnTag, int Count);
+	UFUNCTION()
+	bool ActivateHardLockOn();
+	UFUNCTION()
+	void DeactivateHardLockOn();
+
 	void UpdateLockOnTarget();
 	bool ShouldUpdateTarget() const;
-	TArray<AActor*> FindPotentialTargets() const;
 	void HandleTagChange_BlockLockOn(FGameplayTag LockOnTag, int Count);
 	void UpdateControllerRotation(float DeltaTime);
 	void DisengageCurrentTarget();
@@ -86,4 +89,9 @@ private:
 	void HandleTargetDestroyed(AActor* DestroyedActor);
 	void HandleSwitchTargetInput(const FInputActionValue& InputActionValue);
 	void UpdateWarpTarget() const;
+	void SetLockOnLevel(const ELockOnLevel InLockOnLevel);
+	UFUNCTION()
+	void HandleGameDataLoaded();
+
+	static const float REDUCED_TICK;
 };

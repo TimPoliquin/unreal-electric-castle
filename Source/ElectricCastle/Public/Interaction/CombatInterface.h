@@ -73,8 +73,6 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void Stagger();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	bool IsStaggered() const;
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	UNiagaraSystem* GetBloodEffect();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	FTaggedMontage GetTagMontageByTag(const FGameplayTag& MontageTag);
@@ -95,8 +93,6 @@ public:
 	AActor* GetWeapon() const;
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	FGameplayTag GetHitReactAbilityTagByDamageType(const FGameplayTag& DamageTypeTag) const;
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	bool IsHitReacting() const;
 	/**
 	 * 
 	 * @param Actor 
@@ -124,5 +120,4 @@ public:
 	static FVector GetCombatSocketLocation(const UObject* Actor, const FGameplayTag& SocketTag);
 	static AActor* GetWeapon(const UObject* Actor);
 	static FGameplayTag GetHitReactAbilityTagByDamageType(const UObject* Actor, const FGameplayTag& DamageTypeTag);
-	static bool IsHitReacting(const UObject* Actor);
 };

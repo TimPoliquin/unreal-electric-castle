@@ -16,7 +16,7 @@
 #include "Interaction/CombatInterface.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Player/ElectricCastlePlayerController.h"
-#include "Player/Aim/AimController.h"
+#include "Player/LockOn/LockOnController.h"
 
 
 UElectricCastleGameplayAbility::UElectricCastleGameplayAbility()
@@ -160,6 +160,26 @@ FVector UElectricCastleGameplayAbility::GetAvatarActorSocketLocation(const FGame
 	return GetAvatarActorFromActorInfo()->GetActorLocation();
 }
 
+FRotator UElectricCastleGameplayAbility::GetAvatarActorSocketRotation(const FGameplayTag& SocketTag, bool bIsWeaponSocket) const
+{
+	if (const USocketManagerComponent* SocketManagerComponent = ISocketManagerActor::GetSocketManagerComponent(
+		bIsWeaponSocket ? ICombatInterface::GetWeapon(GetAvatarActorFromActorInfo()) : GetAvatarActorFromActorInfo()
+	))
+	{
+		return SocketManagerComponent->GetSocketTransform(SocketTag).Rotator();
+	}
+	return GetAvatarActorFromActorInfo()->GetActorForwardVector().Rotation();
+}
+
+AActor* UElectricCastleGameplayAbility::GetAimTarget_Implementation() const
+{
+	if (const ULockOnController* LockOnController = ILockOnActor::GetLockOnController(GetAvatarActorFromActorInfo()))
+	{
+		return LockOnController->GetLockOnTarget();
+	}
+	return nullptr;
+}
+
 FTransform UElectricCastleGameplayAbility::CalculateSpawnTransform_Implementation(const FVector SpawnLocation) const
 {
 	FTransform SpawnTransform;
@@ -170,17 +190,19 @@ FTransform UElectricCastleGameplayAbility::CalculateSpawnTransform_Implementatio
 
 void UElectricCastleGameplayAbility::RotateTowardAvatarActorAimTarget_Implementation(AActor* ActorToRotate) const
 {
-	if (const UAimController* AimController = IAimActorInterface::GetAimController(GetAvatarActorFromActorInfo()))
+	if (const AActor* TargetActor = GetAimTarget())
 	{
-		ActorToRotate->SetActorRotation(AimController->CalculateRotationToFaceAimTarget(ActorToRotate->GetActorLocation()));
+		ActorToRotate->SetActorRotation(UKismetMathLibrary::FindLookAtRotation(ActorToRotate->GetActorLocation(), TargetActor->GetActorLocation()));
+		return;
 	}
+	ActorToRotate->SetActorRotation(GetAvatarActorForwardRotator());
 }
 
 FRotator UElectricCastleGameplayAbility::CalculateSpawnRotationFacingAimTarget_Implementation(const FVector SpawnLocation) const
 {
-	if (const UAimController* AimController = IAimActorInterface::GetAimController(GetAvatarActorFromActorInfo()))
+	if (const AActor* LockOnTarget = GetAimTarget())
 	{
-		return AimController->CalculateRotationToFaceAimTarget(SpawnLocation);
+		return UKismetMathLibrary::FindLookAtRotation(SpawnLocation, LockOnTarget->GetActorLocation());
 	}
 	return GetAvatarActorFromActorInfo()->GetActorForwardVector().Rotation();
 }

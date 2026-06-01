@@ -1,8 +1,9 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "Utils/RandUtils.h"
 #include "EngagementTypes.generated.h"
+
+class UEngagementMovementPlugin;
 
 UENUM(BlueprintType)
 enum class EEngagementLevel : uint8
@@ -12,7 +13,7 @@ enum class EEngagementLevel : uint8
 	Cautious,
 	Aggressive,
 	AllOut,
-	Count
+	Count UMETA(Hidden)
 };
 
 UENUM(BlueprintType)
@@ -22,7 +23,7 @@ enum class EEngagementRange : uint8
 	HangBack,
 	Ranged,
 	Close,
-	Count
+	Count UMETA(Hidden)
 };
 
 UENUM(BlueprintType)
@@ -32,7 +33,7 @@ enum class EEngagementAbilityMode : uint8
 	Support,
 	Defend,
 	Attack,
-	Count
+	Count UMETA(Hidden)
 };
 
 UENUM(BlueprintType)
@@ -42,7 +43,7 @@ enum class EEngagementControlMode : uint8
 	Static,
 	Randomized,
 	Directed,
-	Count
+	Count UMETA(Hidden)
 };
 
 USTRUCT(BlueprintType)
@@ -61,16 +62,6 @@ struct ELECTRICCASTLE_API FEngagementAIConfig
 };
 
 USTRUCT(BlueprintType)
-struct ELECTRICCASTLE_API FEngagementLevelConfig
-{
-	GENERATED_BODY()
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	EEngagementLevel EngagementLevel = EEngagementLevel::None;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FFloatRange AttackRate = FFloatRange::Inclusive(10.f, 30.f);
-};
-
-USTRUCT(BlueprintType)
 struct ELECTRICCASTLE_API FEngagementRangeConfig
 {
 	GENERATED_BODY()
@@ -78,6 +69,8 @@ struct ELECTRICCASTLE_API FEngagementRangeConfig
 	EEngagementRange Range = EEngagementRange::None;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FFloatRange PreferredDistance = FFloatRange::Inclusive(100.f, 500.f);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bIsPreferred = false;
 };
 
 USTRUCT(BlueprintType)

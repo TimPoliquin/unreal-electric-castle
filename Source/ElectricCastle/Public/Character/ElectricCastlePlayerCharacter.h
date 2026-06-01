@@ -200,11 +200,11 @@ protected:
 	UFUNCTION(BlueprintNativeEvent)
 	void EnableMasterPose(USkeletalMeshComponent* SkeletalMeshComponent);
 	UFUNCTION(BlueprintNativeEvent)
-	void HandleTagChange_EffectMovementTurnInPlace(FGameplayTag EffectMovementTurnInPlaceTag, int Count);
+	void HandleLockOnTargetChanged(const FLockOnTargetPayload& Payload);
 	UFUNCTION(BlueprintNativeEvent)
-	void HandleLockOnTarget(const FLockOnTargetPayload& Payload);
+	void HandleLockOnLevelChanged(const FLockOnTargetPayload& Payload);
 	UFUNCTION(BlueprintNativeEvent)
-	void HandleLockOnRelease();
+	void RegisterMeshSockets();
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components|Metahuman")
 	TObjectPtr<USkeletalMeshComponent> ClothingMesh;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components|Metahuman")

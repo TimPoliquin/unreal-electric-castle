@@ -11,6 +11,7 @@
 #include "Actor/CollidableInterface.h"
 #include "Actor/Highlight/HighlightActorInterface.h"
 #include "Actor/Mesh/SocketManagerActor.h"
+#include "Actor/Status/StatusEffectActor.h"
 #include "Interaction/CombatInterface.h"
 #include "ElectricCastleCharacter.generated.h"
 
@@ -39,7 +40,8 @@ class ELECTRICCASTLE_API AElectricCastleCharacter : public ACharacter,
                                                     public IHighlightActorInterface,
                                                     public ICombatInterface,
                                                     public ICollidableInterface,
-                                                    public ISocketManagerActor
+                                                    public ISocketManagerActor,
+                                                    public IStatusEffectActor
 {
 	GENERATED_BODY()
 
@@ -114,7 +116,6 @@ public:
 	}
 
 	virtual FGameplayTag GetHitReactAbilityTagByDamageType_Implementation(const FGameplayTag& DamageTypeTag) const override;
-	virtual bool IsStaggered_Implementation() const override;
 
 	/** Combat Interface End **/
 
@@ -126,9 +127,19 @@ public:
 	virtual USocketManagerComponent* GetSocketManagerComponent_Implementation() const override;
 	/** End ISocketManagerActor **/
 
+	/** Start IStatusEffectActor **/
+	virtual UStatusEffectManagerComponent* GetStatusEffectManagerComponent_Implementation() const override
+	{
+		return StatusEffectManagerComponent;
+	}
+
+	/** End IStatusEffectActor **/
+
 
 	UFUNCTION(NetMulticast, Reliable)
 	virtual void MulticastHandleDeath();
+	UFUNCTION(BlueprintImplementableEvent)
+	void HandleDeathLocal();
 
 protected:
 	virtual void BeginPlay() override;
@@ -144,13 +155,6 @@ protected:
 	void ApplyEffectToSelf(TSubclassOf<UGameplayEffect> Attributes, const float Level) const;
 
 	void AddCharacterAbilities();
-	UFUNCTION()
-	virtual void OnHitReactTagChanged(const FGameplayTag CallbackTag, int32 NewCount);
-	virtual bool IsHitReacting_Implementation() const override;
-	UFUNCTION(BlueprintCallable)
-	bool IsShocked() const;
-	UFUNCTION(BlueprintCallable)
-	bool IsBurned() const;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
 	float BaseWalkSpeed = 250.f;
@@ -172,14 +176,16 @@ protected:
 	TMap<FGameplayTag, FGameplayTag> HitReactionsByDamageType;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Combat")
 	ETeamAffiliation TeamAffiliation = ETeamAffiliation::None;
-	UPROPERTY(BlueprintReadOnly, Category = "Combat")
-	bool bHitReacting;
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	TObjectPtr<UAnimMontage> HitReactMontage;
 	UPROPERTY(EditAnywhere, Category = "Combat", meta=(Categories="Effect.HitReact"))
 	TMap<FGameplayTag, TObjectPtr<UAnimMontage>> HitReactionMontageByMontageTag;
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	TArray<FTaggedMontage> AttackMontages;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Properties|Status Effects|Stagger")
+	float StaggerLaunchForce = 250.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Properties|Status Effects|Stagger")
+	float StaggerLaunchUpwardForce = 100.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	TObjectPtr<UNiagaraSystem> BloodEffect;
@@ -198,7 +204,7 @@ protected:
 	{
 	}
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing=OnRep_StatusEffectTags, Category = "Combat")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	TArray<FGameplayTag> StatusEffectTags;
 
 	UFUNCTION()
@@ -206,25 +212,14 @@ protected:
 	{
 	}
 
-	virtual void OnStatusShockAdded()
-	{
-	};
-
-	virtual void OnStatusShockRemoved()
-	{
-	};
-
-	virtual void OnStatusBurnAdded()
-	{
-	};
-
-	virtual void OnStatusBurnRemoved()
-	{
-	};
 	UFUNCTION(BlueprintNativeEvent)
 	void OnStatusStaggeredAdded();
 	UFUNCTION(BlueprintNativeEvent)
 	void OnStatusStaggeredRemoved();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	float GetStaggerLaunchForce() const;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	float GetStaggerLaunchUpwardForce() const;
 
 	UFUNCTION(BlueprintNativeEvent)
 	void OnAbilitySystemReady(UElectricCastleAbilitySystemComponent* InAbilitySystemComponent);
@@ -249,10 +244,6 @@ private:
 		UMaterialInstance* MaterialInstance,
 		void (AElectricCastleCharacter::*Callback)(UMaterialInstanceDynamic*)
 	);
-	UFUNCTION()
-	void OnDebuffTypeBurnChanged(FGameplayTag GameplayTag, int StackCount);
-	UFUNCTION()
-	void OnDebuffTypeShockChanged(FGameplayTag StunTag, int32 Count);
 	UFUNCTION()
 	void OnEffectChange_Staggered(FGameplayTag StaggeredTag, int Count);
 	UFUNCTION()

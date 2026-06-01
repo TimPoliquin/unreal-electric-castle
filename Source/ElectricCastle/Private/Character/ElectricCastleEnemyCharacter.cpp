@@ -14,9 +14,8 @@
 #include "Actor/Attack/Component/AttackWindowManager.h"
 #include "Actor/Highlight/HighlightComponent.h"
 #include "Actor/Patrol/PatrolComponent.h"
+#include "Actor/Significance/Component/ActorSignificanceComponent.h"
 #include "ElectricCastle/ElectricCastle.h"
-#include "BehaviorTree/BehaviorTree.h"
-#include "BehaviorTree/BlackboardComponent.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "UI/Widget/AuraUserWidget.h"
@@ -24,9 +23,7 @@
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/TimelineComponent.h"
-#include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "Item/Component/LootSpawnComponent.h"
-#include "Navigation/PathFollowingComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Tags/ElectricCastleGameplayTags.h"
 
@@ -36,13 +33,12 @@ AElectricCastleEnemyCharacter::AElectricCastleEnemyCharacter()
 	TeamAffiliation = ETeamAffiliation::Enemy;
 	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 	GetMesh()->SetRenderCustomDepth(false);
+	GetMesh()->bEnableUpdateRateOptimizations = true;
 	GetCharacterMovement()->bUseControllerDesiredRotation = true;
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
 	bUseControllerRotationYaw = false;
-	AbilitySystemComponent = CreateDefaultSubobject<UElectricCastleAbilitySystemComponent>(
-		TEXT("AbilitySystemComponent")
-	);
+	AbilitySystemComponent = CreateDefaultSubobject<UElectricCastleAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
 	AbilitySystemComponent->bShouldSave = false;
@@ -61,6 +57,8 @@ AElectricCastleEnemyCharacter::AElectricCastleEnemyCharacter()
 	CharacterDissolveComponent = CreateDefaultSubobject<UDissolveEffectComponent>(TEXT("Character Dissolve Component"));
 	LootSpawnComponent = CreateDefaultSubobject<ULootSpawnComponent>(TEXT("Loot Spawn Component"));
 	AttackWindowManager = CreateDefaultSubobject<UAttackWindowManager>(TEXT("Attack Window Manager"));
+	SignificanceComponent = CreateDefaultSubobject<UActorSignificanceComponent>(TEXT("Significance Component"));
+	SignificanceComponent->SetSignificanceTag(FElectricCastleGameplayTags::Get().Significance_Category_Enemy);
 	Tags.Add(TAG_ENEMY);
 	HighlightComponent->SetHighlightType(EHighlightType::Enemy);
 }
@@ -151,59 +149,6 @@ void AElectricCastleEnemyCharacter::InitializeDefaultAttributes()
 	OnAbilitySystemReady(Cast<UElectricCastleAbilitySystemComponent>(AbilitySystemComponent));
 }
 
-void AElectricCastleEnemyCharacter::OnStatusShockAdded()
-{
-	Super::OnStatusShockAdded();
-	if (AIController && AIController->GetBlackboardComponent())
-	{
-		AIController->GetBlackboardComponent()->SetValueAsBool(FName("IsStunned"), true);
-	}
-}
-
-void AElectricCastleEnemyCharacter::OnStatusShockRemoved()
-{
-	Super::OnStatusShockRemoved();
-	if (AIController && AIController->GetBlackboardComponent())
-	{
-		AIController->GetBlackboardComponent()->SetValueAsBool(FName("IsStunned"), false);
-	}
-}
-
-void AElectricCastleEnemyCharacter::OnStatusStaggeredAdded_Implementation()
-{
-	Super::OnStatusStaggeredAdded_Implementation();
-	if (AIController && AIController->GetBlackboardComponent())
-	{
-		AIController->GetBlackboardComponent()->SetValueAsBool(FName("IsStaggered"), true);
-		AIController->StopMovement();
-	}
-	GetMovementComponent()->StopMovementImmediately();
-	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
-	{
-		AnimInstance->StopAllMontages(0.f);
-	}
-	LaunchCharacter(GetActorForwardVector() * -1 * GetStaggerLaunchForce() + FVector::UpVector * GetStaggerLaunchUpwardForce(), true, true);
-}
-
-void AElectricCastleEnemyCharacter::OnStatusStaggeredRemoved_Implementation()
-{
-	Super::OnStatusStaggeredRemoved_Implementation();
-	if (AIController && AIController->GetBlackboardComponent())
-	{
-		AIController->GetBlackboardComponent()->SetValueAsBool(FName("IsStaggered"), false);
-	}
-}
-
-float AElectricCastleEnemyCharacter::GetStaggerLaunchUpwardForce_Implementation() const
-{
-	return StaggerLaunchUpwardForce;
-}
-
-float AElectricCastleEnemyCharacter::GetStaggerLaunchForce_Implementation() const
-{
-	return StaggerLaunchForce;
-}
-
 UAnimMontage* AElectricCastleEnemyCharacter::GetStaggerMontage_Implementation() const
 {
 	return Execute_GetHitReactMontage(this, FElectricCastleGameplayTags::Get().Effect_HitReact);
@@ -211,7 +156,7 @@ UAnimMontage* AElectricCastleEnemyCharacter::GetStaggerMontage_Implementation() 
 
 void AElectricCastleEnemyCharacter::HandleGameDataLoaded_Implementation()
 {
-	InitializeAIController();
+	// Empty for now
 }
 
 void AElectricCastleEnemyCharacter::RegisterSockets_Implementation(USocketManagerComponent* InSocketManagerComponent)
@@ -264,16 +209,6 @@ void AElectricCastleEnemyCharacter::SpawnAnimation_Finalize_Implementation()
 	SpawnTimelineComponent->DestroyComponent();
 }
 
-ECharacterClass AElectricCastleEnemyCharacter::GetCharacterClass() const
-{
-	return CharacterClass;
-}
-
-void AElectricCastleEnemyCharacter::SetCharacterClass(const ECharacterClass InCharacterClass)
-{
-	this->CharacterClass = InCharacterClass;
-}
-
 void AElectricCastleEnemyCharacter::InitializeStartupAbilities()
 {
 	if (HasAuthority())
@@ -282,62 +217,10 @@ void AElectricCastleEnemyCharacter::InitializeStartupAbilities()
 	}
 }
 
-void AElectricCastleEnemyCharacter::InitializeAIController()
-{
-	if (AIController->GetBlackboardComponent() && BehaviorTree)
-	{
-		AIController->GetBlackboardComponent()->InitializeBlackboard(*BehaviorTree->BlackboardAsset);
-	}
-	AIController->RunBehaviorTree(BehaviorTree);
-	AIController->InitializeDependencies();
-	AIController->GetBlackboardComponent()->SetValueAsBool(FName("HitReacting"), false);
-	AIController->GetBlackboardComponent()->SetValueAsBool(
-		FName("IsRanged"),
-		CharacterClassUtils::IsRangedAttacker(CharacterClass)
-	);
-	AIController->GetBlackboardComponent()->SetValueAsFloat(FName("TargetingRange"), TargetingRange);
-	AIController->GetBlackboardComponent()->SetValueAsFloat(
-		FName("AttackRange_Min"),
-		AttackRange - AttackRangeTolerance
-	);
-	AIController->GetBlackboardComponent()->SetValueAsFloat(
-		FName("AttackRange_Max"),
-		AttackRange + AttackRangeTolerance
-	);
-	AIController->GetBlackboardComponent()->SetValueAsFloat(
-		FName("AttackWaitTime"),
-		AttackWaitTime
-	);
-	AIController->GetBlackboardComponent()->SetValueAsFloat(
-		FName("AttackWaitDeviation"),
-		AttackWaitDeviation
-	);
-}
 
 void AElectricCastleEnemyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-}
-
-void AElectricCastleEnemyCharacter::PossessedBy(AController* NewController)
-{
-	Super::PossessedBy(NewController);
-	if (!HasAuthority())
-	{
-		return;
-	}
-	AIController = CastChecked<AElectricCastleAIController>(NewController);
-	if (UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(this))
-	{
-		if (GameDataSubsystem->IsGameDataLoaded())
-		{
-			InitializeAIController();
-		}
-		else
-		{
-			GameDataSubsystem->OnGameDataLoaded.AddUniqueDynamic(this, &AElectricCastleEnemyCharacter::HandleGameDataLoaded);
-		}
-	}
 }
 
 void AElectricCastleEnemyCharacter::SetVisible_Implementation(const bool bInVisible)
@@ -392,6 +275,26 @@ void AElectricCastleEnemyCharacter::Die()
 	SpawnLoot();
 }
 
+AActor* AElectricCastleEnemyCharacter::GetCombatTarget_Implementation() const
+{
+	if (!AIEngagementController)
+	{
+		UE_LOG(LogElectricCastle, Error, TEXT("[%s] AI Engagement Controller is not initialized!"), *GetName())
+		return nullptr;
+	}
+	return AIEngagementController->GetEngagementTarget();
+}
+
+void AElectricCastleEnemyCharacter::SetCombatTarget_Implementation(AActor* InCombatTarget)
+{
+	if (!AIEngagementController)
+	{
+		UE_LOG(LogElectricCastle, Error, TEXT("[%s] AI Engagement Controller is not initialized!"), *GetName())
+		return;
+	}
+	AIEngagementController->SetEngagementTarget(InCombatTarget);
+}
+
 FOnTrackableStopTrackingSignature& AElectricCastleEnemyCharacter::GetStopTrackingDelegate()
 {
 	return OnTrackableStopTracking;
@@ -402,17 +305,85 @@ UAttackWindowManager* AElectricCastleEnemyCharacter::GetAttackWindowManager_Impl
 	return AttackWindowManager;
 }
 
+UBehaviorTree* AElectricCastleEnemyCharacter::GetBehaviorTree_Implementation() const
+{
+	return BehaviorTree;
+}
+
+bool AElectricCastleEnemyCharacter::ShouldAutoRunBehaviorTree_Implementation() const
+{
+	return true;
+}
+
+void AElectricCastleEnemyCharacter::EnterSignificance_FullySignificant_Implementation()
+{
+	constexpr float FullTickRate = 0.f;
+	AIAlertComponent->Activate();
+	AIAlertComponent->SetComponentTickInterval(FullTickRate);
+	PatrolComponent->Activate();
+	PerceptionComponent->Activate();
+	PerceptionComponent->SetComponentTickInterval(FullTickRate);
+	PerceptionComponent->SetComponentTickInterval(FullTickRate);
+	AIEngagementController->Activate();
+	AIEngagementController->SetComponentTickInterval(FullTickRate);
+	GetCharacterMovement()->SetComponentTickInterval(FullTickRate);
+	GetMesh()->bPauseAnims = false;
+	GetMesh()->SetComponentTickEnabled(true);
+	GetMesh()->PrimaryComponentTick.TickInterval = FullTickRate;
+	SetActorTickEnabled(true);
+	SetActorTickInterval(FullTickRate);
+	if (SignificanceEffectHandle.IsValid())
+	{
+		UElectricCastleAbilitySystemLibrary::RemoveGameplayEffect(this, SignificanceEffectHandle, true, true);
+	}
+	SignificanceEffectHandle = UElectricCastleAbilitySystemLibrary::ApplyInfiniteEffectByTag(this, FElectricCastleGameplayTags::Get().Significance_Level_FullySignificant);
+}
+
+void AElectricCastleEnemyCharacter::EnterSignificance_PartiallySignificant_Implementation()
+{
+	constexpr float ReducedTickRate = 1.f / 15.f;
+	AIAlertComponent->Activate();
+	AIAlertComponent->SetComponentTickInterval(ReducedTickRate);
+	PatrolComponent->Activate();
+	PerceptionComponent->Activate();
+	PerceptionComponent->SetComponentTickInterval(ReducedTickRate);
+	PerceptionComponent->SetComponentTickInterval(ReducedTickRate);
+	AIEngagementController->Activate();
+	AIEngagementController->SetComponentTickInterval(0); // let engagement controller run at full tick
+	GetCharacterMovement()->SetComponentTickInterval(ReducedTickRate);
+	GetMesh()->bPauseAnims = false;
+	GetMesh()->SetComponentTickEnabled(true);
+	GetMesh()->PrimaryComponentTick.TickInterval = ReducedTickRate;
+	SetActorTickEnabled(true);
+	SetActorTickInterval(ReducedTickRate);
+	if (SignificanceEffectHandle.IsValid())
+	{
+		UElectricCastleAbilitySystemLibrary::RemoveGameplayEffect(this, SignificanceEffectHandle, true, true);
+	}
+	SignificanceEffectHandle = UElectricCastleAbilitySystemLibrary::ApplyInfiniteEffectByTag(this, FElectricCastleGameplayTags::Get().Significance_Level_PartiallySignificant);
+}
+
+void AElectricCastleEnemyCharacter::EnterSignificance_Insignificant_Implementation()
+{
+	AIAlertComponent->Deactivate();
+	PatrolComponent->Deactivate();
+	PerceptionComponent->Deactivate();
+	AIEngagementController->Deactivate();
+	AIEngagementController->SetComponentTickEnabled(false);
+	GetCharacterMovement()->StopMovementImmediately();
+	GetMesh()->GetAnimInstance()->StopAllMontages(false);
+	GetMesh()->bPauseAnims = true;
+	SetActorTickEnabled(false);
+	GetMesh()->SetComponentTickEnabled(false);
+	if (SignificanceEffectHandle.IsValid())
+	{
+		UElectricCastleAbilitySystemLibrary::RemoveGameplayEffect(this, SignificanceEffectHandle, true, true);
+	}
+	SignificanceEffectHandle = UElectricCastleAbilitySystemLibrary::ApplyInfiniteEffectByTag(this, FElectricCastleGameplayTags::Get().Significance_Level_Insignificant);
+}
+
 void AElectricCastleEnemyCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 	RegisterSockets(SocketManagerComponent);
-}
-
-void AElectricCastleEnemyCharacter::OnHitReactTagChanged(const FGameplayTag CallbackTag, int32 NewCount)
-{
-	Super::OnHitReactTagChanged(CallbackTag, NewCount);
-	if (AIController && AIController->GetBlackboardComponent())
-	{
-		AIController->GetBlackboardComponent()->SetValueAsBool(FName("HitReacting"), bHitReacting);
-	}
 }

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "SpawnInterface.h"
+#include "AI/Alert/AlertTypes.h"
 #include "GameFramework/Actor.h"
 #include "SpawnManager.generated.h"
 
@@ -44,6 +45,12 @@ protected:
 	TObjectPtr<UActorTrackerComponent> EnemyTrackerComponent;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UChildActorComponent> SpawnPointComponent;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bOverrideAlertLevel = true;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(EditCondition=bOverrideAlertLevel, EditConditionHides))
+	EAlertLevel AlertLevelOverride = EAlertLevel::Alerted;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(EditCondition=bOverrideAlertLevel, EditConditionHides))
+	bool bPinAlertLevel = true;
 
 private:
 	UFUNCTION()

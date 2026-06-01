@@ -9,6 +9,7 @@
 #include "AbilitySystem/ElectricCastleAbilitySystemInterface.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 #include "AbilitySystem/Debuff/DebuffConfig.h"
+#include "Actor/Team/TeamUtils.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "GameFramework/Character.h"
@@ -255,6 +256,10 @@ void UElectricCastleAttributeSet::HandleIncomingDamage(const FEffectProperties& 
 	{
 		SendBlockedEvent(Props);
 	}
+	if (UTeamUtils::HaveHostileRelationship(Props.Target.AvatarActor, Props.Source.AvatarActor))
+	{
+		SendAlertEvent(Props);
+	}
 	// show damage results
 	ShowDamageText(Props, IncomingDamage);
 }
@@ -387,7 +392,6 @@ void UElectricCastleAttributeSet::ShowDamageText(const FEffectProperties& Props,
 
 void UElectricCastleAttributeSet::SendParriedEvent(const FEffectProperties& Props)
 {
-	UE_LOG(LogElectricCastle, Warning, TEXT("Parried!"))
 	const FElectricCastleGameplayTags& GameplayTags = FElectricCastleGameplayTags::Get();
 	// tell the target that they successfully parried
 	FGameplayEventData ParryAttackPayload;
@@ -410,7 +414,6 @@ void UElectricCastleAttributeSet::SendParriedEvent(const FEffectProperties& Prop
 
 void UElectricCastleAttributeSet::SendBlockedEvent(const FEffectProperties& Props)
 {
-	UE_LOG(LogElectricCastle, Warning, TEXT("Blocked!"))
 	const FElectricCastleGameplayTags& GameplayTags = FElectricCastleGameplayTags::Get();
 	// tell the target that they successfully blocked
 	FGameplayEventData BlockAttackPayload;
@@ -453,4 +456,16 @@ void UElectricCastleAttributeSet::SendReplenishVitalsEvent(AActor* AvatarActor)
 		Payload.EventTag,
 		Payload
 	);
+}
+
+void UElectricCastleAttributeSet::SendAlertEvent(const FEffectProperties& Props) const
+{
+	const FElectricCastleGameplayTags& GameplayTags = FElectricCastleGameplayTags::Get();
+	FGameplayEventData AlertPayload;
+	AlertPayload.EventTag = GameplayTags.Event_Alert_Damage;
+	AlertPayload.Target = Props.Target.AvatarActor;
+	AlertPayload.Instigator = Props.Source.AvatarActor;
+	AlertPayload.ContextHandle = Props.Target.AbilitySystemComponent->MakeEffectContext();
+	UElectricCastleAbilitySystemLibrary::CopyEffectContextHandleProperties(Props.EffectContextHandle, AlertPayload.ContextHandle);
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Props.Target.AvatarActor, GameplayTags.Event_Alert_Damage, AlertPayload);
 }

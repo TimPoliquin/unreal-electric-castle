@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "CinematicHandlerTypes.h"
 #include "CinematicPlaybackActorInterface.h"
-#include "Actor/TriggerInterface.h"
+#include "Actor/Trigger/TriggerableInterface.h"
 #include "GameFramework/Actor.h"
 #include "CinematicPlaybackActor.generated.h"
 
@@ -13,7 +13,7 @@ class UCinematicSequenceMetadata;
 class UCinematicContext;
 
 UCLASS()
-class ELECTRICCASTLE_API ACinematicPlaybackActor : public AActor, public ICinematicPlaybackActorInterface, public ITriggerInterface
+class ELECTRICCASTLE_API ACinematicPlaybackActor : public AActor, public ICinematicPlaybackActorInterface, public ITriggerableInterface
 {
 	GENERATED_BODY()
 

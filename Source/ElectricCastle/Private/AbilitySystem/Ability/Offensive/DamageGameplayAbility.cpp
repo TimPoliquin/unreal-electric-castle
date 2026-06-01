@@ -63,7 +63,7 @@ void UDamageGameplayAbility::DamageTarget_Implementation(AActor* Target, const F
 {
 	if (!IsValid(Target) || !ICombatInterface::IsAlive(Target))
 	{
-		UE_LOG(LogElectricCastle, Warning, TEXT("[%s] Target is invalid or not alive!"), *GetName());
+		UE_LOG(LogElectricCastle, Warning, TEXT("[%s] Target is invalid or not alive! %s"), *GetName(), Target ? *Target->GetName() : *FString("NULLPTR"));
 		return;
 	}
 	if (!DamageEffectClass)

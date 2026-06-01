@@ -27,7 +27,7 @@ bool ICombatInterface::IsDead(const UObject* Actor)
 
 TArray<FTaggedMontage> ICombatInterface::GetAttackMontages(const UObject* Actor)
 {
-	if (Actor && Actor->Implements<UCombatInterface>())
+	if (IsValid(Actor) && Actor->Implements<UCombatInterface>())
 	{
 		return Execute_GetAttackMontages(Actor);
 	}
@@ -36,7 +36,7 @@ TArray<FTaggedMontage> ICombatInterface::GetAttackMontages(const UObject* Actor)
 
 TArray<FName> ICombatInterface::GetTargetTagsToIgnore(const UObject* Actor)
 {
-	if (Actor && Actor->Implements<UCombatInterface>())
+	if (IsValid(Actor) && Actor->Implements<UCombatInterface>())
 	{
 		return Execute_GetTargetTagsToIgnore(Actor);
 	}
@@ -112,13 +112,4 @@ FGameplayTag ICombatInterface::GetHitReactAbilityTagByDamageType(
 		return Execute_GetHitReactAbilityTagByDamageType(Actor, DamageTypeTag);
 	}
 	return FElectricCastleGameplayTags::Get().Effect_HitReact_Default;
-}
-
-bool ICombatInterface::IsHitReacting(const UObject* Actor)
-{
-	if (Actor && Actor->Implements<UCombatInterface>())
-	{
-		return Execute_IsHitReacting(Actor);
-	}
-	return false;
 }

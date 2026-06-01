@@ -20,7 +20,7 @@ void UFormLockOnConfig::OnFormActivated_Implementation(AActor* Actor, UPlayerFor
 	{
 		LockOnController->SetLockOnSupported(true);
 	}
-	if (LockOnAbilityTag.IsValid())
+	if (LockOnAbilityTag.IsValid() && bAutoGrantAndRemove)
 	{
 		if (UElectricCastleAbilitySystemComponent* AbilitySystemComponent = UElectricCastleAbilitySystemLibrary::GetAbilitySystemComponent(Actor))
 		{
@@ -36,7 +36,7 @@ void UFormLockOnConfig::OnFormDeactivated_Implementation(AActor* Actor, UPlayerF
 	{
 		LockOnController->SetLockOnSupported(false);
 	}
-	if (LockOnAbilityTag.IsValid())
+	if (LockOnAbilityTag.IsValid() && bAutoGrantAndRemove)
 	{
 		if (UElectricCastleAbilitySystemComponent* AbilitySystemComponent = UElectricCastleAbilitySystemLibrary::GetAbilitySystemComponent(Actor))
 		{

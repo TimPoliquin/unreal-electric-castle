@@ -11,23 +11,28 @@
 #include "Actor/MotionWarping/MotionWarpingActor.h"
 #include "Character/ElectricCastleEnemyCharacter.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
+#include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "Input/Utils/PlayerInputFunctionLibrary.h"
 #include "Interaction/CombatInterface.h"
-#include "Kismet/GameplayStatics.h"
 #include "Player/ElectricCastlePlayerController.h"
 #include "Player/LockOn/LockOnFunctionLibrary.h"
 #include "Tags/ElectricCastleGameplayTags.h"
 
+const float ULockOnController::REDUCED_TICK = 1.f / 10.f;
 
-// Sets default values for this component's properties
 ULockOnController::ULockOnController()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bStartWithTickEnabled = false;
+	// set tick interval to 10 fps
+	SetComponentTickInterval(REDUCED_TICK);
+	bAutoActivate = false;
 }
 
 void ULockOnController::HandleAbilitySystemReady(UElectricCastleAbilitySystemComponent* InAbilitySystemComponent)
 {
 	const FElectricCastleGameplayTags& GameplayTags = FElectricCastleGameplayTags::Get();
+	InAbilitySystemComponent->RegisterGameplayTagEvent(GameplayTags.Effect_State_LockedOn, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &ULockOnController::HandleTagChange_Effect_LockedOn);
 	InAbilitySystemComponent->RegisterGameplayTagEvent(
 		GameplayTags.Player_Block_LockOn,
 		EGameplayTagEventType::NewOrRemoved
@@ -39,6 +44,17 @@ void ULockOnController::HandleAbilitySystemReady(UElectricCastleAbilitySystemCom
 		GameplayTags.Player_Block_LockOn,
 		InAbilitySystemComponent->GetTagCount(GameplayTags.Player_Block_LockOn)
 	);
+	if (UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(GetWorld()))
+	{
+		if (GameDataSubsystem->IsGameDataLoaded())
+		{
+			SetComponentTickEnabled(true);
+		}
+		else
+		{
+			GameDataSubsystem->OnGameDataLoaded.AddUniqueDynamic(this, &ULockOnController::HandleGameDataLoaded);
+		}
+	}
 }
 
 void ULockOnController::SetPlayerController(AElectricCastlePlayerController* InPlayerController)
@@ -64,25 +80,46 @@ void ULockOnController::TickComponent(
 )
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	if (bLockOnActivated && GetCanLockOn())
+	if (GetCanLockOn())
 	{
 		UpdateLockOnTarget();
 		UpdateControllerRotation(DeltaTime);
+		UpdateWarpTarget();
 	}
-	else if (bLockOnActivated)
+	if (ULockOnFunctionLibrary::IsTargetValid(TargetActor.Get()) && LockOnLevel == ELockOnLevel::Hard)
 	{
-		DeactivateLockOn();
+		if (GetComponentTickInterval() > 0.f)
+		{
+			SetComponentTickInterval(0);
+		}
+	}
+	else
+	{
+		SetComponentTickInterval(REDUCED_TICK);
 	}
 }
 
-bool ULockOnController::IsLockedOn() const
+bool ULockOnController::IsHardLockedOn() const
 {
-	return bLockOnActivated;
+	return LockOnLevel == ELockOnLevel::Hard;
+}
+
+bool ULockOnController::HasLockOnTarget() const
+{
+	return TargetActor.IsValid();
 }
 
 bool ULockOnController::GetCanLockOn() const
 {
-	return bLockOnSupported && !bLockOnBlocked;
+	switch (LockOnLevel)
+	{
+	case ELockOnLevel::Soft:
+		return true;
+	case ELockOnLevel::Hard:
+		return bLockOnSupported && !bLockOnBlocked;
+	default:
+		return false;
+	}
 }
 
 void ULockOnController::SetLockOnSupported(const bool bInLockOnSupported)
@@ -90,7 +127,19 @@ void ULockOnController::SetLockOnSupported(const bool bInLockOnSupported)
 	bLockOnSupported = bInLockOnSupported;
 }
 
-bool ULockOnController::ActivateLockOn()
+void ULockOnController::HandleTagChange_Effect_LockedOn(FGameplayTag LockedOnTag, int Count)
+{
+	if (Count > 0 && LockOnLevel != ELockOnLevel::Hard)
+	{
+		ActivateHardLockOn();
+	}
+	else if (LockOnLevel == ELockOnLevel::Hard)
+	{
+		DeactivateHardLockOn();
+	}
+}
+
+bool ULockOnController::ActivateHardLockOn()
 {
 	if (!PlayerController.IsValid())
 	{
@@ -108,85 +157,63 @@ bool ULockOnController::ActivateLockOn()
 		UE_LOG(LogElectricCastle, Warning, TEXT("[%s:%s] Lock on blocked!"), *GetOwner()->GetName(), *GetName())
 		return false;
 	}
-	if (bLockOnActivated)
+	if (ULockOnFunctionLibrary::IsTargetValid(TargetActor.Get()))
 	{
-		UE_LOG(LogElectricCastle, Warning, TEXT("[%s:%s] Lock on already active!"), *GetOwner()->GetName(), *GetName())
-		return false;
+		// don't switch targets if you already have one
 	}
-	if (AActor* NewTarget = ULockOnFunctionLibrary::FindClosestTarget(GetOwner(), MaxLockOnDistance, MaxLockOnDistance, true))
+	else if (AActor* NewTarget = ULockOnFunctionLibrary::FindClosestTarget(PlayerController.Get(), MaxLockOnDistance, true, bDebug))
 	{
+		// find a new target
 		EngageNewTarget(NewTarget);
+	}
+	if (ULockOnFunctionLibrary::IsTargetValid(TargetActor.Get()))
+	{
+		// enable full tick rate for hard lock-on
 		UPlayerInputFunctionLibrary::AddInputMappingContext(PlayerController.Get(), LockOnContext);
-		LockedOnEffectHandle = UElectricCastleAbilitySystemLibrary::ApplyInfiniteEffectByTag(GetOwner(), FElectricCastleGameplayTags::Get().Effect_State_LockedOn);
-		bLockOnActivated = true;
+		SetLockOnLevel(ELockOnLevel::Hard);
 		return true;
 	}
 	return false;
 }
 
-void ULockOnController::DeactivateLockOn()
+void ULockOnController::DeactivateHardLockOn()
 {
-	bLockOnActivated = false;
-	DisengageCurrentTarget();
+	if (LockOnLevel != ELockOnLevel::Hard)
+	{
+		UE_LOG(LogElectricCastle, Warning, TEXT("[%s:%s] Attempting to deactivate hard lock on when already deactivated!"), *GetOwner()->GetName(), *GetName())
+		return;
+	}
+	// set tick rate back to 10fps
 	UPlayerInputFunctionLibrary::RemoveInputMappingContext(PlayerController.Get(), LockOnContext);
-	UElectricCastleAbilitySystemLibrary::RemoveGameplayEffect(GetOwner(), LockedOnEffectHandle);
-	OnLockOnRelease.Broadcast();
+	SetLockOnLevel(ELockOnLevel::Soft);
 }
 
-float ULockOnController::GetDistanceToTarget() const
+AActor* ULockOnController::GetLockOnTarget() const
 {
-	if (TargetActor.IsValid())
-	{
-		return FVector::Distance(GetOwner()->GetActorLocation(), TargetActor->GetActorLocation());
-	}
-	return 0.f;
+	return TargetActor.Get();
 }
 
 bool ULockOnController::ShouldUpdateTarget() const
 {
-	if (!ULockOnFunctionLibrary::IsTargetValid(TargetActor.Get()))
+	switch (LockOnLevel)
 	{
-		// target is no longer valid
+	case ELockOnLevel::Soft:
 		return true;
-	}
-	if (FVector::DistSquared(GetOwner()->GetActorLocation(), TargetActor->GetActorLocation()) > MaxLockOnDistance * MaxLockOnDistance)
-	{
-		// target is out of range
-		return true;
-	}
-	return false;
-}
-
-TArray<AActor*> ULockOnController::FindPotentialTargets() const
-{
-	TArray<AActor*> PotentialTargets;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AElectricCastleEnemyCharacter::StaticClass(), PotentialTargets);
-	PotentialTargets = PotentialTargets.FilterByPredicate(
-		[](const AActor* Actor)
+	case ELockOnLevel::Hard:
+		if (!ULockOnFunctionLibrary::IsTargetValid(TargetActor.Get()))
 		{
-			if (!IsValid(Actor))
-			{
-				return false;
-			}
-			if (Actor->Implements<UCombatInterface>())
-			{
-				return ICombatInterface::IsAlive(Actor);
-			}
+			// target is no longer valid
 			return true;
 		}
-	);
-	if (bDebug)
-	{
-		UE_LOG(
-			LogElectricCastle,
-			Warning,
-			TEXT("[%s:%s] Found %d potential targets"),
-			*GetOwner()->GetName(),
-			*GetName(),
-			PotentialTargets.Num()
-		)
+		if (FVector::DistSquared(GetOwner()->GetActorLocation(), TargetActor->GetActorLocation()) > MaxLockOnDistance * MaxLockOnDistance)
+		{
+			// target is out of range
+			return true;
+		}
+		return false;
+	default:
+		return false;
 	}
-	return PotentialTargets;
 }
 
 void ULockOnController::UpdateLockOnTarget()
@@ -206,25 +233,32 @@ void ULockOnController::UpdateLockOnTarget()
 		)
 		return;
 	}
-	// first, disengage from the current target
-	DisengageCurrentTarget();
 	if (bDebug)
 	{
 		UE_LOG(
 			LogElectricCastle,
 			Warning,
-			TEXT("[%s:%s] Target lost - update to new target"),
+			TEXT("[%s:%s] Updating lock-on target"),
 			*GetOwner()->GetName(),
 			*GetName()
 		)
 	}
-	if (AActor* NewTarget = ULockOnFunctionLibrary::FindClosestTarget(GetOwner(), MaxLockOnDistance, MaxLockOnDistance, true))
+	if (AActor* NewTarget = ULockOnFunctionLibrary::FindClosestTarget(PlayerController.Get(), MaxLockOnDistance, true, bDebug))
 	{
-		EngageNewTarget(NewTarget);
+		if (!TargetActor.IsValid() || TargetActor.Get() != NewTarget)
+		{
+			DisengageCurrentTarget();
+			EngageNewTarget(NewTarget);
+		}
+	}
+	else if (LockOnLevel == ELockOnLevel::Hard)
+	{
+		DisengageCurrentTarget();
+		DeactivateHardLockOn();
 	}
 	else
 	{
-		DeactivateLockOn();
+		DisengageCurrentTarget();
 	}
 }
 
@@ -243,14 +277,16 @@ void ULockOnController::UpdateControllerRotation(const float DeltaTime)
 	{
 		return;
 	}
+	if (LockOnLevel != ELockOnLevel::Hard)
+	{
+		return;
+	}
 	const FRotator CurrentRotation = PlayerController->GetControlRotation();
 	const FVector Direction = (TargetActor->GetActorLocation() - GetOwner()->GetActorLocation()).GetSafeNormal();
 	FRotator LookAtRotation = Direction.Rotation();
 	LookAtRotation.Pitch = FMath::FixedTurn(CurrentRotation.Pitch, LockOnPitchOverride, 180.f * DeltaTime);
 	const FRotator NewRotation = FMath::RInterpTo(CurrentRotation, LookAtRotation, DeltaTime, LockOnRotationSpeed);
-	// NewRotation.Pitch = FMath::ClampAngle(NewRotation.Pitch, -80, 10.f);
 	PlayerController->SetControlRotation(NewRotation);
-	UpdateWarpTarget();
 }
 
 void ULockOnController::DisengageCurrentTarget()
@@ -270,9 +306,10 @@ void ULockOnController::DisengageCurrentTarget()
 		{
 			TargetActor->OnDestroyed.RemoveAll(this);
 		}
+		TargetActor.Reset();
+		ICombatInterface::ClearFacingTarget(GetOwner());
+		OnLockOnTargetChanged.Broadcast(FLockOnTargetPayload(nullptr, LockOnLevel));
 	}
-	TargetActor.Reset();
-	ICombatInterface::ClearFacingTarget(GetOwner());
 }
 
 void ULockOnController::HandleTargetDestroyed(AActor* DestroyedActor)
@@ -307,7 +344,7 @@ void ULockOnController::EngageNewTarget(AActor* InTargetActor)
 	{
 		TargetActor->OnDestroyed.AddUniqueDynamic(this, &ULockOnController::HandleTargetDestroyed);
 	}
-	OnLockOnTarget.Broadcast(FLockOnTargetPayload(InTargetActor));
+	OnLockOnTargetChanged.Broadcast(FLockOnTargetPayload(InTargetActor, LockOnLevel));
 }
 
 
@@ -317,7 +354,7 @@ void ULockOnController::HandleSwitchTargetInput(const FInputActionValue& InputAc
 	FVector CameraLocation;
 	FRotator CameraRotation;
 	PlayerController->GetPlayerViewPoint(CameraLocation, CameraRotation);
-	if (AActor* NewTarget = ULockOnFunctionLibrary::SwitchTarget(GetOwner(), TargetActor.Get(), RawInput, CameraRotation, MaxLockOnDistance, MaxLockOnDistance, true, bDebug))
+	if (AActor* NewTarget = ULockOnFunctionLibrary::SwitchTarget(PlayerController.Get(), TargetActor.Get(), RawInput, MaxLockOnDistance, true, bDebug))
 	{
 		DisengageCurrentTarget();
 		EngageNewTarget(NewTarget);
@@ -339,10 +376,25 @@ void ULockOnController::UpdateWarpTarget() const
 			const FVector Direction = (TargetLocation - GetOwner()->GetActorLocation()).GetSafeNormal();
 			TargetLocation = GetOwner()->GetActorLocation() + MaxLungeDistance * Direction;
 		}
+		if (bDebug)
+		{
+			DrawDebugSphere(GetWorld(), TargetLocation + FVector::UpVector * 10.f, 20.f, 12, FColor::Red, false, 0, 0, 1);
+		}
 		ICombatInterface::UpdateFacingTarget(GetOwner(), TargetLocation);
 	}
 	else
 	{
 		ICombatInterface::ClearFacingTarget(GetOwner());
 	}
+}
+
+void ULockOnController::SetLockOnLevel(const ELockOnLevel InLockOnLevel)
+{
+	LockOnLevel = InLockOnLevel;
+	OnLockOnLevelChanged.Broadcast(FLockOnTargetPayload(TargetActor.Get(), LockOnLevel));
+}
+
+void ULockOnController::HandleGameDataLoaded()
+{
+	Activate(true);
 }

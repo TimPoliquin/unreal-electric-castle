@@ -79,8 +79,13 @@ void AElectricCastlePlayerController::BeginPlay()
 	{
 		LockOnController->SetPlayerController(this);
 		LockOnController->HandleAbilitySystemReady(GetAbilitySystemComponent());
-		LockOnController->OnLockOnTarget.AddUniqueDynamic(this, &AElectricCastlePlayerController::HandleLockOnTarget);
-		LockOnController->OnLockOnRelease.AddUniqueDynamic(this, &AElectricCastlePlayerController::HandleLockOnRelease);
+	}
+	if (UAbilitySystemComponent* LocalAbilitySystemComponent = GetAbilitySystemComponent())
+	{
+		LocalAbilitySystemComponent->RegisterGameplayTagEvent(FElectricCastleGameplayTags::Get().Effect_Movement_TurnInPlace, EGameplayTagEventType::NewOrRemoved).AddUObject(
+			this,
+			&AElectricCastlePlayerController::HandleTagChange_EffectMovementTurnInPlace
+		);
 	}
 }
 
@@ -88,7 +93,7 @@ void AElectricCastlePlayerController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
 	// CursorTrace();
-	if (UAimController* AimController = GetAimController(GetPawn()))
+	if (UAimController* AimController = GetAimController(GetPawn()); IsValid(AimController) && AimController->GetCanAim())
 	{
 		FVector CameraLocation;
 		FRotator CameraRotation;
@@ -239,19 +244,21 @@ void AElectricCastlePlayerController::HandleAimEnd()
 	FreePlayerRotationFromCamera();
 }
 
+void AElectricCastlePlayerController::HandleTagChange_EffectMovementTurnInPlace_Implementation(FGameplayTag TurnInPlaceTag, int Count)
+{
+	if (Count > 0)
+	{
+		LockPlayerRotationToCamera();
+	}
+	else
+	{
+		FreePlayerRotationFromCamera();
+	}
+}
+
 void AElectricCastlePlayerController::OnGameDataLoaded_Implementation()
 {
 	EnableInput(this);
-	FreePlayerRotationFromCamera();
-}
-
-void AElectricCastlePlayerController::HandleLockOnTarget_Implementation(const FLockOnTargetPayload& Payload)
-{
-	LockPlayerRotationToCamera();
-}
-
-void AElectricCastlePlayerController::HandleLockOnRelease_Implementation()
-{
 	FreePlayerRotationFromCamera();
 }
 

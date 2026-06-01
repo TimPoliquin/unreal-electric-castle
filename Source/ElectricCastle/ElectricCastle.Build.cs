@@ -15,7 +15,7 @@ public class ElectricCastle : ModuleRules
 			"ModelViewViewModel", "CableComponent", "AIModule", "MotionWarping",
 			"LiveLinkInterface", "ApplicationCore", "CommonUI", "LevelSequence",
 			"MovieScene", "MovieSceneTracks",
-			"MoviePlayer"
+			"MoviePlayer", "SignificanceManager"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new[]

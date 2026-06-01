@@ -13,8 +13,8 @@
 
 #include "Net/UnrealNetwork.h"
 
-#include "Player/Aim/AimActorInterface.h"
-#include "Player/Aim/AimController.h"
+#include "Player/LockOn/LockOnActor.h"
+#include "Player/LockOn/LockOnController.h"
 
 ABeamActor::ABeamActor()
 {
@@ -60,31 +60,45 @@ void ABeamActor::Update_Implementation()
 
 void ABeamActor::UpdateStartingLocation_Implementation()
 {
-	if (const UAimController* AimController = IAimActorInterface::GetAimController(GetInstigator()))
+	if (const ULockOnController* LockOnController = ILockOnActor::GetLockOnController(GetInstigator()))
 	{
-		const FVector StartLocation = GetActorLocation();
-		const FVector EndLocation = AimController->GetHitLocation();
-		SetActorRotation(UKismetMathLibrary::FindLookAtRotation(StartLocation, EndLocation));
+		if (const AActor* TargetActor = LockOnController->GetLockOnTarget())
+		{
+			SetActorRotation(UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), TargetActor->GetActorLocation()));
+			return;
+		}
+	}
+	if (GetInstigator())
+	{
+		SetActorRotation(UKismetMathLibrary::MakeRotFromX(GetInstigator()->GetActorForwardVector()));
 	}
 }
 
 void ABeamActor::TraceDestination_Implementation(FHitResult& HitResult)
 {
-	if (const UAimController* AimController = IAimActorInterface::GetAimController(GetInstigator()))
+	if (const ULockOnController* LockOnController = ILockOnActor::GetLockOnController(GetInstigator()))
 	{
-		HitResult = AimController->GetTraceResult();
-		return;
+		if (AActor* TargetActor = LockOnController->GetLockOnTarget())
+		{
+			HitResult.bBlockingHit = true;
+			HitResult.ImpactPoint = TargetActor->GetActorLocation();
+			HitResult.HitObjectHandle = FActorInstanceHandle(TargetActor);
+			return;
+		}
 	}
-	UElectricCastleAbilitySystemLibrary::FindHitBySphereTrace(
-		TraceOrigin ? TraceOrigin : this,
-		FSphereTraceParams(TraceDistance, TraceRadius, TraceChannel, IgnoreActors, bDebug),
-		HitResult
-	);
-	// Ensure we always have a valid end point for the beam
-	if (!HitResult.IsValidBlockingHit())
+	if (AActor* StartingPointActor = TraceOrigin ? TraceOrigin : GetInstigator())
 	{
-		HitResult.ImpactPoint = GetActorLocation() + GetActorForwardVector() * TraceDistance;
-		HitResult.TraceEnd = HitResult.ImpactPoint;
+		UElectricCastleAbilitySystemLibrary::FindHitBySphereTrace(
+			StartingPointActor,
+			FSphereTraceParams(TraceDistance, TraceRadius, TraceChannel, IgnoreActors, bDebug),
+			HitResult
+		);
+		// Ensure we always have a valid end point for the beam
+		if (!HitResult.IsValidBlockingHit())
+		{
+			HitResult.ImpactPoint = StartingPointActor->GetActorLocation() + StartingPointActor->GetActorForwardVector() * TraceDistance;
+			HitResult.TraceEnd = HitResult.ImpactPoint;
+		}
 	}
 }
 

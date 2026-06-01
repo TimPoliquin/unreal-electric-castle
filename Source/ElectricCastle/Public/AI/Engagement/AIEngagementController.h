@@ -9,6 +9,9 @@
 #include "AIEngagementController.generated.h"
 
 
+class UEngagementLevelConfig;
+class UEngagementMovementPlugin;
+
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class ELECTRICCASTLE_API UAIEngagementController : public UActorComponent
 {
@@ -19,8 +22,13 @@ public:
 	UAIEngagementController();
 
 	virtual void BeginPlay() override;
+	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	virtual void Activate(bool bReset = false) override;
 	virtual void Deactivate() override;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void ChangeItUp();
+	UFUNCTION(BlueprintCallable)
+	void TickMovement(const float DeltaTime) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	EEngagementControlMode GetCurrentEngagementControlMode() const;
@@ -42,6 +50,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetCurrentEngagementAbilityModes(TArray<EEngagementAbilityMode> InEngagementAbilityModes);
 	UFUNCTION(BlueprintCallable)
+	AActor* GetEngagementTarget() const;
+	UFUNCTION(BlueprintCallable)
 	void SetEngagementTarget(AActor* InTarget);
 	UFUNCTION(BlueprintCallable)
 	void RandomizeEngagement();
@@ -49,6 +59,16 @@ public:
 	AActor* ChooseNewRandomTarget();
 	UFUNCTION(BlueprintCallable)
 	FGameplayTag ChooseAbility() const;
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool DoesPreferAggressiveEngagement() const;
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	EEngagementRange GetPreferredEngagementRange() const;
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	EEngagementRange GetRandomEngagementRange() const;
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	EEngagementLevel GetRandomAggressiveEngagementLevel() const;
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	EEngagementLevel GetRandomPassiveEngagementLevel(const bool bAllowNoneEngagement) const;
 
 	UPROPERTY(BlueprintAssignable)
 	FEngagementLevelChangedSignature OnEngagementLevelChanged;
@@ -58,12 +78,17 @@ public:
 	FEngagementTargetChangedSignature OnEngagementTargetChanged;
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TArray<FEngagementLevelConfig> EngagementLevelConfigs;
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool ShouldUpdateMovement() const;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Export)
+	TArray<TObjectPtr<UEngagementLevelConfig>> EngagementLevelConfigs;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<FEngagementRangeConfig> EngagementRangeConfigs;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<FEngagementAbilityModeConfig> EngagementAbilityModeConfigs;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FGameplayTagContainer BlockMovementTags;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EEngagementControlMode EngagementControlMode = EEngagementControlMode::Static;
@@ -75,14 +100,21 @@ protected:
 	EEngagementRange CurrentEngagementRange = EEngagementRange::None;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(EditCondition="EngagementControlMode == EEngagementControlMode::Static"))
 	TArray<EEngagementAbilityMode> CurrentEngagementAbilityModes = {EEngagementAbilityMode::None};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Instanced, meta=(EditCondition="EngagementControlMode == EEngagementControlMode::Static"))
+	TObjectPtr<UEngagementMovementPlugin> CurrentMovementPlugin;
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite)
 	TWeakObjectPtr<AActor> Target;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bDebug = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bDrawVisualDebug = false;
 
 private:
-	FEngagementLevelConfig GetEngagementLevelConfigByEngagementLevel(const EEngagementLevel InEngagementLevel) const;
-	FEngagementRangeConfig GetEngagementRangeConfigByEngagementRange(const EEngagementRange InEngagementRange) const;
+	UFUNCTION()
+	void HandleOwnerDeath(AActor* DeadActor);
+	UFUNCTION()
+	void SetMovementPlugin(UEngagementMovementPlugin* InEngagementMovementPlugin);
 
-	FTimerHandle RandomizedEngagementTimerHandle;
+	UEngagementLevelConfig* GetEngagementLevelConfigByEngagementLevel(const EEngagementLevel InEngagementLevel) const;
+	FEngagementRangeConfig GetEngagementRangeConfigByEngagementRange(const EEngagementRange InEngagementRange) const;
 };

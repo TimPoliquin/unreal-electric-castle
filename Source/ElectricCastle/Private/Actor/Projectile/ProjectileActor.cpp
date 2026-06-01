@@ -265,6 +265,7 @@ void AProjectileActor::OnPool_FinishRetrieve_Implementation(const FSpawnPoolEven
 	bHit = false;
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	CollisionComponent->OnComponentBeginOverlap.AddUniqueDynamic(this, &AProjectileActor::OnSphereOverlap);
+	SetActorTickEnabled(true);
 	SetReplicateMovement(true);
 	if (bAutoLaunchProjectile)
 	{
@@ -279,11 +280,16 @@ void AProjectileActor::OnPool_FinishRetrieve_Implementation(const FSpawnPoolEven
 			TravelSoundComponent->Play();
 		}
 	}
+	else
+	{
+		ProjectileMovement->Velocity = FVector::ZeroVector;
+	}
 }
 
 void AProjectileActor::OnPool_Returned_Implementation(const FSpawnPoolEventPayload& Payload)
 {
 	// Stop sounds, clear timers, etc.
+	SetActorTickEnabled(false);
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	if (TravelSoundComponent)
 	{
@@ -304,6 +310,7 @@ void AProjectileActor::OnPool_Returned_Implementation(const FSpawnPoolEventPaylo
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	CollisionComponent->OnComponentBeginOverlap.RemoveAll(this);
 	ProjectileMovement->StopMovementImmediately();
+	ProjectileMovement->Velocity = FVector::ZeroVector;
 	ProjectileMovement->HomingTargetComponent.Reset();
 }
 

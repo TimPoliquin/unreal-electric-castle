@@ -10,7 +10,6 @@
 #include "NiagaraComponent.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
 #include "AbilitySystem/ElectricCastleAttributeSet.h"
-#include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Game/Save/SaveGameManager.h"
 #include "Game/Subsystem/ElectricCastleAIDirectorGameInstanceSubsystem.h"
@@ -27,13 +26,12 @@
 #include "GroomComponent.h"
 #include "LiveLinkInstance.h"
 #include "MetaHumanComponentUE.h"
-
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
-
 #include "Actor/Attack/Component/AttackWindowManager.h"
 #include "Actor/Block/Components/BlockController.h"
 #include "Actor/MagicTether/TetherAbilityComponent.h"
 #include "Actor/Mesh/SocketManagerComponent.h"
+#include "Actor/Significance/WorldSignificanceSubsystem.h"
 #include "Components/LODSyncComponent.h"
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "Game/Subsystem/PlayerManager.h"
@@ -189,8 +187,8 @@ void AElectricCastlePlayerCharacter::BeginPlay()
 		this,
 		&AElectricCastlePlayerCharacter::OnFadeDetectionEndOverlap
 	);
-	LockOnController->OnLockOnTarget.AddUniqueDynamic(this, &AElectricCastlePlayerCharacter::HandleLockOnTarget);
-	LockOnController->OnLockOnRelease.AddUniqueDynamic(this, &AElectricCastlePlayerCharacter::HandleLockOnRelease);
+	LockOnController->OnLockOnTargetChanged.AddUniqueDynamic(this, &AElectricCastlePlayerCharacter::HandleLockOnTargetChanged);
+	LockOnController->OnLockOnLevelChanged.AddUniqueDynamic(this, &AElectricCastlePlayerCharacter::HandleLockOnLevelChanged);
 	GetCharacterMovement()->MaxWalkSpeed = StandardMoveSpeed;
 	AimGameplayEffectHandle.Invalidate();
 	JumpEffectHandle.Invalidate();
@@ -206,27 +204,27 @@ void AElectricCastlePlayerCharacter::BeginDestroy()
 	}
 }
 
-void AElectricCastlePlayerCharacter::HandleLockOnTarget_Implementation(const FLockOnTargetPayload& Payload)
+void AElectricCastlePlayerCharacter::HandleLockOnLevelChanged_Implementation(const FLockOnTargetPayload& Payload)
 {
-}
-
-void AElectricCastlePlayerCharacter::HandleLockOnRelease_Implementation()
-{
-}
-
-void AElectricCastlePlayerCharacter::HandleTagChange_EffectMovementTurnInPlace_Implementation(FGameplayTag EffectMovementTurnInPlaceTag, int Count)
-{
-	if (const AElectricCastlePlayerController* PlayerController = Cast<AElectricCastlePlayerController>(GetController()))
+	if (Payload.LockOnLevel == ELockOnLevel::Hard)
 	{
-		if (Count > 0)
-		{
-			PlayerController->LockPlayerRotationToCamera();
-		}
-		else
-		{
-			PlayerController->FreePlayerRotationFromCamera();
-		}
+		GetCharacterMovement()->MaxWalkSpeed = AimMoveSpeed;
 	}
+	else
+	{
+		GetCharacterMovement()->MaxWalkSpeed = StandardMoveSpeed;
+	}
+}
+
+void AElectricCastlePlayerCharacter::HandleLockOnTargetChanged_Implementation(const FLockOnTargetPayload& Payload)
+{
+	// nothing to do by default
+}
+
+void AElectricCastlePlayerCharacter::RegisterMeshSockets_Implementation()
+{
+	SocketManagerComponent->RegisterSocket(GetMesh(), LeftHandConfig.SocketTag, LeftHandConfig.SocketName);
+	SocketManagerComponent->RegisterSocket(GetMesh(), RightHandConfig.SocketTag, RightHandConfig.SocketName);
 }
 
 void AElectricCastlePlayerCharacter::EnableMasterPose_Implementation(USkeletalMeshComponent* SkeletalMeshComponent)
@@ -321,11 +319,10 @@ void AElectricCastlePlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetime
 void AElectricCastlePlayerCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-	SocketManagerComponent->RegisterSocket(GetMesh(), LeftHandConfig.SocketTag, LeftHandConfig.SocketName);
-	SocketManagerComponent->RegisterSocket(GetMesh(), RightHandConfig.SocketTag, RightHandConfig.SocketName);
 	AimController->OnAimStart.AddUniqueDynamic(this, &AElectricCastlePlayerCharacter::AimStart);
 	AimController->OnAimEnd.AddUniqueDynamic(this, &AElectricCastlePlayerCharacter::AimEnd);
 	BlockController->InitializeParryCamera(PlayerCameraComponent);
+	RegisterMeshSockets();
 }
 
 void AElectricCastlePlayerCharacter::FaceRotation(const FRotator NewControlRotation, const float DeltaTime)
@@ -353,6 +350,10 @@ void AElectricCastlePlayerCharacter::PossessedBy(AController* NewController)
 	if (UPlayerManager* PlayerManager = UPlayerManager::Get(this))
 	{
 		PlayerManager->RegisterPlayer(Cast<AElectricCastlePlayerController>(NewController), this);
+	}
+	if (UWorldSignificanceSubsystem* SignificanceSubsystem = UWorldSignificanceSubsystem::Get(this))
+	{
+		SignificanceSubsystem->SetPlayerController(Cast<APlayerController>(NewController));
 	}
 	InitializeAbilityActorInfo();
 	if (UElectricCastleLevelManager* LevelManager = UElectricCastleLevelManager::Get(this); LevelManager->IsTransitioningLevels())
@@ -416,10 +417,6 @@ void AElectricCastlePlayerCharacter::OnAbilitySystemReady_Implementation(
 	EquipmentComponent->OnEquipmentAnimationRequest.AddUniqueDynamic(
 		this,
 		&AElectricCastlePlayerCharacter::OnEquipmentAnimationRequest
-	);
-	InAbilitySystemComponent->RegisterGameplayTagEvent(FElectricCastleGameplayTags::Get().Effect_Movement_TurnInPlace, EGameplayTagEventType::NewOrRemoved).AddUObject(
-		this,
-		&AElectricCastlePlayerCharacter::HandleTagChange_EffectMovementTurnInPlace
 	);
 }
 

@@ -3,13 +3,13 @@
 
 #include "Actor/Puzzle/Action/Trigger/TriggeringPuzzleAction.h"
 
-#include "Actor/TriggerInterface.h"
+#include "Actor/Trigger/TriggerableInterface.h"
 
 void UTriggeringPuzzleAction::Execute_Implementation() const
 {
 	for (AActor* TriggerActor : TriggerActors)
 	{
-		ITriggerInterface::Trigger(TriggerActor, TriggerMode == EPuzzleActionTriggerMode::Activate);
+		ITriggerableInterface::Trigger(TriggerActor, TriggerMode == EPuzzleActionTriggerMode::Activate);
 	}
 }
 

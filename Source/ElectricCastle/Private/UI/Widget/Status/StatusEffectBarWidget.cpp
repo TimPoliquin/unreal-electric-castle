@@ -3,50 +3,30 @@
 
 #include "UI/Widget/Status/StatusEffectBarWidget.h"
 
-#include "Character/Status/StatusEffectManagerComponent.h"
+#include "Actor/Status/StatusEffectManagerComponent.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "UI/Widget/Status/StatusEffectWidget.h"
 
 void UStatusEffectBarWidget::BindDependencies_Implementation(UStatusEffectManagerComponent* StatusEffectManager)
 {
-	StatusEffectManager->OnStatusEffectAddedDelegate.AddUniqueDynamic(this, &UStatusEffectBarWidget::OnStatusEffectAdded);
-	StatusEffectManager->OnStatusEffectRemovedDelegate.AddUniqueDynamic(this, &UStatusEffectBarWidget::OnStatusEffectRemoved);
+	StatusEffectManager->SetStatusEffectBarWidget(this);
 }
 
-void UStatusEffectBarWidget::OnStatusEffectAdded_Implementation(const FOnStatusEffectAddedPayload& Payload)
+UStatusEffectWidget* UStatusEffectBarWidget::AddStatusEffectWidget_Implementation(const FGameplayTag& StatusEffectTag)
 {
-	for (const FGameplayTag& StatusEffectTag : Payload.EffectTags)
-	{
-		UStatusEffectWidget* Widget = StatusEffectWidgets.Contains(StatusEffectTag) ? StatusEffectWidgets[StatusEffectTag] : CreateStatusEffectWidget(StatusEffectTag);
-		if (!Widget)
-		{
-			UE_LOG(LogElectricCastle, Error, TEXT("[%s] Failed to create status effect widget for tag [%s]"), *GetName(), *StatusEffectTag.ToString());
-			return;
-		}
-		Widget->SetDuration(Payload.Duration);
-	}
+	return StatusEffectWidgets.Contains(StatusEffectTag) ? StatusEffectWidgets[StatusEffectTag] : CreateStatusEffectWidget(StatusEffectTag);
 }
 
-void UStatusEffectBarWidget::OnStatusEffectRemoved_Implementation(const FOnStatusEffectRemovedPayload& Payload)
+void UStatusEffectBarWidget::RemoveStatusEffectWidget_Implementation(const FGameplayTag& StatusEffectTag)
 {
-	for (const FGameplayTag& StatusEffectTag : Payload.EffectTags)
+	if (StatusEffectWidgets.Contains(StatusEffectTag))
 	{
-		if (StatusEffectWidgets.Contains(StatusEffectTag))
+		if (UStatusEffectWidget* Widget = StatusEffectWidgets[StatusEffectTag])
 		{
-			RemoveStatusEffectWidget(StatusEffectWidgets[StatusEffectTag]);
+			Widget->RemoveFromParent();
 		}
 	}
-}
-
-void UStatusEffectBarWidget::AddStatusEffectWidget_Implementation(UStatusEffectWidget* StatusEffectWidget)
-{
-	StatusEffectWidgets.Add(StatusEffectWidget->GetStatusEffectTag(), StatusEffectWidget);
-}
-
-void UStatusEffectBarWidget::RemoveStatusEffectWidget_Implementation(UStatusEffectWidget* StatusEffectWidget)
-{
-	StatusEffectWidgets.Remove(StatusEffectWidget->GetStatusEffectTag());
-	StatusEffectWidget->RemoveFromParent();
+	StatusEffectWidgets.Remove(StatusEffectTag);
 }
 
 UStatusEffectWidget* UStatusEffectBarWidget::CreateStatusEffectWidget(const FGameplayTag& StatusEffectTag)
@@ -58,6 +38,6 @@ UStatusEffectWidget* UStatusEffectBarWidget::CreateStatusEffectWidget(const FGam
 	}
 	UStatusEffectWidget* Widget = CreateWidget<UStatusEffectWidget>(GetWorld(), StatusEffectWidgetClass);
 	Widget->SetStatusEffectTag(StatusEffectTag);
-	AddStatusEffectWidget(Widget);
+	StatusEffectWidgets.Add(StatusEffectTag, Widget);
 	return Widget;
 }

@@ -166,9 +166,7 @@ protected:
 	UFUNCTION()
 	void HandleAimEnd();
 	UFUNCTION(BlueprintNativeEvent)
-	void HandleLockOnTarget(const FLockOnTargetPayload& Payload);
-	UFUNCTION(BlueprintNativeEvent)
-	void HandleLockOnRelease();
+	void HandleTagChange_EffectMovementTurnInPlace(FGameplayTag TurnInPlaceTag, int Count);
 
 private:
 	FHighlightContext HighlightContext;
