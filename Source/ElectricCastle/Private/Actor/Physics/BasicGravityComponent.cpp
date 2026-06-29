@@ -25,6 +25,10 @@ void UBasicGravityComponent::TickComponent(const float DeltaTime, const ELevelTi
 	{
 		return;
 	}
+	if (!IsActive())
+	{
+		return;
+	}
 
 	FHitResult GroundHit;
 	bIsGrounded = PerformGroundCheck(GroundHit);

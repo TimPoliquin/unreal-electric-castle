@@ -17,6 +17,7 @@ class ELECTRICCASTLE_API UPuzzleManagerComponent : public UActorComponent
 public:
 	// Sets default values for this actor's properties
 	UPuzzleManagerComponent();
+	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
@@ -25,8 +26,6 @@ public:
 	void SolvePuzzle();
 
 protected:
-	virtual void BeginPlay() override;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category = "Puzzle")
 	TArray<TObjectPtr<UPuzzleAction>> OnActivatePuzzleActions;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category = "Puzzle")

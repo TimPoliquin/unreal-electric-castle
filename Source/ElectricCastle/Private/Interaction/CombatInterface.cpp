@@ -101,15 +101,3 @@ AActor* ICombatInterface::GetWeapon(const UObject* Actor)
 	}
 	return nullptr;
 }
-
-FGameplayTag ICombatInterface::GetHitReactAbilityTagByDamageType(
-	const UObject* Actor,
-	const FGameplayTag& DamageTypeTag
-)
-{
-	if (Actor && Actor->Implements<UCombatInterface>())
-	{
-		return Execute_GetHitReactAbilityTagByDamageType(Actor, DamageTypeTag);
-	}
-	return FElectricCastleGameplayTags::Get().Effect_HitReact_Default;
-}

@@ -16,6 +16,7 @@ void UTriggerComponent::ExecuteTriggerActions() const
 	{
 		if (IsValid(TriggerAction))
 		{
+			TriggerAction->SetOwnerActor(GetOwner());
 			TriggerAction->Execute();
 		}
 	}

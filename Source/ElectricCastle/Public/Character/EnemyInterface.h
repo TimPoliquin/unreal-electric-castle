@@ -24,8 +24,6 @@ class ELECTRICCASTLE_API IEnemyInterface
 public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	AActor* GetCombatTarget() const;
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void SetCombatTarget(AActor* InCombatTarget);
 
 	virtual float GetMaxAIProcessingRange() const = 0;
 	static bool IsEnemyActor(const UObject* Actor);

@@ -16,7 +16,9 @@
 #include "AbilitySystem/Effect/InfiniteGameplayEffect.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Character/ElectricCastleCharacter.h"
+#include "Engine/Engine.h"
 #include "Engine/OverlapResult.h"
+#include "Engine/World.h"
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/ElectricCastlePlayerState.h"
@@ -118,6 +120,15 @@ float UElectricCastleAbilitySystemLibrary::GetLungeDistance(const AActor* Owner)
 		return AttributeSet->GetLungeDistance();
 	}
 	return 0.f;
+}
+
+float UElectricCastleAbilitySystemLibrary::GetVisibilityAttributeValue(const AActor* Owner)
+{
+	if (const UElectricCastleAttributeSet* AttributeSet = GetAttributeSet(Owner))
+	{
+		return AttributeSet->GetVisibility();
+	}
+	return 1.f;
 }
 
 bool UElectricCastleAbilitySystemLibrary::IsInfiniteEffect(const FGameplayEffectSpecHandle& SpecHandle)
@@ -1574,7 +1585,12 @@ void UElectricCastleAbilitySystemLibrary::SetKnockbackVector(
 	}
 }
 
-FActiveGameplayEffectHandle UElectricCastleAbilitySystemLibrary::ApplyDurationEffectByTag(AActor* Actor, const FGameplayTag DurationEffectTag, const float Duration, const int32 Level)
+FActiveGameplayEffectHandle UElectricCastleAbilitySystemLibrary::ApplyDurationEffectByTag(
+	AActor* Actor,
+	const FGameplayTag DurationEffectTag,
+	const float Duration,
+	const int32 Level
+)
 {
 	if (UAbilitySystemComponent* AbilitySystemComponent = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Actor))
 	{
@@ -1622,6 +1638,36 @@ FActiveGameplayEffectHandle UElectricCastleAbilitySystemLibrary::ApplyInfiniteEf
 				Spec->AddDynamicAssetTag(DurationEffectTag);
 				// 2. Grant to the target actor (tag is applied to ASC while GE is active)
 				Spec->DynamicGrantedTags.AddTag(DurationEffectTag);
+				// Apply to self
+				return AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*Spec);
+			}
+		}
+	}
+	return FActiveGameplayEffectHandle();
+}
+
+FActiveGameplayEffectHandle UElectricCastleAbilitySystemLibrary::ApplyInfiniteEffectByTags(AActor* Actor, const FGameplayTagContainer TagContainer, const int32 Level)
+{
+	if (UAbilitySystemComponent* AbilitySystemComponent = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Actor))
+	{
+		// Build a GameplayEffectSpec on the fly
+		const FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(
+			UInfiniteGameplayEffect::StaticClass(),
+			Level,
+			AbilitySystemComponent->MakeEffectContext()
+		);
+
+		if (SpecHandle.IsValid())
+		{
+			if (FGameplayEffectSpec* Spec = SpecHandle.Data.Get())
+			{
+				for (const FGameplayTag& Tag : TagContainer)
+				{
+					// 1. Add as an asset tag (tag belongs to the GE itself)
+					Spec->AddDynamicAssetTag(Tag);
+					// 2. Grant to the target actor (tag is applied to ASC while GE is active)
+					Spec->DynamicGrantedTags.AddTag(Tag);
+				}
 				// Apply to self
 				return AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*Spec);
 			}

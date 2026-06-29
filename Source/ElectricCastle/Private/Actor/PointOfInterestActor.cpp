@@ -3,6 +3,7 @@
 
 #include "Actor/POI/PointOfInterestActor.h"
 
+#include "TimerManager.h"
 #include "Actor/Highlight/HighlightComponent.h"
 #include "ElectricCastle/ElectricCastle.h"
 #include "Components/CapsuleComponent.h"
@@ -38,6 +39,44 @@ APointOfInterestActor::APointOfInterestActor()
 	HighlightComponent->SetHighlightType(EHighlightType::Friendly);
 }
 
+void APointOfInterestActor::OnConstruction(const FTransform& Transform)
+{
+	Super::OnConstruction(Transform);
+	OnConstruction_InitializeWidgets();
+}
+
+void APointOfInterestActor::OnConstruction_InitializeWidgets()
+{
+	if (UUserWidget* Widget = InteractionWidget->GetWidget())
+	{
+		IInteractionWidgetInterface::SetActionText(Widget, InteractText);
+	}
+	if (UUserWidget* Widget = PreconditionWidget->GetWidget())
+	{
+		IInteractionWidgetInterface::SetActionText(Widget, PreconditionText);
+		IInteractionWidgetInterface::SetIcon(Widget, GetPreconditionIcon());
+	}
+}
+
+void APointOfInterestActor::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+	if (PropertyChangedEvent.GetPropertyName() == GET_MEMBER_NAME_CHECKED(APointOfInterestActor, InteractText))
+	{
+		if (UUserWidget* Widget = InteractionWidget->GetWidget())
+		{
+			IInteractionWidgetInterface::SetActionText(Widget, InteractText);
+		}
+	}
+	if (PropertyChangedEvent.GetPropertyName() == GET_MEMBER_NAME_CHECKED(APointOfInterestActor, PreconditionText))
+	{
+		if (UUserWidget* Widget = PreconditionWidget->GetWidget())
+		{
+			IInteractionWidgetInterface::SetActionText(Widget, PreconditionText);
+		}
+	}
+}
+
 void APointOfInterestActor::BeginPlay()
 {
 	Super::BeginPlay();
@@ -51,6 +90,17 @@ void APointOfInterestActor::InitializeState()
 	if (bDisabled)
 	{
 		DisablePOI();
+		return;
+	}
+	if (InteractionWidget && InteractionWidget->GetWidget()
+	)
+	{
+		IInteractionWidgetInterface::SetActionText(InteractionWidget->GetWidget(), InteractText);
+	}
+	if (PreconditionWidget && PreconditionWidget->GetWidget())
+	{
+		IInteractionWidgetInterface::SetActionText(PreconditionWidget->GetWidget(), PreconditionText);
+		IInteractionWidgetInterface::SetIcon(PreconditionWidget->GetWidget(), GetPreconditionIcon());
 	}
 }
 
@@ -78,7 +128,7 @@ void APointOfInterestActor::OnBeginOverlap(
 	const FHitResult& SweepResult
 )
 {
-	if (bDisabled)
+	if (bDisabled || bIsOverlapping)
 	{
 		return;
 	}
@@ -86,16 +136,10 @@ void APointOfInterestActor::OnBeginOverlap(
 	{
 		return;
 	}
+	bIsOverlapping = true;
+	GetWorld()->GetTimerManager().ClearTimer(OverlapDelayTimerHandle);
 	// if player, show interaction widget
-	if (IsPreconditionMet(OtherActor))
-	{
-		EffectComponent->OnOverlap(OtherActor);
-		ShowInteractWithPOIAvailable(OtherActor);
-	}
-	else
-	{
-		ShowPreconditionWidget(OtherActor);
-	}
+	HandlePlayerOverlapBegin(OtherActor);
 }
 
 void APointOfInterestActor::OnEndOverlap(
@@ -106,12 +150,26 @@ void APointOfInterestActor::OnEndOverlap(
 )
 {
 	// if player, hide interaction widget
-	if (IsPlayerActor(OtherActor))
+	if (!IsPlayerActor(OtherActor))
 	{
-		EffectComponent->OnEndOverlap(OtherActor);
-		IInteractionWidgetInterface::Hide(InteractionWidget->GetWidget());
-		IInteractionWidgetInterface::Hide(PreconditionWidget->GetWidget());
+		return;
 	}
+	if (!bIsOverlapping)
+	{
+		return;
+	}
+	if (OverlapDetectionComponent->IsOverlappingActor(OtherActor))
+	{
+		// we're still overlapping the actor; some not all of the components
+		return;
+	}
+	HandlePlayerOverlapEnd(OtherActor);
+}
+
+UTexture2D* APointOfInterestActor::GetPreconditionIcon_Implementation() const
+{
+	// nothing here by default
+	return nullptr;
 }
 
 void APointOfInterestActor::ShowInteractWithPOIAvailable_Implementation(AActor* Player) const
@@ -130,6 +188,46 @@ void APointOfInterestActor::ShowPreconditionWidget_Implementation(AActor* Player
 bool APointOfInterestActor::IsPreconditionMet_Implementation(AActor* Player) const
 {
 	return true;
+}
+
+void APointOfInterestActor::HandlePlayerOverlapBegin_Implementation(AActor* OtherActor)
+{
+	HighlightComponent->Highlight();
+	if (IsPreconditionMet(OtherActor))
+	{
+		EffectComponent->OnOverlap(OtherActor);
+		IInteractionWidgetInterface::Hide(PreconditionWidget->GetWidget());
+		ShowInteractWithPOIAvailable(OtherActor);
+	}
+	else
+	{
+		IInteractionWidgetInterface::Hide(InteractionWidget->GetWidget());
+		ShowPreconditionWidget(OtherActor);
+		EffectComponent->OnEndOverlap(OtherActor);
+	}
+}
+
+void APointOfInterestActor::HandlePlayerOverlapEnd_Implementation(AActor* OtherActor)
+{
+	HighlightComponent->Unhighlight();
+	GetWorld()->GetTimerManager().ClearTimer(OverlapDelayTimerHandle);
+	GetWorld()->GetTimerManager().SetTimer(
+		OverlapDelayTimerHandle,
+		[this, OtherActor]()
+		{
+			if (OverlapDetectionComponent->IsOverlappingActor(OtherActor))
+			{
+				// we're still overlapping the actor; some not all of the components
+				return;
+			}
+			bIsOverlapping = false;
+			EffectComponent->OnEndOverlap(OtherActor);
+			IInteractionWidgetInterface::Hide(InteractionWidget->GetWidget());
+			IInteractionWidgetInterface::Hide(PreconditionWidget->GetWidget());
+		},
+		.1f,
+		false
+	);
 }
 
 bool APointOfInterestActor::OnInteract_Implementation(AActor* Player)
@@ -152,7 +250,7 @@ void APointOfInterestActor::OnInteractionEnd_Implementation(AActor* Player, cons
 	// TODO ?
 }
 
-void APointOfInterestActor::EnablePOI()
+void APointOfInterestActor::EnablePOI_Implementation()
 {
 	bDisabled = false;
 	OverlapDetectionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
@@ -162,7 +260,7 @@ void APointOfInterestActor::EnablePOI()
 	}
 }
 
-void APointOfInterestActor::DisablePOI()
+void APointOfInterestActor::DisablePOI_Implementation()
 {
 	bDisabled = true;
 	OverlapDetectionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);

@@ -73,6 +73,11 @@ FRotator UAimController::CalculateRotationToFaceAimTarget(const FVector& Locatio
 	return UKismetMathLibrary::FindLookAtRotation(Location, GetHitLocation());
 }
 
+FVector UAimController::GetAimDirection(const FVector& Location) const
+{
+	return CalculateRotationToFaceAimTarget(Location).Vector();
+}
+
 void UAimController::TraceForTarget(const FVector& PlayerLocation, const FVector& CameraLocation, const FRotator& CameraRotation)
 {
 	if (!bCanAim || bHideCrosshair)

@@ -4,11 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "EngagementTypes.h"
+#include "GameplayEffectTypes.h"
 #include "GameplayTagContainer.h"
+#include "AI/Targeting/AITargetingTypes.h"
 #include "Components/ActorComponent.h"
 #include "AIEngagementController.generated.h"
 
 
+class AEncounterManager;
 class UEngagementLevelConfig;
 class UEngagementMovementPlugin;
 
@@ -50,10 +53,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetCurrentEngagementAbilityModes(TArray<EEngagementAbilityMode> InEngagementAbilityModes);
 	UFUNCTION(BlueprintCallable)
-	AActor* GetEngagementTarget() const;
-	UFUNCTION(BlueprintCallable)
-	void SetEngagementTarget(AActor* InTarget);
-	UFUNCTION(BlueprintCallable)
 	void RandomizeEngagement();
 	UFUNCTION(BlueprintCallable)
 	AActor* ChooseNewRandomTarget();
@@ -74,8 +73,6 @@ public:
 	FEngagementLevelChangedSignature OnEngagementLevelChanged;
 	UPROPERTY(BlueprintAssignable)
 	FEngagementRangeChangedSignature OnEngagementRangeChanged;
-	UPROPERTY(BlueprintAssignable)
-	FEngagementTargetChangedSignature OnEngagementTargetChanged;
 
 protected:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
@@ -102,8 +99,6 @@ protected:
 	TArray<EEngagementAbilityMode> CurrentEngagementAbilityModes = {EEngagementAbilityMode::None};
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Instanced, meta=(EditCondition="EngagementControlMode == EEngagementControlMode::Static"))
 	TObjectPtr<UEngagementMovementPlugin> CurrentMovementPlugin;
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite)
-	TWeakObjectPtr<AActor> Target;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bDebug = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

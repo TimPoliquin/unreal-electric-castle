@@ -8,5 +8,5 @@
 
 UTrackFollowingComponent* ITrackFollowingActor::GetTrackFollowingComponent(const UObject* Actor)
 {
-	return Actor && Actor->Implements<UTrackFollowingComponent>() ? Execute_GetTrackFollowingComponent(Actor) : nullptr;
+	return Actor && Actor->Implements<UTrackFollowingActor>() ? Execute_GetTrackFollowingComponent(Actor) : nullptr;
 }

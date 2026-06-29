@@ -5,15 +5,21 @@
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
+#include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
+#include "AbilitySystem/Attribute/ElectricCastleAttributeTypes.h"
 #include "Actor/Cinematic/CinematicHandlerComponent.h"
 #include "Actor/Effect/DissolvableActor.h"
 #include "Actor/Effect/DissolveEffectComponent.h"
 #include "Actor/Highlight/HighlightComponent.h"
 #include "Actor/Mesh/SocketManagerComponent.h"
 #include "Actor/Status/StatusEffectManagerComponent.h"
+#include "Animation/AnimInstance.h"
 #include "ElectricCastle/ElectricCastle.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Components/SkinnedMeshComponent.h"
+#include "Engine/DamageEvents.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Item/Equipment/EquipmentActor.h"
 #include "Kismet/GameplayStatics.h"
@@ -49,18 +55,6 @@ void AElectricCastleCharacter::GetLifetimeReplicatedProps(TArray<class FLifetime
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AElectricCastleCharacter, ActiveAbilityTag);
 	DOREPLIFETIME(AElectricCastleCharacter, StatusEffectTags);
-}
-
-
-FGameplayTag AElectricCastleCharacter::GetHitReactAbilityTagByDamageType_Implementation(
-	const FGameplayTag& DamageTypeTag
-) const
-{
-	if (HitReactionsByDamageType.Contains(DamageTypeTag))
-	{
-		return HitReactionsByDamageType[DamageTypeTag];
-	}
-	return FElectricCastleGameplayTags::Get().Effect_HitReact_Default;
 }
 
 UShapeComponent* AElectricCastleCharacter::GetPrimaryCollisionComponent() const
@@ -114,7 +108,9 @@ FVector AElectricCastleCharacter::GetCombatSocketLocation_Implementation(const F
 	))
 	{
 		// try to get the location via a socket manager
-		if (const USocketManagerComponent* MontageSocketManagerComponent = ActiveMontageDef->IsWeaponMontage ? GetSocketManagerComponent(Execute_GetWeapon(this)) : SocketManagerComponent.Get())
+		if (const USocketManagerComponent* MontageSocketManagerComponent = ActiveMontageDef->IsWeaponMontage
+			                                                                   ? GetSocketManagerComponent(Execute_GetWeapon(this))
+			                                                                   : SocketManagerComponent.Get())
 		{
 			if (MontageSocketManagerComponent->HasSocket(ActiveMontageDef->SocketTag))
 			{
@@ -144,6 +140,14 @@ void AElectricCastleCharacter::AddCharacterAbilities()
 	HitReactionMontageByMontageTag.GetKeys(HitReactionKeys);
 }
 
+void AElectricCastleCharacter::HandleMovementSpeedAttributeChanged(const FOnAttributeChangeData& OnAttributeChangeData)
+{
+	if (UCharacterMovementComponent* CharacterMovementComponent = GetCharacterMovement())
+	{
+		CharacterMovementComponent->MaxWalkSpeed = OnAttributeChangeData.NewValue;
+	}
+}
+
 void AElectricCastleCharacter::Dissolve_Implementation() const
 {
 	if (CharacterDissolveComponent)
@@ -158,16 +162,6 @@ AActor* AElectricCastleCharacter::GetAvatar_Implementation()
 {
 	return this;
 }
-
-UAnimMontage* AElectricCastleCharacter::GetHitReactMontage_Implementation(const FGameplayTag& HitReactTypeTag) const
-{
-	if (HitReactionMontageByMontageTag.Contains(HitReactTypeTag))
-	{
-		return HitReactionMontageByMontageTag[HitReactTypeTag];
-	}
-	return HitReactMontage;
-}
-
 
 TArray<FTaggedMontage> AElectricCastleCharacter::GetAttackMontages_Implementation() const
 {
@@ -211,6 +205,34 @@ AActor* AElectricCastleCharacter::GetWeapon_Implementation() const
 	return nullptr;
 }
 
+void AElectricCastleCharacter::HandleTakeDamage(const float IncomingDamage, const FEffectProperties& Props)
+{
+	if (IncomingDamage > 0)
+	{
+		if (UElectricCastleAbilitySystemLibrary::IsRadialDamage(Props.EffectContextHandle))
+		{
+			FRadialDamageEvent RadialDamageEvent;
+			RadialDamageEvent.Origin = UElectricCastleAbilitySystemLibrary::GetRadialDamageOrigin(Props.EffectContextHandle);
+			RadialDamageEvent.Params.InnerRadius = UElectricCastleAbilitySystemLibrary::GetRadialDamageInnerRadius(Props.EffectContextHandle);
+			RadialDamageEvent.Params.OuterRadius = UElectricCastleAbilitySystemLibrary::GetRadialDamageOuterRadius(Props.EffectContextHandle);
+			RadialDamageEvent.Params.BaseDamage = IncomingDamage;
+			TakeDamage(IncomingDamage, RadialDamageEvent, Props.Source.Controller, Props.Source.AvatarActor);
+		}
+		else
+		{
+			FPointDamageEvent PointDamageEvent;
+			PointDamageEvent.Damage = IncomingDamage;
+			PointDamageEvent.HitInfo.ImpactPoint = UElectricCastleAbilitySystemLibrary::GetRadialDamageOrigin(Props.EffectContextHandle);
+			TakeDamage(IncomingDamage, PointDamageEvent, Props.Source.Controller, Props.Source.AvatarActor);
+		}
+	}
+}
+
+void AElectricCastleCharacter::HandleDodge_Implementation()
+{
+	// do nothing by default
+}
+
 void AElectricCastleCharacter::ApplyDeathImpulse(const FVector& DeathImpulse)
 {
 	if (GetMesh() && GetMesh()->IsSimulatingPhysics())
@@ -250,6 +272,19 @@ void AElectricCastleCharacter::OnAbilitySystemReady_Implementation(
 	UElectricCastleAbilitySystemComponent* InAbilitySystemComponent
 )
 {
+	if (UElectricCastleAttributeSet* AttributeSet = GetAttributeSet())
+	{
+		// initialize movement speed attribute to match character movement speed
+		if (const UCharacterMovementComponent* CharacterMovementComponent = GetCharacterMovement())
+		{
+			AttributeSet->SetMovementSpeed(CharacterMovementComponent->MaxWalkSpeed);
+		}
+		// event handler to sync movement speed attribute and movement component value
+		InAbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(UElectricCastleAttributeSet::GetMovementSpeedAttribute()).AddUObject(
+			this,
+			&AElectricCastleCharacter::HandleMovementSpeedAttributeChanged
+		);
+	}
 	GetOnAbilitySystemRegisteredDelegate().Broadcast(InAbilitySystemComponent);
 }
 

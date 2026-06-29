@@ -3,7 +3,10 @@
 
 #include "AI/Engagement/Movement/EngagementMovementPlugin.h"
 
+#include "AI/Targeting/AITargetingActorInterface.h"
+#include "AI/Targeting/AITargetingComponent.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
+#include "GameFramework/Pawn.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "Utils/RandUtils.h"
 
@@ -15,11 +18,15 @@ void UEngagementMovementPlugin::InitializeDependencies_Implementation(AActor* In
 	{
 		MovementComponent = Pawn->GetMovementComponent();
 	}
+	TargetingComponent = IAITargetingActorInterface::GetAITargetingComponent(InOwnerActor);
 }
 
-void UEngagementMovementPlugin::SetTargetActor_Implementation(AActor* InTargetActor)
+
+void UEngagementMovementPlugin::RemoveDependencies_Implementation(AActor* InOwnerActor)
 {
-	TargetActor = InTargetActor;
+	OwnerActor = nullptr;
+	MovementComponent = nullptr;
+	TargetingComponent = nullptr;
 }
 
 void UEngagementMovementPlugin::TickMovement_Implementation(const float DeltaTime)
@@ -46,6 +53,7 @@ void UEngagementMovementPlugin::SetPreferredDistance_Implementation(const FFloat
 	}
 }
 
+
 UPawnMovementComponent* UEngagementMovementPlugin::GetMovementComponent()
 {
 	if (!IsValid(OwnerActor))
@@ -62,16 +70,25 @@ UPawnMovementComponent* UEngagementMovementPlugin::GetMovementComponent()
 	return MovementComponent;
 }
 
+AActor* UEngagementMovementPlugin::GetTargetActor() const
+{
+	if (!IsValid(TargetingComponent))
+	{
+		return nullptr;
+	}
+	return TargetingComponent->GetCurrentTarget();
+}
+
 bool UEngagementMovementPlugin::GetDirectionToTarget(FVector& OutDirection) const
 {
 	if (!IsValid(OwnerActor))
 	{
 		return false;
 	}
-	if (!TargetActor.IsValid())
+	if (!IsValid(GetTargetActor()))
 	{
 		return false;
 	}
-	OutDirection = OwnerActor->GetActorLocation() - TargetActor->GetActorLocation();
+	OutDirection = OwnerActor->GetActorLocation() - GetTargetActor()->GetActorLocation();
 	return true;
 }

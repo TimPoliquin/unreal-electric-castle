@@ -4,9 +4,12 @@
 #include "AI/Engagement/AIEngagementController.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
+#include "DrawDebugHelpers.h"
 #include "AI/Engagement/Config/EngagementLevelConfig.h"
 #include "AI/Engagement/Movement/EngagementMovementPlugin.h"
 #include "AI/Perception/AIPerceptionActor.h"
+#include "AI/Targeting/AITargetingActorInterface.h"
+#include "AI/Targeting/AITargetingComponent.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 #include "ElectricCastle/ElectricCastle.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
@@ -87,7 +90,6 @@ void UAIEngagementController::Deactivate()
 		CurrentEngagementRange = EEngagementRange::None;
 	}
 	CurrentMovementPlugin = nullptr;
-	Target.Reset();
 }
 
 void UAIEngagementController::ChangeItUp_Implementation()
@@ -167,11 +169,6 @@ void UAIEngagementController::SetCurrentEngagementAbilityModes(const TArray<EEng
 	CurrentEngagementAbilityModes = InEngagementAbilityModes;
 }
 
-AActor* UAIEngagementController::GetEngagementTarget() const
-{
-	return Target.Get();
-}
-
 void UAIEngagementController::RandomizeEngagement()
 {
 	if (const UEngagementLevelConfig* EngagementLevelConfig = UArrayUtils::GetRandomElement(EngagementLevelConfigs))
@@ -216,7 +213,10 @@ AActor* UAIEngagementController::ChooseNewRandomTarget()
 		);
 	}
 	AActor* NewTarget = PotentialTargets.Num() > 0 ? UArrayUtils::GetRandomElement(PotentialTargets) : nullptr;
-	SetEngagementTarget(NewTarget);
+	if (UAITargetingComponent* TargetingComponent = IAITargetingActorInterface::GetAITargetingComponent(GetOwner()))
+	{
+		TargetingComponent->SetCurrentTarget(NewTarget);
+	}
 	return NewTarget;
 }
 
@@ -322,27 +322,6 @@ EEngagementLevel UAIEngagementController::GetRandomPassiveEngagementLevel(const 
 	return UArrayUtils::GetRandomElement(EngagementLevelConfigs)->EngagementLevel;
 }
 
-void UAIEngagementController::SetEngagementTarget(AActor* InTarget)
-{
-	if (bDebug)
-	{
-		if (IsValid(InTarget))
-		{
-			UE_LOG(LogElectricCastle, Display, TEXT("[%s::%s] New target set: %s"), *GetOwner()->GetName(), *GetName(), *InTarget->GetName());
-		}
-		else
-		{
-			UE_LOG(LogElectricCastle, Display, TEXT("[%s::%s] Target cleared"), *GetOwner()->GetName(), *GetName());
-		}
-	}
-	Target = InTarget;
-	if (CurrentMovementPlugin)
-	{
-		CurrentMovementPlugin->SetTargetActor(InTarget);
-	}
-	OnEngagementTargetChanged.Broadcast(Target.Get());
-}
-
 UEngagementLevelConfig* UAIEngagementController::GetEngagementLevelConfigByEngagementLevel(const EEngagementLevel InEngagementLevel) const
 {
 	for (UEngagementLevelConfig* Config : EngagementLevelConfigs)
@@ -383,11 +362,14 @@ void UAIEngagementController::HandleOwnerDeath(AActor* DeadActor)
 
 void UAIEngagementController::SetMovementPlugin(UEngagementMovementPlugin* InEngagementMovementPlugin)
 {
+	if (IsValid(CurrentMovementPlugin))
+	{
+		CurrentMovementPlugin->RemoveDependencies(GetOwner());
+	}
 	CurrentMovementPlugin = InEngagementMovementPlugin;
 	if (InEngagementMovementPlugin)
 	{
 		InEngagementMovementPlugin->InitializeDependencies(GetOwner());
-		InEngagementMovementPlugin->SetTargetActor(Target.Get());
 		InEngagementMovementPlugin->SetPreferredDistance(GetCurrentPreferredRange());
 	}
 }

@@ -11,11 +11,10 @@
 #include "Player/Form/FormChangeActorInterface.h"
 #include "Player/Form/PlayerFormChangeComponent.h"
 #include "LiveLinkTypes.h"
-
 #include "Actor/Attack/Component/AttackWindowManagerActor.h"
 #include "Actor/Block/BlockingActorInterface.h"
+#include "Actor/Cloak/CloakActorInterface.h"
 #include "Actor/MagicHand/MagicHandPossessorInterface.h"
-#include "Actor/MagicTether/TetherAbilityActorInterface.h"
 #include "Actor/Mesh/SocketManagerTypes.h"
 #include "Actor/MotionWarping/MotionWarpingActor.h"
 #include "Player/Equipment/EquipmentManagerInterface.h"
@@ -23,6 +22,7 @@
 #include "Player/LockOn/LockOnActor.h"
 #include "ElectricCastlePlayerCharacter.generated.h"
 
+class UMagicHandComponent;
 class UBlockController;
 struct FLockOnTargetPayload;
 class UTetherAbilityComponent;
@@ -72,18 +72,19 @@ class ELECTRICCASTLE_API AElectricCastlePlayerCharacter : public AElectricCastle
                                                           public IPlayerInterface,
                                                           public IFormChangeActorInterface,
                                                           public IEquipmentManagerInterface,
-                                                          public ITetherAbilityActorInterface,
                                                           public IMagicHandPossessorInterface,
                                                           public IAimActorInterface,
                                                           public IAttackWindowManagerActor,
                                                           public ILockOnActor,
                                                           public IMotionWarpingActor,
-                                                          public IBlockingActorInterface
+                                                          public IBlockingActorInterface,
+                                                          public ICloakActorInterface
 {
 	GENERATED_BODY()
 
 public:
 	AElectricCastlePlayerCharacter();
+	virtual void BeginDestroy() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
@@ -161,10 +162,8 @@ public:
 	}
 
 	/** EquipmentManagerInterface End */
-	/** Start Tether Ability Actor Interface **/
-	virtual UTetherAbilityComponent* GetTetherAbilityComponent_Implementation() const override { return TetherComponent; };
-	/** End Tether Ability Actor Interface **/
 	/** Start Magic Hand Possessor Interface **/
+	virtual UMagicHandComponent* GetMagicHandComponent_Implementation() const override { return MagicHandComponent; }
 	virtual USceneComponent* GetMagicHandAttachComponent_Implementation(FName& AttachBoneName) override;
 	/** End Magic Hand Possessor Interface **/
 	/** Start AttackWindowManagerActor Interface **/
@@ -176,6 +175,10 @@ public:
 	/** Start IBlockingActorInterface **/
 	virtual UBlockController* GetBlockController_Implementation() const override { return BlockController; };
 	/** End IBlockingActorInterface **/
+	/** Start ICloakActorInterface **/
+	virtual UCloakComponent* GetCloakComponent_Implementation() const override { return CloakComponent; };
+	/** End ICloakActorInterface **/
+
 	virtual void Falling() override;
 	virtual void Jump() override;
 	virtual void Landed(const FHitResult& Hit) override;
@@ -184,7 +187,6 @@ protected:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void Construction_SetupMetaHuman();
 	virtual void BeginPlay() override;
-	virtual void BeginDestroy() override;
 	UFUNCTION(BlueprintNativeEvent)
 	void OnEquipmentAnimationRequest(const FEquipmentDelegatePayload& Payload);
 	UFUNCTION(BlueprintNativeEvent)
@@ -205,6 +207,7 @@ protected:
 	void HandleLockOnLevelChanged(const FLockOnTargetPayload& Payload);
 	UFUNCTION(BlueprintNativeEvent)
 	void RegisterMeshSockets();
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components|Metahuman")
 	TObjectPtr<USkeletalMeshComponent> ClothingMesh;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components|Metahuman")
@@ -231,8 +234,8 @@ protected:
 	TObjectPtr<USpringArmComponent> SpringArmComponent;
 	UPROPERTY(EditDefaultsOnly, Category="Components")
 	TObjectPtr<UNiagaraComponent> LevelUpNiagaraComponent;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
-	TObjectPtr<UTetherAbilityComponent> TetherComponent;
+	UPROPERTY(EditDefaultsOnly, Category="Components")
+	TObjectPtr<UMagicHandComponent> MagicHandComponent;
 	UPROPERTY(EditDefaultsOnly, Category="Components")
 	TObjectPtr<UMotionWarpingComponent> MotionWarpingComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
@@ -249,6 +252,8 @@ protected:
 	TObjectPtr<ULODSyncComponent> LODSyncComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UAttackWindowManager> AttackWindowManager;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
+	TObjectPtr<UCloakComponent> CloakComponent;
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<USoundBase> LevelUpSound;
 	UPROPERTY(EditDefaultsOnly)

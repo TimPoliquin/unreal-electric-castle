@@ -21,3 +21,19 @@ void IInteractionWidgetInterface::Hide(UUserWidget* Widget)
 		Execute_Hide(Widget);
 	}
 }
+
+void IInteractionWidgetInterface::SetActionText(UUserWidget* Widget, const FString& InActionText)
+{
+	if (IsValid(Widget) && Widget->Implements<UInteractionWidgetInterface>())
+	{
+		Execute_SetActionText(Widget, InActionText);
+	}
+}
+
+void IInteractionWidgetInterface::SetIcon(UUserWidget* Widget, const UTexture2D* InIcon)
+{
+	if (IsValid(Widget) && Widget->Implements<UInteractionWidgetInterface>())
+	{
+		Execute_SetIcon(Widget, InIcon);
+	}
+}

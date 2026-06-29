@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbility.h"
+#include "AbilitySystem/ElectricCastleGameplayAbilityTypes.h"
 #include "Utils/RichTextMacros.h"
 #include "ElectricCastleGameplayAbility.generated.h"
 
@@ -12,42 +13,6 @@ enum class EEngagementRange : uint8;
 class UAbilityRangeConfig;
 class UAbilityEngagementConfig;
 
-USTRUCT(BlueprintType)
-struct ELECTRICCASTLE_API FAbilityCooldownConfig
-{
-	GENERATED_BODY()
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	FScalableFloat Duration;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(Categories="Cooldown"))
-	FGameplayTag CooldownTag = FGameplayTag::EmptyTag;
-
-	bool IsValid() const
-	{
-		return CooldownTag.IsValid() && Duration.IsValid();
-	}
-};
-
-USTRUCT(BlueprintType)
-struct ELECTRICCASTLE_API FComboAbilityConfig
-{
-	GENERATED_BODY()
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	FName ComboSectionName = NAME_None;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(Categories="Event.Montage"))
-	FGameplayTag MontageEventTag = FGameplayTag::EmptyTag;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	bool bIsWeaponAbility = true;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(Categories="Combat.Socket"))
-	FGameplayTag SocketTag = FGameplayTag::EmptyTag;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	bool bOverrideAbilityImpactRadius = false;
-	UPROPERTY(
-		EditDefaultsOnly,
-		BlueprintReadWrite,
-		meta=(EditCondition="bOverrideAbilityImpactRadius", EditConditionHides)
-	)
-	float ImpactRadius = 25.f;
-};
 
 /**
  * 
@@ -163,6 +128,8 @@ protected:
 	void RotateTowardAvatarActorAimTarget(AActor* ActorToRotate) const;
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	AActor* GetAimTarget() const;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void CameraKick(const FVector& Direction, const FScalableFloat& Magnitude, const float Duration);
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category="Properties")

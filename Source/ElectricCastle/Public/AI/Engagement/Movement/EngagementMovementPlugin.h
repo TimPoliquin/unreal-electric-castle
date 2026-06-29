@@ -3,9 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameFramework/Actor.h"
 #include "UObject/Object.h"
 #include "EngagementMovementPlugin.generated.h"
 
+class UPawnMovementComponent;
+class UAITargetingComponent;
 /**
  * 
  */
@@ -18,7 +21,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void InitializeDependencies(AActor* InOwnerActor);
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void SetTargetActor(AActor* InTargetActor);
+	void RemoveDependencies(AActor* InOwnerActor);
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void SetPreferredDistance(const FFloatRange InPreferredDistanceRange);
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
@@ -28,6 +31,8 @@ public:
 
 protected:
 	UPawnMovementComponent* GetMovementComponent();
+	AActor* GetTargetActor() const;
+
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool GetDirectionToTarget(FVector& OutDirection) const;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -36,8 +41,8 @@ protected:
 	TObjectPtr<AActor> OwnerActor;
 	UPROPERTY()
 	TObjectPtr<UPawnMovementComponent> MovementComponent;
-	UPROPERTY(VisibleInstanceOnly)
-	TWeakObjectPtr<AActor> TargetActor;
+	UPROPERTY()
+	TObjectPtr<UAITargetingComponent> TargetingComponent;
 	UPROPERTY(VisibleInstanceOnly)
 	FFloatRange PreferredDistanceRange;
 	UPROPERTY(VisibleInstanceOnly)

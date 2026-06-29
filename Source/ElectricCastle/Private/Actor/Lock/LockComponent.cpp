@@ -34,19 +34,21 @@ void FLockSFXConfig::AutoPlay(const AActor* WorldContextObject) const
 void FLockSFXConfig::Play(const AActor* WorldContextObject, const ELockSFXPlaybackLocation OverridePlaybackLocation) const
 {
 	FLoadSoftObjectPathAsyncDelegate OnLoadCompletedDelegate;
-	OnLoadCompletedDelegate.BindLambda([this, OverridePlaybackLocation, WorldContextObject](FSoftObjectPath ObjectPath, UObject* LoadedSound)
-	{
-		switch (GetPlaybackLocation(OverridePlaybackLocation))
+	OnLoadCompletedDelegate.BindLambda(
+		[this, OverridePlaybackLocation, WorldContextObject](FSoftObjectPath ObjectPath, UObject* LoadedSound)
 		{
-		case ELockSFXPlaybackLocation::Default:
-		case ELockSFXPlaybackLocation::UI:
-			UGameplayStatics::PlaySound2D(WorldContextObject, SoundEffect.Get());
-			break;
-		case ELockSFXPlaybackLocation::ActorLocation:
-			UGameplayStatics::PlaySoundAtLocation(WorldContextObject, SoundEffect.Get(), WorldContextObject->GetActorLocation(), WorldContextObject->GetActorRotation());
-			break;
+			switch (GetPlaybackLocation(OverridePlaybackLocation))
+			{
+			case ELockSFXPlaybackLocation::Default:
+			case ELockSFXPlaybackLocation::UI:
+				UGameplayStatics::PlaySound2D(WorldContextObject, SoundEffect.Get());
+				break;
+			case ELockSFXPlaybackLocation::ActorLocation:
+				UGameplayStatics::PlaySoundAtLocation(WorldContextObject, SoundEffect.Get(), WorldContextObject->GetActorLocation(), WorldContextObject->GetActorRotation());
+				break;
+			}
 		}
-	});
+	);
 	SoundEffect.LoadAsync(OnLoadCompletedDelegate);
 }
 
@@ -54,6 +56,10 @@ ULockComponent::ULockComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 	CompletedSound.PlaybackLocation = ELockSFXPlaybackLocation::ActorLocation;
+	UnlockPreconditionTextMap.Add(EUnlockMode::Unlocked, FString());
+	UnlockPreconditionTextMap.Add(EUnlockMode::Key, FString("Key Needed"));
+	UnlockPreconditionTextMap.Add(EUnlockMode::Switch, FString("Locked"));
+	UnlockPreconditionTextMap.Add(EUnlockMode::Custom, FString("Locked"));
 }
 
 bool ULockComponent::IsPreconditionMet(const AActor* Player) const
@@ -293,6 +299,15 @@ void ULockComponent::PlayResetSound(const ELockSFXPlaybackLocation PlaybackLocat
 void ULockComponent::PlayCompletedSound(const ELockSFXPlaybackLocation PlaybackLocation)
 {
 	CompletedSound.Play(GetOwner(), PlaybackLocation);
+}
+
+FString ULockComponent::GetUnlockPreconditionText() const
+{
+	if (UnlockPreconditionTextMap.Contains(UnlockMode))
+	{
+		return UnlockPreconditionTextMap[UnlockMode];
+	}
+	return FString("Locked");
 }
 
 void ULockComponent::OnSwitchActivated(const FOnSwitchStatusChangedPayload& Payload)

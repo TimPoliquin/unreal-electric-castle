@@ -14,6 +14,9 @@
 #include "AI/Blackboard/ElectricCastleBlackboardKeys.h"
 #include "AI/Engagement/AIEngagementActor.h"
 #include "AI/Engagement/AIEngagementController.h"
+#include "AI/Perception/AIPerceptionManager.h"
+#include "AI/Targeting/AITargetingActorInterface.h"
+#include "AI/Targeting/AITargetingComponent.h"
 #include "Actor/Patrol/PatrolComponent.h"
 #include "Actor/Patrol/PatrollingActor.h"
 #include "Actor/Significance/SignificanceTypes.h"
@@ -21,6 +24,7 @@
 #include "Character/ElectricCastleCharacter.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "GameFramework/PawnMovementComponent.h"
+#include "Perception/AIPerceptionComponent.h"
 #include "Tags/ElectricCastleGameplayTags.h"
 #include "Utils/RandomRange.h"
 
@@ -31,6 +35,12 @@ AElectricCastleAIController::AElectricCastleAIController()
 	PrimaryActorTick.bCanEverTick = true;
 	bStopAILogicOnUnposses = true;
 	CinematicHandlerComponent = CreateDefaultSubobject<UCinematicHandlerComponent>(TEXT("CinematicHandlerComponent"));
+	PerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("PerceptionComponent"));
+}
+
+void AElectricCastleAIController::BeginPlay()
+{
+	Super::BeginPlay();
 }
 
 void AElectricCastleAIController::OnPossess(APawn* InPawn)
@@ -64,13 +74,15 @@ void AElectricCastleAIController::OnUnPossess()
 	if (UAIAlertComponent* AlertComponent = IAIAlertActor::GetAIAlertComponent(GetPawn()))
 	{
 		AlertComponent->OnAlertLevelChanged.RemoveAll(this);
-		AlertComponent->OnAlertTargetPerceiveChanged.RemoveAll(this);
 	}
 	if (UAIEngagementController* EngagementController = IAIEngagementActor::GetAIEngagementController(GetPawn()))
 	{
 		EngagementController->OnEngagementLevelChanged.RemoveAll(this);
 		EngagementController->OnEngagementRangeChanged.RemoveAll(this);
-		EngagementController->OnEngagementTargetChanged.RemoveAll(this);
+	}
+	if (UAITargetingComponent* TargetingComponent = IAITargetingActorInterface::GetAITargetingComponent(GetPawn()))
+	{
+		TargetingComponent->OnTargetChanged.RemoveAll(this);
 	}
 	if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(GetPawn()))
 	{
@@ -90,10 +102,6 @@ void AElectricCastleAIController::InitializeBlackboardKeys(UBlackboardData* Blac
 			*LocalBlackboardComponent,
 			LocalBlackboardComponent->GetKeyID(ElectricCastleBlackboardKeys::Alert::AlertLevel)
 		);
-		AlertTargetPerceived = MakeUnique<FBBKeyCachedAccessor<UBlackboardKeyType_Bool>>(
-			*LocalBlackboardComponent,
-			LocalBlackboardComponent->GetKeyID(ElectricCastleBlackboardKeys::Alert::AlertTargetPerceived)
-		);
 		AlertLastKnownLocation = MakeUnique<FBBKeyCachedAccessor<UBlackboardKeyType_Vector>>(
 			*LocalBlackboardComponent,
 			LocalBlackboardComponent->GetKeyID(ElectricCastleBlackboardKeys::Alert::LastKnownLocation)
@@ -102,7 +110,10 @@ void AElectricCastleAIController::InitializeBlackboardKeys(UBlackboardData* Blac
 			*LocalBlackboardComponent,
 			LocalBlackboardComponent->GetKeyID(ElectricCastleBlackboardKeys::Effect::EffectBlockAbilities)
 		);
-		EffectBlockAI = MakeUnique<FBBKeyCachedAccessor<UBlackboardKeyType_Bool>>(*LocalBlackboardComponent, LocalBlackboardComponent->GetKeyID(ElectricCastleBlackboardKeys::Effect::EffectBlockAI));
+		EffectBlockAI = MakeUnique<FBBKeyCachedAccessor<UBlackboardKeyType_Bool>>(
+			*LocalBlackboardComponent,
+			LocalBlackboardComponent->GetKeyID(ElectricCastleBlackboardKeys::Effect::EffectBlockAI)
+		);
 		EffectBlockMovement = MakeUnique<FBBKeyCachedAccessor<UBlackboardKeyType_Bool>>(
 			*LocalBlackboardComponent,
 			LocalBlackboardComponent->GetKeyID(ElectricCastleBlackboardKeys::Effect::EffectBlockMovement)
@@ -131,7 +142,10 @@ void AElectricCastleAIController::InitializeBlackboardKeys(UBlackboardData* Blac
 			*LocalBlackboardComponent,
 			LocalBlackboardComponent->GetKeyID(ElectricCastleBlackboardKeys::Engagement::EngagementTarget)
 		);
-		PatrolCanPatrol = MakeUnique<FBBKeyCachedAccessor<UBlackboardKeyType_Bool>>(*LocalBlackboardComponent, LocalBlackboardComponent->GetKeyID(ElectricCastleBlackboardKeys::Patrol::CanPatrol));
+		PatrolCanPatrol = MakeUnique<FBBKeyCachedAccessor<UBlackboardKeyType_Bool>>(
+			*LocalBlackboardComponent,
+			LocalBlackboardComponent->GetKeyID(ElectricCastleBlackboardKeys::Patrol::CanPatrol)
+		);
 		PatrolNextPatrolPoint = MakeUnique<FBBKeyCachedAccessor<UBlackboardKeyType_Vector>>(
 			*LocalBlackboardComponent,
 			LocalBlackboardComponent->GetKeyID(ElectricCastleBlackboardKeys::Patrol::NextPatrolPoint)
@@ -144,7 +158,10 @@ void AElectricCastleAIController::InitializeBlackboardKeys(UBlackboardData* Blac
 			*LocalBlackboardComponent,
 			LocalBlackboardComponent->GetKeyID(ElectricCastleBlackboardKeys::Patrol::PatrolWaitTime)
 		);
-		StatusIsDead = MakeUnique<FBBKeyCachedAccessor<UBlackboardKeyType_Bool>>(*LocalBlackboardComponent, LocalBlackboardComponent->GetKeyID(ElectricCastleBlackboardKeys::Status::IsDead));
+		StatusIsDead = MakeUnique<FBBKeyCachedAccessor<UBlackboardKeyType_Bool>>(
+			*LocalBlackboardComponent,
+			LocalBlackboardComponent->GetKeyID(ElectricCastleBlackboardKeys::Status::IsDead)
+		);
 		SignificanceLevel = MakeUnique<FBBKeyCachedAccessor<UBlackboardKeyType_Enum>>(
 			*LocalBlackboardComponent,
 			LocalBlackboardComponent->GetKeyID(ElectricCastleBlackboardKeys::Significance::SignificanceLevel)
@@ -156,23 +173,34 @@ void AElectricCastleAIController::InitializeBlackboardKeys(UBlackboardData* Blac
 	}
 }
 
+void AElectricCastleAIController::HandleTargetChanged(const FAITargetChangedPayload& Payload)
+{
+	if (EngagementTarget.IsValid())
+	{
+		EngagementTarget->SetValue(*GetBlackboardComponent(), Payload.NewTarget);
+		SetFocus(Payload.NewTarget, EAIFocusPriority::Gameplay);
+	}
+}
+
 void AElectricCastleAIController::InitializeDependencies_Implementation()
 {
 	if (UAIAlertComponent* AlertComponent = IAIAlertActor::GetAIAlertComponent(GetPawn()))
 	{
 		AlertComponent->OnAlertLevelChanged.AddUniqueDynamic(this, &AElectricCastleAIController::HandleAlertLevelChanged);
-		AlertComponent->OnAlertTargetPerceiveChanged.AddUniqueDynamic(this, &AElectricCastleAIController::HandleAlertTargetPerceiveChanged);
 	}
 	if (UAIEngagementController* EngagementController = IAIEngagementActor::GetAIEngagementController(GetPawn()))
 	{
 		EngagementController->OnEngagementLevelChanged.AddUniqueDynamic(this, &AElectricCastleAIController::HandleEngagementLevelChanged);
 		EngagementController->OnEngagementRangeChanged.AddUniqueDynamic(this, &AElectricCastleAIController::HandleEngagementRangeChanged);
-		EngagementController->OnEngagementTargetChanged.AddUniqueDynamic(this, &AElectricCastleAIController::HandleEngagementTargetChanged);
 		EngagementControlMode->SetValue(*GetBlackboardComponent(), StaticCast<uint8>(EngagementController->GetCurrentEngagementControlMode()));
 		EngagementLevel->SetValue(*GetBlackboardComponent(), StaticCast<uint8>(EngagementController->GetCurrentEngagementLevel()));
 		EngagementRange->SetValue(*GetBlackboardComponent(), StaticCast<uint8>(EngagementController->GetCurrentEngagementRange()));
 		UpdateAttackRate(EngagementController->GetCurrentEngagementAttackRate());
 		UpdatePreferredDistance(EngagementController->GetCurrentPreferredRange());
+	}
+	if (UAITargetingComponent* TargetingComponent = IAITargetingActorInterface::GetAITargetingComponent(GetPawn()))
+	{
+		TargetingComponent->OnTargetChanged.AddUniqueDynamic(this, &AElectricCastleAIController::HandleTargetChanged);
 	}
 	if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(GetPawn()))
 	{
@@ -187,7 +215,10 @@ void AElectricCastleAIController::InitializeDependencies_Implementation()
 				EffectBlockAbilities->SetValue(*GetBlackboardComponent(), Count > 0);
 			}
 		);
-		AbilitySystemComponent->RegisterGameplayTagEvent(GameplayTags.Effect_Block_AI, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &AElectricCastleAIController::HandleEffectBlockAI);
+		AbilitySystemComponent->RegisterGameplayTagEvent(GameplayTags.Effect_Block_AI, EGameplayTagEventType::NewOrRemoved).AddUObject(
+			this,
+			&AElectricCastleAIController::HandleEffectBlockAI
+		);
 		AbilitySystemComponent->RegisterGameplayTagEvent(GameplayTags.Effect_Block_Movement, EGameplayTagEventType::NewOrRemoved).AddUObject(
 			this,
 			&AElectricCastleAIController::HandleEffectBlockMovement
@@ -231,33 +262,11 @@ void AElectricCastleAIController::HandleEngagementRangeChanged_Implementation(co
 	UpdatePreferredDistance(Payload.PreferredDistance);
 }
 
-void AElectricCastleAIController::HandleEngagementTargetChanged_Implementation(AActor* NewTarget)
-{
-	if (EngagementTarget.IsValid())
-	{
-		EngagementTarget->SetValue(*GetBlackboardComponent(), NewTarget);
-		SetFocus(NewTarget, EAIFocusPriority::Gameplay);
-	}
-}
-
 void AElectricCastleAIController::HandleAlertLevelChanged_Implementation(const FAlertLevelChangePayload& Payload)
 {
 	if (AlertLevel.IsValid())
 	{
 		AlertLevel->SetValue(*GetBlackboardComponent(), StaticCast<uint8>(Payload.NewAlertLevel));
-	}
-	if (AlertLastKnownLocation.IsValid())
-	{
-		AlertLastKnownLocation->SetValue(*GetBlackboardComponent(), Payload.LastKnownLocation);
-	}
-}
-
-void AElectricCastleAIController::HandleAlertTargetPerceiveChanged_Implementation(const FAlertTargetPerceivedChangePayload& Payload)
-{
-	if (AlertTargetPerceived.IsValid())
-	{
-		AlertTargetPerceived->SetValue(*GetBlackboardComponent(), Payload.bCanPerceive);
-		AlertLastKnownLocation->SetValue(*GetBlackboardComponent(), Payload.LastKnownLocation);
 	}
 }
 
@@ -281,12 +290,9 @@ void AElectricCastleAIController::HandleEffectBlockAI_Implementation(FGameplayTa
 		ClearFocus(EAIFocusPriority::Gameplay);
 		StopMovement();
 	}
-	else
+	else if (const UAITargetingComponent* TargetingController = IAITargetingActorInterface::GetAITargetingComponent(GetPawn()))
 	{
-		if (const UAIEngagementController* EngagementController = IAIEngagementActor::GetAIEngagementController(GetPawn()))
-		{
-			SetFocus(EngagementController->GetEngagementTarget(), EAIFocusPriority::Gameplay);
-		}
+		SetFocus(TargetingController->GetCurrentTarget(), EAIFocusPriority::Gameplay);
 	}
 }
 

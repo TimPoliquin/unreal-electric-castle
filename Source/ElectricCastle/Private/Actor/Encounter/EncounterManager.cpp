@@ -3,10 +3,16 @@
 
 #include "Actor/Encounter/EncounterManager.h"
 
+#include "TimerManager.h"
+#include "AI/ElectricCastleAIController.h"
 #include "AI/Alert/AIAlertActor.h"
 #include "AI/Alert/AIAlertComponent.h"
 #include "AI/Engagement/AIEngagementActor.h"
 #include "AI/Engagement/AIEngagementController.h"
+#include "AI/Targeting/AITargetingActorInterface.h"
+#include "AI/Targeting/AITargetingComponent.h"
+#include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
+#include "Actor/Encounter/EncounterBlueprintFunctionLibrary.h"
 #include "Actor/Significance/Component/ActorSignificanceComponent.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
@@ -19,6 +25,28 @@ AEncounterManager::AEncounterManager()
 	PrimaryActorTick.bCanEverTick = false;
 	SignificanceComponent = CreateDefaultSubobject<UActorSignificanceComponent>(TEXT("Significance Component"));
 	SignificanceComponent->SetSignificanceTag(FElectricCastleGameplayTags::Get().Significance_Category_Encounter);
+}
+
+
+void AEncounterManager::RegisterTarget_Implementation(AActor* Target)
+{
+	if (IsValid(Target))
+	{
+		EncounterTargets.AddUnique(Target);
+	}
+}
+
+void AEncounterManager::UnregisterTarget_Implementation(AActor* Target)
+{
+	if (IsValid(Target))
+	{
+		EncounterTargets.RemoveAll(
+			[Target](const TWeakObjectPtr<AActor> Current)
+			{
+				return !Current.IsValid() || Current.Get() == Target;
+			}
+		);
+	}
 }
 
 void AEncounterManager::RegisterEnemy_Implementation(AActor* Enemy)
@@ -76,6 +104,33 @@ void AEncounterManager::BeginPlay()
 	}
 }
 
+TArray<AActor*> AEncounterManager::GetValidEncounterTargets() const
+{
+	TArray<AActor*> ValidTargets;
+	if (!EncounterTargets.IsEmpty())
+	{
+		// get visible targets in the encounter
+		for (const TWeakObjectPtr<AActor>& EncounterTarget : EncounterTargets)
+		{
+			if (!EncounterTarget.IsValid())
+			{
+				continue;
+			}
+			// add targets that are visible
+			if (UElectricCastleAbilitySystemLibrary::GetVisibilityAttributeValue(EncounterTarget.Get()) > 0.f)
+			{
+				ValidTargets.Add(EncounterTarget.Get());
+			}
+		}
+	}
+	if (ValidTargets.IsEmpty())
+	{
+		// if no targets are available, try to use enemy perceptions to decide on a target
+		ValidTargets = UEncounterBlueprintFunctionLibrary::GetAllActorsPerceivedByWeakActors(Enemies);
+	}
+	return ValidTargets;
+}
+
 void AEncounterManager::HandleGameDataLoaded_Implementation()
 {
 	TArray<AActor*> AttachedActors;
@@ -96,26 +151,7 @@ void AEncounterManager::HandleEnemyAlertLevelChanged_Implementation(const FAlert
 	{
 	case EAlertLevel::Alerted:
 		EncounterAlertLevel = Payload.NewAlertLevel;
-		for (TWeakObjectPtr<AActor> Enemy : Enemies)
-		{
-			if (!Enemy.IsValid() || ICombatInterface::IsDead(Enemy.Get()))
-			{
-				continue;
-			}
-			if (Enemy.Get() == Payload.Owner)
-			{
-				continue;
-			}
-			if (UAIAlertComponent* EnemyAlertComponent = IAIAlertActor::GetAIAlertComponent(Enemy.Get()))
-			{
-				EnemyAlertComponent->OverrideAlertLevel(EAlertLevel::Alerted);
-				EnemyAlertComponent->OverrideAlertTarget(Payload.AlertedBy);
-			}
-			if (UAIEngagementController* EngagementController = IAIEngagementActor::GetAIEngagementController(Enemy.Get()))
-			{
-				EngagementController->SetEngagementTarget(Payload.AlertedBy);
-			}
-		}
+		AlertAllEnemiesInEncounter(Payload);
 		RecalibrateEncounter();
 		break;
 	case EAlertLevel::Suspicious:
@@ -143,6 +179,25 @@ void AEncounterManager::HandleEnemyAlertLevelChanged_Implementation(const FAlert
 		break;
 	default:
 		break;
+	}
+}
+
+void AEncounterManager::AlertAllEnemiesInEncounter_Implementation(const FAlertLevelChangePayload& Payload)
+{
+	for (TWeakObjectPtr<AActor> Enemy : Enemies)
+	{
+		if (!Enemy.IsValid() || ICombatInterface::IsDead(Enemy.Get()))
+		{
+			continue;
+		}
+		if (Enemy.Get() == Payload.Owner)
+		{
+			continue;
+		}
+		if (UAIAlertComponent* EnemyAlertComponent = IAIAlertActor::GetAIAlertComponent(Enemy.Get()))
+		{
+			EnemyAlertComponent->OverrideAlertLevel(EAlertLevel::Alerted);
+		}
 	}
 }
 
@@ -175,6 +230,7 @@ void AEncounterManager::RecalibrateEncounter_Implementation()
 	{
 		return;
 	}
+	const TArray<AActor*>& AllPerceivedTargetActors = GetValidEncounterTargets();
 	// copy the list
 	TArray<TWeakObjectPtr<AActor>> AllEncounterEnemies = Enemies;
 	UArrayUtils::ShuffleArray(AllEncounterEnemies);
@@ -199,6 +255,17 @@ void AEncounterManager::RecalibrateEncounter_Implementation()
 			else
 			{
 				PassiveControllers.Add(EngagementController);
+			}
+		}
+		if (UAITargetingComponent* TargetingController = IAITargetingActorInterface::GetAITargetingComponent(Actor))
+		{
+			if (!AllPerceivedTargetActors.IsEmpty())
+			{
+				TargetingController->SetCurrentTarget(UArrayUtils::GetRandomElement(AllPerceivedTargetActors));
+			}
+			else
+			{
+				TargetingController->SetCurrentTarget(nullptr);
 			}
 		}
 	}

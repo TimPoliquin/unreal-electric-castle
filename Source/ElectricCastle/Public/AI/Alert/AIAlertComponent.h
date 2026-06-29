@@ -5,11 +5,13 @@
 #include "CoreMinimal.h"
 #include "AlertTypes.h"
 #include "ScalableFloat.h"
+#include "AI/Perception/AIPerceptionDataTypes.h"
 #include "Abilities/GameplayAbilityTypes.h"
 #include "Components/ActorComponent.h"
-#include "Perception/AIPerceptionTypes.h"
 #include "AIAlertComponent.generated.h"
 
+
+class UAIPerceptionManager;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class ELECTRICCASTLE_API UAIAlertComponent : public UActorComponent
@@ -22,9 +24,12 @@ public:
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	virtual void BeginDestroy() override;
+	UFUNCTION(BlueprintCallable)
+	void InitializePerceptionManager(UAIPerceptionManager* InPerceptionManager);
 	virtual void OverrideAlertLevel(const EAlertLevel InAlertLevel);
-	virtual void OverrideAlertTarget(AActor* InAlertTarget);
 	virtual void SetAlertLevelDecays(const bool bInAlertLevelDecays);
+	UFUNCTION(BlueprintCallable)
+	void StartAlertDecayDelayTimer();
 	virtual void Activate(bool bReset = false) override;
 	virtual void Deactivate() override;
 
@@ -37,17 +42,12 @@ public:
 	/** Fires when the alert level raw value changes. useful for updating UI elements; should not be used for heavy processing **/
 	UPROPERTY(BlueprintAssignable)
 	FAlertLevelChanged OnAlertLevelRawChanged;
-	UPROPERTY(BlueprintAssignable)
-	FAlertTargetPerceiveChanged OnAlertTargetPerceiveChanged;
 
 protected:
-	UFUNCTION(BlueprintNativeEvent)
-	void HandleTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
 	UFUNCTION(BlueprintNativeEvent)
 	void HandleGameDataLoaded();
 	UFUNCTION(BlueprintNativeEvent)
 	void HandleOwnerDeath(AActor* DeadActor);
-	void HandleAlertByDamage(const FGameplayEventData* GameplayEventData);
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FScalableFloat PerceptionDelayByDistance = .5f;
@@ -63,25 +63,38 @@ protected:
 	float SuspiciousThreshold = 75.f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float AlertedThreshold = 100.f;
+	// These stimuli will trigger full alert status
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<EAIPerceptionStimulusType> FullAlertStimuli;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bDebug = false;
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
 	bool bProcessAlert = false;
 
+
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
 	float AlertLevelRaw = 0.f;
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
 	EAlertLevel AlertLevel = EAlertLevel::Idle;
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
-	TWeakObjectPtr<AActor> TargetActor;
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
-	FVector LastKnownLocation = FVector::ZeroVector;
 
 private:
+	UFUNCTION()
+	void HandlePerceptionAnyStarted(const FAIPerceptionAnyStartedEventPayload& Payload);
+	UFUNCTION()
+	void HandlePerceptionAnyEnded(const FAIPerceptionAnyEndedEventPayload& Payload);
+
 	EAlertLevel GetAlertLevelByValue(const float InAlertLevel) const;
 	void SetAlertLevel(const float InAlertLevel);
+	float TickPerceptionCountdown(const float DeltaTime);
+	void TickIncreaseAlertLevel(const float DeltaTime);
+	void TickDecayAlertLevel(const float DeltaTime);
+	void UpdatePerceptionCountdownByActor(const AActor* Actor);
 
 	UPROPERTY(VisibleInstanceOnly)
 	float PerceptionCountdown = -1.f;
+	UPROPERTY()
+	TObjectPtr<UAIPerceptionManager> PerceptionManager;
+	UPROPERTY()
+	TArray<TWeakObjectPtr<AActor>> PerceivedActors;
 	FTimerHandle DecayTimer;
 };

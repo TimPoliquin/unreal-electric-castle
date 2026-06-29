@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "WidgetVisibilityEvents.h"
 #include "InteractionWidgetInterface.h"
+#include "WidgetVisibilityTypes.h"
 #include "Blueprint/UserWidget.h"
 #include "AuraInteractionWidget.generated.h"
 
@@ -27,6 +28,7 @@ public:
 	/** Start IInteractionWidgetInterface **/
 	virtual void SetInteractionKey_Implementation(const FString& Key) override;
 	virtual void SetActionText_Implementation(const FString& Key) override;
+	virtual void SetIcon_Implementation(const UTexture2D* Icon) override;
 	virtual void SetStartHidden_Implementation(const bool bInStartHidden) override;
 	virtual void SetAutoDestroyOnHide_Implementation(const bool bInAutoDestroyOnHide) override;
 	virtual void Show_Implementation() override;
@@ -38,6 +40,14 @@ protected:
 	virtual void NativePreConstruct() override;
 	virtual void NativeConstruct() override;
 
+	UFUNCTION(BlueprintCallable)
+	bool CanShow() const;
+	UFUNCTION(BlueprintCallable)
+	bool IsShowing() const;
+	UFUNCTION(BlueprintCallable)
+	bool CanHide() const;
+	UFUNCTION(BlueprintCallable)
+	bool IsHiding() const;
 	UFUNCTION(BlueprintImplementableEvent)
 	void InitializeActionText();
 	UFUNCTION(BlueprintImplementableEvent)
@@ -46,6 +56,10 @@ protected:
 	void InitializeHiddenState();
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void InitializeShownState();
+	UFUNCTION(BlueprintImplementableEvent)
+	void Execute_Show();
+	UFUNCTION(BlueprintImplementableEvent)
+	void Execute_Hide();
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void Shown();
@@ -63,4 +77,7 @@ protected:
 	FString ActionText = TEXT("Interact");
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Properties")
 	FString KeyText = EKeys::E.GetDisplayName().ToString();
+
+	UPROPERTY(BlueprintReadOnly)
+	EWidgetVisibilityState VisibilityState = EWidgetVisibilityState::Hidden;
 };

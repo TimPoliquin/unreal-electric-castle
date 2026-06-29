@@ -12,12 +12,13 @@
 #include "AbilitySystem/Effect/DurationGameplayEffect.h"
 #include "Actor/Mesh/SocketManagerActor.h"
 #include "Actor/Mesh/SocketManagerComponent.h"
+#include "Camera/CameraComponent.h"
+#include "Camera/Kick/DirectionalCameraKick.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Interaction/CombatInterface.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Player/ElectricCastlePlayerController.h"
 #include "Player/LockOn/LockOnController.h"
-
 
 UElectricCastleGameplayAbility::UElectricCastleGameplayAbility()
 {
@@ -169,6 +170,22 @@ FRotator UElectricCastleGameplayAbility::GetAvatarActorSocketRotation(const FGam
 		return SocketManagerComponent->GetSocketTransform(SocketTag).Rotator();
 	}
 	return GetAvatarActorFromActorInfo()->GetActorForwardVector().Rotation();
+}
+
+void UElectricCastleGameplayAbility::CameraKick_Implementation(const FVector& Direction, const FScalableFloat& Magnitude, const float Duration)
+{
+	if (const APlayerController* PlayerController = GetActorInfo().PlayerController.Get())
+	{
+		if (APlayerCameraManager* PlayerCameraManager = PlayerController->PlayerCameraManager)
+		{
+			if (UDirectionalCameraKick* Mod = Cast<UDirectionalCameraKick>(PlayerCameraManager->FindCameraModifierByClass(UDirectionalCameraKick::StaticClass())))
+			{
+				const UCameraComponent* CameraComponent = PlayerCameraManager->GetViewTarget()->FindComponentByClass<UCameraComponent>();
+				const FVector CameraRelativeDirection = CameraComponent->GetComponentTransform().TransformVectorNoScale(Direction).GetSafeNormal();
+				Mod->Kick(CameraRelativeDirection, Magnitude, Duration);
+			}
+		}
+	}
 }
 
 AActor* UElectricCastleGameplayAbility::GetAimTarget_Implementation() const

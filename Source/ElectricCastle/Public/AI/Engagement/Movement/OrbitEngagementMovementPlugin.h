@@ -15,9 +15,9 @@ class ELECTRICCASTLE_API UOrbitEngagementMovementPlugin : public UEngagementMove
 	GENERATED_BODY()
 
 public:
+	virtual void InitializeDependencies_Implementation(AActor* InOwnerActor) override;
 	virtual void TickMovement_Implementation(const float DeltaTime) override;
 	virtual void ChangeItUp_Implementation() override;
-	virtual void SetTargetActor_Implementation(AActor* InTargetActor) override;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -29,7 +29,7 @@ protected:
 	UPROPERTY()
 	FVector SmoothedTangentDirection = FVector::ZeroVector;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float RadialDeadZone = 25.f;
+	float RadialDeadZone = 100.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float AnticipationDistance = 100.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

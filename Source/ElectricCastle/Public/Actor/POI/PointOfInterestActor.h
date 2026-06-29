@@ -21,11 +21,16 @@ class ELECTRICCASTLE_API APointOfInterestActor : public AEffectAreaActor, public
 
 public:
 	APointOfInterestActor();
+	virtual void OnConstruction(const FTransform& Transform) override;
+	virtual void OnConstruction_InitializeWidgets();
+	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
 
-protected:
-	virtual void BeginPlay() override;
-	void InitializeState();
-
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void EnablePOI();
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void DisablePOI();
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsPOIDisabled() const;
 	/** Start ISaveableInterface **/
 	virtual void PostLoad_Implementation() override;
 	/** End ISaveableInterface **/
@@ -33,6 +38,10 @@ protected:
 	virtual UHighlightComponent* GetHighlightComponent_Implementation() const override;
 	virtual void GetHighlightMeshes_Implementation(TArray<UMeshComponent*>& OutHighlightMeshes) override;
 	/** End IHighlightActorInterface**/
+
+protected:
+	virtual void BeginPlay() override;
+	void InitializeState();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UWidgetComponent> POIWidget;
@@ -44,6 +53,10 @@ protected:
 	TObjectPtr<UCapsuleComponent> OverlapDetectionComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UHighlightComponent> HighlightComponent;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="POI")
+	FString InteractText = FString("Interact");
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="POI")
+	FString PreconditionText = FString("Precondition not met");
 
 	UFUNCTION()
 	void OnBeginOverlap(
@@ -61,12 +74,24 @@ protected:
 		UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex
 	);
-	UFUNCTION(BlueprintNativeEvent)
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	UTexture2D* GetPreconditionIcon() const;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	bool IsPreconditionMet(AActor* Player) const;
 	UFUNCTION(BlueprintNativeEvent)
 	void ShowInteractWithPOIAvailable(AActor* Player) const;
 	UFUNCTION(BlueprintNativeEvent)
 	void ShowPreconditionWidget(AActor* Player) const;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void HandlePlayerOverlapBegin(AActor* OtherActor);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void HandlePlayerOverlapEnd(AActor* OtherActor);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void InitializeInteractionWidgetSettings(UUserWidget* InInteractionWidget, const FString& InInteractionText);
+	UFUNCTION(BlueprintImplementableEvent)
+	void InitializePreconditionWidgetSettings(UUserWidget* InPreconditionWidget, const UTexture2D* InRuneIcon);
+
 
 	/** AuraInteractionInterface Start **/
 	virtual bool OnInteract_Implementation(AActor* Player) override;
@@ -74,12 +99,13 @@ protected:
 	void HandleInteract(AActor* Player);
 	virtual void OnInteractionEnd_Implementation(AActor* Player, const bool bIsCancelled) override;
 	/** AuraInteractionInterface End **/
-	void EnablePOI();
-	virtual void DisablePOI();
-	bool IsPOIDisabled() const;
 
 private:
 	bool IsPlayerActor(const AActor* Actor) const;
 	UPROPERTY(SaveGame)
 	bool bDisabled = false;
+	UPROPERTY(SaveGame)
+	bool bIsOverlapping = false;
+	UPROPERTY()
+	FTimerHandle OverlapDelayTimerHandle;
 };

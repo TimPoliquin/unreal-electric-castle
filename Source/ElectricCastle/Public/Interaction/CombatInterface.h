@@ -7,6 +7,7 @@
 #include "UObject/Interface.h"
 #include "CombatInterface.generated.h"
 
+struct FEffectProperties;
 class UAbilitySystemComponent;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeathSignature, AActor*, DeadActor);
 
@@ -34,9 +35,6 @@ struct FTaggedMontage
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float ImpactRadius = 45.f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	USoundBase* ImpactSound = nullptr;
 };
 
 // This class does not need to be modified.
@@ -69,8 +67,6 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	FVector GetCombatSocketLocation(const FGameplayTag& MontageTag) const;
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	UAnimMontage* GetHitReactMontage(const FGameplayTag& HitReactTypeTag) const;
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void Stagger();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	UNiagaraSystem* GetBloodEffect();
@@ -92,7 +88,8 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	AActor* GetWeapon() const;
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	FGameplayTag GetHitReactAbilityTagByDamageType(const FGameplayTag& DamageTypeTag) const;
+	void HandleDodge();
+	virtual void HandleTakeDamage(const float IncomingDamage, const FEffectProperties& Props) = 0;
 	/**
 	 * 
 	 * @param Actor 
@@ -119,5 +116,4 @@ public:
 	UE_DEPRECATED(5.7, "ICombatInterface::GetCombatSocketLocation is deprecated. Use ISocketManagerActor instead!")
 	static FVector GetCombatSocketLocation(const UObject* Actor, const FGameplayTag& SocketTag);
 	static AActor* GetWeapon(const UObject* Actor);
-	static FGameplayTag GetHitReactAbilityTagByDamageType(const UObject* Actor, const FGameplayTag& DamageTypeTag);
 };

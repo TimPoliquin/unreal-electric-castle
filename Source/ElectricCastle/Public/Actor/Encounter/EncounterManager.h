@@ -36,6 +36,10 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void RegisterEnemy(AActor* Enemy);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void RegisterTarget(AActor* Target);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void UnregisterTarget(AActor* Target);
 
 	/** Start ISaveableInterface **/
 	virtual bool ShouldSave_Implementation() const override { return true; }
@@ -54,6 +58,8 @@ protected:
 	void HandleGameDataLoaded();
 	UFUNCTION(BlueprintNativeEvent)
 	void HandleEnemyAlertLevelChanged(const FAlertLevelChangePayload& Payload);
+	UFUNCTION(BlueprintNativeEvent)
+	void AlertAllEnemiesInEncounter(const FAlertLevelChangePayload& Payload);
 	UFUNCTION(BlueprintNativeEvent)
 	void HandleEnemyDeath(AActor* DeadActor);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
@@ -75,7 +81,10 @@ protected:
 	bool bDebug = false;
 
 private:
+	TArray<AActor*> GetValidEncounterTargets() const;
 	UPROPERTY()
 	TArray<TWeakObjectPtr<AActor>> Enemies;
+	UPROPERTY()
+	TArray<TWeakObjectPtr<AActor>> EncounterTargets;
 	FTimerHandle RecalibrationTimerHandle;
 };

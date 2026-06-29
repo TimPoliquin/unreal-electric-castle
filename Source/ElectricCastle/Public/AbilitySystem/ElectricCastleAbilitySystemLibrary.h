@@ -76,6 +76,8 @@ public:
 	static bool IsFullMana(AActor* Actor);
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="ElectricCastleAbilitySystemLibrary|Attributes")
 	static float GetLungeDistance(const AActor* Owner);
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="ElectricCastleAbilitySystemLibrary|Attributes")
+	static float GetVisibilityAttributeValue(const AActor* Owner);
 
 	UFUNCTION(BlueprintPure, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")
 	static bool IsInfiniteEffect(const FGameplayEffectSpecHandle& SpecHandle);
@@ -229,6 +231,8 @@ public:
 	static FActiveGameplayEffectHandle ApplyDurationEffectByTag(AActor* Actor, const FGameplayTag DurationEffectTag, const float Duration, const int32 Level = 1);
 	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")
 	static FActiveGameplayEffectHandle ApplyInfiniteEffectByTag(AActor* Actor, const FGameplayTag DurationEffectTag, const int32 Level = 1);
+	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")
+	static FActiveGameplayEffectHandle ApplyInfiniteEffectByTags(AActor* Actor, const FGameplayTagContainer TagContainer, const int32 Level = 1);
 
 	static int GetCharacterLevel(UAbilitySystemComponent* AbilitySystemComponent);
 	UFUNCTION(BlueprintCallable, Category="ElectricCastleAbilitySystemLibrary|GameplayEffect")

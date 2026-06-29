@@ -22,9 +22,9 @@ class ELECTRICCASTLE_API ITriggerableInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="Trigger")
 	void OnTrigger(const bool InActivate);
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="Trigger")
 	bool IsTriggered() const;
 
 	static void Trigger(UObject* TriggerActor, const bool InActivate);

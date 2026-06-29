@@ -5,13 +5,19 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "Actor/Highlight/HighlightActorInterface.h"
+#include "Item/ItemTypes.h"
 #include "GameFramework/Actor.h"
 #include "ItemPickupBase.generated.h"
 
+class UTriggerComponent;
+class UTriggerAction;
+class UMeshComponent;
 class UCapsuleComponent;
 class UNiagaraSystem;
 class UApplyGameplayEffectComponent;
 class USinusoidalMovementComponent;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FItemPickupEventSignature, const FItemPickupEventPayload&, Payload);
 
 UCLASS()
 class ELECTRICCASTLE_API AItemPickupBase : public AActor, public IHighlightActorInterface
@@ -27,6 +33,9 @@ public:
 	virtual void GetHighlightMeshes_Implementation(TArray<UMeshComponent*>& OutHighlightMeshes) override;
 	/** End IHighlightActorInterface **/
 
+	UPROPERTY(BlueprintAssignable)
+	FItemPickupEventSignature OnItemPickup;
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -39,6 +48,8 @@ protected:
 	TObjectPtr<USinusoidalMovementComponent> SinusoidalMovementComponent;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UHighlightComponent> HighlightComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
+	TObjectPtr<UTriggerComponent> TriggerComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties")
 	FGameplayTag ItemType = FGameplayTag::EmptyTag;

@@ -97,21 +97,22 @@ void AArrowProjectile::Release_Implementation()
 		DrawDebugSphere(GetWorld(), TargetLocation, 20, 12, FColor::Red, false, 1, 0, 1);
 	}
 	FVector NewVelocity;
-	if (!UGameplayStatics::SuggestProjectileVelocity(
-		this,
-		NewVelocity,
+	UGameplayStatics::FSuggestProjectileVelocityParameters ProjectileParams = UGameplayStatics::FSuggestProjectileVelocityParameters(
+		GetWorld(),
 		GetActorLocation(),
 		TargetLocation,
-		ProjectileMovement->InitialSpeed,
-		false,
-		CollisionComponent->GetScaledCapsuleRadius(),
-		0,
-		ESuggestProjVelocityTraceOption::OnlyTraceWhileAscending,
-		FCollisionResponseParams::DefaultResponseParam,
-		ActorsToIgnore,
-		bDebug,
-		true
-	))
+		ProjectileMovement->InitialSpeed
+	);
+	ProjectileParams.bFavorHighArc = false;
+	ProjectileParams.CollisionRadius = CollisionComponent->GetScaledCapsuleRadius();
+	ProjectileParams.OverrideGravityZ = 0;
+	ProjectileParams.TraceOption = ESuggestProjVelocityTraceOption::OnlyTraceWhileAscending;
+	ProjectileParams.ResponseParam = FCollisionResponseParams::DefaultResponseParam;
+	ProjectileParams.ActorsToIgnore = ActorsToIgnore;
+	ProjectileParams.bDrawDebug = bDebug;
+	ProjectileParams.bAcceptClosestOnNoSolutions = true;
+	ProjectileParams.ActorsToIgnore = ActorsToIgnore;
+	if (!UGameplayStatics::SuggestProjectileVelocity(ProjectileParams, NewVelocity))
 	{
 		if (bDebug)
 		{

@@ -29,6 +29,7 @@ class ELECTRICCASTLE_API ATreasureChestActor : public APointOfInterestActor
 public:
 	// Sets default values for this actor's properties
 	ATreasureChestActor();
+	virtual void OnConstruction_InitializeWidgets() override;
 	virtual void HandleInteract_Implementation(AActor* Player) override;
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool IsUnlocked() const;

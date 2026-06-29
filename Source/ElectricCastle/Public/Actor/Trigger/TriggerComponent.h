@@ -15,7 +15,7 @@ class ELECTRICCASTLE_API UTriggerComponent : public UActorComponent
 
 public:
 	UTriggerComponent();
-
+	
 	UFUNCTION(BlueprintCallable)
 	void ExecuteTriggerActions() const;
 

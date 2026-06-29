@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameFramework/Actor.h"
 #include "UObject/Object.h"
 #include "TriggerAction.generated.h"
 
@@ -15,6 +16,7 @@ class ELECTRICCASTLE_API UTriggerAction : public UObject
 	GENERATED_BODY()
 
 public:
+	void SetOwnerActor(AActor* InOwner);
 	UFUNCTION(BlueprintCallable)
 	void Execute();
 

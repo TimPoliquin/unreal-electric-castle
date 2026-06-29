@@ -58,6 +58,8 @@ public:
 	void SetDirection(const ETrackDirection InDirection);
 	UFUNCTION(BlueprintCallable)
 	void ChangeSpeed(float InMovementSpeed);
+	UFUNCTION(BlueprintCallable)
+	void SetStartingDistanceAlongTrack(const float InStartingDistanceAlongTrack);
 
 	UPROPERTY(BlueprintAssignable)
 	FOnTrackCompleted OnTrackCompleted;

@@ -1,8 +1,10 @@
 ﻿#pragma once
-
-
+#include "Materials/MaterialInterface.h"
+#include "UObject/SoftObjectPtr.h"
 #include "FormConfigTypes.generated.h"
 
+class USkeletalMesh;
+class UMeshComponent;
 class UGroomComponent;
 class UGroomBindingAsset;
 class UGroomAsset;

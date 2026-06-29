@@ -6,8 +6,12 @@
 #include "NiagaraFunctionLibrary.h"
 #include "Actor/Highlight/HighlightComponent.h"
 #include "Actor/Pool/PoolableActor.h"
+#include "Actor/Trigger/TriggerComponent.h"
+#include "Actor/Trigger/Action/TriggerAction.h"
 #include "ElectricCastle/ElectricCastle.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/World.h"
 #include "Item/Component/SinusoidalMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -30,6 +34,7 @@ AItemPickupBase::AItemPickupBase()
 	SinusoidalMovementComponent = CreateDefaultSubobject<USinusoidalMovementComponent>(TEXT("Sinusoidal Movement Component"));
 	HighlightComponent = CreateDefaultSubobject<UHighlightComponent>(TEXT("Highlight Component"));
 	HighlightComponent->SetHighlightType(EHighlightType::Friendly);
+	TriggerComponent = CreateDefaultSubobject<UTriggerComponent>(TEXT("Trigger Component"));
 }
 
 UHighlightComponent* AItemPickupBase::GetHighlightComponent_Implementation() const
@@ -87,6 +92,8 @@ void AItemPickupBase::PlayPickupEffect_Implementation(AActor* PickupActor, const
 			true
 		);
 	}
+	TriggerComponent->ExecuteTriggerActions();
+	OnItemPickup.Broadcast(FItemPickupEventPayload(PickupActor, this));
 	if (bAutoDestroy)
 	{
 		IPoolableActor::ReturnToPoolOrDestroy(this);

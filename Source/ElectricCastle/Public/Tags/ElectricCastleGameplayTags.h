@@ -47,6 +47,10 @@ struct FElectricCastleGameplayTags
 	FGameplayTag Attributes_Meta_IncomingDamage;
 	FGameplayTag Attributes_Meta_IncomingXP;
 	FGameplayTag Attributes_Meta_IncomingRefresh;
+	/** Functional Attributes **/
+	FGameplayTag Attributes_Functional_LungeDistance;
+	FGameplayTag Attributes_Functional_MovementSpeed;
+	FGameplayTag Attributes_Functional_Visibility;
 	/** Progression Attributes **/
 	FGameplayTag Attributes_Progression_Level;
 	FGameplayTag Attributes_Progression_XP;
@@ -126,6 +130,7 @@ struct FElectricCastleGameplayTags
 	FGameplayTag Effect_State_Parrying;
 	FGameplayTag Effect_Movement_TurnInPlace;
 	FGameplayTag Effect_State_ChronoShift;
+	FGameplayTag Effect_State_Cloaked;
 	FGameplayTag Effect_State_PsychedelicVision;
 
 	FGameplayTag Effect_Resist;

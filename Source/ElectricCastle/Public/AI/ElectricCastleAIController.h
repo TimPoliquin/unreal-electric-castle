@@ -13,16 +13,20 @@
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Vector.h"
 #include "Engagement/EngagementTypes.h"
+#include "Perception/AIPerceptionActor.h"
+#include "Perception/AIPerceptionDataTypes.h"
+#include "Targeting/AITargetingTypes.h"
 #include "Utils/RandomRange.h"
 #include "ElectricCastleAIController.generated.h"
 
+class UAIPerceptionManager;
 class UCinematicHandlerComponent;
 class UBehaviorTreeComponent;
 class UBlackboardComponent;
 class UBlackboardData;
 
 UCLASS()
-class ELECTRICCASTLE_API AElectricCastleAIController : public AAIController
+class ELECTRICCASTLE_API AElectricCastleAIController : public AAIController, public IAIPerceptionActor
 {
 	GENERATED_BODY()
 
@@ -30,7 +34,12 @@ public:
 	// Sets default values for this actor's properties
 	AElectricCastleAIController();
 
+	/** Start IAIPerceptionActor **/
+	virtual UAIPerceptionComponent* GetAIPerceptionComponent_Implementation() const override { return PerceptionComponent; }
+	/** End IAIPerceptionActor **/
+
 protected:
+	virtual void BeginPlay() override;
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void OnUnPossess() override;
 	void InitializeBlackboardKeys(UBlackboardData* BlackboardData);
@@ -40,13 +49,11 @@ protected:
 	UFUNCTION(BlueprintNativeEvent)
 	void HandleAlertLevelChanged(const FAlertLevelChangePayload& Payload);
 	UFUNCTION(BlueprintNativeEvent)
-	void HandleAlertTargetPerceiveChanged(const FAlertTargetPerceivedChangePayload& Payload);
-	UFUNCTION(BlueprintNativeEvent)
 	void HandleEngagementLevelChanged(const FEngagementLevelChangedPayload& Payload);
 	UFUNCTION(BlueprintNativeEvent)
 	void HandleEngagementRangeChanged(const FEngagementRangeChangedPayload& Payload);
-	UFUNCTION(BlueprintNativeEvent)
-	void HandleEngagementTargetChanged(AActor* NewTarget);
+	UFUNCTION()
+	void HandleTargetChanged(const FAITargetChangedPayload& Payload);
 	UFUNCTION(BlueprintNativeEvent)
 	void HandlePawnDeath(AActor* DeadActor);
 	UFUNCTION(BlueprintNativeEvent)
@@ -66,7 +73,6 @@ protected:
 private:
 	TUniquePtr<FBBKeyCachedAccessor<UBlackboardKeyType_Enum>> AlertLevel;
 	TUniquePtr<FBBKeyCachedAccessor<UBlackboardKeyType_Vector>> AlertLastKnownLocation;
-	TUniquePtr<FBBKeyCachedAccessor<UBlackboardKeyType_Bool>> AlertTargetPerceived;
 	TUniquePtr<FBBKeyCachedAccessor<UBlackboardKeyType_Bool>> EffectBlockAI;
 	TUniquePtr<FBBKeyCachedAccessor<UBlackboardKeyType_Bool>> EffectBlockAbilities;
 	TUniquePtr<FBBKeyCachedAccessor<UBlackboardKeyType_Bool>> EffectBlockMovement;

@@ -13,6 +13,7 @@
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Interaction/CombatInterface.h"
 #include "Interaction/PlayerInterface.h"
 #include "Net/UnrealNetwork.h"
@@ -39,6 +40,10 @@ UElectricCastleAttributeSet::UElectricCastleAttributeSet()
 	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_HitChance, GetHitChanceAttribute);
 	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_EvadeChance, GetEvadeChanceAttribute);
 	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_CriticalHitChance, GetCriticalHitChanceAttribute);
+	// add functional attributes to attribute map
+	TagsToAttributes.Add(GameplayTags.Attributes_Functional_LungeDistance, GetLungeDistanceAttribute);
+	TagsToAttributes.Add(GameplayTags.Attributes_Functional_MovementSpeed, GetMovementSpeedAttribute);
+	TagsToAttributes.Add(GameplayTags.Attributes_Functional_Visibility, GetVisibilityAttribute);
 }
 
 void UElectricCastleAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -65,6 +70,8 @@ void UElectricCastleAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimePro
 	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, Mana, COND_None, REPNOTIFY_Always);
 	// functional attributes
 	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, LungeDistance, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, MovementSpeed, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UElectricCastleAttributeSet, Visibility, COND_None, REPNOTIFY_Always);
 }
 
 void UElectricCastleAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
@@ -110,6 +117,18 @@ void UElectricCastleAttributeSet::PostGameplayEffectExecute(const FGameplayEffec
 	else if (Data.EvaluatedData.Attribute == GetMeta_IncomingRefreshAttribute())
 	{
 		HandleIncomingRefresh(Props);
+	}
+	else if (Data.EvaluatedData.Attribute == GetLungeDistanceAttribute())
+	{
+		SetLungeDistance(FMath::Max(GetLungeDistance(), 0.f));
+	}
+	else if (Data.EvaluatedData.Attribute == GetMovementSpeedAttribute())
+	{
+		HandleIncomingMovementSpeed(Props);
+	}
+	else if (Data.EvaluatedData.Attribute == GetVisibilityAttribute())
+	{
+		SetVisibility(FMath::Clamp(GetVisibility(), 0.f, 1.f));
 	}
 	if (UElectricCastleAbilitySystemLibrary::IsSuccessfulDebuff(Props.EffectContextHandle))
 	{
@@ -210,29 +229,16 @@ void UElectricCastleAttributeSet::HandleIncomingDamage(const FEffectProperties& 
 	SetHealth(FMath::Clamp(NewHealth, 0.f, GetMaxHealth()));
 	if (!bFatal)
 	{
-		// only hit react on critical hits
-		if (bIsCriticalHit && IncomingDamage > 0.f)
+		if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(Props.Target.AvatarActor))
 		{
-			FGameplayTagContainer TagContainer;
-			TagContainer.AddTag(
-				ICombatInterface::GetHitReactAbilityTagByDamageType(
-					Props.Target.AvatarActor,
-					UElectricCastleAbilitySystemLibrary::GetDamageTypeTag(Props.EffectContextHandle)
-				)
-			);
-			Props.Target.AbilitySystemComponent->TryActivateAbilitiesByTag(
-				TagContainer
-			);
-		}
-		// TODO - play an evasion animation if the enemy evades the attack?
-		if (bIsMiss)
-		{
-			// TODO - play evade/dodge animation?
-		}
-		if (const FVector KnockbackForce = UElectricCastleAbilitySystemLibrary::GetKnockbackVector(Props.EffectContextHandle);
-			!KnockbackForce.IsNearlyZero(1.f))
-		{
-			Props.Target.Character->LaunchCharacter(KnockbackForce, true, true);
+			if (bIsMiss)
+			{
+				ICombatInterface::Execute_HandleDodge(Props.Target.AvatarActor);
+			}
+			else if (IncomingDamage > 0.f)
+			{
+				CombatInterface->HandleTakeDamage(IncomingDamage, Props);
+			}
 		}
 	}
 	else
@@ -333,6 +339,19 @@ void UElectricCastleAttributeSet::HandleDebuff(const FEffectProperties& Props)
 		{
 			UE_LOG(LogElectricCastle, Warning, TEXT("[%s] No debuff config for tag: %s"), *GetName(), *DebuffTypeTag.ToString())
 		}
+	}
+}
+
+void UElectricCastleAttributeSet::HandleIncomingMovementSpeed(const FEffectProperties& Props)
+{
+	SetMovementSpeed(FMath::Max(GetMovementSpeed(), 0.f));
+	if (!Props.Source.Character)
+	{
+		return;
+	}
+	if (UCharacterMovementComponent* MovementComponent = Props.Source.Character->GetCharacterMovement())
+	{
+		MovementComponent->MaxWalkSpeed = GetMovementSpeed();
 	}
 }
 

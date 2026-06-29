@@ -183,7 +183,17 @@ void AProjectileActor::OnSphereOverlap_Implementation(
 			OtherActor
 		))
 		{
+			FVector ImpactLocation;
+			if (SweepResult.bBlockingHit)
+			{
+				ImpactLocation = SweepResult.ImpactPoint;
+			}
+			else
+			{
+				ImpactLocation = GetActorLocation();
+			}
 			DamageEffectParams.DeathImpulse = GetActorForwardVector() * DamageEffectParams.DeathImpulseMagnitude;
+			DamageEffectParams.RadialDamageOrigin = ImpactLocation;
 			if (FMath::RandRange(1, 100) < DamageEffectParams.KnockbackChance)
 			{
 				FRotator Rotation = GetActorRotation();

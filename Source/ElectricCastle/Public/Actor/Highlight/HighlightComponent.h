@@ -21,7 +21,9 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	void AddHighlightMesh(UMeshComponent* Mesh);
 	void RemoveHighlightMesh(UMeshComponent* Mesh);
+	UFUNCTION(BlueprintCallable)
 	void Highlight();
+	UFUNCTION(BlueprintCallable)
 	void Unhighlight();
 	void SetHighlightType(const EHighlightType InHighlightType);
 	FLinearColor GetHighlightColor() const;

@@ -111,12 +111,16 @@ bool ULockOnController::HasLockOnTarget() const
 
 bool ULockOnController::GetCanLockOn() const
 {
+	if (bLockOnBlocked)
+	{
+		return false;
+	}
 	switch (LockOnLevel)
 	{
 	case ELockOnLevel::Soft:
 		return true;
 	case ELockOnLevel::Hard:
-		return bLockOnSupported && !bLockOnBlocked;
+		return bLockOnSupported;
 	default:
 		return false;
 	}
@@ -265,6 +269,7 @@ void ULockOnController::UpdateLockOnTarget()
 void ULockOnController::HandleTagChange_BlockLockOn(FGameplayTag LockOnTag, const int Count)
 {
 	bLockOnBlocked = Count > 0;
+	DisengageCurrentTarget();
 }
 
 void ULockOnController::UpdateControllerRotation(const float DeltaTime)

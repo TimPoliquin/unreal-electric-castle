@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
+#include "Equipment/BasicEquipmentActor.h"
 #include "Utils/RandUtils.h"
 #include "ItemTypes.generated.h"
 
@@ -165,4 +166,14 @@ struct FLootInstance
 	FTransform SpawnTransform;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FTransform TargetTransform;
+};
+
+USTRUCT(BlueprintType)
+struct FItemPickupEventPayload
+{
+	GENERATED_BODY()
+	UPROPERTY(BlueprintReadOnly)
+	TObjectPtr<AActor> PickupActor;
+	UPROPERTY(BlueprintReadOnly)
+	TObjectPtr<AActor> ItemActor;
 };

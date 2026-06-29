@@ -26,15 +26,22 @@
 #include "GroomComponent.h"
 #include "LiveLinkInstance.h"
 #include "MetaHumanComponentUE.h"
+#include "TimerManager.h"
+
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 #include "Actor/Attack/Component/AttackWindowManager.h"
 #include "Actor/Block/Components/BlockController.h"
-#include "Actor/MagicTether/TetherAbilityComponent.h"
+#include "Actor/Cloak/CloakComponent.h"
+#include "Actor/MagicHand/MagicHandComponent.h"
 #include "Actor/Mesh/SocketManagerComponent.h"
 #include "Actor/Significance/WorldSignificanceSubsystem.h"
 #include "Components/LODSyncComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+
 #include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "Game/Subsystem/PlayerManager.h"
+
+#include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialParameterCollectionInstance.h"
 #include "Player/Aim/AimController.h"
 #include "Player/Equipment/WeaponInterface.h"
@@ -98,8 +105,9 @@ AElectricCastlePlayerCharacter::AElectricCastlePlayerCharacter()
 	AimController = CreateDefaultSubobject<UAimController>(TEXT("Aim Controller"));
 	LockOnController = CreateDefaultSubobject<ULockOnController>(TEXT("LockOn Controller"));
 	BlockController = CreateDefaultSubobject<UBlockController>(TEXT("Block Controller"));
-	TetherComponent = CreateDefaultSubobject<UTetherAbilityComponent>(TEXT("Tether Component"));
+	MagicHandComponent = CreateDefaultSubobject<UMagicHandComponent>(TEXT("Magic Hand Component"));
 	AttackWindowManager = CreateDefaultSubobject<UAttackWindowManager>(TEXT("Attack Window Manager"));
+	CloakComponent = CreateDefaultSubobject<UCloakComponent>(TEXT("Cloak Component"));
 	MetaHumanComponent = CreateDefaultSubobject<UMetaHumanComponentUE>(TEXT("MetaHuman"));
 	LODSyncComponent = CreateDefaultSubobject<ULODSyncComponent>(TEXT("LODSync"));
 	LODSyncComponent->NumLODs = 8;
@@ -374,9 +382,19 @@ void AElectricCastlePlayerCharacter::PossessedBy(AController* NewController)
 
 void AElectricCastlePlayerCharacter::AddMovementInput(FVector WorldDirection, float ScaleValue, bool bForce)
 {
-	if (TetherComponent)
+	if (MagicHandComponent && MagicHandComponent->GetMagicHandState() == EMagicHandState::Tethered)
 	{
-		TetherComponent->ModifyInputMovementByTetherLimits(WorldDirection, ScaleValue, WorldDirection, ScaleValue);
+		// Combine direction and scale into a single vector so the handler can
+		// inspect and modify both magnitude and direction in one place, consistent
+		// with how QueryAllowedMovement is called throughout the handler hierarchy.
+		const FVector DesiredInput = WorldDirection * ScaleValue;
+		const FVector AllowedInput = MagicHandComponent->GetAllowedMovementInput(DesiredInput);
+
+		// Re-split for the base class. GetSafeNormal() returns zero if AllowedInput
+		// is zero, which causes AddMovementInput to be a no-op — exactly correct.
+		// Size() will always be <= |ScaleValue| since handlers only ever reduce input.
+		Super::AddMovementInput(AllowedInput.GetSafeNormal(), AllowedInput.Size(), bForce);
+		return;
 	}
 	Super::AddMovementInput(WorldDirection, ScaleValue, bForce);
 }

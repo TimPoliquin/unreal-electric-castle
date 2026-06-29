@@ -31,6 +31,8 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void SetInteractionKey(const FString& Key);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void SetIcon(const UTexture2D* Icon);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void SetActionText(const FString& InActionText);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void SetStartHidden(const bool bInStartHidden);
@@ -39,4 +41,6 @@ public:
 
 	static void Show(UUserWidget* Widget);
 	static void Hide(UUserWidget* Widget);
+	static void SetActionText(UUserWidget* Widget, const FString& InActionText);
+	static void SetIcon(UUserWidget* Widget, const UTexture2D* InIcon);
 };

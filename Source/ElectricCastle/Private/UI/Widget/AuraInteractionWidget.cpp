@@ -19,8 +19,33 @@ void UAuraInteractionWidget::NativeConstruct()
 	InitializeKeyText();
 	if (bStartHidden)
 	{
+		VisibilityState = EWidgetVisibilityState::Hidden;
 		InitializeHiddenState();
 	}
+	else
+	{
+		VisibilityState = EWidgetVisibilityState::Shown;
+	}
+}
+
+bool UAuraInteractionWidget::CanShow() const
+{
+	return VisibilityState <= EWidgetVisibilityState::Hiding;
+}
+
+bool UAuraInteractionWidget::IsShowing() const
+{
+	return VisibilityState == EWidgetVisibilityState::Showing;
+}
+
+bool UAuraInteractionWidget::CanHide() const
+{
+	return VisibilityState >= EWidgetVisibilityState::Showing;
+}
+
+bool UAuraInteractionWidget::IsHiding() const
+{
+	return VisibilityState == EWidgetVisibilityState::Hiding;
 }
 
 void UAuraInteractionWidget::InitializeShownState_Implementation()
@@ -45,6 +70,11 @@ void UAuraInteractionWidget::SetActionText_Implementation(const FString& Key)
 	InitializeActionText();
 }
 
+void UAuraInteractionWidget::SetIcon_Implementation(const UTexture2D* Icon)
+{
+	// nothing to do by default
+}
+
 void UAuraInteractionWidget::SetStartHidden_Implementation(const bool bInStartHidden)
 {
 	bStartHidden = bInStartHidden;
@@ -57,39 +87,52 @@ void UAuraInteractionWidget::SetAutoDestroyOnHide_Implementation(const bool bInA
 
 void UAuraInteractionWidget::Show_Implementation()
 {
-	if (IsVisible())
+	if (CanShow())
 	{
-		return;
+		VisibilityState = EWidgetVisibilityState::Showing;
+		InitializeShownState();
+		Execute_Show();
 	}
-	InitializeShownState();
 }
 
 void UAuraInteractionWidget::Shown_Implementation()
 {
-	OnShown.Broadcast(GetOwningPlayerPawn());
+	if (VisibilityState == EWidgetVisibilityState::Showing)
+	{
+		VisibilityState = EWidgetVisibilityState::Shown;
+		OnShown.Broadcast(GetOwningPlayerPawn());
+	}
 }
 
 void UAuraInteractionWidget::Hidden_Implementation()
 {
-	OnHidden.Broadcast(GetOwningPlayerPawn());
-	if (bAutoDestroyOnHide)
+	if (VisibilityState == EWidgetVisibilityState::Hiding)
 	{
-		RemoveFromParent();
-	}
-	else
-	{
-		InitializeHiddenState();
+		VisibilityState = EWidgetVisibilityState::Hidden;
+		OnHidden.Broadcast(GetOwningPlayerPawn());
+		if (bAutoDestroyOnHide)
+		{
+			RemoveFromParent();
+		}
+		else
+		{
+			InitializeHiddenState();
+		}
 	}
 }
 
 void UAuraInteractionWidget::Hide_Implementation()
 {
-	// nothing to do here right now
+	if (CanHide())
+	{
+		VisibilityState = EWidgetVisibilityState::Hiding;
+		Execute_Hide();
+	}
 }
 
 void UAuraInteractionWidget::SetDisplayText(const FString DisplayText, UTextBlock* TextWidget)
 {
-	if (!DisplayText.IsEmpty() && IsValid(TextWidget))
+	if (IsValid(TextWidget))
 	{
 		TextWidget->SetText(FText::FromString(DisplayText));
 	}

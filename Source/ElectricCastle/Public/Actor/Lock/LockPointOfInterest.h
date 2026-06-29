@@ -19,21 +19,18 @@ public:
 
 	/** ISaveGameInterface Start **/
 	virtual void PostLoad_Implementation() override;
+	virtual bool IsPreconditionMet_Implementation(AActor* Player) const override;
+	virtual void HandleInteract_Implementation(AActor* Player) override;
 	/** ISaveGameInterface End **/
 
 protected:
 	virtual void BeginPlay() override;
-	virtual bool IsPreconditionMet_Implementation(AActor* Player) const override;
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void InitializeInteractionWidgetSettings(UUserWidget* InInteractionWidget, const FString& InInteractionText);
-	UFUNCTION(BlueprintImplementableEvent)
-	void InitializePreconditionWidgetSettings(UUserWidget* InPreconditionWidget, const UTexture2D* InRuneIcon);
-	virtual void HandleInteract_Implementation(AActor* Player) override;
 	UFUNCTION(BlueprintCallable)
 	void Unlock(AActor* Player);
 	UFUNCTION(BlueprintImplementableEvent)
 	void PlayUnlockEffect(AActor* Player);
+	virtual UTexture2D* GetPreconditionIcon_Implementation() const override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UStaticMeshComponent> LockMeshComponent;
@@ -42,11 +39,7 @@ protected:
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Lock", meta=(AllowedClasses="/Script/Aura.AuraLockedInterface"))
 	TArray<AActor*> Gates;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Lock")
-	TObjectPtr<UTexture2D> RuneIcon;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Lock")
 	TObjectPtr<USoundBase> UnlockSound;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Lock")
-	FString InteractText = FString("Unlock");
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, SaveGame, Category="Lock")
 	bool bUnlocked = false;
 };

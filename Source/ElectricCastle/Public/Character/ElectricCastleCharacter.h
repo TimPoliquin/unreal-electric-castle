@@ -73,7 +73,6 @@ public:
 
 	/** Combat Interface **/
 	virtual AActor* GetAvatar_Implementation() override;
-	virtual UAnimMontage* GetHitReactMontage_Implementation(const FGameplayTag& HitReactTypeTag) const override;
 	virtual TArray<FTaggedMontage> GetAttackMontages_Implementation() const override;
 	virtual FTaggedMontage GetTagMontageByTag_Implementation(const FGameplayTag& MontageTag) override;
 	virtual FVector GetCombatSocketLocation_Implementation(const FGameplayTag& MontageTag) const override;
@@ -82,6 +81,8 @@ public:
 	virtual UNiagaraSystem* GetBloodEffect_Implementation() override;
 	virtual int32 GetXPReward_Implementation() const override;
 	virtual AActor* GetWeapon_Implementation() const override;
+	virtual void HandleTakeDamage(const float IncomingDamage, const FEffectProperties& Props) override;
+	virtual void HandleDodge_Implementation() override;
 
 
 	virtual FOnDeathSignature& GetOnDeathDelegate() override
@@ -102,7 +103,8 @@ public:
 	virtual TArray<FName> GetTargetTagsToIgnore_Implementation() const override
 	{
 		return TArray<FName>();
-	};
+	}
+
 	virtual void ApplyDeathImpulse(const FVector& DeathImpulse) override;
 
 	virtual void SetActiveAbilityTag_Implementation(const FGameplayTag& InActiveAbilityTag) override
@@ -114,8 +116,6 @@ public:
 	{
 		ActiveAbilityTag = FGameplayTag::EmptyTag;
 	}
-
-	virtual FGameplayTag GetHitReactAbilityTagByDamageType_Implementation(const FGameplayTag& DamageTypeTag) const override;
 
 	/** Combat Interface End **/
 
@@ -155,6 +155,7 @@ protected:
 	void ApplyEffectToSelf(TSubclassOf<UGameplayEffect> Attributes, const float Level) const;
 
 	void AddCharacterAbilities();
+	virtual void HandleMovementSpeedAttributeChanged(const FOnAttributeChangeData& OnAttributeChangeData);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
 	float BaseWalkSpeed = 250.f;
@@ -172,8 +173,6 @@ protected:
 	TObjectPtr<UHighlightComponent> HighlightComponent;
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Dissolve")
 	void Dissolve() const;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Combat")
-	TMap<FGameplayTag, FGameplayTag> HitReactionsByDamageType;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Combat")
 	ETeamAffiliation TeamAffiliation = ETeamAffiliation::None;
 	UPROPERTY(EditAnywhere, Category = "Combat")

@@ -5,7 +5,7 @@
 
 #include "Actor/Lock/LockInterface.h"
 #include "ElectricCastle/ElectricCastle.h"
-#include "Components/WidgetComponent.h"
+#include "Game/Subsystem/ElectricCastleGameDataSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/InventoryComponent.h"
 
@@ -15,6 +15,8 @@ ALockPointOfInterest::ALockPointOfInterest()
 	PrimaryActorTick.bCanEverTick = false;
 	LockMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Lock Mesh Component"));
 	LockMeshComponent->SetupAttachment(GetRootComponent());
+	InteractText = FString("Unlock");
+	PreconditionText = FString("Key Needed");
 }
 
 void ALockPointOfInterest::PostLoad_Implementation()
@@ -36,20 +38,6 @@ void ALockPointOfInterest::BeginPlay()
 	{
 		DisablePOI();
 		return;
-	}
-	if (InteractionWidget && InteractionWidget
-		->
-		GetWidget()
-	)
-	{
-		InitializeInteractionWidgetSettings(InteractionWidget->GetWidget(), InteractText);
-	}
-	if (PreconditionWidget && PreconditionWidget
-		->
-		GetWidget()
-	)
-	{
-		InitializePreconditionWidgetSettings(PreconditionWidget->GetWidget(), RuneIcon);
 	}
 	LockMeshComponent->SetCustomDepthStencilValue(CUSTOM_DEPTH_BLUE);
 }
@@ -95,4 +83,16 @@ void ALockPointOfInterest::Unlock(AActor* Player)
 			DisablePOI();
 		}
 	}
+}
+
+UTexture2D* ALockPointOfInterest::GetPreconditionIcon_Implementation() const
+{
+	if (UElectricCastleGameDataSubsystem* GameDataSubsystem = UElectricCastleGameDataSubsystem::Get(GetWorld()))
+	{
+		if (const FItemDefinition& ItemDefinition = GameDataSubsystem->FindItemDefinitionByItemTag(KeyTag); ItemDefinition.IsValid())
+		{
+			return ItemDefinition.ItemIcon;
+		}
+	}
+	return nullptr;
 }

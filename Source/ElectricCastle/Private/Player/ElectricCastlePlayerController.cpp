@@ -10,6 +10,8 @@
 #include "ElectricCastle/ElectricCastle.h"
 #include "CommonInputSubsystem.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
+#include "Actor/Camera/CameraMovementModifier.h"
+#include "Actor/Camera/CameraMovementModifierActorInterface.h"
 #include "Actor/Cinematic/CinematicHandlerComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Character/ElectricCastlePlayerCharacter.h"
@@ -289,11 +291,21 @@ void AElectricCastlePlayerController::Move(const FInputActionValue& Value)
 				MovementEffect
 			);
 		}
+		const UCameraMovementModifier* CameraMovementModifier = ICameraMovementModifierActorInterface::GetCameraMovementModifier(GetViewTarget());
 		const FVector2D InputAxisVector = Value.Get<FVector2D>();
-		const FRotator Rotation = ControlledPawn->FindComponentByClass<UCameraComponent>()->GetComponentRotation();
-		const FRotator YawRotation(0.f, Rotation.Yaw, 0.f);
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		FVector ForwardDirection;
+		FVector RightDirection;
+		if (IsValid(CameraMovementModifier))
+		{
+			CameraMovementModifier->GetPlayerMovementInput(ForwardDirection, RightDirection);
+		}
+		else
+		{
+			const FRotator Rotation = ControlledPawn->FindComponentByClass<UCameraComponent>()->GetComponentRotation();
+			const FRotator YawRotation(0.f, Rotation.Yaw, 0.f);
+			ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+			RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		}
 		ControlledPawn->AddMovementInput(ForwardDirection, InputAxisVector.Y);
 		ControlledPawn->AddMovementInput(RightDirection, InputAxisVector.X);
 	}
@@ -320,7 +332,6 @@ void AElectricCastlePlayerController::Look(const FInputActionValue& InputActionV
 	}
 	if (!bCanLook && !bCanRotate)
 	{
-		UE_LOG(LogElectricCastle, Log, TEXT("[%s] Look disabled!"), *GetName())
 		return;
 	}
 	ACharacter* ControlledPawn = GetPawn<ACharacter>();
@@ -523,7 +534,8 @@ FInputModeGameAndUI AElectricCastlePlayerController::BuildGameAndUIInputMode() c
 }
 
 void AElectricCastlePlayerController::GetMovementVectors(
-	const AController* Controller, FVector& OutForward,
+	const AController* Controller,
+	FVector& OutForward,
 	FVector& OutRight
 )
 {

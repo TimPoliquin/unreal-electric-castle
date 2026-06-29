@@ -93,6 +93,19 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FName("Attributes.Meta.IncomingRefresh"),
 		FString("Incoming Refresh after a Level Up")
 	);
+	// Functional attributes
+	Instance.Attributes_Functional_LungeDistance = TagManager.AddNativeGameplayTag(
+		FName("Attributes.Functional.LungeDistance"),
+		FString("Lunge distance")
+	);
+	Instance.Attributes_Functional_MovementSpeed = TagManager.AddNativeGameplayTag(
+		FName("Attributes.Functional.MovementSpeed"),
+		FString("Movement speed")
+	);
+	Instance.Attributes_Functional_Visibility = TagManager.AddNativeGameplayTag(
+		FName("Attributes.Functional.Visibility"),
+		FString("Visibility")
+	);
 	// Progression attributes
 	Instance.Attributes_Progression_Level = TagManager.AddNativeGameplayTag(
 		FName("Attributes.Progression.Level"),
@@ -110,8 +123,10 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 	// Cinematic Tags
 	Instance.Cinematic = TagManager.AddNativeGameplayTag(FName("Cinematic"), FString("Root cinematic tag"));
 	Instance.Cinematic_Reaction_Trigger = TagManager.AddNativeGameplayTag(FName("Cinematic.Reaction.Trigger"), FString("Root tag for cinematic reaction triggers."));
-	Instance.Cinematic_Reaction_Trigger_HidePlayer = TagManager.AddNativeGameplayTag(FName("Cinematic.Reaction.Trigger.HidePlayer"), FString("When cinematic starts, hide the player"));
-	Instance.Cinematic_Reaction_Trigger_HideGameOverlay = TagManager.AddNativeGameplayTag(FName("Cinematic.Reaction.Trigger.HideGameOverlay"), FString("When cinematic starts, hide the game overlay"));
+	Instance.Cinematic_Reaction_Trigger_HidePlayer = TagManager.AddNativeGameplayTag(FName("Cinematic.Reaction.Trigger.HidePlayer"),
+	                                                                                 FString("When cinematic starts, hide the player"));
+	Instance.Cinematic_Reaction_Trigger_HideGameOverlay = TagManager.AddNativeGameplayTag(FName("Cinematic.Reaction.Trigger.HideGameOverlay"),
+	                                                                                      FString("When cinematic starts, hide the game overlay"));
 	Instance.Cinematic_Reaction_Trigger_DisableStandardInput = TagManager.AddNativeGameplayTag(
 		FName("Cinematic.Reaction.Trigger.DisableStandardInput"),
 		FString("When cinematic starts, disable standard input")
@@ -182,8 +197,10 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 
 	// Effect Tags
 	Instance.Effect = TagManager.AddNativeGameplayTag(FName("Effect"), FString("Root effect tag"));
-	Instance.Effect_Block_Abilities = TagManager.AddNativeGameplayTag(FName("Effect.Block.Abilities"), FString("When this tag is active, the character will not be able to use any abilities"));
-	Instance.Effect_Block_AI = TagManager.AddNativeGameplayTag(FName("Effect.Block.AI"), FString("When this tag is active, the Behavior Tree for the character will stop processing"));
+	Instance.Effect_Block_Abilities = TagManager.AddNativeGameplayTag(FName("Effect.Block.Abilities"),
+	                                                                  FString("When this tag is active, the character will not be able to use any abilities"));
+	Instance.Effect_Block_AI = TagManager.AddNativeGameplayTag(FName("Effect.Block.AI"),
+	                                                           FString("When this tag is active, the Behavior Tree for the character will stop processing"));
 	Instance.Effect_Block_Movement = TagManager.AddNativeGameplayTag(FName("Effect.Block.Movement"), FString("When this tag is active, the character will be unable to move"));
 	Instance.Effect_Block_Damage = TagManager.AddNativeGameplayTag(FName("Effect.Block.Damage"), FString("When this tag is active, the character will not receive any damage"));
 	Instance.Effect_Damage = TagManager.AddNativeGameplayTag(
@@ -275,6 +292,10 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 	Instance.Effect_State_ChronoShift = TagManager.AddNativeGameplayTag(
 		FName("Effect.State.ChronoShift"),
 		FString("Indicates that the character is in the chrono shift state")
+	);
+	Instance.Effect_State_Cloaked = TagManager.AddNativeGameplayTag(
+		FName("Effect.State.Cloaked"),
+		FString("Indicates that the character is cloaked and cannot be easily seen by enemies")
 	);
 	Instance.Effect_State_PsychedelicVision = TagManager.AddNativeGameplayTag(
 		FName("Effect.State.PsychedelicVision"),
@@ -504,10 +525,14 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FName("Event.Montage.Electrocute"),
 		FString("Event fired during electrocute montage")
 	);
-	Instance.Event_Montage_Common_BlockAttack = TagManager.AddNativeGameplayTag(FName("Event.Montage.Common.BlockAttack"), FString("Indicates that the target successfully blocked an attack"));
-	Instance.Event_Montage_Common_Blocked = TagManager.AddNativeGameplayTag(FName("Event.Montage.Common.Blocked"), FString("Indicates that the target's attack was blocked by the instigator"));
-	Instance.Event_Montage_Common_ParryAttack = TagManager.AddNativeGameplayTag(FName("Event.Montage.Common.ParryAttack"), FString("Indicates that the target successfully parried an attack"));
-	Instance.Event_Montage_Common_Staggered = TagManager.AddNativeGameplayTag(FName("Event.Montage.Common.Staggered"), FString("Indicates that the target was staggered by the instigator"));
+	Instance.Event_Montage_Common_BlockAttack = TagManager.AddNativeGameplayTag(FName("Event.Montage.Common.BlockAttack"),
+	                                                                            FString("Indicates that the target successfully blocked an attack"));
+	Instance.Event_Montage_Common_Blocked = TagManager.AddNativeGameplayTag(FName("Event.Montage.Common.Blocked"),
+	                                                                        FString("Indicates that the target's attack was blocked by the instigator"));
+	Instance.Event_Montage_Common_ParryAttack = TagManager.AddNativeGameplayTag(FName("Event.Montage.Common.ParryAttack"),
+	                                                                            FString("Indicates that the target successfully parried an attack"));
+	Instance.Event_Montage_Common_Staggered = TagManager.AddNativeGameplayTag(FName("Event.Montage.Common.Staggered"),
+	                                                                          FString("Indicates that the target was staggered by the instigator"));
 	/** Cooldown Tags **/
 	Instance.Cooldown_Form = TagManager.AddNativeGameplayTag(
 		FName("Cooldown.Form"),
@@ -597,7 +622,8 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 	Instance.Player_Block_Aim = TagManager.AddNativeGameplayTag(FName("Player.Block.Aim"), FString("Blocks player aim"));
 	Instance.Player_Block_LockOn = TagManager.AddNativeGameplayTag(FName("Player.Block.LockOn"), FString("Blocks player lock on ability"));
 	Instance.Player_Block_Look = TagManager.AddNativeGameplayTag(FName("Player.Block.Look"), FString("Blocks player look ability"));
-	Instance.Player_Block_MotionWarpingUpdate = TagManager.AddNativeGameplayTag(FName("Player.Block.MotionWarpingUpdate"), FString("Blocks player from updating its motion warping target"));
+	Instance.Player_Block_MotionWarpingUpdate = TagManager.AddNativeGameplayTag(FName("Player.Block.MotionWarpingUpdate"),
+	                                                                            FString("Blocks player from updating its motion warping target"));
 	Instance.Player_State_InteractionAvailable = TagManager.AddNativeGameplayTag(
 		FName("Player.State.InteractionAvailable"),
 		FString("Interaction is available for the player")
@@ -758,7 +784,8 @@ void FElectricCastleGameplayTags::InitializeNativeGameplayTags()
 		FName("Significance.Level.PartiallySignificant"),
 		FString("Significance Level for partially significant actors")
 	);
-	Instance.Significance_Level_FullySignificant = TagManager.AddNativeGameplayTag(FName("Significance.Level.FullySignificant"), FString("Significance Level for fully significant actors"));
+	Instance.Significance_Level_FullySignificant = TagManager.AddNativeGameplayTag(FName("Significance.Level.FullySignificant"),
+	                                                                               FString("Significance Level for fully significant actors"));
 
 	Instance.DamageTypes.Add(Instance.Effect_Damage_Magic_Arcane);
 	Instance.DamageTypes.Add(Instance.Effect_Damage_Magic_Dark);

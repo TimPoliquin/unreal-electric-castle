@@ -27,7 +27,7 @@ void UTrackFollowingComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 void UTrackFollowingComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	DistanceAlongTrack = StartingDistanceAlongTrack;
+	DistanceAlongTrack = Track ? FMath::Clamp(StartingDistanceAlongTrack, 0, Track->GetSplineLength()) : StartingDistanceAlongTrack;
 	if (bActive)
 	{
 		MoveAlongTrack(0);
@@ -155,4 +155,10 @@ void UTrackFollowingComponent::SetDirection(const ETrackDirection InDirection)
 void UTrackFollowingComponent::ChangeSpeed(const float InMovementSpeed)
 {
 	MovementSpeed = InMovementSpeed;
+}
+
+void UTrackFollowingComponent::SetStartingDistanceAlongTrack(const float InStartingDistanceAlongTrack)
+{
+	StartingDistanceAlongTrack = InStartingDistanceAlongTrack;
+	DistanceAlongTrack = InStartingDistanceAlongTrack;
 }

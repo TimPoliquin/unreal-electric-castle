@@ -22,9 +22,9 @@ class ELECTRICCASTLE_API ILockInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Lock")
 	void Lock();
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Lock")
 	void Unlock();
 
 	static void Lock(UObject* Actor);

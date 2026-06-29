@@ -12,13 +12,16 @@
 #include "AI/Alert/AIAlertActor.h"
 #include "AI/Behavior/AIBehaviorTreeActor.h"
 #include "AI/Engagement/AIEngagementActor.h"
-#include "AI/Perception/AIPerceptionActor.h"
+#include "AI/Perception/AIPerceptionManagerActor.h"
+#include "AI/Targeting/AITargetingActorInterface.h"
 #include "Actor/Attack/Component/AttackWindowManagerActor.h"
+#include "Actor/Combat/CombatImpactTypes.h"
 #include "Actor/Patrol/PatrollingActor.h"
 #include "Actor/Significance/SignificanceSensitiveActor.h"
 #include "Components/TimelineComponent.h"
 #include "ElectricCastleEnemyCharacter.generated.h"
 
+class UAIPerceptionStimuliSourceComponent;
 class UActorSignificanceComponent;
 class UAIAlertComponent;
 class ULootSpawnComponent;
@@ -33,10 +36,11 @@ class ELECTRICCASTLE_API AElectricCastleEnemyCharacter : public AElectricCastleC
                                                          public IEnemyInterface,
                                                          public ITrackableInterface,
                                                          public IAttackWindowManagerActor,
-                                                         public IAIBehaviorTreeActor,
-                                                         public IAIPerceptionActor,
                                                          public IAIAlertActor,
+                                                         public IAIBehaviorTreeActor,
                                                          public IAIEngagementActor,
+                                                         public IAIPerceptionManagerActor,
+                                                         public IAITargetingActorInterface,
                                                          public IPatrollingActor,
                                                          public ISignificanceSensitiveActor
 {
@@ -47,6 +51,8 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual UElectricCastleAttributeSet* GetAttributeSet() const override { return AttributeSet; }
 	virtual void PostInitializeComponents() override;
+	virtual void PossessedBy(AController* NewController) override;
+	virtual float TakeDamage(float DamageAmount, const struct FDamageEvent& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 	void SetTargetingRange(const float InTargetingRange) { TargetingRange = InTargetingRange; }
 	void SetMaxAIProcessingRange(const float InMaxProcessingRange) { MaxAIProcessingRange = InMaxProcessingRange; }
@@ -67,12 +73,12 @@ public:
 	virtual AActor* GetWeapon_Implementation() const override;
 	virtual TArray<FName> GetTargetTagsToIgnore_Implementation() const override;
 	virtual void UpdateFacingTarget_Implementation(const FVector& FacingTarget) override;
+	virtual void HandleTakeDamage(const float IncomingDamage, const FEffectProperties& Props) override;
 	virtual void Die() override;
 	/** End ICombatInterface **/
 
 	// IEnemyInterface
 	virtual AActor* GetCombatTarget_Implementation() const override;
-	virtual void SetCombatTarget_Implementation(AActor* InCombatTarget) override;
 
 	virtual float GetMaxAIProcessingRange() const override
 	{
@@ -91,13 +97,13 @@ public:
 	virtual bool ShouldAutoRunBehaviorTree_Implementation() const override;
 	/** End IAIBehaviorTreeActor **/
 
-	/** Start IAIPerceptionActor **/
-	virtual UAIPerceptionComponent* GetAIPerceptionComponent_Implementation() const override
-	{
-		return PerceptionComponent;
-	}
+	/** Start IAIPerceptionManagerActor **/
+	virtual UAIPerceptionManager* GetAIPerceptionManager_Implementation() const override { return PerceptionManager; }
+	/** End IAIPerceptionManagerActor **/
 
-	/** End IAIPerceptionActor **/
+	/** Start IAITargetingActorInterface **/
+	virtual UAITargetingComponent* GetAITargetingComponent_Implementation() const override { return AITargeting; }
+	/** End IAITargetingActorInterface **/
 
 	/** Start IAIAlertActor **/
 	virtual UAIAlertComponent* GetAIAlertComponent_Implementation() const override
@@ -156,17 +162,29 @@ protected:
 	void RegisterSockets(USocketManagerComponent* InSocketManagerComponent);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Stagger")
 	UAnimMontage* GetStaggerMontage() const;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Combat|Damage")
+	void HandleTakeDamage_Knockback(const FVector& KnockbackVector);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Combat|Damage")
+	void HandleTakeDamage_ImpactEffect(const FGameplayTag& DamageType, const FVector& ImpactLocation, const bool bIsBlocked, const bool bIsCritical);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Combat|Damage")
+	void HandleTakeDamage_HitFlash();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Combat|Damage")
+	void InitializeHitFlashMaterial();
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn")
 	bool bShouldAnimateSpawn = false;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn", meta=(EditCondition="bShouldAnimateSpawn", EditConditionHides=true))
 	TObjectPtr<UCurveFloat> SpawnAnimationCurve;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
-	TObjectPtr<UAIPerceptionComponent> PerceptionComponent;
+	TObjectPtr<UAIPerceptionStimuliSourceComponent> AIPerceptionStimuliSource;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
+	TObjectPtr<UAIPerceptionManager> PerceptionManager;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UAIAlertComponent> AIAlertComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UAIEngagementController> AIEngagementController;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
+	TObjectPtr<UAITargetingComponent> AITargeting;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	TObjectPtr<UPatrolComponent> PatrolComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -190,6 +208,16 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	float LifeSpan = 5.f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Block")
+	FCombatImpactConfig DefaultBlockImpactConfig;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Block")
+	TMap<FGameplayTag, FCombatImpactConfig> BlockImpactConfigByDamageType;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Impact")
+	FCombatImpactConfig DefaultImpactConfig;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Impact")
+	TMap<FGameplayTag, FCombatImpactConfig> ImpactConfigByDamageType;
+	UPROPERTY(BlueprintReadOnly, Category="Combat|Impact")
+	TArray<TObjectPtr<UMaterialInstanceDynamic>> DynamicMeshMaterials;
 
 	UPROPERTY(EditAnywhere, Category = "AI")
 	TObjectPtr<UBehaviorTree> BehaviorTree;

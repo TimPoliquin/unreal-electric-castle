@@ -16,6 +16,18 @@ ATreasureChestActor::ATreasureChestActor()
 	InteractionWidget->SetRelativeLocation(FVector(1, 0, 150));
 	InteractionWidget->SetDrawSize(FVector2D(192, 32));
 	LootSpawnComponent = CreateDefaultSubobject<ULootSpawnComponent>(TEXT("Loot Spawn Component"));
+	InteractText = FString("Open");
+	PreconditionText = FString("None");
+}
+
+void ATreasureChestActor::OnConstruction_InitializeWidgets()
+{
+	if (LockComponent)
+	{
+		InteractText = LockComponent->GetUnlockText();
+		PreconditionText = LockComponent->GetUnlockPreconditionText();
+	}
+	Super::OnConstruction_InitializeWidgets();
 }
 
 bool ATreasureChestActor::IsUnlocked() const

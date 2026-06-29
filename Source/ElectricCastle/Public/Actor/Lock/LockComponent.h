@@ -117,6 +117,8 @@ public:
 	void PlayResetSound(const ELockSFXPlaybackLocation PlaybackLocation = ELockSFXPlaybackLocation::Default);
 	UFUNCTION(BlueprintCallable)
 	void PlayCompletedSound(const ELockSFXPlaybackLocation PlaybackLocation = ELockSFXPlaybackLocation::Default);
+	UFUNCTION(BlueprintCallable)
+	FString GetUnlockPreconditionText() const;
 
 	void SetUnlockMode(EUnlockMode InUnlockMode);
 
@@ -129,8 +131,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties|Lock|Key", meta=(EditCondition="UnlockMode == EUnlockMode::Key", EditConditionHides))
 	bool bConsumesKey = true;
 	/** Switch Properties **/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties|Lock|Switch",
-		meta=(EditCondition="UnlockMode == EUnlockMode::Switch", EditConditionHides, ObjectMustImplement="/Script/ElectricCastle.SwitchInterface"))
+	UPROPERTY(
+		EditAnywhere,
+		BlueprintReadOnly,
+		Category="Properties|Lock|Switch",
+		meta=(EditCondition="UnlockMode == EUnlockMode::Switch", EditConditionHides, ObjectMustImplement="/Script/ElectricCastle.SwitchInterface")
+	)
 	TArray<TObjectPtr<AActor>> Switches;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties|Lock|Switch", meta=(EditCondition="UnlockMode == EUnlockMode::Switch", EditConditionHides))
 	bool bOrdered = false;
@@ -147,6 +153,8 @@ protected:
 	FString UnlockText = FString("Unlock");
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties|Lock|UI")
 	FString OpenText = FString("Open");
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Properties|Lock|UI")
+	TMap<EUnlockMode, FString> UnlockPreconditionTextMap;
 
 	virtual void BeginPlay() override;
 

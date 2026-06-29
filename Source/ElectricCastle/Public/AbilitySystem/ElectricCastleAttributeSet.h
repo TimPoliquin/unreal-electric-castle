@@ -210,6 +210,8 @@ public:
 	/**
 	 * Functional Attributes
 	 */
+
+	// Lunge Distance
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing= OnRep_LungeDistance, Category="Functional Attributes")
 	FGameplayAttributeData LungeDistance;
 	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, LungeDistance);
@@ -217,6 +219,26 @@ public:
 	FORCEINLINE void OnRep_LungeDistance(const FGameplayAttributeData& OldValue) const
 	{
 		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, LungeDistance, OldValue);
+	}
+
+	// Movement Speed
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing= OnRep_MovementSpeed, Category="Functional Attributes")
+	FGameplayAttributeData MovementSpeed;
+	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, MovementSpeed);
+	UFUNCTION()
+	FORCEINLINE void OnRep_MovementSpeed(const FGameplayAttributeData& OldValue) const
+	{
+		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, MovementSpeed, OldValue);
+	}
+
+	// Visibility - Range 0.f - 1.f
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing= OnRep_Visibility, Category="Functional Attributes")
+	FGameplayAttributeData Visibility = 1.f;
+	ATTRIBUTE_ACCESSORS(UElectricCastleAttributeSet, Visibility);
+	UFUNCTION()
+	FORCEINLINE void OnRep_Visibility(const FGameplayAttributeData& OldValue) const
+	{
+		GAMEPLAYATTRIBUTE_REPNOTIFY(UElectricCastleAttributeSet, Visibility, OldValue);
 	}
 
 	/**
@@ -247,6 +269,7 @@ private:
 	void HandleIncomingXP(const FEffectProperties& Props);
 	void HandleIncomingRefresh(const FEffectProperties& Props);
 	void HandleDebuff(const FEffectProperties& Props);
+	void HandleIncomingMovementSpeed(const FEffectProperties& Props);
 	void HandleOutgoingDamage(const FEffectProperties& Props, float IncomingDamage);
 	void ShowDamageText(
 		const FEffectProperties& Props,

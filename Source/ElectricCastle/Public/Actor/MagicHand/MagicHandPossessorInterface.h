@@ -6,6 +6,7 @@
 #include "UObject/Interface.h"
 #include "MagicHandPossessorInterface.generated.h"
 
+class UMagicHandComponent;
 // This class does not need to be modified.
 UINTERFACE()
 class UMagicHandPossessorInterface : public UInterface
@@ -22,7 +23,9 @@ class ELECTRICCASTLE_API IMagicHandPossessorInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="MagicHand")
+	UMagicHandComponent* GetMagicHandComponent() const;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="MagicHand|Possessor")
 	USceneComponent* GetMagicHandAttachComponent(FName& AttachBoneName);
 
 	static USceneComponent* GetMagicHandAttachComponent(AActor* Actor, FName& AttachBoneName);

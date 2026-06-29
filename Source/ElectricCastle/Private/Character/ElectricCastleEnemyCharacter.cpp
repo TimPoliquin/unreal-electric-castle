@@ -1,9 +1,11 @@
 // Copyright Alien Shores
 
-
 #include "Character/ElectricCastleEnemyCharacter.h"
 
+#include "DrawDebugHelpers.h"
 #include "MotionWarpingComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraSystem.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemComponent.h"
 #include "AbilitySystem/ElectricCastleAbilitySystemLibrary.h"
 #include "AbilitySystem/ElectricCastleAttributeSet.h"
@@ -11,6 +13,8 @@
 #include "AI/ElectricCastleAIController.h"
 #include "AI/Alert/AIAlertComponent.h"
 #include "AI/Engagement/AIEngagementController.h"
+#include "AI/Perception/AIPerceptionManager.h"
+#include "AI/Targeting/AITargetingComponent.h"
 #include "Actor/Attack/Component/AttackWindowManager.h"
 #include "Actor/Highlight/HighlightComponent.h"
 #include "Actor/Patrol/PatrolComponent.h"
@@ -20,11 +24,17 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "UI/Widget/AuraUserWidget.h"
 #include "Actor/Spawn/TrackableInterface.h"
+#include "Animation/AnimInstance.h"
 #include "ElectricCastle/ElectricCastleLogChannels.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Components/TimelineComponent.h"
 #include "Item/Component/LootSpawnComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Perception/AIPerceptionComponent.h"
+#include "Perception/AIPerceptionStimuliSourceComponent.h"
+#include "Perception/AISense_Damage.h"
+#include "Sound/SoundBase.h"
 #include "Tags/ElectricCastleGameplayTags.h"
 
 AElectricCastleEnemyCharacter::AElectricCastleEnemyCharacter()
@@ -42,9 +52,11 @@ AElectricCastleEnemyCharacter::AElectricCastleEnemyCharacter()
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
 	AbilitySystemComponent->bShouldSave = false;
-	PerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>("AI Perception Component");
+	AIPerceptionStimuliSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("PerceptionStimuliSourceComponent"));
+	PerceptionManager = CreateDefaultSubobject<UAIPerceptionManager>(TEXT("PerceptionManager"));
 	AIAlertComponent = CreateDefaultSubobject<UAIAlertComponent>("AI Alert Component");
 	AIEngagementController = CreateDefaultSubobject<UAIEngagementController>("AI Engagement Controller");
+	AITargeting = CreateDefaultSubobject<UAITargetingComponent>("AI Targeting Component");
 	PatrolComponent = CreateDefaultSubobject<UPatrolComponent>("Patrol Component");
 	MotionWarpingComponent = CreateDefaultSubobject<UMotionWarpingComponent>(TEXT("Motion Warping Component"));
 	AttributeSet = CreateDefaultSubobject<UElectricCastleAttributeSet>(TEXT("Enemy Attributes"));
@@ -149,9 +161,103 @@ void AElectricCastleEnemyCharacter::InitializeDefaultAttributes()
 	OnAbilitySystemReady(Cast<UElectricCastleAbilitySystemComponent>(AbilitySystemComponent));
 }
 
+void AElectricCastleEnemyCharacter::HandleTakeDamage_HitFlash_Implementation()
+{
+	// do nothing natively
+}
+
+void AElectricCastleEnemyCharacter::InitializeHitFlashMaterial_Implementation()
+{
+	for (int32 Idx = 0; Idx < GetMesh()->GetNumMaterials(); Idx++)
+	{
+		UMaterialInstanceDynamic* DynamicMaterialInstance = GetMesh()->CreateDynamicMaterialInstance(Idx);
+		DynamicMaterialInstance->SetScalarParameterValue(FName("HitFlash"), 0);
+		DynamicMeshMaterials.Add(DynamicMaterialInstance);
+	}
+}
+
+void AElectricCastleEnemyCharacter::HandleTakeDamage_Knockback_Implementation(const FVector& KnockbackVector)
+{
+	LaunchCharacter(KnockbackVector, true, true);
+}
+
+void AElectricCastleEnemyCharacter::HandleTakeDamage_ImpactEffect_Implementation(
+	const FGameplayTag& DamageType,
+	const FVector& ImpactLocation,
+	const bool bIsBlocked,
+	const bool bIsCritical
+)
+{
+	USoundBase* ImpactSound = nullptr;
+	UNiagaraSystem* ImpactEffect = nullptr;
+	UAnimMontage* ImpactMontage = nullptr;
+	if (bIsBlocked)
+	{
+		if (BlockImpactConfigByDamageType.Contains(DamageType))
+		{
+			ImpactSound = BlockImpactConfigByDamageType[DamageType].ImpactSound;
+			ImpactEffect = BlockImpactConfigByDamageType[DamageType].ImpactEffect;
+			ImpactMontage = BlockImpactConfigByDamageType[DamageType].ImpactMontage;
+		}
+		if (!IsValid(ImpactSound))
+		{
+			ImpactSound = DefaultBlockImpactConfig.ImpactSound;
+		}
+		if (!IsValid(ImpactEffect))
+		{
+			ImpactEffect = DefaultBlockImpactConfig.ImpactEffect;
+		}
+		if (!IsValid(ImpactMontage))
+		{
+			ImpactMontage = DefaultBlockImpactConfig.ImpactMontage;
+		}
+	}
+	else
+	{
+		if (ImpactConfigByDamageType.Contains(DamageType))
+		{
+			ImpactSound = ImpactConfigByDamageType[DamageType].ImpactSound;
+			ImpactEffect = ImpactConfigByDamageType[DamageType].ImpactEffect;
+			ImpactMontage = ImpactConfigByDamageType[DamageType].ImpactMontage;
+		}
+		if (!IsValid(ImpactSound))
+		{
+			ImpactSound = DefaultImpactConfig.ImpactSound;
+		}
+		if (!IsValid(ImpactEffect))
+		{
+			ImpactEffect = DefaultImpactConfig.ImpactEffect;
+		}
+		if (!IsValid(ImpactMontage))
+		{
+			ImpactMontage = DefaultImpactConfig.ImpactMontage;
+		}
+		if (!bIsCritical)
+		{
+			// do not play montage unless it is a critical hit
+			ImpactMontage = nullptr;
+		}
+	}
+	if (IsValid(ImpactSound))
+	{
+		UE_LOG(LogElectricCastle, Warning, TEXT("ImpactSound: %s"), *ImpactSound->GetName());
+		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, ImpactLocation);
+	}
+	if (IsValid(ImpactEffect))
+	{
+		UE_LOG(LogElectricCastle, Warning, TEXT("ImpactEffect: %s"), *ImpactEffect->GetName());
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ImpactEffect, ImpactLocation);
+	}
+	if (IsValid(ImpactMontage))
+	{
+		UE_LOG(LogElectricCastle, Warning, TEXT("Impact Montage: %s"), *ImpactMontage->GetName());
+		PlayAnimMontage(ImpactMontage);
+	}
+}
+
 UAnimMontage* AElectricCastleEnemyCharacter::GetStaggerMontage_Implementation() const
 {
-	return Execute_GetHitReactMontage(this, FElectricCastleGameplayTags::Get().Effect_HitReact);
+	return DefaultImpactConfig.ImpactMontage;
 }
 
 void AElectricCastleEnemyCharacter::HandleGameDataLoaded_Implementation()
@@ -263,6 +369,23 @@ void AElectricCastleEnemyCharacter::UpdateFacingTarget_Implementation(const FVec
 	}
 }
 
+void AElectricCastleEnemyCharacter::HandleTakeDamage(const float IncomingDamage, const FEffectProperties& Props)
+{
+	Super::HandleTakeDamage(IncomingDamage, Props);
+	if (const FVector KnockbackForce = UElectricCastleAbilitySystemLibrary::GetKnockbackVector(Props.EffectContextHandle);
+		!KnockbackForce.IsNearlyZero(1.f))
+	{
+		HandleTakeDamage_Knockback(KnockbackForce);
+	}
+	HandleTakeDamage_ImpactEffect(
+		UElectricCastleAbilitySystemLibrary::GetDamageTypeTag(Props.EffectContextHandle),
+		UElectricCastleAbilitySystemLibrary::GetRadialDamageOrigin(Props.EffectContextHandle),
+		UElectricCastleAbilitySystemLibrary::IsBlockedHit(Props.EffectContextHandle),
+		UElectricCastleAbilitySystemLibrary::IsCriticalHit(Props.EffectContextHandle)
+	);
+	HandleTakeDamage_HitFlash();
+}
+
 void AElectricCastleEnemyCharacter::Die()
 {
 	Super::Die();
@@ -277,22 +400,12 @@ void AElectricCastleEnemyCharacter::Die()
 
 AActor* AElectricCastleEnemyCharacter::GetCombatTarget_Implementation() const
 {
-	if (!AIEngagementController)
+	if (!AITargeting)
 	{
 		UE_LOG(LogElectricCastle, Error, TEXT("[%s] AI Engagement Controller is not initialized!"), *GetName())
 		return nullptr;
 	}
-	return AIEngagementController->GetEngagementTarget();
-}
-
-void AElectricCastleEnemyCharacter::SetCombatTarget_Implementation(AActor* InCombatTarget)
-{
-	if (!AIEngagementController)
-	{
-		UE_LOG(LogElectricCastle, Error, TEXT("[%s] AI Engagement Controller is not initialized!"), *GetName())
-		return;
-	}
-	AIEngagementController->SetEngagementTarget(InCombatTarget);
+	return AITargeting->GetCurrentTarget();
 }
 
 FOnTrackableStopTrackingSignature& AElectricCastleEnemyCharacter::GetStopTrackingDelegate()
@@ -318,12 +431,10 @@ bool AElectricCastleEnemyCharacter::ShouldAutoRunBehaviorTree_Implementation() c
 void AElectricCastleEnemyCharacter::EnterSignificance_FullySignificant_Implementation()
 {
 	constexpr float FullTickRate = 0.f;
+	AIPerceptionStimuliSource->RegisterWithPerceptionSystem();
 	AIAlertComponent->Activate();
 	AIAlertComponent->SetComponentTickInterval(FullTickRate);
 	PatrolComponent->Activate();
-	PerceptionComponent->Activate();
-	PerceptionComponent->SetComponentTickInterval(FullTickRate);
-	PerceptionComponent->SetComponentTickInterval(FullTickRate);
 	AIEngagementController->Activate();
 	AIEngagementController->SetComponentTickInterval(FullTickRate);
 	GetCharacterMovement()->SetComponentTickInterval(FullTickRate);
@@ -342,12 +453,10 @@ void AElectricCastleEnemyCharacter::EnterSignificance_FullySignificant_Implement
 void AElectricCastleEnemyCharacter::EnterSignificance_PartiallySignificant_Implementation()
 {
 	constexpr float ReducedTickRate = 1.f / 15.f;
+	AIPerceptionStimuliSource->RegisterWithPerceptionSystem();
 	AIAlertComponent->Activate();
 	AIAlertComponent->SetComponentTickInterval(ReducedTickRate);
 	PatrolComponent->Activate();
-	PerceptionComponent->Activate();
-	PerceptionComponent->SetComponentTickInterval(ReducedTickRate);
-	PerceptionComponent->SetComponentTickInterval(ReducedTickRate);
 	AIEngagementController->Activate();
 	AIEngagementController->SetComponentTickInterval(0); // let engagement controller run at full tick
 	GetCharacterMovement()->SetComponentTickInterval(ReducedTickRate);
@@ -365,9 +474,9 @@ void AElectricCastleEnemyCharacter::EnterSignificance_PartiallySignificant_Imple
 
 void AElectricCastleEnemyCharacter::EnterSignificance_Insignificant_Implementation()
 {
+	AIPerceptionStimuliSource->UnregisterFromPerceptionSystem();
 	AIAlertComponent->Deactivate();
 	PatrolComponent->Deactivate();
-	PerceptionComponent->Deactivate();
 	AIEngagementController->Deactivate();
 	AIEngagementController->SetComponentTickEnabled(false);
 	GetCharacterMovement()->StopMovementImmediately();
@@ -386,4 +495,25 @@ void AElectricCastleEnemyCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 	RegisterSockets(SocketManagerComponent);
+	InitializeHitFlashMaterial();
+}
+
+void AElectricCastleEnemyCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	if (UAIPerceptionComponent* PerceptionComponent = IAIPerceptionActor::GetAIPerceptionComponent(NewController))
+	{
+		PerceptionManager->InitializePerception(PerceptionComponent);
+		AIAlertComponent->InitializePerceptionManager(PerceptionManager);
+	}
+}
+
+float AElectricCastleEnemyCharacter::TakeDamage(float DamageAmount, const struct FDamageEvent& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
+{
+	const float Damage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	if (Damage > 0)
+	{
+		UAISense_Damage::ReportDamageEvent(this, this, EventInstigator, DamageAmount, GetActorLocation(), GetActorLocation(), TEXT("Damage"));
+	}
+	return Damage;
 }

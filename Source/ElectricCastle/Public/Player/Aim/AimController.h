@@ -71,6 +71,8 @@ public:
 	FVector GetHitLocation() const;
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FRotator CalculateRotationToFaceAimTarget(const FVector& Location) const;
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FVector GetAimDirection(const FVector& Location) const;
 
 	void TraceForTarget(const FVector& PlayerLocation, const FVector& CameraLocation, const FRotator& CameraRotation);
 	FHitResult GetTraceResult() const { return TraceResult; }

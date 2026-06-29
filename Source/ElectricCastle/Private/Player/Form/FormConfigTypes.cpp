@@ -2,6 +2,10 @@
 
 #include "GroomComponent.h"
 
+#include "Components/SkeletalMeshComponent.h"
+
+#include "Materials/MaterialInstanceDynamic.h"
+
 bool FFormMaterialConfig::IsNull() const
 {
 	return MaterialAsset.IsNull();
@@ -19,13 +23,14 @@ bool FFormMaterialConfig::IsLoaded() const
 
 void FFormMaterialConfig::SetToComponent(UMeshComponent* MeshComponent, const int32 Idx) const
 {
+	UMaterialInterface* MaterialInterface = MaterialAsset.Get();
 	if (MaterialSlotName.IsNone())
 	{
-		MeshComponent->SetMaterial(Idx, MaterialAsset.Get());
+		MeshComponent->SetMaterial(Idx, MaterialInterface);
 	}
 	else
 	{
-		MeshComponent->SetMaterialByName(MaterialSlotName, MaterialAsset.Get());
+		MeshComponent->SetMaterialByName(MaterialSlotName, MaterialInterface);
 	}
 }
 
